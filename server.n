@@ -1,0 +1,35 @@
+using System;
+using System.Net;
+
+
+namespace httplib {
+
+public abstract class Server {
+    private listener: HttpListener;
+
+    public this() {
+        listener = HttpListener();
+        mutable prefixes = listener.Prefixes;
+
+        prefixes.Add("http://localhost:8080/");
+        listener.Start();
+    }
+
+    public update(): void {
+        def _ = listener.BeginGetContext(
+            AsyncCallback(ListenerCallback), this);
+    }
+
+    public abstract callback(
+        request: HttpListenerRequest, response: HttpListenerResponse): void;
+
+    static ListenerCallback(result: IAsyncResult): void {
+        def server = result.AsyncState:> Server;
+        def context = server.listener.EndGetContext(result);
+        def request = context.Request;
+        mutable response = context.Response;
+        server.callback(request, response);
+    }
+}
+
+} // namespace ht
