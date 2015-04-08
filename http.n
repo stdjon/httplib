@@ -1,0 +1,45 @@
+using System;
+using System.Collections;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.Web;
+using Nemerle.IO;
+
+
+module Test {
+
+    ListenerCallback(result: IAsyncResult): void {
+        def listener = result.AsyncState:> HttpListener;
+        def context = listener.EndGetContext(result);
+        def request = context.Request;
+        mutable response = context.Response;
+        def response_string = "<html><body><h1>Hello World!</h1>" +
+                $"<p>Url: $(request.Url)</p><p>RawUrl: $(request.RawUrl)</p>" +
+                "</body></html>";
+        def buffer = System.Text.Encoding.UTF8.GetBytes(response_string);
+        response.ContentLength64 = buffer.Length;
+        mutable output = response.OutputStream;
+        output.Write(buffer, 0, buffer.Length);
+        output.Close();
+    }
+
+    Main(_args: array[string]): void {
+        mutable running = true;
+        def listener = HttpListener();
+        mutable prefixes = listener.Prefixes;
+
+        prefixes.Add("http://localhost:8080/");
+        listener.Start();
+
+        while(running) {
+            def _async_result = listener.BeginGetContext(
+                AsyncCallback(ListenerCallback), listener);
+            Thread.Sleep(1000);
+            print("tick...\n");
+        }
+
+        listener.Stop();
+    }
+}
+
