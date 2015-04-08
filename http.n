@@ -7,8 +7,65 @@ using System.Web;
 using Nemerle.IO;
 
 
+abstract class Server {
+    private listener: HttpListener;
+
+    public this() {
+        listener = HttpListener();
+        mutable prefixes = listener.Prefixes;
+
+        prefixes.Add("http://localhost:8080/");
+        listener.Start();
+    }
+
+    public update(): void {
+        def _ = listener.BeginGetContext(
+            AsyncCallback(ListenerCallback), this);
+    }
+
+    public abstract callback(
+        request: HttpListenerRequest, response: HttpListenerResponse): void;
+
+    static ListenerCallback(result: IAsyncResult): void {
+        def server = result.AsyncState:> Server;
+        def context = server.listener.EndGetContext(result);
+        def request = context.Request;
+        mutable response = context.Response;
+        server.callback(request, response);
+    }
+}
+
+
+class MyServer: Server {
+
+    public override callback(
+        request: HttpListenerRequest, response: HttpListenerResponse): void {
+
+        def response_string = "<html><body><h1>Hello World!</h1>" +
+                $"<p>Url: $(request.Url)</p><p>RawUrl: $(request.RawUrl)</p>" +
+                "</body></html>";
+        def buffer = System.Text.Encoding.UTF8.GetBytes(response_string);
+        response.ContentLength64 = buffer.Length;
+        mutable output = response.OutputStream;
+        output.Write(buffer, 0, buffer.Length);
+        output.Close();
+    }
+}
+
+
 module Test {
 
+    Main(_args: array[string]): void {
+        mutable running = true;
+        mutable my_server = MyServer();
+        while(running) {
+            my_server.update();
+            Thread.Sleep(1000);
+            print("tick...\n");
+        }
+    }
+
+/*
     ListenerCallback(result: IAsyncResult): void {
         def listener = result.AsyncState:> HttpListener;
         def context = listener.EndGetContext(result);
@@ -41,5 +98,6 @@ module Test {
 
         listener.Stop();
     }
+*/
 }
 
