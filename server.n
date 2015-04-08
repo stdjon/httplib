@@ -1,8 +1,31 @@
 using System;
+using System.IO;
 using System.Net;
 
 
 namespace httplib {
+
+public class Request {
+    public this(req: HttpListenerRequest) {
+        url = req.Url;
+        raw_url = req.RawUrl;
+    }
+
+    public url: Uri;
+    public raw_url: string;
+}
+
+
+public class Response {
+    public this(res: HttpListenerResponse) {
+        output_stream = res.OutputStream;
+        content_length = res.ContentLength64;
+    }
+
+    public mutable output_stream: Stream;
+    public mutable content_length: long;
+}
+
 
 public abstract class Server {
     private listener: HttpListener;
@@ -20,14 +43,13 @@ public abstract class Server {
             AsyncCallback(ListenerCallback), this);
     }
 
-    public abstract callback(
-        request: HttpListenerRequest, response: HttpListenerResponse): void;
+    public abstract callback(request: Request, response: Response): void;
 
     static ListenerCallback(result: IAsyncResult): void {
         def server = result.AsyncState:> Server;
         def context = server.listener.EndGetContext(result);
-        def request = context.Request;
-        mutable response = context.Response;
+        def request = Request(context.Request);
+        mutable response = Response(context.Response);
         server.callback(request, response);
     }
 }
