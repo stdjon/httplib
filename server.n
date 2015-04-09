@@ -11,18 +11,50 @@ using Nemerle.Utility;
 namespace httplib {
 
 //------------------------------------------------------------------------------
+// HashTable
+
+public class HashTable {
+
+    nvc: NameValueCollection;
+
+
+    public this(data: NameValueCollection) {
+        nvc = data;
+    }
+
+    public Item[key: string]: string {
+        get { nvc[key]; }
+    }
+
+    public Keys: array[string] {
+        get { nvc.AllKeys; }
+    }
+
+    public forEach(lambda: string * string -> void): void {
+        foreach(k in Keys) {
+            lambda(k, Item[k]);
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // Request
 
 public class Request {
 
-    [Accessor] query_string: NameValueCollection;
+    [Accessor] http_method: string;
     [Accessor] url: Uri;
     [Accessor] raw_url: string;
+    [Accessor] query_string: HashTable;
+    [Accessor] headers: HashTable;
 
     public this(req: HttpListenerRequest) {
-        query_string = req.QueryString;
+        http_method = req.HttpMethod;
         url = req.Url;
         raw_url = req.RawUrl;
+        query_string = HashTable(req.QueryString);
+        headers = HashTable(req.Headers);
     }
 }
 
@@ -43,11 +75,11 @@ public class Response {
         content_length = res.ContentLength64;
     }
 
-    public appendV(params data: array[string]): void {
-        append(data);
+    public append(params data: array[string]): void {
+        appendArray(data);
     }
 
-    public append(data: array[string]): void {
+    public appendArray(data: array[string]): void {
         foreach(d in data) {
             def buffer = UTF8.GetBytes(d);
             ContentLength += buffer.Length;
@@ -110,5 +142,6 @@ public abstract class Server: IDisposable {
         response.OutputStream.Close();
     }
 }
+
 
 } // namespace httplib
