@@ -1,57 +1,112 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
+using System.Text.Encoding;
+
+using Nemerle.IO;
+using Nemerle.Utility;
 
 
 namespace httplib {
 
+//------------------------------------------------------------------------------
+// Request
+
 public class Request {
+
+    [Accessor] query_string: NameValueCollection;
+    [Accessor] url: Uri;
+    [Accessor] raw_url: string;
+
     public this(req: HttpListenerRequest) {
+        query_string = req.QueryString;
         url = req.Url;
         raw_url = req.RawUrl;
     }
-
-    public url: Uri;
-    public raw_url: string;
 }
 
 
+//------------------------------------------------------------------------------
+// Response
+
 public class Response {
+
+    [Accessor(flags = WantSetter)]
+    mutable output_stream: Stream;
+
+    [Accessor(flags = WantSetter)]
+    mutable content_length: long;
+
     public this(res: HttpListenerResponse) {
         output_stream = res.OutputStream;
         content_length = res.ContentLength64;
     }
 
-    public mutable output_stream: Stream;
-    public mutable content_length: long;
+    public appendV(params data: array[string]): void {
+        append(data);
+    }
+
+    public append(data: array[string]): void {
+        foreach(d in data) {
+            def buffer = UTF8.GetBytes(d);
+            ContentLength += buffer.Length;
+            OutputStream.Write(buffer, 0, buffer.Length);
+        }
+    }
 }
 
 
-public abstract class Server {
-    private listener: HttpListener;
+//------------------------------------------------------------------------------
+// Server
+
+public abstract class Server: IDisposable {
+
+    [System.Flags]
+    public enum State {
+        | Neutral = 0x00
+        | Running = 0x01
+    }
+
+
+    [Accessor(Flags, flags = Protected)]
+    [FlagAccessor(Running, flags = Protected | WantSetter)]
+    mutable state: State = State.Neutral;
+
+    [Accessor(flags = Protected)]
+    listener: HttpListener = HttpListener();
 
     public this() {
-        listener = HttpListener();
-        mutable prefixes = listener.Prefixes;
+        mutable prefixes = Listener.Prefixes;
 
         prefixes.Add("http://localhost:8080/");
-        listener.Start();
+        Listener.Start();
+    }
+
+    public Dispose(): void {
+
+        Listener.Close();
+        Running = false;
     }
 
     public update(): void {
-        def _ = listener.BeginGetContext(
-            AsyncCallback(ListenerCallback), this);
+        Running = true;
+        def _ = Listener.BeginGetContext(
+            AsyncCallback(listenerCallback), this);
     }
 
-    public abstract callback(request: Request, response: Response): void;
+    protected abstract callback(request: Request, response: Response): void;
 
-    static ListenerCallback(result: IAsyncResult): void {
-        def server = result.AsyncState:> Server;
-        def context = server.listener.EndGetContext(result);
+    static listenerCallback(result: IAsyncResult): void {
+
+        def server = result.AsyncState :> Server;
+        def context = server.Listener.EndGetContext(result);
         def request = Request(context.Request);
         mutable response = Response(context.Response);
+
         server.callback(request, response);
+        response.OutputStream.Close();
     }
 }
 
-} // namespace ht
+} // namespace httplib

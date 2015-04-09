@@ -5,16 +5,13 @@ using httplib;
 
 class MyServer: Server {
 
-    public override callback(request: Request, response: Response): void {
+    protected override callback(request: Request, response: Response): void {
 
-        def response_string = "<html><body><h1>Hello World!</h1>" +
-                $"<p>Url: $(request.url)</p><p>RawUrl: $(request.raw_url)</p>" +
-                "</body></html>";
-        def buffer = System.Text.Encoding.UTF8.GetBytes(response_string);
-        response.content_length = buffer.Length;
-        mutable output = response.output_stream;
-        output.Write(buffer, 0, buffer.Length);
-        output.Close();
+        response.appendV(
+            "<html><body><h1>Hello World!</h1><p>Url: ",
+            $"$(request.Url)</p><p>RawUrl: $(request.RawUrl)",
+            $"</p><p>QueryString: $(request.QueryString)",
+            "</p></body></html>");
     }
 }
 
@@ -24,6 +21,7 @@ module Test {
     Main(_args: array[string]): void {
         mutable running = true;
         mutable my_server = MyServer();
+
         while(running) {
             my_server.update();
             Thread.Sleep(1000);
