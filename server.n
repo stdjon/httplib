@@ -76,10 +76,12 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     listener: HttpListener = HttpListener();
 
-    public this() {
-        mutable prefixes = Listener.Prefixes;
+    public this(params prf: array[string]) {
 
-        prefixes.Add("http://localhost:8080/");
+        foreach(p in prf) {
+            print("Adding \"$p\"...\n");
+            Listener.Prefixes.Add(p);
+        }
         Listener.Start();
     }
 

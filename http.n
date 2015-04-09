@@ -5,12 +5,18 @@ using httplib;
 
 class MyServer: Server {
 
+    public this(params prf: array[string]) {
+        base(prf);
+    }
+
     protected override callback(request: Request, response: Response): void {
 
         response.appendV(
-            "<html><body><h1>Hello World!</h1><p>Url: ",
-            $"$(request.Url)</p><p>RawUrl: $(request.RawUrl)",
-            $"</p><p>QueryString: $(request.QueryString)",
+            "<html><body>",
+            "<h1>Hello World!</h1>",
+            $"<p>Url: $(request.Url)</p>",
+            $"<p>RawUrl: $(request.RawUrl)</p>",
+            $"<p>QueryString: $(request.QueryString)",
             "</p></body></html>");
     }
 }
@@ -20,7 +26,7 @@ module Test {
 
     Main(_args: array[string]): void {
         mutable running = true;
-        mutable my_server = MyServer();
+        mutable my_server = MyServer("http://localhost:8080/");
 
         while(running) {
             my_server.update();
