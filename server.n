@@ -14,6 +14,7 @@ namespace httplib {
 // Array
 
 public class Array {
+
     arr: array[string];
 
     public this(data: array[string]) {
@@ -33,6 +34,10 @@ public class Array {
             lambda(v);
         }
     }
+
+    public toSystemType(): array[string] {
+        arr;
+    }
 }
 
 
@@ -42,7 +47,6 @@ public class Array {
 public class HashTable {
 
     nvc: NameValueCollection;
-
 
     public this(data: NameValueCollection) {
         nvc = data;
@@ -61,6 +65,10 @@ public class HashTable {
             lambda(k, Item[k]);
         }
     }
+
+    public toSystemType(): NameValueCollection {
+        nvc;
+    }
 }
 
 
@@ -75,6 +83,7 @@ public class Request {
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
     [Accessor] path: Array;
+    [Accessor] raw_path: string;
     [Accessor] extension: string;
 
     public this(req: HttpListenerRequest) {
@@ -85,6 +94,7 @@ public class Request {
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
         path = makePathArray(RawUrl);
+        raw_path = makeRawPath(Path);
         extension = makeExtension(Path);
     }
 
@@ -125,6 +135,10 @@ public class Request {
         } else {
             ""
         }
+    }
+
+    makeRawPath(path: Array): string {
+        String.Join("/", path.toSystemType());
     }
 }
 
