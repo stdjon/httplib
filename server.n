@@ -28,7 +28,7 @@ public class Array {
         get { arr.Length; }
     }
 
-    public forEach(lambda: string  -> void): void {
+    public forEach(lambda: string -> void): void {
         foreach(v in arr) {
             lambda(v);
         }
@@ -78,6 +78,7 @@ public class Request {
     [Accessor] extension: string;
 
     public this(req: HttpListenerRequest) {
+
         http_method = req.HttpMethod;
         url = req.Url;
         raw_url = req.RawUrl;
@@ -106,6 +107,7 @@ public class Request {
     }
 
     makeExtension(path: Array): string {
+
         def last_path =
             if(path.Length > 0) {
                 path[path.Length - 1];
@@ -132,15 +134,34 @@ public class Request {
 
 public class Response {
 
-    [Accessor(flags = WantSetter)]
-    mutable output_stream: Stream;
+    public ContentLength: long {
+        get { response.ContentLength64 }
+        set { response.ContentLength64 = value; }
+    }
 
-    [Accessor(flags = WantSetter)]
-    mutable content_length: long;
+    public ContentType: string {
+        get { response.ContentType }
+        set { response.ContentType = value; }
+    }
 
-    public this(res: HttpListenerResponse) {
-        output_stream = res.OutputStream;
-        content_length = res.ContentLength64;
+
+    public StatusCode: int {
+        get { response.StatusCode }
+        set { response.StatusCode = value; }
+    }
+
+    public StatusDescription: string {
+        get { response.StatusDescription }
+        set { response.StatusDescription = value; }
+    }
+
+    mutable response: HttpListenerResponse;
+    mutable output: array[byte];
+
+    public this(res: HttpListenerResponse, output_length = 1024) {
+
+        response = res;
+        output = array(output_length);
     }
 
     public append(params data: array[string]): void {
@@ -148,11 +169,24 @@ public class Response {
     }
 
     public appendArray(data: array[string]): void {
+
         foreach(d in data) {
             def buffer = UTF8.GetBytes(d);
-            ContentLength += buffer.Length;
-            OutputStream.Write(buffer, 0, buffer.Length);
+            def new_length = ContentLength + buffer.Length;
+
+            when(output.Length < new_length) {
+                Array.Resize(ref output, output.Length * 3 / 2);
+            }
+
+            buffer.CopyTo(output, ContentLength);
+            ContentLength = new_length;
         }
+    }
+
+    internal complete(): void {
+        def os = response.OutputStream;
+        os.Write(output, 0, ContentLength :> int);
+        os.Close();
     }
 }
 
@@ -166,11 +200,13 @@ public abstract class Server: IDisposable {
     public enum State {
         | Neutral = 0x00
         | Running = 0x01
+        | Closed = 0x02
     }
 
 
     [Accessor(Flags, flags = Protected)]
     [FlagAccessor(Running, flags = Protected | WantSetter)]
+    [FlagAccessor(Closed, flags = Protected | WantSetter)]
     mutable state: State = State.Neutral;
 
     [Accessor(flags = Protected)]
@@ -186,9 +222,20 @@ public abstract class Server: IDisposable {
     }
 
     public Dispose(): void {
+        shutdown();
+    }
 
-        Listener.Close();
-        Running = false;
+    protected override Finalize(): void {
+        shutdown();
+    }
+
+    shutdown(): void {
+
+        when(!Closed) {
+            Listener.Close();
+            Running = false;
+            Closed = true;
+        }
     }
 
     public update(): void {
@@ -206,8 +253,9 @@ public abstract class Server: IDisposable {
         def request = Request(context.Request);
         mutable response = Response(context.Response);
 
+        print("Requesting: \"$(request.RawUrl)\"...\n");
         server.callback(request, response);
-        response.OutputStream.Close();
+        response.complete();
     }
 }
 
