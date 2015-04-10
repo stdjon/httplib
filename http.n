@@ -17,6 +17,7 @@ class MyServer: Server {
             $"<p>Url: $(request.Url)</p>",
             $"<p>RawUrl: $(request.RawUrl)</p>",
             $"<p>HttpMethod: $(request.HttpMethod)</p>"
+            $"<p>Extension: $(request.Extension)</p>"
             "<p>Headers:<ol>");
 
         request.Headers.forEach((k, v) => {

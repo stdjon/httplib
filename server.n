@@ -24,6 +24,10 @@ public class Array {
         get { arr[index]; }
     }
 
+    public Length: int {
+        get { arr.Length; }
+    }
+
     public forEach(lambda: string  -> void): void {
         foreach(v in arr) {
             lambda(v);
@@ -71,6 +75,7 @@ public class Request {
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
     [Accessor] path: Array;
+    [Accessor] extension: string;
 
     public this(req: HttpListenerRequest) {
         http_method = req.HttpMethod;
@@ -79,7 +84,7 @@ public class Request {
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
         path = makePathArray(RawUrl);
-
+        extension = makeExtension(Path);
     }
 
     /** convert a RawUrl -> path component Array
@@ -98,6 +103,26 @@ public class Request {
             array['/'], StringSplitOptions.RemoveEmptyEntries );
 
         Array(path_split);
+    }
+
+    makeExtension(path: Array): string {
+        def last_path =
+            if(path.Length > 0) {
+                path[path.Length - 1];
+            } else {
+                ""
+            }
+        def last_split = last_path.Split(
+            array['.'], StringSplitOptions.None );
+
+        if(last_split.Length > 1) {
+            def len = last_split.Length - 1;
+            mutable tmp: array[string] = array(len);
+            Array.Copy(last_split, 1, tmp, 0, len);
+            String.Join(".", tmp)
+        } else {
+            ""
+        }
     }
 }
 
