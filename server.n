@@ -11,6 +11,28 @@ using Nemerle.Utility;
 namespace httplib {
 
 //------------------------------------------------------------------------------
+// Array
+
+public class Array {
+    arr: array[string];
+
+    public this(data: array[string]) {
+        arr = data;
+    }
+
+    public Item[index: int]: string {
+        get { arr[index]; }
+    }
+
+    public forEach(lambda: string  -> void): void {
+        foreach(v in arr) {
+            lambda(v);
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // HashTable
 
 public class HashTable {
@@ -48,6 +70,7 @@ public class Request {
     [Accessor] raw_url: string;
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
+    [Accessor] path: Array;
 
     public this(req: HttpListenerRequest) {
         http_method = req.HttpMethod;
@@ -55,6 +78,26 @@ public class Request {
         raw_url = req.RawUrl;
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
+        path = makePathArray(RawUrl);
+
+    }
+
+    /** convert a RawUrl -> path component Array
+     *  "/a/b//c" -> [ "a", "b", "c" ]
+     */
+    makePathArray(rawUrl: string): Array {
+
+        def path_only = rawUrl.Split(array['?'], StringSplitOptions.None);
+        def path_section =
+            if(path_only.Length > 0) {
+                path_only[0]
+            } else {
+                rawUrl
+            };
+        def path_split = path_section.Split(
+            array['/'], StringSplitOptions.RemoveEmptyEntries );
+
+        Array(path_split);
     }
 }
 

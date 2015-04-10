@@ -29,6 +29,12 @@ class MyServer: Server {
             response.append($"<li>$k = $v</li>");
         });
 
+        response.append("</ol></p><p>Path:<ol>");
+
+        request.Path.forEach(p => {
+            response.append($"<li>$p</li>");
+        });
+
         response.append("</ol></p></body></html>");
     }
 }
@@ -38,13 +44,16 @@ module Test {
 
     Main(_args: array[string]): void {
         mutable running = true;
-        mutable my_server = MyServer("http://localhost:8080/");
 
-        while(running) {
-            my_server.update();
-            Thread.Sleep(1000);
-            //print("tick...\n");
+        using(mutable my_server = MyServer("http://localhost:8080/")) {
+
+            while(running) {
+                my_server.update();
+                Thread.Sleep(1000);
+                //print("tick...\n");
+            }
         }
     }
 }
+
 
