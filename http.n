@@ -5,8 +5,8 @@ using httplib;
 
 class MyServer: Server {
 
-    public this(params prf: array[string]) {
-        base(prf);
+    public this(params prefixes: array[string]) {
+        base(prefixes);
     }
 
     protected override callback(request: Request, response: Response): void {
