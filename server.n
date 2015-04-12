@@ -116,7 +116,7 @@ public class Request {
         Array(path_split);
     }
 
-    makeExtension(path: Array): string {
+    makeExtension(path: Array, full: bool = false): string {
 
         def last_path =
             if(path.Length > 0) {
@@ -128,10 +128,14 @@ public class Request {
             array['.'], StringSplitOptions.None );
 
         if(last_split.Length > 1) {
-            def len = last_split.Length - 1;
-            mutable tmp: array[string] = array(len);
-            Array.Copy(last_split, 1, tmp, 0, len);
-            String.Join(".", tmp)
+            if(full) {
+                def len = last_split.Length - 1;
+                mutable tmp: array[string] = array(len);
+                Array.Copy(last_split, 1, tmp, 0, len);
+                String.Join(".", tmp)
+            } else {
+                last_split[last_split.Length - 1];
+            }
         } else {
             ""
         }
@@ -186,15 +190,25 @@ public class Response {
 
         foreach(d in data) {
             def buffer = UTF8.GetBytes(d);
-            def new_length = ContentLength + buffer.Length;
-
-            when(output.Length < new_length) {
-                Array.Resize(ref output, output.Length * 3 / 2);
-            }
-
-            buffer.CopyTo(output, ContentLength);
-            ContentLength = new_length;
+            writeToOutput(buffer);
         }
+    }
+
+    public appendBytes(data: array[byte]): void {
+        writeToOutput(data);
+    }
+
+    writeToOutput(data: array[byte]): void {
+        def new_length = ContentLength + data.Length;
+
+        when(output.Length < new_length) {
+            def _32 = output.Length * 3 / 2;
+            def nl = if(_32 > new_length) { _32 } else { new_length :> int }
+            Array.Resize(ref output, nl);
+        }
+
+        data.CopyTo(output, ContentLength);
+        ContentLength = new_length;
     }
 
     internal complete(): void {
@@ -216,7 +230,6 @@ public abstract class Server: IDisposable {
         | Running = 0x01
         | Closed = 0x02
     }
-
 
     [Accessor(Flags, flags = Protected)]
     [FlagAccessor(Running, flags = Protected | WantSetter)]

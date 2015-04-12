@@ -1,19 +1,59 @@
+using System.IO;
 using System.Threading;
+
+using Nemerle.IO;
 
 using httplib;
 
 
 class MyServer: Server {
 
+    /*[Accessor]*/ root: string;
+
     public this(params prefixes: array[string]) {
         base(prefixes);
+        root = Directory.GetCurrentDirectory();
+
     }
 
-    protected override callback(request: Request, response: Response): void {
+    extensionToMimeType(ext: string): string {
+        match(ext) {
+            | "js" => "application/javascript"
+            | "json" => "application/json"
+            | "html" => "text/html"
+            | "css" => "text/css"
+            | "ttf" => "application/x-font-ttf"
+            | "woff" => "application/x-font-woff"
+            | "woff2" => "application/octet-stream"
+            | _ => "text/plain"
+        }
+    }
+
+    doMagic(request: Request, response: Response): void {
+        response.append(
+            "<html><body>",
+            "<h1>httplib \"Magic\" Response</h1>",
+            $"<p>RawPath: $(request.RawPath)</p>",
+            "<p>QueryString:<ol>");
+
+        request.QueryString.forEach((k, v) => {
+            response.append($"<li>$k = $v</li>");
+        });
+
+        response.append("</ol></p><p>Path:<ol>");
+
+        request.Path.forEach(p => {
+            response.append($"<li>$p</li>");
+        });
+
+        response.append("</ol></p></body></html>");
+    }
+
+    defaultResponse(request: Request, response: Response): void {
 
         response.append(
             "<html><body>",
-            "<h1>Hello World!</h1>",
+            "<h1>httplib Default Response</h1>",
             $"<p>Url: $(request.Url)</p>",
             $"<p>RawUrl: $(request.RawUrl)</p>",
             $"<p>HttpMethod: $(request.HttpMethod)</p>"
@@ -38,6 +78,35 @@ class MyServer: Server {
         });
 
         response.append("</ol></p></body></html>");
+    }
+
+    protected override callback(request: Request, response: Response): void {
+
+        def path = Path.Combine(root, request.RawPath);
+        def exists = File.Exists(path);
+
+        print("File \"$(path)\" $(if(exists) {\"does\"} else {\"doesn't\"}) exist\n");
+
+        if(exists) {
+            // If the file exists on disk, serve its contents with an
+            // appropriate MIME type
+            using(def reader = BinaryReader(File.Open(path, FileMode.Open))) {
+
+                mutable continue = true;
+
+                while(continue) {
+                    def data = reader.ReadBytes(400);
+                    response.appendBytes(data);
+                    continue = (data.Length == 400);
+                }
+                response.ContentType = extensionToMimeType(request.Extension);
+                print("Extension $(request.Extension) => ContentType $(response.ContentType)\n");
+            }
+        } else if("" == request.Extension) {
+            doMagic(request, response);
+        } else {
+            defaultResponse(request, response);
+        }
     }
 }
 
