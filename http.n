@@ -2,17 +2,28 @@ using System.IO;
 using System.Threading;
 
 using Nemerle.IO;
+using Nemerle.Utility;
 
 using httplib;
 
 
+[Record]
+class MyServerConfiguration: ServerConfiguration {
+    [Accessor(flags = WantSetter)] mutable root: string;
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
+}
+
 class MyServer: Server {
 
-    /*[Accessor]*/ root: string;
+    [Accessor] root: string;
 
-    public this(params prefixes: array[string]) {
-        base(prefixes);
-        root = Directory.GetCurrentDirectory();
+    public new Configuration: MyServerConfiguration {
+        get { base.Configuration :> MyServerConfiguration }
+    }
+
+    public this(config: MyServerConfiguration) {
+        base(config);
+        root = config.Root;
 
     }
 
@@ -82,10 +93,10 @@ class MyServer: Server {
 
     protected override callback(request: Request, response: Response): void {
 
-        def path = Path.Combine(root, request.RawPath);
+        def path = Path.Combine(Root, request.RawPath);
         def exists = File.Exists(path);
 
-        print("File \"$(path)\" $(if(exists) {\"does\"} else {\"doesn't\"}) exist\n");
+        print("File \"$(path)\" $(if(exists) {\"does\"} else {\"doesn't\"}) exist.\n");
 
         if(exists) {
             // If the file exists on disk, serve its contents with an
@@ -95,9 +106,9 @@ class MyServer: Server {
                 mutable continue = true;
 
                 while(continue) {
-                    def data = reader.ReadBytes(400);
+                    def data = reader.ReadBytes(Configuration.FileChunkLength);
                     response.appendBytes(data);
-                    continue = (data.Length == 400);
+                    continue = (data.Length == Configuration.FileChunkLength);
                 }
                 response.ContentType = extensionToMimeType(request.Extension);
                 print("Extension $(request.Extension) => ContentType $(response.ContentType)\n");
@@ -115,8 +126,15 @@ module Test {
 
     Main(_args: array[string]): void {
         mutable running = true;
+        def serverConfig = MyServerConfiguration(
+                array["http://localhost:8080/"], // Prefixes
+                800, //OutputLength
+                Directory.GetCurrentDirectory(), //Root
+                1024 //FileChunkLength
+            );
+            print("ServerConfiguration: $serverConfig\n");
 
-        using(mutable my_server = MyServer("http://localhost:8080/")) {
+        using(mutable my_server = MyServer(serverConfig)) {
 
             while(running) {
                 my_server.update();

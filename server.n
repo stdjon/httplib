@@ -220,6 +220,17 @@ public class Response {
 
 
 //------------------------------------------------------------------------------
+// ServerConfiguration
+
+[Record]
+public class ServerConfiguration {
+
+    [Accessor(flags = WantSetter)] mutable prefixes: array[string];
+    [Accessor(flags = WantSetter)] mutable output_length: int;
+}
+
+
+//------------------------------------------------------------------------------
 // Server
 
 public abstract class Server: IDisposable {
@@ -239,9 +250,13 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     listener: HttpListener = HttpListener();
 
-    public this(params prefixes: array[string]) {
+    [Accessor(flags = Protected)]
+    configuration: ServerConfiguration;
 
-        foreach(p in prefixes) {
+    public this(config: ServerConfiguration) {
+        configuration = config;
+
+        foreach(p in Configuration.Prefixes) {
             print("Adding \"$p\"...\n");
             Listener.Prefixes.Add(p);
         }
@@ -278,7 +293,7 @@ public abstract class Server: IDisposable {
         def server = result.AsyncState :> Server;
         def context = server.Listener.EndGetContext(result);
         def request = Request(context.Request);
-        mutable response = Response(context.Response);
+        mutable response = Response(context.Response, server.Configuration.OutputLength);
 
         print("Requesting: \"$(request.RawUrl)\"...\n");
         server.callback(request, response);
