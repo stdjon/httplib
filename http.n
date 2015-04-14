@@ -13,16 +13,12 @@ class MyServerConfiguration: ServerConfiguration {
 
 class MyServer: Server {
 
-    [Accessor] root: string;
-
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
     }
 
     public this(config: MyServerConfiguration) {
         base(config);
-        root = config.Root;
-
     }
 
     doMagic(request: Request, response: Response): void {
