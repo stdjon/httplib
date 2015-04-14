@@ -9,8 +9,6 @@ using httplib;
 
 [Record]
 class MyServerConfiguration: ServerConfiguration {
-    [Accessor(flags = WantSetter)] mutable root: string;
-    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
 }
 
 class MyServer: Server {
@@ -25,19 +23,6 @@ class MyServer: Server {
         base(config);
         root = config.Root;
 
-    }
-
-    extensionToMimeType(ext: string): string {
-        match(ext) {
-            | "js" => "application/javascript"
-            | "json" => "application/json"
-            | "html" => "text/html"
-            | "css" => "text/css"
-            | "ttf" => "application/x-font-ttf"
-            | "woff" => "application/x-font-woff"
-            | "woff2" => "application/octet-stream"
-            | _ => "text/plain"
-        }
     }
 
     doMagic(request: Request, response: Response): void {
@@ -93,27 +78,7 @@ class MyServer: Server {
 
     protected override callback(request: Request, response: Response): void {
 
-        def path = Path.Combine(Root, request.RawPath);
-        def exists = File.Exists(path);
-
-        print("File \"$(path)\" $(if(exists) {\"does\"} else {\"doesn't\"}) exist.\n");
-
-        if(exists) {
-            // If the file exists on disk, serve its contents with an
-            // appropriate MIME type
-            using(def reader = BinaryReader(File.Open(path, FileMode.Open))) {
-
-                mutable continue = true;
-
-                while(continue) {
-                    def data = reader.ReadBytes(Configuration.FileChunkLength);
-                    response.appendBytes(data);
-                    continue = (data.Length == Configuration.FileChunkLength);
-                }
-                response.ContentType = extensionToMimeType(request.Extension);
-                print("Extension $(request.Extension) => ContentType $(response.ContentType)\n");
-            }
-        } else if("" == request.Extension) {
+        if("" == request.Extension) {
             doMagic(request, response);
         } else {
             defaultResponse(request, response);

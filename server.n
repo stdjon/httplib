@@ -227,6 +227,8 @@ public class ServerConfiguration {
 
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
     [Accessor(flags = WantSetter)] mutable output_length: int;
+    [Accessor(flags = WantSetter)] mutable root: string;
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
 }
 
 
@@ -286,6 +288,33 @@ public abstract class Server: IDisposable {
             AsyncCallback(listenerCallback), this);
     }
 
+    static extensionToMimeType(ext: string): string {
+        match(ext) {
+            | "js" => "application/javascript"
+            | "json" => "application/json"
+            | "html" => "text/html"
+            | "css" => "text/css"
+            | "ttf" => "application/x-font-ttf"
+            | "woff" => "application/x-font-woff"
+            | "woff2" => "application/octet-stream"
+            | _ => "text/plain"
+        }
+    }
+
+    serveFile(path: string, contentType: string, response: Response): void {
+
+        using(def reader = BinaryReader(File.Open(path, FileMode.Open))) {
+            mutable continue = true;
+
+            while(continue) {
+                def data = reader.ReadBytes(Configuration.FileChunkLength);
+                response.appendBytes(data);
+                continue = (data.Length == Configuration.FileChunkLength);
+            }
+            response.ContentType = contentType;
+        }
+    }
+
     protected abstract callback(request: Request, response: Response): void;
 
     static listenerCallback(result: IAsyncResult): void {
@@ -293,10 +322,19 @@ public abstract class Server: IDisposable {
         def server = result.AsyncState :> Server;
         def context = server.Listener.EndGetContext(result);
         def request = Request(context.Request);
-        mutable response = Response(context.Response, server.Configuration.OutputLength);
+        def config = server.Configuration;
+        mutable response = Response(context.Response, config.OutputLength);
+
+        def path = Path.Combine(config.Root, request.RawPath);
+        def exists = File.Exists(path);
 
         print("Requesting: \"$(request.RawUrl)\"...\n");
-        server.callback(request, response);
+
+        if(exists) {
+            server.serveFile(path, extensionToMimeType(request.Extension), response);
+        } else {
+            server.callback(request, response);
+        }
         response.complete();
     }
 }
