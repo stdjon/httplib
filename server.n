@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text.Encoding;
+using System.Text.RegularExpressions;
 
 using Nemerle.IO;
 using Nemerle.Utility;
@@ -48,12 +50,17 @@ public class HashTable {
 
     nvc: NameValueCollection;
 
+    public this() {
+        nvc = NameValueCollection();
+    }
+
     public this(data: NameValueCollection) {
         nvc = data;
     }
 
     public Item[key: string]: string {
         get { nvc[key]; }
+        set { nvc[key] = value; }
     }
 
     public Keys: array[string] {
@@ -232,10 +239,66 @@ public class ServerConfiguration {
 }
 
 
+
+//------------------------------------------------------------------------------
+// Route
+
+public class Route {
+
+    [Accessor] input: string;
+    regex: Regex;
+    mutable captures: array[string] = array(0);
+
+    public this(path: string) {
+
+        def regex_string = Regex.Replace(path, @"{(\w+)}", m => {
+
+            def v: string = m.Groups[1].ToString();
+            def e = this.captures.Length;
+
+            Array.Resize(ref this.captures, e + 1);
+            this.captures[e] = v;
+
+            @"(\w+)";
+        });
+        regex = Regex(regex_string);
+        input = regex_string;
+    }
+
+//    static public @==(a: Route, b: Route): bool {
+//        a.GetHashCode() == b.GetHashCode();
+//    }
+
+    public ismatch(path: string): bool {
+        regex.IsMatch(path)
+    }
+
+    public domatch(path: string, lambda: HashTable * bool -> void): bool {
+
+        mutable hash = HashTable();
+        def result = regex.IsMatch(path);
+        when(result) {
+            def _ = regex.Replace(path, m => {
+                for(mutable i = 1; i < m.Groups.Count; i++) {
+                    def k = captures[i - 1];
+                    def v = m.Groups[i].ToString();
+                    hash[k] = v;
+                }
+                ""
+            }, 100, 0);
+        }
+        lambda(hash, result);
+        result;
+    }
+}
+
+
 //------------------------------------------------------------------------------
 // Server
 
 public abstract class Server: IDisposable {
+
+    public type Callback = HashTable * Request * Response -> void;
 
     [System.Flags]
     public enum State {
@@ -254,6 +317,17 @@ public abstract class Server: IDisposable {
 
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
+
+    [Accessor(flags = Protected)]
+    routes: Dictionary[string, Route * Callback] = Dictionary();
+
+    // route("/a/b/c", r => { })
+    public route(path: string, fn: Callback): void {
+        def r = Route(path);
+        def s = r.Input;
+        print("route: '$(path)' added $(fn)\n");
+        Routes.Add(s, (r, fn));
+    }
 
     public this(config: ServerConfiguration) {
         configuration = config;
@@ -328,14 +402,41 @@ public abstract class Server: IDisposable {
         def path = Path.Combine(config.Root, request.RawPath);
         def exists = File.Exists(path);
 
-        print("Requesting: \"$(request.RawUrl)\"...\n");
+        print("Requesting: \"$(request.RawPath)\"...\n");
 
-        if(exists) {
+        mutable vars = HashTable();
+        def cb = server.findCallback("/" + request.RawPath, out vars);
+        if(cb != null) {
+            cb(vars, request, response);
+        } else if(exists) {
             server.serveFile(path, extensionToMimeType(request.Extension), response);
         } else {
             server.callback(request, response);
         }
         response.complete();
+    }
+
+
+    findCallback(path: string, vars: out HashTable): Callback {
+        mutable result;
+        exit: {
+            foreach(r in Routes) {
+                mutable route, fn;
+                (route, fn) = r.Value;
+
+                when(route.ismatch(path)) {
+                    print("'$(path)' matches '$(route.Input)'...\n");
+                    mutable v = HashTable();
+                    def _ = route.domatch(path, (h, _r) => {
+                        v = h;
+                    });
+                    result = fn;
+                    vars = v;
+                    exit();
+                }
+            }
+        }
+        result;
     }
 }
 

@@ -21,7 +21,7 @@ class MyServer: Server {
         base(config);
     }
 
-    doMagic(request: Request, response: Response): void {
+    public doMagic(vars: HashTable, request: Request, response: Response): void {
         response.append(
             "<html><body>",
             "<h1>httplib \"Magic\" Response</h1>",
@@ -36,6 +36,12 @@ class MyServer: Server {
 
         request.Path.forEach(p => {
             response.append($"<li>$p</li>");
+        });
+
+        response.append("</ol></p><p>Vars:<ol>");
+
+        vars.forEach((k, v) => {
+            response.append($"<li>$k = $v</li>");
         });
 
         response.append("</ol></p></body></html>");
@@ -74,11 +80,7 @@ class MyServer: Server {
 
     protected override callback(request: Request, response: Response): void {
 
-        if("" == request.Extension) {
-            doMagic(request, response);
-        } else {
-            defaultResponse(request, response);
-        }
+        defaultResponse(request, response);
     }
 }
 
@@ -95,7 +97,14 @@ module Test {
             );
             print("ServerConfiguration: $serverConfig\n");
 
+
         using(mutable my_server = MyServer(serverConfig)) {
+
+            my_server.route("/a/{b}/{c}", (vars, req, res) => {
+
+                print("match \"/a/{b}/{c}\"...\n");
+                my_server.doMagic(vars, req, res);
+            });
 
             while(running) {
                 my_server.update();
