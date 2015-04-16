@@ -268,7 +268,7 @@ public class Route {
         mutable rx = path;
 
         // {{name}}  -->  ([A-Za-z0-9.-]+)
-        process(ref rx, @"{{(\w+)}}", _ => { @"([A-Za-z0-9.-]+)" });
+        process(ref rx, @"{{(\w+)}}", _ => { @"([A-Za-z0-9_.-]+)" });
 
         // {{name:pattern}}  -->  (pattern)
         process(ref rx, @"{{(\w+):(.+)}}", p => { "(" + p + ")" });
