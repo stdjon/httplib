@@ -92,6 +92,7 @@ public class Request {
     [Accessor] path: Array;
     [Accessor] raw_path: string;
     [Accessor] extension: string;
+    [Accessor] vars: HashTable;
 
     public this(req: HttpListenerRequest) {
 
@@ -103,6 +104,19 @@ public class Request {
         path = makePathArray(RawUrl);
         raw_path = makeRawPath(Path);
         extension = makeExtension(Path);
+        vars = HashTable();
+    }
+
+    public this(other: Request, v: HashTable) {
+        http_method = other.http_method;
+        url = other.url;
+        raw_url = other.raw_url;
+        query_string = other.query_string;
+        headers = other.headers;
+        path = other.path;
+        raw_path = other.raw_path;
+        extension = other.extension;
+        vars = v;
     }
 
     /** convert a RawUrl -> path component Array
@@ -245,50 +259,61 @@ public class ServerConfiguration {
 
 public class Route {
 
-    [Accessor] input: string;
+    [Accessor] pattern: string;
     regex: Regex;
     mutable captures: array[string] = array(0);
 
     public this(path: string) {
 
-        def regex_string = Regex.Replace(path, @"{(\w+)}", m => {
+        mutable rx = path;
 
-            def v: string = m.Groups[1].ToString();
-            def e = this.captures.Length;
+        // {{name}}  -->  ([A-Za-z0-9.-]+)
+        process(ref rx, @"{{(\w+)}}", _ => { @"([A-Za-z0-9.-]+)" });
 
-            Array.Resize(ref this.captures, e + 1);
-            this.captures[e] = v;
+        // {{name:pattern}}  -->  (pattern)
+        process(ref rx, @"{{(\w+):(.+)}}", p => { "(" + p + ")" });
 
-            @"(\w+)";
-        });
-        regex = Regex(regex_string);
-        input = regex_string;
+        //anchor start/end of regex
+        rx = "^" + rx + "$";
+
+        regex = Regex(rx);
+        pattern = rx;
     }
 
-//    static public @==(a: Route, b: Route): bool {
-//        a.GetHashCode() == b.GetHashCode();
-//    }
-
-    public ismatch(path: string): bool {
+    public isMatch(path: string): bool {
         regex.IsMatch(path)
     }
 
-    public domatch(path: string, lambda: HashTable * bool -> void): bool {
-
-        mutable hash = HashTable();
+    public doMatch(path: string): bool * HashTable {
+        mutable vars = HashTable();
         def result = regex.IsMatch(path);
+
         when(result) {
             def _ = regex.Replace(path, m => {
+
                 for(mutable i = 1; i < m.Groups.Count; i++) {
                     def k = captures[i - 1];
                     def v = m.Groups[i].ToString();
-                    hash[k] = v;
+                    vars[k] = v;
                 }
                 ""
             }, 100, 0);
         }
-        lambda(hash, result);
-        result;
+        (result, vars);
+    }
+
+    process(input: ref string, pattern: string, replace: string -> string): void {
+        input = Regex.Replace(input, pattern, m => {
+
+            def v: string = m.Groups[1].ToString();
+            def patt: string = m.Groups[2].ToString();
+            def e = captures.Length;
+
+            Array.Resize(ref captures, e + 1);
+            captures[e] = v;
+
+            replace(patt);
+        });
     }
 }
 
@@ -298,7 +323,7 @@ public class Route {
 
 public abstract class Server: IDisposable {
 
-    public type Callback = HashTable * Request * Response -> void;
+    public type Callback = Request * Response -> void;
 
     [System.Flags]
     public enum State {
@@ -320,14 +345,6 @@ public abstract class Server: IDisposable {
 
     [Accessor(flags = Protected)]
     routes: Dictionary[string, Route * Callback] = Dictionary();
-
-    // route("/a/b/c", r => { })
-    public route(path: string, fn: Callback): void {
-        def r = Route(path);
-        def s = r.Input;
-        print("route: '$(path)' added $(fn)\n");
-        Routes.Add(s, (r, fn));
-    }
 
     public this(config: ServerConfiguration) {
         configuration = config;
@@ -354,6 +371,14 @@ public abstract class Server: IDisposable {
             Running = false;
             Closed = true;
         }
+    }
+
+    // route("/a/b/c", r => { })
+    public route(path: string, fn: Callback): void {
+        def r = Route(path);
+        def s = r.Pattern;
+        print("route: '$(path)' added $(fn)\n");
+        Routes.Add(s, (r, fn));
     }
 
     public update(): void {
@@ -389,54 +414,59 @@ public abstract class Server: IDisposable {
         }
     }
 
-    protected abstract callback(request: Request, response: Response): void;
-
-    static listenerCallback(result: IAsyncResult): void {
-
-        def server = result.AsyncState :> Server;
-        def context = server.Listener.EndGetContext(result);
-        def request = Request(context.Request);
-        def config = server.Configuration;
-        mutable response = Response(context.Response, config.OutputLength);
-
-        def path = Path.Combine(config.Root, request.RawPath);
-        def exists = File.Exists(path);
-
-        print("Requesting: \"$(request.RawPath)\"...\n");
-
-        mutable vars = HashTable();
-        def cb = server.findCallback("/" + request.RawPath, out vars);
-        if(cb != null) {
-            cb(vars, request, response);
-        } else if(exists) {
-            server.serveFile(path, extensionToMimeType(request.Extension), response);
-        } else {
-            server.callback(request, response);
-        }
-        response.complete();
-    }
-
-
-    findCallback(path: string, vars: out HashTable): Callback {
+    findCallback(path: string, vars_out: out HashTable): Callback {
         mutable result;
         exit: {
             foreach(r in Routes) {
-                mutable route, fn;
-                (route, fn) = r.Value;
+                mutable route, fn, ok, vars;
 
-                when(route.ismatch(path)) {
-                    print("'$(path)' matches '$(route.Input)'...\n");
-                    mutable v = HashTable();
-                    def _ = route.domatch(path, (h, _r) => {
-                        v = h;
-                    });
+                (route, fn) = r.Value;
+                (ok, vars) = route.doMatch(path);
+
+                when(ok) {
+                    print("'$(path)' matches '$(route.Pattern)'...\n");
                     result = fn;
-                    vars = v;
+                    vars_out = vars;
                     exit();
                 }
             }
         }
         result;
+    }
+
+    /** Overridden by child classes */
+    protected abstract callback(request: Request, response: Response): void;
+
+    handleCallback(context: HttpListenerContext): void {
+        def request = Request(context.Request);
+        mutable response = Response(context.Response, Configuration.OutputLength);
+
+        def path = Path.Combine(Configuration.Root, request.RawPath);
+        def exists = File.Exists(path);
+
+        print("Requesting: \"$(request.RawPath)\"...\n");
+
+        mutable vars = HashTable();
+        def cb = findCallback("/" + request.RawPath, out vars);
+
+        if(cb != null) {
+            // make up a new Request with 'Vars' HashTable added...
+            cb(Request(request, vars), response);
+
+        } else if(exists) {
+            serveFile(path, extensionToMimeType(request.Extension), response);
+
+        } else {
+            callback(request, response);
+        }
+        response.complete();
+    }
+
+    static listenerCallback(result: IAsyncResult): void {
+        def server = result.AsyncState :> Server;
+        def context = server.Listener.EndGetContext(result);
+
+        server.handleCallback(context);
     }
 }
 

@@ -21,7 +21,7 @@ class MyServer: Server {
         base(config);
     }
 
-    public doMagic(vars: HashTable, request: Request, response: Response): void {
+    public doMagic(request: Request, response: Response): void {
         response.append(
             "<html><body>",
             "<h1>httplib \"Magic\" Response</h1>",
@@ -40,7 +40,7 @@ class MyServer: Server {
 
         response.append("</ol></p><p>Vars:<ol>");
 
-        vars.forEach((k, v) => {
+        request.Vars.forEach((k, v) => {
             response.append($"<li>$k = $v</li>");
         });
 
@@ -100,11 +100,11 @@ module Test {
 
         using(mutable my_server = MyServer(serverConfig)) {
 
-            my_server.route("/a/{b}/{c}", (vars, req, res) => {
-
-                print("match \"/a/{b}/{c}\"...\n");
-                my_server.doMagic(vars, req, res);
+            my_server.route("/a/{{b}}/{{c}}", (req, res) => {
+                my_server.doMagic(req, res);
             });
+
+            my_server.route("/order/{{number:[0-9]+}}", my_server.doMagic);
 
             while(running) {
                 my_server.update();
