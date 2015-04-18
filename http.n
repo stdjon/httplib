@@ -4,12 +4,15 @@ using System.Threading;
 using Nemerle.IO;
 using Nemerle.Utility;
 
+using Nustache.Core;
+
 using httplib;
 
 
 [Record]
 class MyServerConfiguration: ServerConfiguration {
 }
+
 
 class MyServer: Server {
 
@@ -22,6 +25,42 @@ class MyServer: Server {
     }
 
     public doMagic(request: Request, response: Response): void {
+        def nustache_template: string = "<html><body>"
+            "<h1>httplib \"Magic\" Response</h1>"
+            "<p>RawPath: {{RawPath}}</p>"
+            "<p>QueryString:<ol>{{#QueryString}}<li>{{.}}</li>{{/QueryString}}</ol></p>"
+            "<p>Path:<ol>{{#Path}}<li>{{.}}</li>{{/Path}}</ol></p>"
+            "<p>Vars:<ol>{{#Vars}}<li>{{.}}</li>{{/Vars}}</ol></p>"
+            "</body></html>";
+
+        def nustache_table: System.Collections.Generic.Dictionary[string, object] = 
+            System.Collections.Generic.Dictionary();
+        nustache_table.Add("RawPath", request.RawPath);
+        nustache_table.Add("Path", request.Path.toSystemType());
+        mutable vars: array[string] = array(0);
+        mutable qs: array[string] = array(0);
+        mutable i = 0;
+        request.Vars.forEach((k, vv) => {
+            System.Array.Resize(ref vars, i + 1);
+            vars[i] = ($"$k = $vv").ToString();
+            i++;
+        });
+
+        nustache_table.Add("Vars", vars);
+        i = 0;
+        request.QueryString.forEach((k, vv) => {
+            System.Array.Resize(ref qs, i + 1);
+            qs[i] = ($"$k = $vv").ToString();
+            i++;
+        });
+
+        nustache_table.Add("QueryString", qs);
+
+        def nustache_output =
+            Render.StringToString(nustache_template, nustache_table);
+
+        response.append(nustache_output);
+    /*
         response.append(
             "<html><body>",
             "<h1>httplib \"Magic\" Response</h1>",
@@ -45,6 +84,7 @@ class MyServer: Server {
         });
 
         response.append("</ol></p></body></html>");
+    */
     }
 
     defaultResponse(request: Request, response: Response): void {
@@ -88,6 +128,7 @@ class MyServer: Server {
 module Test {
 
     Main(_args: array[string]): void {
+
         mutable running = true;
         def serverConfig = MyServerConfiguration(
                 array["http://localhost:8080/"], // Prefixes
@@ -96,7 +137,6 @@ module Test {
                 1024 //FileChunkLength
             );
             print("ServerConfiguration: $serverConfig\n");
-
 
         using(mutable my_server = MyServer(serverConfig)) {
 
