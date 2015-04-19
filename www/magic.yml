@@ -1,0 +1,11 @@
+Content: >
+  <html><body>
+  <h1>httplib "Magic" Response</h1>
+  <p>RawPath: {{RawPath}}</p>
+  <p>QueryString:<ol>{{#QueryString}}<li>{{.}}</li>{{/QueryString}}</ol></p>
+  <p>Path:<ol>{{#Path}}<li>{{.}}</li>{{/Path}}</ol></p>
+  <p>Vars:<ol>{{#Vars}}<li>{{.}}</li>{{/Vars}}</ol></p>
+  </body></html>
+Partials:
+Objects:
+

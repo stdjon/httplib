@@ -1,18 +1,72 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 
+using Nemerle.Extensions;
 using Nemerle.IO;
 using Nemerle.Utility;
 
 using Nustache.Core;
 
+using YamlDotNet.Serialization;
+
 using httplib;
 
+
+//------------------------------------------------------------------------------
+// Page
+
+[Record]
+public class Page {
+
+    public Path: string { get; set; }
+    public Content: string { get; set; }
+    public Partials: Dictionary[string, string] { get; set; }
+    public Objects: Dictionary[string, object] { get; set; }
+
+    public this() {}
+
+    public static load(path: string): Page {
+        def deserializer = Deserializer();
+        mutable result = deserializer.Deserialize.[Page](StreamReader(path));
+        result.Path = path;
+        result;
+    }
+
+    public render(data: Dictionary[string, object] = null): string {
+        def objects =
+            if(data != null) {
+                data
+            } else {
+                Objects
+            };
+
+        Render.StringToString(Content, objects, templateLocator);
+    }
+
+    public templateLocator(template: string): Template {
+        mutable result: Template = null;
+        when(Partials.ContainsKey(template)) {
+            result = Template(template);
+            using(def reader = StringReader(Partials[template])) {
+                result.Load(reader);
+            }
+        }
+        result;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// MyServerConfiguration
 
 [Record]
 class MyServerConfiguration: ServerConfiguration {
 }
 
+
+//------------------------------------------------------------------------------
+// MyServer
 
 class MyServer: Server {
 
@@ -25,16 +79,9 @@ class MyServer: Server {
     }
 
     public doMagic(request: Request, response: Response): void {
-        def nustache_template: string = "<html><body>"
-            "<h1>httplib \"Magic\" Response</h1>"
-            "<p>RawPath: {{RawPath}}</p>"
-            "<p>QueryString:<ol>{{#QueryString}}<li>{{.}}</li>{{/QueryString}}</ol></p>"
-            "<p>Path:<ol>{{#Path}}<li>{{.}}</li>{{/Path}}</ol></p>"
-            "<p>Vars:<ol>{{#Vars}}<li>{{.}}</li>{{/Vars}}</ol></p>"
-            "</body></html>";
 
-        def nustache_table: System.Collections.Generic.Dictionary[string, object] = 
-            System.Collections.Generic.Dictionary();
+        def nustache_table: Dictionary[string, object] = Dictionary();
+
         nustache_table.Add("RawPath", request.RawPath);
         nustache_table.Add("Path", request.Path.toSystemType());
         mutable vars: array[string] = array(0);
@@ -45,46 +92,20 @@ class MyServer: Server {
             vars[i] = ($"$k = $vv").ToString();
             i++;
         });
-
         nustache_table.Add("Vars", vars);
+
         i = 0;
         request.QueryString.forEach((k, vv) => {
             System.Array.Resize(ref qs, i + 1);
             qs[i] = ($"$k = $vv").ToString();
             i++;
         });
-
         nustache_table.Add("QueryString", qs);
 
-        def nustache_output =
-            Render.StringToString(nustache_template, nustache_table);
+        def page = Page.load("www/magic.yml");
+        def nustache_output = page.render(nustache_table);
 
         response.append(nustache_output);
-    /*
-        response.append(
-            "<html><body>",
-            "<h1>httplib \"Magic\" Response</h1>",
-            $"<p>RawPath: $(request.RawPath)</p>",
-            "<p>QueryString:<ol>");
-
-        request.QueryString.forEach((k, v) => {
-            response.append($"<li>$k = $v</li>");
-        });
-
-        response.append("</ol></p><p>Path:<ol>");
-
-        request.Path.forEach(p => {
-            response.append($"<li>$p</li>");
-        });
-
-        response.append("</ol></p><p>Vars:<ol>");
-
-        request.Vars.forEach((k, v) => {
-            response.append($"<li>$k = $v</li>");
-        });
-
-        response.append("</ol></p></body></html>");
-    */
     }
 
     defaultResponse(request: Request, response: Response): void {
@@ -126,17 +147,28 @@ class MyServer: Server {
 
 
 module Test {
-
     Main(_args: array[string]): void {
+
+// TEST
+        def test1 = Page.load("www/test1.yml");
+
+        mutable _str = test1.render();
+        print("output: = $_str\n");
+
+        _str = test1.render(Dictionary() <- [
+            "name" = "Bob"
+        ]);
+        print("output: = $_str\n");
+// /TEST
 
         mutable running = true;
         def serverConfig = MyServerConfiguration(
-                array["http://localhost:8080/"], // Prefixes
-                800, //OutputLength
-                Directory.GetCurrentDirectory(), //Root
-                1024 //FileChunkLength
-            );
-            print("ServerConfiguration: $serverConfig\n");
+            array["http://localhost:8080/"], // Prefixes
+            800, //OutputLength
+            Directory.GetCurrentDirectory(), //Root
+            1024 //FileChunkLength
+        );
+        print("ServerConfiguration: $serverConfig\n");
 
         using(mutable my_server = MyServer(serverConfig)) {
 

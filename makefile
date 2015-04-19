@@ -15,7 +15,7 @@ http.exe: http.n server.dll
 	$(NCC) -no-color  $< -o $@ \
 		-r server.dll \
 		-r contrib/server/Nustache-1.14.0.4/Nustache.Core.dll \
-		-r contrib/server/Nustache-1.14.0.4/Nustache.Compilation.dll \
+		-r contrib/server/yamldotnet-3.5.1.85/Release-Signed/YamlDotNet.dll \
 		#
 
 %.dll: %.n
