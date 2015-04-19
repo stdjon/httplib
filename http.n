@@ -4,57 +4,8 @@ using System.Threading;
 
 using Nemerle.Extensions;
 using Nemerle.IO;
-using Nemerle.Utility;
-
-using Nustache.Core;
-
-using YamlDotNet.Serialization;
 
 using httplib;
-
-
-//------------------------------------------------------------------------------
-// Page
-
-[Record]
-public class Page {
-
-    public Path: string { get; set; }
-    public Content: string { get; set; }
-    public Partials: Dictionary[string, string] { get; set; }
-    public Objects: Dictionary[string, object] { get; set; }
-
-    public this() {}
-
-    public static load(path: string): Page {
-        def deserializer = Deserializer();
-        mutable result = deserializer.Deserialize.[Page](StreamReader(path));
-        result.Path = path;
-        result;
-    }
-
-    public render(data: Dictionary[string, object] = null): string {
-        def objects =
-            if(data != null) {
-                data
-            } else {
-                Objects
-            };
-
-        Render.StringToString(Content, objects, templateLocator);
-    }
-
-    public templateLocator(template: string): Template {
-        mutable result: Template = null;
-        when(Partials.ContainsKey(template)) {
-            result = Template(template);
-            using(def reader = StringReader(Partials[template])) {
-                result.Load(reader);
-            }
-        }
-        result;
-    }
-}
 
 
 //------------------------------------------------------------------------------
