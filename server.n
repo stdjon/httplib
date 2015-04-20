@@ -92,7 +92,9 @@ public class Request {
     [Accessor] path: Array;
     [Accessor] raw_path: string;
     [Accessor] extension: string;
-    [Accessor] vars: HashTable;
+    // TODO: is it possible to refactor these setters/mutables away?
+    [Accessor(flags = WantSetter)] mutable vars: HashTable;
+    [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
 
     public this(req: HttpListenerRequest) {
 
@@ -105,18 +107,7 @@ public class Request {
         raw_path = makeRawPath(Path);
         extension = makeExtension(Path);
         vars = HashTable();
-    }
-
-    public this(other: Request, v: HashTable) {
-        http_method = other.http_method;
-        url = other.url;
-        raw_url = other.raw_url;
-        query_string = other.query_string;
-        headers = other.headers;
-        path = other.path;
-        raw_path = other.raw_path;
-        extension = other.extension;
-        vars = v;
+        file_stream = null;
     }
 
     /** convert a RawUrl -> path component Array
@@ -249,7 +240,6 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
     [Accessor(flags = WantSetter)] mutable output_length: int;
     [Accessor(flags = WantSetter)] mutable root: string;
-    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
 }
 
 
@@ -387,33 +377,6 @@ public abstract class Server: IDisposable {
             AsyncCallback(listenerCallback), this);
     }
 
-    static extensionToMimeType(ext: string): string {
-        match(ext) {
-            | "js" => "application/javascript"
-            | "json" => "application/json"
-            | "html" => "text/html"
-            | "css" => "text/css"
-            | "ttf" => "application/x-font-ttf"
-            | "woff" => "application/x-font-woff"
-            | "woff2" => "application/octet-stream"
-            | _ => "text/plain"
-        }
-    }
-
-    serveFile(path: string, contentType: string, response: Response): void {
-
-        using(def reader = BinaryReader(File.Open(path, FileMode.Open))) {
-            mutable continue = true;
-
-            while(continue) {
-                def data = reader.ReadBytes(Configuration.FileChunkLength);
-                response.appendBytes(data);
-                continue = (data.Length == Configuration.FileChunkLength);
-            }
-            response.ContentType = contentType;
-        }
-    }
-
     findCallback(path: string, vars_out: out HashTable): Callback {
         mutable result;
         exit: {
@@ -438,11 +401,16 @@ public abstract class Server: IDisposable {
     protected abstract callback(request: Request, response: Response): void;
 
     handleCallback(context: HttpListenerContext): void {
-        def request = Request(context.Request);
+        mutable request = Request(context.Request);
         mutable response = Response(context.Response, Configuration.OutputLength);
 
         def path = Path.Combine(Configuration.Root, request.RawPath);
         def exists = File.Exists(path);
+
+        when(exists) {
+            def file_stream = FileStream(path, FileMode.Open);
+            request.FileStream = file_stream;
+        }
 
         print("Requesting: \"$(request.RawPath)\"...\n");
 
@@ -450,12 +418,8 @@ public abstract class Server: IDisposable {
         def cb = findCallback("/" + request.RawPath, out vars);
 
         if(cb != null) {
-            // make up a new Request with 'Vars' HashTable added...
-            cb(Request(request, vars), response);
-
-        } else if(exists) {
-            serveFile(path, extensionToMimeType(request.Extension), response);
-
+            request.Vars = vars;
+            cb(request, response);
         } else {
             callback(request, response);
         }

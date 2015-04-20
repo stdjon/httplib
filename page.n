@@ -9,7 +9,6 @@ using YamlDotNet.Serialization;
 
 namespace httplib {
 
-
 //------------------------------------------------------------------------------
 // Page
 
@@ -43,6 +42,7 @@ public class Page {
 
     public templateLocator(template: string): Template {
         mutable result: Template = null;
+
         when(Partials.ContainsKey(template)) {
             result = Template(template);
             using(def reader = StringReader(Partials[template])) {

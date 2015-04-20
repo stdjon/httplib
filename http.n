@@ -4,6 +4,7 @@ using System.Threading;
 
 using Nemerle.Extensions;
 using Nemerle.IO;
+using Nemerle.Utility;
 
 using httplib;
 
@@ -13,6 +14,7 @@ using httplib;
 
 [Record]
 class MyServerConfiguration: ServerConfiguration {
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
 }
 
 
@@ -38,17 +40,17 @@ class MyServer: Server {
         mutable vars: array[string] = array(0);
         mutable qs: array[string] = array(0);
         mutable i = 0;
-        request.Vars.forEach((k, vv) => {
+        request.Vars.forEach((k, v) => {
             System.Array.Resize(ref vars, i + 1);
-            vars[i] = ($"$k = $vv").ToString();
+            vars[i] = ($"$k = $v").ToString();
             i++;
         });
         nustache_table.Add("Vars", vars);
 
         i = 0;
-        request.QueryString.forEach((k, vv) => {
+        request.QueryString.forEach((k, v) => {
             System.Array.Resize(ref qs, i + 1);
-            qs[i] = ($"$k = $vv").ToString();
+            qs[i] = ($"$k = $v").ToString();
             i++;
         });
         nustache_table.Add("QueryString", qs);
@@ -92,25 +94,39 @@ class MyServer: Server {
 
     protected override callback(request: Request, response: Response): void {
 
-        defaultResponse(request, response);
+        if(request.FileStream != null) {
+            using(def reader = BinaryReader(request.FileStream)) {
+                mutable continue = true;
+
+                while(continue) {
+                    def data = reader.ReadBytes(Configuration.FileChunkLength);
+                    response.appendBytes(data);
+                    continue = (data.Length == Configuration.FileChunkLength);
+                }
+            }
+            response.ContentType = extensionToMimeType(request.Extension);
+        } else {
+            defaultResponse(request, response);
+        }
+    }
+
+    static protected extensionToMimeType(ext: string): string {
+        match(ext) {
+            | "js" => "application/javascript"
+            | "json" => "application/json"
+            | "html" => "text/html"
+            | "css" => "text/css"
+            | "ttf" => "application/x-font-ttf"
+            | "woff" => "application/x-font-woff"
+            | "woff2" => "application/octet-stream"
+            | _ => "text/plain"
+        }
     }
 }
 
 
 module Test {
     Main(_args: array[string]): void {
-
-// TEST
-        def test1 = Page.load("www/test1.yml");
-
-        mutable _str = test1.render();
-        print("output: = $_str\n");
-
-        _str = test1.render(Dictionary() <- [
-            "name" = "Bob"
-        ]);
-        print("output: = $_str\n");
-// /TEST
 
         mutable running = true;
         def serverConfig = MyServerConfiguration(
