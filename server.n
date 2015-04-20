@@ -17,9 +17,11 @@ namespace httplib {
 
 public class Array {
 
-    arr: array[string];
+    type SystemType = array[string];
 
-    public this(data: array[string]) {
+    arr: SystemType;
+
+    public this(data: SystemType) {
         arr = data;
     }
 
@@ -37,7 +39,7 @@ public class Array {
         }
     }
 
-    public toSystemType(): array[string] {
+    public toSystemType(): SystemType {
         arr;
     }
 }
@@ -48,13 +50,15 @@ public class Array {
 
 public class HashTable {
 
-    nvc: NameValueCollection;
+    type SystemType = NameValueCollection;
+
+    nvc: SystemType;
 
     public this() {
-        nvc = NameValueCollection();
+        nvc = SystemType();
     }
 
-    public this(data: NameValueCollection) {
+    public this(data: SystemType) {
         nvc = data;
     }
 
@@ -73,7 +77,7 @@ public class HashTable {
         }
     }
 
-    public toSystemType(): NameValueCollection {
+    public toSystemType(): SystemType {
         nvc;
     }
 }

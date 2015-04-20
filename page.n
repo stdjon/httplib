@@ -15,10 +15,13 @@ namespace httplib {
 [Record]
 public class Page {
 
+    type PartialsType = Dictionary[string, string];
+    type ObjectsType = Dictionary[string, object];
+
     public Path: string { get; set; }
     public Content: string { get; set; }
-    public Partials: Dictionary[string, string] { get; set; }
-    public Objects: Dictionary[string, object] { get; set; }
+    public Partials: PartialsType { get; set; }
+    public Objects: ObjectsType { get; set; }
 
     public this() {}
 
@@ -29,26 +32,33 @@ public class Page {
         result;
     }
 
-    public render(data: Dictionary[string, object] = null): string {
-        def objects =
-            if(data != null) {
-                data
-            } else {
-                Objects
-            };
+    public render(data: ObjectsType = null, parts: PartialsType = null): string {
+        def objects = data ?? Objects;
 
-        Render.StringToString(Content, objects, templateLocator);
+        Render.StringToString(Content, objects, templateLocator(_, parts));
     }
 
-    public templateLocator(template: string): Template {
+    templateLocator(template: string, parts: PartialsType = null): Template {
         mutable result: Template = null;
+        mutable partial_to_use: string = null;
 
         when(Partials.ContainsKey(template)) {
+            partial_to_use = Partials[template];
+        }
+
+        when( parts != null &&
+            parts.ContainsKey(template) ) {
+
+            partial_to_use = parts[template];
+        }
+
+        when(partial_to_use != null) {
             result = Template(template);
-            using(def reader = StringReader(Partials[template])) {
+            using(def reader = StringReader(partial_to_use)) {
                 result.Load(reader);
             }
         }
+
         result;
     }
 }

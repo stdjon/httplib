@@ -23,6 +23,8 @@ class MyServerConfiguration: ServerConfiguration {
 
 class MyServer: Server {
 
+    type NustacheObject = Dictionary[string, object];
+
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
     }
@@ -33,10 +35,11 @@ class MyServer: Server {
 
     public doMagic(request: Request, response: Response): void {
 
-        def nustache_table: Dictionary[string, object] = Dictionary();
+        def nustache_table = NustacheObject() <- [
+            "RawPath" = request.RawPath,
+            "Path" = request.Path.toSystemType(),
+        ];
 
-        nustache_table.Add("RawPath", request.RawPath);
-        nustache_table.Add("Path", request.Path.toSystemType());
         mutable vars: array[string] = array(0);
         mutable qs: array[string] = array(0);
         mutable i = 0;
@@ -92,19 +95,24 @@ class MyServer: Server {
         response.append("</ol></p></body></html>");
     }
 
+    serveFileResponse(request: Request, response: Response): void {
+
+        using(def reader = BinaryReader(request.FileStream)) {
+            mutable continue = true;
+
+            while(continue) {
+                def data = reader.ReadBytes(Configuration.FileChunkLength);
+                response.appendBytes(data);
+                continue = (data.Length == Configuration.FileChunkLength);
+            }
+        }
+        response.ContentType = extensionToMimeType(request.Extension);
+    }
+
     protected override callback(request: Request, response: Response): void {
 
         if(request.FileStream != null) {
-            using(def reader = BinaryReader(request.FileStream)) {
-                mutable continue = true;
-
-                while(continue) {
-                    def data = reader.ReadBytes(Configuration.FileChunkLength);
-                    response.appendBytes(data);
-                    continue = (data.Length == Configuration.FileChunkLength);
-                }
-            }
-            response.ContentType = extensionToMimeType(request.Extension);
+            serveFileResponse(request, response);
         } else {
             defaultResponse(request, response);
         }
