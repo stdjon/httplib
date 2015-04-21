@@ -439,8 +439,8 @@ public abstract class Server: IDisposable {
     handleCallback(context: HttpListenerContext): void {
         mutable request, response;
         try {
-                request = Request(context.Request);
-                response = Response(context.Response, Configuration.OutputLength);
+            request = Request(context.Request);
+            response = Response(context.Response, Configuration.OutputLength);
 
             def path = Path.Combine(Configuration.Root, request.RawPath);
             def exists = File.Exists(path);
