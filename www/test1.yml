@@ -3,6 +3,16 @@ Content: >
   <body><h1>Test Page</h1>
   <p>Test page test page... {{name}}</p>
   <p>{{>frag1}}</p>
+  <!-- ghetto form for POST testing... -->
+  <form action='/form_posted' method='POST'>
+  Name: <input type='text' name='myname' value='ok'>
+  <br>
+  <input type='radio' name='sex' value='male' checked>Male
+  <br>
+  <input type='radio' name='sex' value='female'>Female
+  <br>
+  <input type='submit' value='Submit'>
+  </form>
   </body></html>
 Partials:
   frag1: This is a test.

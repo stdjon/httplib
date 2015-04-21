@@ -13,6 +13,25 @@ using Nemerle.Utility;
 namespace httplib {
 
 //------------------------------------------------------------------------------
+// HTTP (method)
+
+// Defined in order used in http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+public enum HTTP {
+    | INVALID_
+
+    | OPTIONS
+    | GET
+    | HEAD
+    | POST
+    | PUT
+    | DELETE
+    | TRACE
+    | CONNECT
+
+    | COUNT_
+}
+
+//------------------------------------------------------------------------------
 // Array
 
 public class Array {
@@ -115,8 +134,7 @@ public class Request {
     }
 
     /** convert a RawUrl -> path component Array
-     *  "/a/b//c" -> [ "a", "b", "c" ]
-     */
+     *  "/a/b//c" -> [ "a", "b", "c" ] */
     makePathArray(rawUrl: string): Array {
 
         def path_only = rawUrl.Split(array['?'], StringSplitOptions.None);
@@ -319,6 +337,9 @@ public abstract class Server: IDisposable {
 
     public type Callback = Request * Response -> void;
 
+    type Method = HTTP;
+    public static MethodCount = HTTP.COUNT_ :> int;
+
     [System.Flags]
     public enum State {
         | Neutral = 0x00
@@ -337,8 +358,10 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
 
-    [Accessor(flags = Protected)]
-    routes: Dictionary[string, Route * Callback] = Dictionary();
+    public Routes[i: Method]: Dictionary[string, Route * Callback] {
+        get { routes[i :> int] }
+    }
+    routes: array[Dictionary[string, Route * Callback]] = array(MethodCount);
 
     public this(config: ServerConfiguration) {
         configuration = config;
@@ -347,6 +370,16 @@ public abstract class Server: IDisposable {
             print("Adding \"$p\"...\n");
             Listener.Prefixes.Add(p);
         }
+        for(mutable i = 0; i < MethodCount; i++) {
+            routes[i] = Dictionary();
+        }
+
+        // install default handlers for several methods...
+        route(HTTP.INVALID_, ".*", internalServerErrorResponse);
+        route(HTTP.OPTIONS, ".*", methodNotAllowedResponse);
+        route(HTTP.TRACE, ".*", methodNotAllowedResponse);
+        route(HTTP.CONNECT, ".*", methodNotAllowedResponse);
+
         Listener.Start();
     }
 
@@ -368,11 +401,11 @@ public abstract class Server: IDisposable {
     }
 
     // route("/a/b/c", r => { })
-    public route(path: string, fn: Callback): void {
+    public route(method: Method, path: string, fn: Callback): void {
         def r = Route(path);
         def s = r.Pattern;
         print("route: '$(path)' added $(fn)\n");
-        Routes.Add(s, (r, fn));
+        Routes[method].Add(s, (r, fn));
     }
 
     public update(): void {
@@ -381,14 +414,13 @@ public abstract class Server: IDisposable {
             AsyncCallback(listenerCallback), this);
     }
 
-    findCallback(path: string, vars_out: out HashTable): Callback {
+    findCallback(method_name: string, path: string, vars_out: ref HashTable): Callback {
         mutable result;
         exit: {
-            foreach(r in Routes) {
-                mutable route, fn, ok, vars;
-
-                (route, fn) = r.Value;
-                (ok, vars) = route.doMatch(path);
+            def method = methodType(method_name);
+            foreach(r in Routes[method]) {
+                def (route, fn) = r.Value;
+                def (ok, vars) = route.doMatch(path);
 
                 when(ok) {
                     print("'$(path)' matches '$(route.Pattern)'...\n");
@@ -405,29 +437,41 @@ public abstract class Server: IDisposable {
     protected abstract callback(request: Request, response: Response): void;
 
     handleCallback(context: HttpListenerContext): void {
-        mutable request = Request(context.Request);
-        mutable response = Response(context.Response, Configuration.OutputLength);
+        mutable request, response;
+        try {
+                request = Request(context.Request);
+                response = Response(context.Response, Configuration.OutputLength);
 
-        def path = Path.Combine(Configuration.Root, request.RawPath);
-        def exists = File.Exists(path);
+            def path = Path.Combine(Configuration.Root, request.RawPath);
+            def exists = File.Exists(path);
 
-        when(exists) {
-            def file_stream = FileStream(path, FileMode.Open);
-            request.FileStream = file_stream;
+            when(exists) {
+                def file_stream = FileStream(path, FileMode.Open);
+                request.FileStream = file_stream;
+            }
+
+            print("Requesting: \"$(request.RawPath)\"...\n");
+
+            // find callback (and populate vars from route vars if any)
+            mutable vars = HashTable();
+            def cb = findCallback(request.HttpMethod, "/" + request.RawPath, ref vars);
+
+            // populate vars from body of POST...
+            when(HTTP.POST == methodType(request.HttpMethod)) {
+                processInputStream(context.Request, ref vars);
+            }
+
+            if(cb != null) {
+                request.Vars = vars;
+                cb(request, response);
+            } else {
+                callback(request, response);
+            }
+        } catch {
+            | _ => internalServerErrorResponse(request, response);
+        } finally {
+            response.complete();
         }
-
-        print("Requesting: \"$(request.RawPath)\"...\n");
-
-        mutable vars = HashTable();
-        def cb = findCallback("/" + request.RawPath, out vars);
-
-        if(cb != null) {
-            request.Vars = vars;
-            cb(request, response);
-        } else {
-            callback(request, response);
-        }
-        response.complete();
     }
 
     static listenerCallback(result: IAsyncResult): void {
@@ -435,6 +479,56 @@ public abstract class Server: IDisposable {
         def context = server.Listener.EndGetContext(result);
 
         server.handleCallback(context);
+    }
+
+    processInputStream(request: HttpListenerRequest, vars_out: ref HashTable): void {
+
+        when(request.InputStream != null) {
+            using(mutable reader = StreamReader(
+                request.InputStream, request.ContentEncoding)) {
+
+                def str = reader.ReadToEnd();
+
+                def each_var = str.Split(array['&'], StringSplitOptions.None);
+
+                when(each_var.Length > 0) {
+
+                    foreach(v in each_var) {
+                        def s = v.Split(array['='], StringSplitOptions.None);
+
+                        when(s.Length > 1) {
+                            vars_out[s[0].ToString()] = s[1].ToString();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static methodType(name: string): Method {
+        match(name.ToUpper()) {
+            | "OPTIONS" => HTTP.OPTIONS
+            | "GET" => HTTP.GET
+            | "HEAD" => HTTP.HEAD
+            | "POST" => HTTP.POST
+            | "PUT" => HTTP.PUT
+            | "DELETE" => HTTP.DELETE
+            | "TRACE" => HTTP.TRACE
+            | "CONNECT" => HTTP.CONNECT
+            | _ => HTTP.INVALID_
+        }
+    }
+
+    // stock request handlers...
+
+    internalServerErrorResponse(_req: Request, res: Response): void {
+        res.StatusCode = 500;
+        res.StatusDescription = "Internal Server Error"
+    }
+
+    methodNotAllowedResponse(_req: Request, res: Response): void {
+        res.StatusCode = 405;
+        res.StatusDescription = "Method Not Allowed"
     }
 }
 

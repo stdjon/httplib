@@ -33,7 +33,7 @@ class MyServer: Server {
         base(config);
     }
 
-    public doMagic(request: Request, response: Response): void {
+    public doMagic(request: Request, response: Response, template: string): void {
 
         def nustache_table = NustacheObject() <- [
             "RawPath" = request.RawPath,
@@ -58,7 +58,7 @@ class MyServer: Server {
         });
         nustache_table.Add("QueryString", qs);
 
-        def page = Page.load("www/magic.yml");
+        def page = Page.load(template);
         def nustache_output = page.render(nustache_table);
 
         response.append(nustache_output);
@@ -147,11 +147,18 @@ module Test {
 
         using(mutable my_server = MyServer(serverConfig)) {
 
-            my_server.route("/a/{{b}}/{{c}}", (req, res) => {
-                my_server.doMagic(req, res);
+            my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (req, res) => {
+                my_server.doMagic(req, res, "www/magic.yml");
             });
 
-            my_server.route("/order/{{number:[0-9]+}}", my_server.doMagic);
+            my_server.route(HTTP.GET, "/order/{{number:[0-9]+}}",
+                my_server.doMagic(_, _, "www/magic.yml"));
+
+            my_server.route(HTTP.GET, "/post/{{name}}",
+                my_server.doMagic(_, _, "www/test1.yml"));
+
+            my_server.route(HTTP.POST, "/form{{_check}}",
+                my_server.doMagic(_, _, "www/magic.yml"));
 
             while(running) {
                 my_server.update();
