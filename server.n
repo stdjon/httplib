@@ -32,6 +32,7 @@ public enum HTTP {
 }
 
 
+
 //------------------------------------------------------------------------------
 // Array
 
@@ -66,9 +67,23 @@ public class Array {
 
 
 //------------------------------------------------------------------------------
+// IAssociation
+// NB: we may want to vary on the association value type as well (for cookies).
+
+public interface IAssociation[T] {
+    public type SystemType = T;
+
+    Item[key: string]: string { get; }
+    Keys: array[string] { get; }
+    forEach(lambda: string * string -> void): void;
+    toSystemType(): T;
+}
+
+
+//------------------------------------------------------------------------------
 // HashTable
 
-public class HashTable {
+public class HashTable: IAssociation[NameValueCollection] {
 
     type SystemType = NameValueCollection;
 
@@ -104,6 +119,52 @@ public class HashTable {
 
 
 //------------------------------------------------------------------------------
+// CookieTable
+
+public class CookieTable: IAssociation[CookieCollection] {
+
+    type SystemType = CookieCollection;
+
+    cc: SystemType;
+
+    public this() {
+        cc = SystemType();
+    }
+
+    public this(data: SystemType) {
+        cc = data;
+    }
+
+    public Item[key: string]: string {
+        get { cc[key].Value.ToString(); }
+//        set { cc[key] = value; }
+    }
+
+    public Keys: array[string] {
+        get {
+            def k = cc.Count;
+            mutable result: array[string];
+            Array.Resize(ref result, k);
+            for(mutable i = 0; i < k; i++) {
+                result[i] = cc[i].Name;
+            }
+            result;
+        }
+    }
+
+    public forEach(lambda: string * string -> void): void {
+        foreach(k in Keys) {
+            lambda(k, Item[k]);
+        }
+    }
+
+    public toSystemType(): SystemType {
+        cc;
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // Request
 
 public class Request {
@@ -113,10 +174,12 @@ public class Request {
     [Accessor] raw_url: string;
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
+    [Accessor] cookies: CookieTable;
     [Accessor] path: Array;
     [Accessor] accept: Array;
     [Accessor] raw_path: string;
     [Accessor] extension: string;
+    [Accessor] user_agent: string;
     [Accessor] is_authenticated: bool;
     [Accessor] is_secure: bool;
     [Accessor] is_web_socket: bool;
@@ -132,10 +195,12 @@ public class Request {
         raw_url = req.RawUrl;
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
+        cookies = CookieTable(req.Cookies);
         path = makePathArray(RawUrl);
         accept = Array(req.AcceptTypes);
         raw_path = makeRawPath(Path);
         extension = makeExtension(Path);
+        user_agent = req.UserAgent;
         is_authenticated = req.IsAuthenticated;
         is_secure = req.IsSecureConnection;
         is_web_socket = req.IsWebSocketRequest;
@@ -231,6 +296,11 @@ public class Response {
         output = array(output_length);
     }
 
+    // interim API pending full cookie support...
+    public setCookie(name: string, value: string): void {
+        response.AppendCookie(Cookie(name, value, "/"));
+    }
+
     public append(params data: array[string]): void {
         appendArray(data);
     }
@@ -278,7 +348,6 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable output_length: int;
     [Accessor(flags = WantSetter)] mutable root: string;
 }
-
 
 
 //------------------------------------------------------------------------------
@@ -351,6 +420,7 @@ public class Route {
 public abstract class Server: IDisposable {
 
     public type Callback = Request * Response -> void;
+    type RouteMap = Dictionary[string, Route * Callback];
 
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
@@ -373,10 +443,10 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
 
-    public Routes[i: Method]: Dictionary[string, Route * Callback] {
+    public Routes[i: Method]: RouteMap {
         get { routes[i :> int] }
     }
-    routes: array[Dictionary[string, Route * Callback]] = array(MethodCount);
+    routes: array[RouteMap] = array(MethodCount);
 
     public this(config: ServerConfiguration) {
         configuration = config;

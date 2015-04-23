@@ -66,6 +66,8 @@ class MyServer: Server {
         def nustache_output = page.render(nustache_table);
 
         response.append(nustache_output);
+
+        response.setCookie("CookieTestName", "CookieTestValue");
     }
 
     defaultResponse(request: Request, response: Response): void {
@@ -78,6 +80,7 @@ class MyServer: Server {
             $"<p>HttpMethod: $(request.HttpMethod)</p>"
             $"<p>Extension: $(request.Extension)</p>",
             $"<p>RawPath: $(request.RawPath)</p>",
+            $"<p>UserAgent: $(request.UserAgent)</p>",
             $"<p>IsAuthenticated: $(request.IsAuthenticated)</p>",
             $"<p>IsSecure: $(request.IsSecure)</p>",
             $"<p>HttpVersion: $(request.HttpVersion)</p>",
@@ -103,6 +106,12 @@ class MyServer: Server {
 
         request.Accept.forEach(p => {
             response.append($"<li>$p</li>");
+        });
+
+        response.append("</ol></p><p>Cookies:<ol>");
+
+        request.Cookies.forEach((k, v) => {
+            response.append($"<li>$k = $v</li>");
         });
 
         response.append("</ol></p></body></html>");
