@@ -18,8 +18,9 @@ all: http.exe
 run: install_contrib all
 	./http.exe
 
-http.exe: http.n server.dll page.dll
-	$(NCC) -no-color  $< -o $@ \
+http.exe: http.n assembly_info.n server.dll page.dll
+	$(NCC) -no-color  $< assembly_info.n \
+		-o $@ \
 		$(contrib_refs) \
 		-r server.dll \
 		-r page.dll \

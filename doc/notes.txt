@@ -1,0 +1,62 @@
+HTTPS support:
+
+A self-signed certificate was created and registered for testing purposes (see
+cer/self-signed/self-signed.cer).
+
+
+Overview:
+http://stackoverflow.com/questions/11403333/httplistener-with-https-support
+
+Windows 8.1 SDK (for makecert.exe)
+sdksetup.exe - http://www.microsoft.com/click/services/Redirect2.ashx?CR_EAC=300135395
+
+    > set path=%path%;c:\program files\windows kits\8.1\bin\x86
+
+    > makecert -n "CN=self-signed-auth" -r -sv server-auth.pvk server-auth.cer
+    Succeeded
+
+[As Administrator]
+    > makecert -sk self-signed -iv server-auth.pvk -n "CN=self-signed" -ic server-auth.cer self-signed.cer -sr localmachine -ss My
+    Succeeded
+
+
+[As Administrator]
+    > netsh http add sslcert ipport=0.0.0.0:8443 certhash=df52b2cb0a33207c95118f84b8f7b4a3bc8dc9c3 appid={769F2E76-AE87-4825-8157-C82CBF769DDD}
+
+    SSL Certificate successfully added
+
+To verify [as Administrator]:
+    > netsh http show sslcert ipport=0.0.0.0:8443
+
+    SSL Certificate bindings:
+    -------------------------
+
+        IP:port                      : 0.0.0.0:8443
+        Certificate Hash             : df52b2cb0a33207c95118f84b8f7b4a3bc8dc9c3
+        Application ID               : {769f2e76-ae87-4825-8157-c82cbf769ddd}
+        Certificate Store Name       : (null)
+        Verify Client Certificate Revocation : Enabled
+        Verify Revocation Using Cached Client Certificate Only : Disabled
+        Usage Check                  : Enabled
+        Revocation Freshness Time    : 0
+        URL Retrieval Timeout        : 0
+        Ctl Identifier               : (null)
+        Ctl Store Name               : (null)
+        DS Mapper Usage              : Disabled
+        Negotiate Client Certificate : Disabled
+
+To uninstall the cert again [as Administrator]:
+    > netsh http delete sslcert ipport=0.0.0.0:8443
+
+    SSL Certificate successfully deleted
+
+
+Authentication:
+
+    PBKDF2 Key Derivation ('hash stretching'):
+    System.Security.Cryptography.Rfc2898DeriveBytes 
+
+    Salt password data - 32bytes or more:
+    System.Security.Cryptography.RNGCryptoServiceProvider 
+
+

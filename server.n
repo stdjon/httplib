@@ -31,6 +31,7 @@ public enum HTTP {
     | COUNT_
 }
 
+
 //------------------------------------------------------------------------------
 // Array
 
@@ -113,8 +114,13 @@ public class Request {
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
     [Accessor] path: Array;
+    [Accessor] accept: Array;
     [Accessor] raw_path: string;
     [Accessor] extension: string;
+    [Accessor] is_authenticated: bool;
+    [Accessor] is_secure: bool;
+    [Accessor] is_web_socket: bool;
+    [Accessor] http_version: int;
     // TODO: is it possible to refactor these setters/mutables away?
     [Accessor(flags = WantSetter)] mutable vars: HashTable;
     [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
@@ -127,8 +133,13 @@ public class Request {
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
         path = makePathArray(RawUrl);
+        accept = Array(req.AcceptTypes);
         raw_path = makeRawPath(Path);
         extension = makeExtension(Path);
+        is_authenticated = req.IsAuthenticated;
+        is_secure = req.IsSecureConnection;
+        is_web_socket = req.IsWebSocketRequest;
+        http_version = makeHttpVersion(req.ProtocolVersion);
         vars = HashTable();
         file_stream = null;
     }
@@ -177,6 +188,10 @@ public class Request {
 
     makeRawPath(path: Array): string {
         String.Join("/", path.toSystemType());
+    }
+
+    makeHttpVersion(version: Version): int {
+        (version.Major) + 10 + (version.Minor);
     }
 }
 
@@ -404,7 +419,7 @@ public abstract class Server: IDisposable {
     public route(method: Method, path: string, fn: Callback): void {
         def r = Route(path);
         def s = r.Pattern;
-        print("route: '$(path)' added $(fn)\n");
+        print("route: $(methodName(method)) '$(path)' added $(fn)\n");
         Routes[method].Add(s, (r, fn));
     }
 
@@ -489,7 +504,7 @@ public abstract class Server: IDisposable {
 
                 def str = reader.ReadToEnd();
 
-                def each_var = str.Split(array['&'], StringSplitOptions.None);
+                def each_var = str.Split(array['&', ';'], StringSplitOptions.None);
 
                 when(each_var.Length > 0) {
 
@@ -516,6 +531,20 @@ public abstract class Server: IDisposable {
             | "TRACE" => HTTP.TRACE
             | "CONNECT" => HTTP.CONNECT
             | _ => HTTP.INVALID_
+        }
+    }
+
+    static methodName(mth: Method): string  {
+        match(mth) {
+            | HTTP.OPTIONS => "OPTIONS"
+            | HTTP.GET => "GET"
+            | HTTP.HEAD => "HEAD"
+            | HTTP.POST => "POST"
+            | HTTP.PUT => "PUT"
+            | HTTP.DELETE => "DELETE"
+            | HTTP.TRACE => "TRACE"
+            | HTTP.CONNECT => "CONNECT"
+            | _ => "?"
         }
     }
 

@@ -58,6 +58,10 @@ class MyServer: Server {
         });
         nustache_table.Add("QueryString", qs);
 
+        when(request.Vars["name"] != null) {
+            nustache_table.Add("name", request.Vars["name"]);
+        }
+
         def page = Page.load(template);
         def nustache_output = page.render(nustache_table);
 
@@ -74,6 +78,9 @@ class MyServer: Server {
             $"<p>HttpMethod: $(request.HttpMethod)</p>"
             $"<p>Extension: $(request.Extension)</p>",
             $"<p>RawPath: $(request.RawPath)</p>",
+            $"<p>IsAuthenticated: $(request.IsAuthenticated)</p>",
+            $"<p>IsSecure: $(request.IsSecure)</p>",
+            $"<p>HttpVersion: $(request.HttpVersion)</p>",
             "<p>Headers:<ol>");
 
         request.Headers.forEach((k, v) => {
@@ -89,6 +96,12 @@ class MyServer: Server {
         response.append("</ol></p><p>Path:<ol>");
 
         request.Path.forEach(p => {
+            response.append($"<li>$p</li>");
+        });
+
+        response.append("</ol></p><p>Accept:<ol>");
+
+        request.Accept.forEach(p => {
             response.append($"<li>$p</li>");
         });
 
@@ -138,7 +151,11 @@ module Test {
 
         mutable running = true;
         def serverConfig = MyServerConfiguration(
-            array["http://localhost:8080/"], // Prefixes
+            // Prefixes
+            array[
+                "http://localhost:8080/",
+                "https://localhost:8443/",
+            ],
             800, //OutputLength
             Directory.GetCurrentDirectory(), //Root
             1024 //FileChunkLength

@@ -1,11 +1,13 @@
 Content: >
   <html><head><title>Test Page</title></head>
   <body><h1>Test Page</h1>
-  <p>Test page test page... {{name}}</p>
+  <p>Test page test page...</p>
   <p>{{>frag1}}</p>
   <!-- ghetto form for POST testing... -->
   <form action='/form_posted' method='POST'>
-  Name: <input type='text' name='myname' value='ok'>
+  Name: <input type='text' name='myname' value='{{name}}'>
+  <br>
+  Password: <input type='password' name='mypass' value=''>
   <br>
   <input type='radio' name='sex' value='male' checked>Male
   <br>
