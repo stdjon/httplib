@@ -12,6 +12,7 @@ using Nemerle.Utility;
 
 namespace httplib {
 
+
 //------------------------------------------------------------------------------
 // HTTP (method)
 
@@ -31,6 +32,20 @@ public enum HTTP {
     | COUNT_
 }
 
+
+
+//------------------------------------------------------------------------------
+// IAssociation
+// NB: we may want to vary on the association value type as well (for cookies).
+
+public interface IAssociation[T] {
+    public type SystemType = T;
+
+    Item[key: string]: string { get; }
+    Keys: array[string] { get; }
+    forEach(lambda: string * string -> void): void;
+    toSystemType(): T;
+}
 
 
 //------------------------------------------------------------------------------
@@ -63,20 +78,6 @@ public class Array {
     public toSystemType(): SystemType {
         arr;
     }
-}
-
-
-//------------------------------------------------------------------------------
-// IAssociation
-// NB: we may want to vary on the association value type as well (for cookies).
-
-public interface IAssociation[T] {
-    public type SystemType = T;
-
-    Item[key: string]: string { get; }
-    Keys: array[string] { get; }
-    forEach(lambda: string * string -> void): void;
-    toSystemType(): T;
 }
 
 
@@ -126,9 +127,13 @@ public class CookieTable: IAssociation[CookieCollection] {
     type SystemType = CookieCollection;
 
     cc: SystemType;
+    // As long as Item[key].set is unimplemented (i.e. cc can't change), we can
+    // cache the cookie keys...
+    mutable keys: array[string];
 
     public this() {
         cc = SystemType();
+        keys = null;
     }
 
     public this(data: SystemType) {
@@ -141,15 +146,7 @@ public class CookieTable: IAssociation[CookieCollection] {
     }
 
     public Keys: array[string] {
-        get {
-            def k = cc.Count;
-            mutable result: array[string];
-            Array.Resize(ref result, k);
-            for(mutable i = 0; i < k; i++) {
-                result[i] = cc[i].Name;
-            }
-            result;
-        }
+        get { cachedKeys(); }
     }
 
     public forEach(lambda: string * string -> void): void {
@@ -160,6 +157,20 @@ public class CookieTable: IAssociation[CookieCollection] {
 
     public toSystemType(): SystemType {
         cc;
+    }
+
+    cachedKeys(): array[string] {
+        when(keys == null) {
+            def k = cc.Count;
+            mutable result: array[string];
+
+            Array.Resize(ref result, k);
+            for(mutable i = 0; i < k; i++) {
+                result[i] = cc[i].Name;
+            }
+            keys = result;
+        }
+        keys;
     }
 }
 
