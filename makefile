@@ -1,7 +1,18 @@
+ifneq ($(OS),Windows_NT)
+
+# Windows configuration
+NCC:=ncc
+launch_assembly=./$1
+
+else
+
+# Linux/Mono configuration:
 NCC_PATH:=/home/jon/devel/nemerle-1.2
 NCC:=mono $(NCC_PATH)/ncc.exe
 launch_assembly=export MONO_PATH=$(MONO_PATH) && mono $1
 MONO_PATH:=$(NCC_PATH)
+
+endif
 
 
 CONTRIB_LIBS:= \
