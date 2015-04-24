@@ -180,13 +180,15 @@ module Test {
 
         mutable running = true;
         def serverConfig = MyServerConfiguration(
-            // Prefixes
-            array[
+            array[ // Prefixes
                 "http://localhost:8080/",
                 "https://localhost:8443/",
             ],
             800, //OutputLength
-            Path.Combine(Directory.GetCurrentDirectory(), "."), //Root
+            array[ //Roots
+                "./www",
+                "./contrib/client"
+            ],
             array["yml"], //ImplicitExtensions
             1024, //FileChunkLength
         );
@@ -208,8 +210,6 @@ module Test {
                 my_server.doMagic(_, _, "www/magic.yml"));
 
             my_server.route(HTTP.GET, "/magic", (req, res) => {
-                print("here... $(req.FileStream.ToString())\n");
-                print("FS: $(req.FileStream.ToString())\n");
                 def page = Page.load(req.FileStream);
                 res.append(page.render());
                 res.Status = (200, "OK");

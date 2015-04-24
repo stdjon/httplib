@@ -374,8 +374,8 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
     /** Minimum length reserved for response body */
     [Accessor(flags = WantSetter)] mutable output_length: int;
-    /** Filesystem root for file serving */
-    [Accessor(flags = WantSetter)] mutable root: string;
+    /** Filesystem roots for file serving */
+    [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Extensions to try (in order) when no extension given in request URI */
     [Accessor(flags = WantSetter)] mutable implicit_extensions: array[string];
 }
@@ -480,6 +480,7 @@ public abstract class Server: IDisposable {
     routes: array[RouteMap] = array(MethodCount);
 
     public this(config: ServerConfiguration) {
+
         configuration = config;
 
         foreach(p in Configuration.Prefixes) {
@@ -498,7 +499,6 @@ public abstract class Server: IDisposable {
 
         Listener.AuthenticationSchemeSelectorDelegate = req => {
             def request = Request(req);
-            print("auth...\"$(request.RawPath)\"\n");
             handleAuthentication(request);
         };
 
@@ -571,14 +571,16 @@ public abstract class Server: IDisposable {
             request = Request(context.Request);
             response = Response(context.Response, Configuration.OutputLength);
 
+            print("Requesting: \"$(request.RawPath)\"...\n");
+
+            // check for existing file under roots...
             def (fs, ext) = findLocalFileForRequest(request);
             request.FileStream = fs;
+
             when(!String.IsNullOrEmpty(ext)) {
                 request.SearchedForFileStream = true;
                 request.Extension = ext;
             }
-
-            print("Requesting: \"$(request.RawPath)\"...\n");
 
             // find callback (and populate vars from route vars if any)
             mutable vars = HashTable();
@@ -616,11 +618,16 @@ public abstract class Server: IDisposable {
 
     openLocalFile(path: string): FileStream {
         mutable result = null;
-
-        when(File.Exists(path)) {
-            print("path exists: $(path)\n");
-            def file_stream = FileStream(path, FileMode.Open);
-            result = file_stream;
+        exit: {
+            foreach(root in Configuration.Roots) {
+                def p = Path.Combine(root, path);
+                when(File.Exists(p)) {
+                    print("path exists: $(path)\n");
+                    def file_stream = FileStream(p, FileMode.Open);
+                    result = file_stream;
+                    exit();
+                }
+            }
         }
         result;
     }
@@ -628,14 +635,12 @@ public abstract class Server: IDisposable {
     findLocalFileForRequest(request: Request): FileStream * string {
         mutable result = null, ext = null;
         if(!String.IsNullOrEmpty(request.Extension)) {
-            def path = Path.Combine(Configuration.Root, request.RawPath);
-            result = openLocalFile(path);
+            result = openLocalFile(request.RawPath);
 
         } else {
             exit: {
                 foreach(x in Configuration.ImplicitExtensions) {
-                    def path = Path.Combine(Configuration.Root, request.RawPath + "." + x);
-                    result = openLocalFile(path);
+                    result = openLocalFile(request.RawPath + "." + x);
                     when(result != null) {
                         ext = x;
                         exit();
@@ -683,7 +688,7 @@ public abstract class Server: IDisposable {
         }
     }
 
-    static methodName(mth: Method): string  {
+    static methodName(mth: Method): string {
         match(mth) {
             | HTTP.OPTIONS => "OPTIONS"
             | HTTP.GET => "GET"
