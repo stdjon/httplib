@@ -1,4 +1,4 @@
-ifneq ($(OS),Windows_NT)
+ifeq ($(OS),Windows_NT)
 
 # Windows configuration
 NCC:=ncc
