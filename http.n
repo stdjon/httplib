@@ -186,7 +186,7 @@ module Test {
                 "https://localhost:8443/",
             ],
             800, //OutputLength
-            Path.Combine(Directory.GetCurrentDirectory(), "www"), //Root
+            Path.Combine(Directory.GetCurrentDirectory(), "."), //Root
             array["yml"], //ImplicitExtensions
             1024, //FileChunkLength
         );
