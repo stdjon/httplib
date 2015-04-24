@@ -189,7 +189,6 @@ public class Request {
     [Accessor] path: Array;
     [Accessor] accept: Array;
     [Accessor] raw_path: string;
-    [Accessor] extension: string;
     [Accessor] user_agent: string;
     [Accessor] is_authenticated: bool;
     [Accessor] is_secure: bool;
@@ -198,6 +197,8 @@ public class Request {
     // TODO: is it possible to refactor these setters/mutables away?
     [Accessor(flags = WantSetter)] mutable vars: HashTable;
     [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
+    [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
+    [Accessor(flags = WantSetter)] mutable extension: string;
 
     public this(req: HttpListenerRequest) {
 
@@ -210,7 +211,6 @@ public class Request {
         path = makePathArray(RawUrl);
         accept = Array(req.AcceptTypes);
         raw_path = makeRawPath(Path);
-        extension = makeExtension(Path);
         user_agent = req.UserAgent;
         is_authenticated = req.IsAuthenticated;
         is_secure = req.IsSecureConnection;
@@ -218,6 +218,8 @@ public class Request {
         http_version = makeHttpVersion(req.ProtocolVersion);
         vars = HashTable();
         file_stream = null;
+        searched_for_file_stream = false;
+        extension = makeExtension(Path);
     }
 
     /** convert a RawUrl -> path component Array
@@ -269,6 +271,13 @@ public class Request {
     makeHttpVersion(version: Version): int {
         (version.Major) + 10 + (version.Minor);
     }
+
+    internal complete(): void {
+        def fs = FileStream;
+        when(fs != null) {
+            fs.Close();
+        }
+    }
 }
 
 
@@ -296,6 +305,12 @@ public class Response {
     public StatusDescription: string {
         get { response.StatusDescription }
         set { response.StatusDescription = value; }
+    }
+
+    // Convenience wrapper around (StatusCode, StatusDescription)
+    public Status: int * string {
+        get { (StatusCode, StatusDescription) }
+        set { (StatusCode, StatusDescription) = value; }
     }
 
     mutable response: HttpListenerResponse;
@@ -355,9 +370,14 @@ public class Response {
 [Record]
 public class ServerConfiguration {
 
+    /** Listener prefixes */
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
+    /** Minimum length reserved for response body */
     [Accessor(flags = WantSetter)] mutable output_length: int;
+    /** Filesystem root for file serving */
     [Accessor(flags = WantSetter)] mutable root: string;
+    /** Extensions to try (in order) when no extension given in request URI */
+    [Accessor(flags = WantSetter)] mutable implicit_extensions: array[string];
 }
 
 
@@ -476,6 +496,13 @@ public abstract class Server: IDisposable {
         route(HTTP.TRACE, ".*", methodNotAllowedResponse);
         route(HTTP.CONNECT, ".*", methodNotAllowedResponse);
 
+        Listener.AuthenticationSchemeSelectorDelegate = req => {
+            def request = Request(req);
+            print("auth...\"$(request.RawPath)\"\n");
+            handleAuthentication(request);
+        };
+
+
         Listener.Start();
     }
 
@@ -498,16 +525,15 @@ public abstract class Server: IDisposable {
 
     // route("/a/b/c", r => { })
     public route(method: Method, path: string, fn: Callback): void {
-        def r = Route(path);
-        def s = r.Pattern;
+        def route = Route(path);
+        def pattern = route.Pattern;
         print("route: $(methodName(method)) '$(path)' added $(fn)\n");
-        Routes[method].Add(s, (r, fn));
+        Routes[method].Add(pattern, (route, fn));
     }
 
     public update(): void {
         Running = true;
-        def _ = Listener.BeginGetContext(
-            AsyncCallback(listenerCallback), this);
+        def _ = Listener.BeginGetContext(listenerCallback, this);
     }
 
     findCallback(method_name: string, path: string, vars_out: ref HashTable): Callback {
@@ -530,6 +556,13 @@ public abstract class Server: IDisposable {
     }
 
     /** Overridden by child classes */
+    protected virtual handleAuthentication(
+        _request: Request): AuthenticationSchemes {
+
+        AuthenticationSchemes.Anonymous;
+    }
+
+    /** Overridden by child classes */
     protected abstract callback(request: Request, response: Response): void;
 
     handleCallback(context: HttpListenerContext): void {
@@ -538,12 +571,11 @@ public abstract class Server: IDisposable {
             request = Request(context.Request);
             response = Response(context.Response, Configuration.OutputLength);
 
-            def path = Path.Combine(Configuration.Root, request.RawPath);
-            def exists = File.Exists(path);
-
-            when(exists) {
-                def file_stream = FileStream(path, FileMode.Open);
-                request.FileStream = file_stream;
+            def (fs, ext) = findLocalFileForRequest(request);
+            request.FileStream = fs;
+            when(!String.IsNullOrEmpty(ext)) {
+                request.SearchedForFileStream = true;
+                request.Extension = ext;
             }
 
             print("Requesting: \"$(request.RawPath)\"...\n");
@@ -554,7 +586,7 @@ public abstract class Server: IDisposable {
 
             // populate vars from body of POST...
             when(HTTP.POST == methodType(request.HttpMethod)) {
-                processInputStream(context.Request, ref vars);
+                processPostInputStream(context.Request, ref vars);
             }
 
             if(cb != null) {
@@ -566,6 +598,11 @@ public abstract class Server: IDisposable {
         } catch {
             | _ => internalServerErrorResponse(request, response);
         } finally {
+            print($"Response Status: $(response.StatusCode) "
+                $"$(response.StatusDescription)\n");
+            // TODO: using() may be more appropriate here (if request/response
+            //   gain Dispose() methods...)
+            request.complete();
             response.complete();
         }
     }
@@ -577,18 +614,49 @@ public abstract class Server: IDisposable {
         server.handleCallback(context);
     }
 
-    processInputStream(request: HttpListenerRequest, vars_out: ref HashTable): void {
+    openLocalFile(path: string): FileStream {
+        mutable result = null;
+
+        when(File.Exists(path)) {
+            print("path exists: $(path)\n");
+            def file_stream = FileStream(path, FileMode.Open);
+            result = file_stream;
+        }
+        result;
+    }
+
+    findLocalFileForRequest(request: Request): FileStream * string {
+        mutable result = null, ext = null;
+        if(!String.IsNullOrEmpty(request.Extension)) {
+            def path = Path.Combine(Configuration.Root, request.RawPath);
+            result = openLocalFile(path);
+
+        } else {
+            exit: {
+                foreach(x in Configuration.ImplicitExtensions) {
+                    def path = Path.Combine(Configuration.Root, request.RawPath + "." + x);
+                    result = openLocalFile(path);
+                    when(result != null) {
+                        ext = x;
+                        exit();
+                    }
+                }
+            }
+        }
+        (result, ext);
+    }
+
+    processPostInputStream(
+        request: HttpListenerRequest, vars_out: ref HashTable): void {
 
         when(request.InputStream != null) {
             using(mutable reader = StreamReader(
                 request.InputStream, request.ContentEncoding)) {
 
                 def str = reader.ReadToEnd();
-
                 def each_var = str.Split(array['&', ';'], StringSplitOptions.None);
 
                 when(each_var.Length > 0) {
-
                     foreach(v in each_var) {
                         def s = v.Split(array['='], StringSplitOptions.None);
 
@@ -632,13 +700,11 @@ public abstract class Server: IDisposable {
     // stock request handlers...
 
     internalServerErrorResponse(_req: Request, res: Response): void {
-        res.StatusCode = 500;
-        res.StatusDescription = "Internal Server Error"
+        res.Status = (500, "Internal Server Error");
     }
 
     methodNotAllowedResponse(_req: Request, res: Response): void {
-        res.StatusCode = 405;
-        res.StatusDescription = "Method Not Allowed"
+        res.Status = (405, "Method Not Allowed");
     }
 }
 

@@ -19,5 +19,5 @@ Content: >
 Partials:
   frag1: This is a test.
 Objects:
-    name: Jon
-    age: 39
+  name: Jon
+  age: 39

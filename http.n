@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -68,8 +69,21 @@ class MyServer: Server {
         response.append(nustache_output);
 
         response.setCookie("CookieTestName", "CookieTestValue");
+        response.Status = (200, "OK");
     }
 
+    notFoundRespose(request: Request, response: Response): void {
+        def nustache_table = NustacheObject() <- [
+            "PATH" = request.RawUrl.ToString(),
+        ];
+        def page = Page.load("www/404.yml");
+        def nustache_output = page.render(nustache_table);
+
+        response.append(nustache_output);
+        response.Status = (404, "Not Found");
+    }
+
+/*
     defaultResponse(request: Request, response: Response): void {
 
         response.append(
@@ -115,7 +129,9 @@ class MyServer: Server {
         });
 
         response.append("</ol></p></body></html>");
+        response.Status = (200, "OK");
     }
+*/
 
     serveFileResponse(request: Request, response: Response): void {
 
@@ -129,14 +145,18 @@ class MyServer: Server {
             }
         }
         response.ContentType = extensionToMimeType(request.Extension);
+        response.Status = (200, "OK");
     }
 
     protected override callback(request: Request, response: Response): void {
 
-        if(request.FileStream != null) {
+        // If the request.SearchedForFileStream is true, it means that the
+        // request.FileStream was found by searching via the ImplicitExtensions
+        if( (request.FileStream != null) &&
+            !request.SearchedForFileStream ) {
             serveFileResponse(request, response);
         } else {
-            defaultResponse(request, response);
+            notFoundRespose(request, response);
         }
     }
 
@@ -166,8 +186,9 @@ module Test {
                 "https://localhost:8443/",
             ],
             800, //OutputLength
-            Directory.GetCurrentDirectory(), //Root
-            1024 //FileChunkLength
+            Path.Combine(Directory.GetCurrentDirectory(), "www"), //Root
+            array["yml"], //ImplicitExtensions
+            1024, //FileChunkLength
         );
         print("ServerConfiguration: $serverConfig\n");
 
@@ -185,6 +206,14 @@ module Test {
 
             my_server.route(HTTP.POST, "/form{{_check}}",
                 my_server.doMagic(_, _, "www/magic.yml"));
+
+            my_server.route(HTTP.GET, "/magic", (req, res) => {
+                print("here... $(req.FileStream.ToString())\n");
+                print("FS: $(req.FileStream.ToString())\n");
+                def page = Page.load(req.FileStream);
+                res.append(page.render());
+                res.Status = (200, "OK");
+            });
 
             while(running) {
                 my_server.update();

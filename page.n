@@ -18,6 +18,8 @@ public class Page {
     type PartialsType = Dictionary[string, string];
     type ObjectsType = Dictionary[string, object];
 
+    static yaml_deserializer = Deserializer();
+
     public Path: string { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
@@ -26,10 +28,13 @@ public class Page {
     public this() {}
 
     public static load(path: string): Page {
-        def deserializer = Deserializer();
-        mutable result = deserializer.Deserialize.[Page](StreamReader(path));
+        mutable result = yaml_deserializer.Deserialize.[Page](StreamReader(path));
         result.Path = path;
         result;
+    }
+
+    public static load(stream: Stream): Page {
+        yaml_deserializer.Deserialize.[Page](StreamReader(stream));
     }
 
     public render(data: ObjectsType = null, parts: PartialsType = null): string {
