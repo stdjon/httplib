@@ -1,5 +1,4 @@
-Content: 
-  <html><head><title>404</title></head>
-  <body><h1>404 Not Found</h1>
+Title: 404 Not Found
+Content: >
+  <h1>404 Not Found</h1>
   <p>The resource {{PATH}} was not found by the server.</p>
-  </body></html>

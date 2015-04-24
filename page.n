@@ -21,6 +21,7 @@ public class Page {
     static yaml_deserializer = Deserializer();
 
     public Path: string { get; set; }
+    public Title: string { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
@@ -39,8 +40,9 @@ public class Page {
 
     public render(data: ObjectsType = null, parts: PartialsType = null): string {
         def objects = data ?? Objects;
+        def content = Render.StringToString(Content, objects, templateLocator(_, parts));
 
-        Render.StringToString(Content, objects, templateLocator(_, parts));
+        $"<html><head><title>$Title</title></head><body>$content</body></html>";
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {

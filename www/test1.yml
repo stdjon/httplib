@@ -1,6 +1,6 @@
+Title: Test Page
 Content: >
-  <html><head><title>Test Page</title></head>
-  <body><h1>Test Page</h1>
+  <h1>Test Page</h1>
   <p>Test page test page...</p>
   <p>{{>frag1}}</p>
   <!-- ghetto form for POST testing... -->
@@ -15,7 +15,6 @@ Content: >
   <br>
   <input type='submit' value='Submit'>
   </form>
-  </body></html>
 Partials:
   frag1: This is a test.
 Objects:
