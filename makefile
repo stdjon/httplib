@@ -1,9 +1,8 @@
-
-
 NCC_PATH:=/home/jon/devel/nemerle-1.2
 NCC:=mono $(NCC_PATH)/ncc.exe
-
+launch_assembly=export MONO_PATH=$(MONO_PATH) && mono $1
 MONO_PATH:=$(NCC_PATH)
+
 
 CONTRIB_LIBS:= \
 	contrib/server/Nustache-1.14.0.4/Nustache.Core.dll \
@@ -16,7 +15,7 @@ contrib_refs=$(foreach c,$(CONTRIB_LIBS),-r $c)
 all: http.exe
 
 run: install_contrib all
-	./http.exe
+	$(call launch_assembly,http.exe)
 
 http.exe: http.n assembly_info.n server.dll page.dll
 	$(NCC) -no-color  $< assembly_info.n \
