@@ -24,7 +24,7 @@ class MyServerConfiguration: ServerConfiguration {
 
 class MyServer: Server {
 
-    type NustacheObject = Dictionary[string, object];
+    type NustacheTable = Dictionary[string, object];
 
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
@@ -36,7 +36,7 @@ class MyServer: Server {
 
     public doMagic(request: Request, response: Response, template: string): void {
 
-        def nustache_table = NustacheObject() <- [
+        def nustache_table = NustacheTable() <- [
             "RawPath" = request.RawPath,
             "Path" = request.Path.toSystemType(),
         ];
@@ -82,7 +82,7 @@ class MyServer: Server {
     }
 
     notFoundRespose(request: Request, response: Response): void {
-        def nustache_table = NustacheObject() <- [
+        def nustache_table = NustacheTable() <- [
             "PATH" = request.RawUrl.ToString(),
         ];
         def page = Page.load("www/404.yml");
@@ -237,6 +237,9 @@ module Test {
                 res["Location"] = req.Vars["aim"];
                 res.Status = (302, "Moved Permanently");
             });
+
+            my_server.route(HTTP.GET, "/",
+                my_server.doMagic(_, _, "www/index.yml"));
 
             while(running) {
                 my_server.update();

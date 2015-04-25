@@ -1,3 +1,9 @@
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
 Stylesheets:
   - /bootstrap-3.3.4-dist/css/bootstrap.css
   - /font-awesome-4.3.0/css/font-awesome.css

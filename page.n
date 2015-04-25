@@ -22,6 +22,7 @@ public class Page {
     static yaml_deserializer = Deserializer();
 
     public Path: string { get; set; }
+    public Metas: array[string] { get; set; }
     public Title: string { get; set; }
     public Stylesheets: array[string] { get; set; }
     public Content: string { get; set; }
@@ -45,18 +46,26 @@ public class Page {
         def content = Render.StringToString(Content, objects, templateLocator(_, parts));
         def title =
             if(!String.IsNullOrEmpty(Title)) {
-                $"<title>$Title</title>";
+                $"\n<title>$Title</title>";
             } else {
                 "";
             }
-        mutable stylesheet = "";
-        foreach(s in Stylesheets) {
-            when(!String.IsNullOrEmpty(s)) {
-                stylesheet += $"<link href='$s' rel='stylesheet'>"
+
+        mutable meta = "";
+        foreach(m in Metas) {
+            when(!String.IsNullOrEmpty(m)) {
+                meta += $"\n<meta $m>"
             }
         }
 
-        $"<html><head>$title$stylesheet</head><body>$content</body></html>";
+        mutable stylesheet = "";
+        foreach(s in Stylesheets) {
+            when(!String.IsNullOrEmpty(s)) {
+                stylesheet += $"\n<link href='$s' rel='stylesheet'>"
+            }
+        }
+
+        $"<html><head>$meta$title$stylesheet\n</head>\n<body>\n$content\n</body></html>";
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {
