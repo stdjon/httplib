@@ -172,6 +172,13 @@ class MyServer: Server {
         response.Status = (200, "OK");
     }
 
+    // serve the FileStream as a Nustache template (httplib.Page)...
+    public serveNustacheFromFileStream(request: Request, response: Response): void {
+        def page = Page.load(request.FileStream);
+        response.append(page.render());
+        response.Status = (200, "OK");
+    }
+
     protected override callback(request: Request, response: Response): void {
 
         // If the request.SearchedForFileStream is true, it means that the
@@ -241,11 +248,11 @@ module Test {
             my_server.route(HTTP.POST, "/form{{_check}}",
                 my_server.doMagic(_, _, "www/magic.yml"));
 
-            my_server.route(HTTP.GET, "/magic", (req, res) => {
-                def page = Page.load(req.FileStream);
-                res.append(page.render());
-                res.Status = (200, "OK");
-            });
+            my_server.route(HTTP.GET, "/magic",
+                my_server.serveNustacheFromFileStream);
+
+            my_server.route(HTTP.GET, "/script",
+                my_server.serveNustacheFromFileStream);
 
             // redirection test...
             my_server.route(HTTP.GET, "/redir{{aim:.*}}", (req, res) => {

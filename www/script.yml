@@ -1,0 +1,38 @@
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Script Testing
+Content: >
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="jquery-1.11.2/jquery-1.11.2.js"></script>
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+
+  <h1><i class="fa fa-file-text-o"></i> Script Tests</h1>
+
+  <p><div class="panel panel-info" id="input">
+    <div class="panel-heading" id="input-child">
+      <i class="fa fa-spinner fa-pulse"></i> Script Loading...
+    </div>
+  </div></p>
+
+  <script>
+    $(document).ready(function() {
+      // fake a 1.5second loading delay...
+      setTimeout(
+        function() {
+          $('#input-child').html('<i class="fa fa-check-circle-o"></i> Script Loaded!');
+          $('#input').removeClass("panel-info");
+          $('#input').addClass("panel-success");
+        },
+        1500);
+    });
+  </script>
+Partials:
+Objects:
