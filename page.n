@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -22,6 +23,7 @@ public class Page {
 
     public Path: string { get; set; }
     public Title: string { get; set; }
+    public Stylesheet: string { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
@@ -41,8 +43,20 @@ public class Page {
     public render(data: ObjectsType = null, parts: PartialsType = null): string {
         def objects = data ?? Objects;
         def content = Render.StringToString(Content, objects, templateLocator(_, parts));
+        def title =
+            if(!String.IsNullOrEmpty(Title)) {
+                $"<title>$Title</title>";
+            } else {
+                "";
+            }
+        def stylesheet =
+            if(!String.IsNullOrEmpty(Stylesheet)) {
+                $"<link href='$(Stylesheet)' rel='stylesheet'>"
+            } else {
+                "";
+            }
 
-        $"<html><head><title>$Title</title></head><body>$content</body></html>";
+        $"<html><head>$title$stylesheet</head><body>$content</body></html>";
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {
