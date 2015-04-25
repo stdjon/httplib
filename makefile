@@ -32,6 +32,9 @@ contrib_refs=$(foreach c,$(CONTRIB_LIBS),-r $c)
 # ------------------------------------------------------------------------------
 # Targets
 
+.PHONY: all clean install_contrib run
+
+
 all: http.exe
 
 run: install_contrib all
@@ -65,10 +68,14 @@ httplib.dll: $(httplib.dll_SRC)
 
 # ------------------------------------------------------------------------------
 # install_contrib
-# FIXME: ugly, just for the time being
+# Copy dlls listed by CONTRIB_LIBS to the default path of the built assemblies
+# and executables (currently ./)
 
-define contrib_cp
-	cp $1 .;
+define cp_contrib_lib
+$1: $2
+	cp $2 $1
 endef
-install_contrib:
-	cp $(CONTRIB_LIBS) .
+
+$(foreach l,$(CONTRIB_LIBS),$(eval $(call cp_contrib_lib,./$(notdir $l),$l)))
+
+install_contrib: $(foreach l,$(CONTRIB_LIBS),./$(notdir $l))
