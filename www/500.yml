@@ -9,5 +9,7 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
 Title: 500 Internal Server Error
 Content: >
-  <h1><i class="fa fa-exclamation-triangle"></i> 500 Internal Server Error</h1>
-  <p>The server had an error while attempting to serve {{PATH}}.</p>
+  <div class="container">
+    <h1><i class="fa fa-exclamation-triangle"></i> 500 Internal Server Error</h1>
+    <p>The server had an error while attempting to serve <tt>{{PATH}}</tt>.</p>
+  </div>

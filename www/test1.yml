@@ -9,21 +9,23 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
 Title: Test Page
 Content: >
-  <h1><i class="fa fa-spinner fa-pulse"></i> Test Page</h1>
-  <p>Test page test page...</p>
-  <p>{{>frag1}}</p>
-  <!-- ghetto form for POST testing... -->
-  <form action='/form_posted' method='POST'>
-  Name: <input type='text' name='myname' value='{{name}}'>
-  <br>
-  Password: <input type='password' name='mypass' value=''>
-  <br>
-  <input type='radio' name='sex' value='male' checked>Male
-  <br>
-  <input type='radio' name='sex' value='female'>Female
-  <br>
-  <input type='submit' value='Submit'>
-  </form>
+  <div class="container">
+    <h1><i class="fa fa-spinner fa-pulse"></i> Test Page</h1>
+    <p>Test page test page...</p>
+    <p>{{>frag1}}</p>
+    <!-- ghetto form for POST testing... -->
+    <form action='/form_posted' method='POST'>
+    Name: <input type='text' name='myname' value='{{name}}'>
+    <br>
+    Password: <input type='password' name='mypass' value=''>
+    <br>
+    <input type='radio' name='sex' value='male' checked>Male
+    <br>
+    <input type='radio' name='sex' value='female'>Female
+    <br>
+    <input type='submit' value='Submit'>
+    </form>
+  </div>
 Partials:
   frag1: This is a test.
 Objects:

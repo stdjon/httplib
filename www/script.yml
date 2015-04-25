@@ -14,13 +14,15 @@ Content: >
   <!-- Include all compiled plugins (below), or include individual files as needed -->
   <script src="bootstrap-3.3.4-dist/js/bootstrap.js"></script>
 
-  <h1><i class="fa fa-file-text-o"></i> Script Tests</h1>
+  <div class="container">
+    <h1><i class="fa fa-file-text-o"></i> Script Tests</h1>
 
-  <p><div class="panel panel-info" id="input">
-    <div class="panel-heading" id="input-child">
-      <i class="fa fa-spinner fa-pulse"></i> Script Loading...
-    </div>
-  </div></p>
+    <p><div class="panel panel-info" id="input">
+      <div class="panel-heading" id="input-child">
+        <i class="fa fa-spinner fa-pulse"></i> Script Loading...
+      </div>
+    </div></p>
+  </dev>
 
   <script>
     $(document).ready(function() {

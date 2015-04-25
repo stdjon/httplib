@@ -9,11 +9,51 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
 Title: Magic!
 Content: >
-  <h1><i class="fa fa-magic"></i> httplib "Magic" Response</h1>
-  <p>RawPath: {{RawPath}}</p>
-  <p>QueryString:<ol>{{#QueryString}}<li>{{.}}</li>{{/QueryString}}</ol></p>
-  <p>Headers:<ol>{{#Headers}}<li>{{.}}</li>{{/Headers}}</ol></p>
-  <p>Path:<ol>{{#Path}}<li>{{.}}</li>{{/Path}}</ol></p>
-  <p>Vars:<ol>{{#Vars}}<li>{{.}}</li>{{/Vars}}</ol></p>
+  <div class="container">
+    <h1><i class="fa fa-magic"></i> httplib "Magic" Response</h1>
+    {{^MAGIC}}
+    <p>RawPath: <tt>{{RawPath}}</tt></p>
+    <p>QueryString:<ol>{{#QueryString}}<li><tt>{{.}}</tt></li>{{/QueryString}}</ol></p>
+    <p>Headers:<ol>{{#Headers}}<li><tt>{{.}}</tt></li>{{/Headers}}</ol></p>
+    <p>Path:<ol>{{#Path}}<li><tt>{{.}}</tt></li>{{/Path}}</ol></p>
+    <p>Vars:<ol>{{#Vars}}<li><tt>{{.}}</tt></li>{{/Vars}}</ol></p>
+    {{/MAGIC}}
+    {{#MAGIC}}
+    <p>
+      <div class="panel panel-info" id="changeme">
+        <div class="panel-heading">
+          <i class="fa fa-star" id="star1"></i>
+          This is the page at <tt>/magic</tt>, loaded directly.
+          <i class="fa fa-star-o" id="star2"></i>
+        </div>
+      </div>
+    </p>
+    <script src="jquery-1.11.2/jquery-1.11.2.js"></script>
+    <script src="bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+    <script>
+      $(document).ready(function() {
+        var starclasses = [ 'fa-star', 'fa-star-o' ];
+        var star = 0;
+        var panelclasses = [ 'panel-info', 'panel-success', 'panel-warning', 'panel-danger'];
+        var panel = 0;
+        setInterval(
+          function() {
+            // 'animate' stars
+            $('#star1').removeClass(starclasses[star]);
+            $('#star2').addClass(starclasses[star]);
+            star = (star + 1) % starclasses.length;
+            $('#star1').addClass(starclasses[star]);
+            $('#star2').removeClass(starclasses[star]);
+
+            // 'animate' panel
+            $('#changeme').removeClass(panelclasses[panel]);
+            panel = (panel + 1) % panelclasses.length;
+            $('#changeme').addClass(panelclasses[panel]);
+          },
+          500);
+      });
+    </script>
+    {{/MAGIC}}
+  </div>
 Partials:
 Objects:

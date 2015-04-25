@@ -9,5 +9,7 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
 Title: 404 Not Found
 Content: >
-  <h1><i class="fa fa-ban"></i> 404 Not Found</h1>
-  <p>The resource {{PATH}} was not found by the server.</p>
+  <div class="container">
+    <h1><i class="fa fa-ban"></i> 404 Not Found</h1>
+    <p>The resource <tt>{{PATH}}</tt> was not found by the server.</p>
+  </div>

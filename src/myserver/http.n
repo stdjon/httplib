@@ -174,8 +174,11 @@ class MyServer: Server {
 
     // serve the FileStream as a Nustache template (httplib.Page)...
     public serveNustacheFromFileStream(request: Request, response: Response): void {
+        def nustache_table = NustacheTable() <- [
+            "MAGIC" = 1,
+        ];
         def page = Page.load(request.FileStream);
-        response.append(page.render());
+        response.append(page.render(nustache_table));
         response.Status = (200, "OK");
     }
 
