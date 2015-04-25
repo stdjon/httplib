@@ -43,6 +43,7 @@ class MyServer: Server {
 
         mutable vars: array[string] = array(0);
         mutable qs: array[string] = array(0);
+        mutable hdrs: array[string] = array(0);
         mutable i = 0;
         request.Vars.forEach((k, v) => {
             System.Array.Resize(ref vars, i + 1);
@@ -58,6 +59,14 @@ class MyServer: Server {
             i++;
         });
         nustache_table.Add("QueryString", qs);
+
+        i = 0;
+        request.Headers.forEach((k, v) => {
+            System.Array.Resize(ref hdrs, i + 1);
+            hdrs[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        nustache_table.Add("Headers", hdrs);
 
         when(request.Vars["name"] != null) {
             nustache_table.Add("name", request.Vars["name"]);
@@ -160,6 +169,12 @@ class MyServer: Server {
         }
     }
 
+    protected override internalServerError(ex: Exception): void {
+        print("INTERNAL SERVER ERROR!\n"
+            $"$(ex.Message)\n"
+            $"$(ex.StackTrace)\n");
+    }
+
     static protected extensionToMimeType(ext: string): string {
         match(ext) {
             | "js" => "application/javascript"
@@ -179,22 +194,24 @@ module Test {
     Main(_args: array[string]): void {
 
         mutable running = true;
-        def serverConfig = MyServerConfiguration(
+        def server_config = MyServerConfiguration(
             array[ // Prefixes
                 "http://localhost:8080/",
                 "https://localhost:8443/",
             ],
-            800, //OutputLength
-            array[ //Roots
+            array[ // Roots
                 "./www",
-                "./contrib/client"
+                "./contrib/client",
             ],
-            array["yml"], //ImplicitExtensions
+            array[ // ImplicitExtensions
+                "yml",
+            ],
+            800, //OutputLength
             1024, //FileChunkLength
         );
-        print("ServerConfiguration: $serverConfig\n");
+        print("ServerConfiguration: $server_config\n");
 
-        using(mutable my_server = MyServer(serverConfig)) {
+        using(mutable my_server = MyServer(server_config)) {
 
             my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (req, res) => {
                 my_server.doMagic(req, res, "www/magic.yml");
@@ -213,6 +230,12 @@ module Test {
                 def page = Page.load(req.FileStream);
                 res.append(page.render());
                 res.Status = (200, "OK");
+            });
+
+            // redirection test...
+            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (req, res) => {
+                res["Location"] = req.Vars["aim"];
+                res.Status = (302, "Moved Permanently");
             });
 
             while(running) {

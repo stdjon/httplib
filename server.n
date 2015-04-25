@@ -200,6 +200,11 @@ public class Request {
     [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
     [Accessor(flags = WantSetter)] mutable extension: string;
 
+    // Convenience wrapper for headers
+    public Item[key: string]: string {
+        get { Headers[key] }
+    }
+
     public this(req: HttpListenerRequest) {
 
         http_method = req.HttpMethod;
@@ -224,14 +229,14 @@ public class Request {
 
     /** convert a RawUrl -> path component Array
      *  "/a/b//c" -> [ "a", "b", "c" ] */
-    makePathArray(rawUrl: string): Array {
+    makePathArray(raw_url: string): Array {
 
-        def path_only = rawUrl.Split(array['?'], StringSplitOptions.None);
+        def path_only = raw_url.Split(array['?'], StringSplitOptions.None);
         def path_section =
             if(path_only.Length > 0) {
                 path_only[0]
             } else {
-                rawUrl
+                raw_url
             };
         def path_split = path_section.Split(
             array['/'], StringSplitOptions.RemoveEmptyEntries );
@@ -264,6 +269,7 @@ public class Request {
         }
     }
 
+    //TODO: "/" + String.Join("/", ...)
     makeRawPath(path: Array): string {
         String.Join("/", path.toSystemType());
     }
@@ -311,6 +317,12 @@ public class Response {
     public Status: int * string {
         get { (StatusCode, StatusDescription) }
         set { (StatusCode, StatusDescription) = value; }
+    }
+
+    // Convenience wrapper for headers
+    public Item[key: string]: string {
+        get { response.Headers[key] }
+        set { response.Headers[key] = value }
     }
 
     mutable response: HttpListenerResponse;
@@ -372,12 +384,12 @@ public class ServerConfiguration {
 
     /** Listener prefixes */
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
-    /** Minimum length reserved for response body */
-    [Accessor(flags = WantSetter)] mutable output_length: int;
     /** Filesystem roots for file serving */
     [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Extensions to try (in order) when no extension given in request URI */
     [Accessor(flags = WantSetter)] mutable implicit_extensions: array[string];
+    /** Minimum length reserved for response body */
+    [Accessor(flags = WantSetter)] mutable output_length: int;
 }
 
 
@@ -556,6 +568,11 @@ public abstract class Server: IDisposable {
     }
 
     /** Overridden by child classes */
+    protected virtual internalServerError(_: Exception): void {
+        //...
+    }
+
+    /** Overridden by child classes */
     protected virtual handleAuthentication(
         _request: Request): AuthenticationSchemes {
 
@@ -571,7 +588,7 @@ public abstract class Server: IDisposable {
             request = Request(context.Request);
             response = Response(context.Response, Configuration.OutputLength);
 
-            print("Requesting: \"$(request.RawPath)\"...\n");
+            print("Requesting: \"/$(request.RawPath)\"...\n");
 
             // check for existing file under roots...
             def (fs, ext) = findLocalFileForRequest(request);
@@ -598,7 +615,10 @@ public abstract class Server: IDisposable {
                 callback(request, response);
             }
         } catch {
-            | _ => internalServerErrorResponse(request, response);
+            | ex => {
+                internalServerError(ex);
+                internalServerErrorResponse(request, response);
+            }
         } finally {
             print($"Response Status: $(response.StatusCode) "
                 $"$(response.StatusDescription)\n");
@@ -621,10 +641,12 @@ public abstract class Server: IDisposable {
         exit: {
             foreach(root in Configuration.Roots) {
                 def p = Path.Combine(root, path);
-                when(File.Exists(p)) {
-                    print("path exists: $(path)\n");
-                    def file_stream = FileStream(p, FileMode.Open);
-                    result = file_stream;
+                def exists = File.Exists(p);
+                def x = if(exists) { "yes" } else { "no" }
+
+                print($"File exists: \"$p\"? $x\n");
+                when(exists) {
+                    result = FileStream(p, FileMode.Open);
                     exit();
                 }
             }
@@ -705,10 +727,14 @@ public abstract class Server: IDisposable {
     // stock request handlers...
 
     internalServerErrorResponse(_req: Request, res: Response): void {
+        res.append(
+            "<html><body><h1>500 Internal Server Error</h1></body><html>");
         res.Status = (500, "Internal Server Error");
     }
 
     methodNotAllowedResponse(_req: Request, res: Response): void {
+        res.append(
+            "<html><body><h1>405 Method Not Allowed</h1></body><html>");
         res.Status = (405, "Method Not Allowed");
     }
 }

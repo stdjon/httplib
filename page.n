@@ -23,7 +23,7 @@ public class Page {
 
     public Path: string { get; set; }
     public Title: string { get; set; }
-    public Stylesheet: string { get; set; }
+    public Stylesheets: array[string] { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
@@ -49,12 +49,12 @@ public class Page {
             } else {
                 "";
             }
-        def stylesheet =
-            if(!String.IsNullOrEmpty(Stylesheet)) {
-                $"<link href='$(Stylesheet)' rel='stylesheet'>"
-            } else {
-                "";
+        mutable stylesheet = "";
+        foreach(s in Stylesheets) {
+            when(!String.IsNullOrEmpty(s)) {
+                stylesheet += $"<link href='$s' rel='stylesheet'>"
             }
+        }
 
         $"<html><head>$title$stylesheet</head><body>$content</body></html>";
     }
