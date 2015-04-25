@@ -724,15 +724,19 @@ public abstract class Server: IDisposable {
         }
     }
 
-    // stock request handlers...
+    // stock request handlers (can be overridden by clients).
 
-    internalServerErrorResponse(_req: Request, res: Response): void {
+    protected virtual internalServerErrorResponse(
+        _req: Request, res: Response): void {
+
         res.append(
             "<html><body><h1>500 Internal Server Error</h1></body><html>");
         res.Status = (500, "Internal Server Error");
     }
 
-    methodNotAllowedResponse(_req: Request, res: Response): void {
+    protected virtual methodNotAllowedResponse(
+        _req: Request, res: Response): void {
+
         res.append(
             "<html><body><h1>405 Method Not Allowed</h1></body><html>");
         res.Status = (405, "Method Not Allowed");

@@ -65,7 +65,8 @@ public class Page {
             }
         }
 
-        $"<html><head>$meta$title$stylesheet\n</head>\n<body>\n$content\n</body></html>";
+        $"<html><head>$meta$title$stylesheet\n</head>\n"
+        $"<body>\n$content\n</body></html>";
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {

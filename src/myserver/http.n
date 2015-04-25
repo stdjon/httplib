@@ -92,6 +92,21 @@ class MyServer: Server {
         response.Status = (404, "Not Found");
     }
 
+
+    // overridden 500 error response...
+    protected override internalServerErrorResponse(
+        request: Request, response: Response): void {
+
+        def nustache_table = NustacheTable() <- [
+            "PATH" = request.RawUrl.ToString(),
+        ];
+        def page = Page.load("www/500.yml");
+        def nustache_output = page.render(nustache_table);
+
+        response.append(nustache_output);
+        response.Status = (500, "Internal Server Error");
+    }
+
 /*
     defaultResponse(request: Request, response: Response): void {
 
