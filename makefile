@@ -48,7 +48,7 @@ clean:
 # ------------------------------------------------------------------------------
 # http.exe
 
-http.exe_SRC:=$(wildcard src/myserver/*n)
+http.exe_SRC:=$(wildcard src/myserver/*.n)
 
 http.exe: $(http.exe_SRC) httplib.dll
 	$(NCC) -no-color  $($@_SRC) -o $@ \
