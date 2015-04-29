@@ -302,7 +302,6 @@ public class Response {
         set { response.ContentType = value; }
     }
 
-
     public StatusCode: int {
         get { response.StatusCode }
         set { response.StatusCode = value; }

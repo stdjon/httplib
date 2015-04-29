@@ -50,7 +50,9 @@ public class Page {
 
     public render(data: ObjectsType = null, parts: PartialsType = null): string {
         def objects = data ?? Objects;
-        def content = Render.StringToString(Content, objects, templateLocator(_, parts));
+        def content = Render.StringToString(
+            Content, objects, templateLocator(_, parts));
+
         def title =
             if(!String.IsNullOrEmpty(Title)) {
                 $"\n<title>$Title</title>";
