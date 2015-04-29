@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using Nemerle.IO;
 using Nemerle.Utility;
 
+using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
+
 
 namespace httplib {
 
@@ -379,8 +381,22 @@ public class Response {
 // ServerConfiguration
 
 [Record]
-public class ServerConfiguration {
+public class DatabaseConfiguration {
+    /** Database assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Database typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Database connection */
+    [Accessor(flags = WantSetter)] mutable connection: string;
 
+    public this() {}
+}
+
+
+[Record]
+public class ServerConfiguration {
+    /** Database configuration */
+    [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
     /** Listener prefixes */
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
     /** Filesystem roots for file serving */
@@ -389,6 +405,8 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable implicit_extensions: array[string];
     /** Minimum length reserved for response body */
     [Accessor(flags = WantSetter)] mutable output_length: int;
+
+    public this() {}
 }
 
 
@@ -467,6 +485,9 @@ public abstract class Server: IDisposable {
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
 
+    [Accessor]
+    static deserializer: YamlDeserializer = YamlDeserializer();
+
     [System.Flags]
     public enum State {
         | Neutral = 0x00
@@ -485,14 +506,33 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
 
+    [Accessor(flags = Protected)]
+    database: Database;
+
     public Routes[i: Method]: RouteMap {
         get { routes[i :> int] }
     }
     routes: array[RouteMap] = array(MethodCount);
 
+    static protected loadConfiguration[T](path: string): T {
+        using(reader = StreamReader(path)) {
+            deserializer.Deserialize.[T](reader);
+        }
+    }
+
+    public this(path: string) {
+        def config = loadConfiguration.[ServerConfiguration](path);
+        this(config);
+    }
+
     public this(config: ServerConfiguration) {
 
         configuration = config;
+        def db = config.Database;
+
+        when(db.Assembly != null && db.Typename != null) {
+            database = Database.load(db.Assembly, db.Typename, db.Connection);
+        }
 
         foreach(p in Configuration.Prefixes) {
             print("Adding \"$p\"...\n");

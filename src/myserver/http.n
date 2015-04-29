@@ -16,6 +16,8 @@ using httplib;
 [Record]
 class MyServerConfiguration: ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
+
+    public this() {}
 }
 
 
@@ -28,6 +30,11 @@ class MyServer: Server {
 
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
+    }
+
+    public this(path: string) {
+        def config = loadConfiguration.[MyServerConfiguration](path);
+        base(config);
     }
 
     public this(config: MyServerConfiguration) {
@@ -219,24 +226,10 @@ module Test {
     Main(_args: array[string]): void {
 
         mutable running = true;
-        def server_config = MyServerConfiguration(
-            array[ // Prefixes
-                "http://localhost:8080/",
-                "https://localhost:8443/",
-            ],
-            array[ // Roots
-                "./www",
-                "./contrib/client",
-            ],
-            array[ // ImplicitExtensions
-                "yml",
-            ],
-            800, //OutputLength
-            1024, //FileChunkLength
-        );
-        print("ServerConfiguration: $server_config\n");
+        def config_path = "src/myserver/config.yml";
+        print("ServerConfiguration: $config_path\n");
 
-        using(mutable my_server = MyServer(server_config)) {
+        using(mutable my_server = MyServer(config_path)) {
 
             my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (req, res) => {
                 my_server.doMagic(req, res, "www/magic.yml");

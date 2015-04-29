@@ -1,0 +1,17 @@
+# ------------------------------------------------------------------------------
+# Example MyServer configuration
+---
+Database:
+  Assembly: httplib.db.mysql.dll
+  Typename: httplib.db.MySqlDatabase
+  Connection: server=localhost;userid=user12;password=34klq*;database=mydb
+Prefixes:
+  - http://localhost:8080/
+  - https://localhost:8443/
+Roots:
+  - ./www
+  - ./contrib/client
+ImplicitExtensions:
+  - yml
+OutputLength: 800
+FileChunkLength: 1024
