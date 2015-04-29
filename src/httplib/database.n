@@ -1,0 +1,141 @@
+using System;
+using System.Data;
+
+using Nemerle.IO;
+using Nemerle.Utility;
+
+
+namespace httplib {
+
+public abstract class Database: IDisposable  {
+
+    [Accessor(flags = WantSetter)]
+    protected mutable connection: IDbConnection = null;
+
+    public Initialized: bool {
+        get { Connection != null }
+    }
+
+    public this(connection: string = null) {
+        when(connection != null) {
+            initialize(connection);
+        }
+        when(Connection != null) {
+            Connection.Open();
+        }
+    }
+
+    public Dispose(): void {
+        shutdown();
+    }
+
+    protected override Finalize(): void {
+        shutdown();
+    }
+
+    shutdown(): void {
+        Connection.Close();
+        Connection.Dispose();
+    }
+
+    public abstract initialize(connection: string): void;
+
+    public withTransaction(lambda: Database -> void): void {
+        mutable transaction = null;
+        try {
+            transaction = Connection.BeginTransaction();
+            def _ = lambda(this);
+            transaction.Commit();
+        } catch {
+            | _ => {
+                print("Rolling back...\n");
+                transaction.Rollback();
+            }
+        }
+    }
+
+    public virtual createCommand(query: string = null): Command {
+        mutable result = Command(Connection.CreateCommand());
+        when(query != null) {
+            result.Query = query;
+        }
+        result;
+    }
+}
+
+
+public class Command {
+
+    [Accessor]
+    protected mutable command: IDbCommand = null;
+
+    public Query: string {
+        get { Command.CommandText; }
+        set { Command.CommandText = value; }
+    }
+
+    public Parameters: IDataParameterCollection {
+        get { Command.Parameters; }
+    }
+
+    public this(c: IDbCommand) {
+        command = c;
+    }
+
+    public virtual createParameter(
+        name: string = null, value: object = null): Parameter {
+
+        mutable result = Parameter(Command.CreateParameter());
+        when(name != null) {
+            result.Name = name;
+        }
+        when(value != null) {
+            result.Value = value;
+        }
+        result;
+    }
+
+    public virtual addParameter(param: Parameter): void {
+        def _ = Parameters.Add(param.Parameter);
+    }
+
+    public virtual addParameter(name: string, value: object): void {
+        addParameter(createParameter(name, value));
+    }
+
+    public virtual executeNonQuery(): int {
+        Command.ExecuteNonQuery();
+    }
+
+    public virtual executeReader(): IDataReader {
+        Command.ExecuteReader();
+    }
+
+    public virtual executeScalar(): object {
+        Command.ExecuteScalar();
+    }
+}
+
+
+public class Parameter {
+
+    [Accessor]
+    protected mutable parameter: IDbDataParameter = null;
+
+    public Name: string {
+        get { Parameter.ParameterName; }
+        set { Parameter.ParameterName = value; }
+    }
+
+    public Value: object {
+        get { Parameter.Value; }
+        set { Parameter.Value = value; }
+    }
+
+    public this(p: IDbDataParameter) {
+        parameter = p;
+    }
+}
+
+
+} // namespace httplib

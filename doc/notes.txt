@@ -60,3 +60,10 @@ Authentication:
     System.Security.Cryptography.RNGCryptoServiceProvider 
 
 
+Database:
+
+    Windows:
+    [As Administrator]
+    > choco install mysql
+
+

@@ -1,0 +1,25 @@
+using System;
+using System.Data;
+
+using Nemerle.IO;
+using Nemerle.Utility;
+
+using MySql.Data.MySqlClient;
+
+namespace httplib.db {
+
+public class MySqlDatabase: httplib.Database {
+
+    public this(connection: string = null) {
+        base(connection);
+    }
+
+    public override initialize(connection: string): void {
+        when(Connection == null) {
+            Connection = MySqlConnection(connection);
+        }
+    }
+}
+
+
+} // namespace httplib
