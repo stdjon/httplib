@@ -51,9 +51,9 @@ clean:
 # http.exe
 
 http.exe_SRC:=$(wildcard src/myserver/*.n)
-http.exe_DLLS:=httplib.dll httplib_db_mysql.dll
+http.exe_DLLS:=httplib.dll httplib.db.mysql.dll
 
-http.exe: $(http.exe_SRC) $(http.exe_DLLS) #httplib.dll httplib_db_mysql.dll
+http.exe: $(http.exe_SRC) $(http.exe_DLLS)
 	$(NCC) -no-color  $($@_SRC) -o $@ \
 		$(contrib_refs) $(call make_ref,$($@_DLLS))
 
@@ -70,12 +70,12 @@ httplib.dll: $(httplib.dll_SRC) $(httplib.dll_DLLS)
 
 
 # ------------------------------------------------------------------------------
-# httplib_db_mysql.dll
+# httplib.db.mysql.dll
 
-httplib_db_mysql.dll_SRC:=$(wildcard src/httplib/db/mysql/*.n)
-httplib_db_mysql.dll_DLLS:=httplib.dll
+httplib.db.mysql.dll_SRC:=$(wildcard src/httplib/db/mysql/*.n)
+httplib.db.mysql.dll_DLLS:=httplib.dll
 
-httplib_db_mysql.dll: $(httplib_db_mysql.dll_SRC) $(httplib_db_mysql.dll_DLLS)
+httplib.db.mysql.dll: $(httplib.db.mysql.dll_SRC) $(httplib.db.mysql.dll_DLLS)
 	$(NCC) -t:library -no-color $($@_SRC) -o $@ \
 		$(contrib_refs) $(call make_ref,$($@_DLLS))
 

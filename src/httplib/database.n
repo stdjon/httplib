@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Reflection;
 
 using Nemerle.IO;
 using Nemerle.Utility;
@@ -60,6 +61,16 @@ public abstract class Database: IDisposable  {
             result.Query = query;
         }
         result;
+    }
+
+    /** Load a DB by reflection, given a DLL and type name. */
+    public static load(
+        path: string, name: string, param: string = null): Database {
+
+        def assembly = Assembly.LoadFrom(path);
+        def dbtype = assembly.GetType(name);
+
+        Activator.CreateInstance(dbtype, param) :> Database;
     }
 }
 
