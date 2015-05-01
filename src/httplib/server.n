@@ -417,6 +417,7 @@ public class RendererConfiguration {
 
 
 public type Renderers = Dictionary[string, RendererConfiguration];
+public type MimeTypes = Dictionary[string, string];
 
 
 [Record]
@@ -429,6 +430,8 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Extensions to try (in order) when no extension given in request URI */
     [Accessor(flags = WantSetter)] mutable renderers: Renderers;
+    /** (Mapping extensions to) MIME Types */
+    [Accessor(flags = WantSetter)] mutable mime_types: MimeTypes;
     /** Minimum length reserved for response body */
     [Accessor(flags = WantSetter)] mutable output_length: int;
     /** File chunk (read) length */
@@ -877,16 +880,16 @@ public abstract class Server: IDisposable {
         }
     }
 
-    static protected extensionToMimeType(ext: string): string {
-        match(ext) {
-            | "js" => "application/javascript"
-            | "json" => "application/json"
-            | "html" => "text/html"
-            | "css" => "text/css"
-            | "ttf" => "application/x-font-ttf"
-            | "woff" => "application/x-font-woff"
-            | "woff2" => "application/octet-stream"
-            | _ => "text/plain"
+    protected extensionToMimeType(ext: string): string {
+        def types = Configuration.MimeTypes;
+        if(types.ContainsKey(ext)) {
+            types[ext]
+        } else {
+            if(types.ContainsKey("_")) {
+                types["_"]
+            } else {
+                "text/plain"
+            }
         }
     }
 

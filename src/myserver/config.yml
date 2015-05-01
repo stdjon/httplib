@@ -18,5 +18,14 @@ Renderers:
   nyml:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
+MimeTypes:
+  js: application/javascript
+  json: application/json
+  html: text/html
+  css: text/css
+  ttf: application/x-font-ttf
+  woff: application/x-font-woff
+  woff2: application/octet-stream
+  _: text/plain
 OutputLength: 800
 FileChunkLength: 1024
