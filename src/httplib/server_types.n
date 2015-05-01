@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Text.Encoding;
 
+using Nemerle.IO;
 using Nemerle.Utility;
 
 
@@ -183,6 +184,11 @@ public class CookieTable: IAssociation[CookieCollection] {
 
 public class Context {
     [Accessor(flags = WantSetter)] mutable page_data: PageData;
+    [Accessor(flags = WantSetter)] mutable vars: HashTable;
+
+    public this() {
+        vars = HashTable();
+    }
 };
 
 
@@ -206,7 +212,6 @@ public class Request {
     [Accessor] is_web_socket: bool;
     [Accessor] http_version: int;
     // TODO: is it possible to refactor these setters/mutables away?
-    [Accessor(flags = WantSetter)] mutable vars: HashTable;
     [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
     [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
     [Accessor(flags = WantSetter)] mutable extension: string;
@@ -232,7 +237,6 @@ public class Request {
         is_secure = req.IsSecureConnection;
         is_web_socket = req.IsWebSocketRequest;
         http_version = makeHttpVersion(req.ProtocolVersion);
-        vars = HashTable();
         file_stream = null;
         searched_for_file_stream = false;
         extension = makeExtension(Path);
@@ -403,11 +407,12 @@ public class Route {
         process(ref rx, @"{{(\w+)}}", _ => { @"([A-Za-z0-9_.-]+)" });
 
         // {{name:pattern}}  -->  (pattern)
-        process(ref rx, @"{{(\w+):(.+)}}", p => { "(" + p + ")" });
+        process(ref rx, @"{{(\w+):([^}]+)}}", p => { "(" + p + ")" });
 
         //anchor start/end of regex
         rx = "^" + rx + "$";
 
+        print("new regex for $path = $rx\n");
         regex = Regex(rx);
         pattern = rx;
     }

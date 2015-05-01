@@ -39,8 +39,8 @@ class MyServer: Server {
         base(config);
     }
 
-    public doMagic(
-        _ctx: Context, request: Request, response: Response, template: string): void {
+    public doMagic(context: Context, request: Request, response: Response,
+        template: string): void {
 
         def nustache_table = NustacheTable() <- [
             "RawPath" = request.RawPath,
@@ -51,7 +51,7 @@ class MyServer: Server {
         mutable qs: array[string] = array(0);
         mutable hdrs: array[string] = array(0);
         mutable i = 0;
-        request.Vars.forEach((k, v) => {
+        context.Vars.forEach((k, v) => {
             System.Array.Resize(ref vars, i + 1);
             vars[i] = ($"$k = $v").ToString();
             i++;
@@ -74,8 +74,8 @@ class MyServer: Server {
         });
         nustache_table.Add("Headers", hdrs);
 
-        when(request.Vars["name"] != null) {
-            nustache_table.Add("name", request.Vars["name"]);
+        when(context.Vars["name"] != null) {
+            nustache_table.Add("name", context.Vars["name"]);
         }
 
         def output = renderPage(template, nustache_table);
@@ -111,6 +111,17 @@ class MyServer: Server {
             $"$(ex.Message)\n"
             $"$(ex.StackTrace)\n");
     }
+
+    public showThread(
+        context: Context, request: Request, response: Response): void {
+
+        def id = context.Vars["id"];
+        def rest = context.Vars["rest"];
+
+        response.append($"<html><body><h1>Thread (ID=$id)</h1>");
+        response.append($"<p><tt>[Rest = $rest]</tt></p></body></html>");
+        response.Status = (200, "OK");
+    }
 }
 
 
@@ -122,6 +133,11 @@ module Test {
         print("ServerConfiguration: $config_path\n");
 
         using(mutable my_server = MyServer(config_path)) {
+
+            my_server.route(HTTP.GET, "/th/{{id:[0-9]+}}",
+                my_server.showThread);
+            my_server.route(HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}",
+                my_server.showThread);
 
             my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (ctx, req, res) => {
                 my_server.doMagic(ctx, req, res, "magic.nyml");
@@ -137,8 +153,8 @@ module Test {
                 my_server.doMagic(_, _, _, "magic.nyml"));
 
             // redirection test...
-            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (_ctx, req, res) => {
-                res["Location"] = req.Vars["aim"];
+            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (ctx, req, res) => {
+                res["Location"] = ctx.Vars["aim"];
                 res.Status = (302, "Moved Permanently");
             });
 

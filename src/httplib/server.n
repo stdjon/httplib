@@ -65,7 +65,7 @@ public abstract class Server: IDisposable {
 
     static protected loadConfiguration[T](path: string): T {
         using(reader = StreamReader(path)) {
-            deserializer.Deserialize.[T](reader);
+            Deserializer.Deserialize.[T](reader);
         }
     }
 
@@ -267,6 +267,7 @@ public abstract class Server: IDisposable {
 
             context.PageData = findContext(
                 request.HttpMethod, "/" + request.RawPath);
+            context.Vars = vars;
 
             // populate vars from body of POST...
             when(HTTP.POST == methodType(request.HttpMethod)) {
@@ -274,7 +275,6 @@ public abstract class Server: IDisposable {
             }
 
             if(cb != null) {
-                request.Vars = vars;
                 cb(context, request, response);
             } else {
                 callback(context, request, response);
