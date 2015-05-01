@@ -12,10 +12,7 @@ namespace httplib {
 
 public class Renderer {
 
-    public type PageTypes = Dictionary[string, Type];
-
     static yaml_deserializer = Deserializer();
-    static page_types = PageTypes();
 
     public virtual PageType: Type {
         get { typeof(Page) }
