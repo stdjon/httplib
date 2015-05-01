@@ -14,6 +14,10 @@ using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
 
 namespace httplib {
 
+//------------------------------------------------------------------------------
+
+public type PageData = Dictionary[string, object];
+
 
 //------------------------------------------------------------------------------
 // HTTP (method)
@@ -33,7 +37,6 @@ public enum HTTP {
 
     | COUNT_
 }
-
 
 
 //------------------------------------------------------------------------------
@@ -175,6 +178,15 @@ public class CookieTable: IAssociation[CookieCollection] {
         keys;
     }
 }
+
+
+
+//------------------------------------------------------------------------------
+// Context
+
+public class Context {
+    [Accessor(flags = WantSetter)] mutable page_data: PageData;
+};
 
 
 //------------------------------------------------------------------------------
@@ -394,6 +406,20 @@ public class DatabaseConfiguration {
 
 
 [Record]
+public class RendererConfiguration {
+    /** Database assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Database typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+
+    public this() {}
+}
+
+
+public type Renderers = Dictionary[string, RendererConfiguration];
+
+
+[Record]
 public class ServerConfiguration {
     /** Database configuration */
     [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
@@ -402,9 +428,11 @@ public class ServerConfiguration {
     /** Filesystem roots for file serving */
     [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Extensions to try (in order) when no extension given in request URI */
-    [Accessor(flags = WantSetter)] mutable implicit_extensions: array[string];
+    [Accessor(flags = WantSetter)] mutable renderers: Renderers;
     /** Minimum length reserved for response body */
     [Accessor(flags = WantSetter)] mutable output_length: int;
+    /** File chunk (read) length */
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
 
     public this() {}
 }
@@ -479,8 +507,9 @@ public class Route {
 
 public abstract class Server: IDisposable {
 
-    public type Callback = Request * Response -> void;
+    public type Callback = Context * Request * Response -> void;
     type RouteMap = Dictionary[string, Route * Callback];
+    type ContextMap = Dictionary[string, Route * PageData];
 
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
@@ -514,6 +543,14 @@ public abstract class Server: IDisposable {
     }
     routes: array[RouteMap] = array(MethodCount);
 
+    public Contexts[i: Method]: ContextMap {
+        get { contexts[i :> int] }
+    }
+    contexts: array[ContextMap] = array(MethodCount);
+
+    [Accessor(flags = Protected)]
+    renderers: Dictionary[string, Renderer] = Dictionary();
+
     static protected loadConfiguration[T](path: string): T {
         using(reader = StreamReader(path)) {
             deserializer.Deserialize.[T](reader);
@@ -538,8 +575,18 @@ public abstract class Server: IDisposable {
             print("Adding \"$p\"...\n");
             Listener.Prefixes.Add(p);
         }
+
+        foreach(x in Configuration.Renderers) {
+            def r = Renderer.load(x.Value.Assembly, x.Value.Typename);
+            when(r != null) {
+                print("Registering $r for $(x.Key) files...\n");
+                Renderers[x.Key] = r;
+            }
+        }
+
         for(mutable i = 0; i < MethodCount; i++) {
             routes[i] = Dictionary();
+            contexts[i] = Dictionary();
         }
 
         // install default handlers for several methods...
@@ -552,7 +599,6 @@ public abstract class Server: IDisposable {
             def request = Request(req);
             handleAuthentication(request);
         };
-
 
         Listener.Start();
     }
@@ -576,10 +622,20 @@ public abstract class Server: IDisposable {
 
     // route("/a/b/c", r => { })
     public route(method: Method, path: string, fn: Callback): void {
+
         def route = Route(path);
         def pattern = route.Pattern;
         print("route: $(methodName(method)) '$(path)' added $(fn)\n");
         Routes[method].Add(pattern, (route, fn));
+    }
+
+    public context(
+        method: Method, path: string, data: PageData = null): void {
+
+        def route = Route(path);
+        def pattern = route.Pattern;
+        print("context: $(methodName(method)) '$(path)' added $(data)\n");
+        Contexts[method].Add(pattern, (route, data));
     }
 
     public update(): void {
@@ -587,7 +643,9 @@ public abstract class Server: IDisposable {
         def _ = Listener.BeginGetContext(listenerCallback, this);
     }
 
-    findCallback(method_name: string, path: string, vars_out: ref HashTable): Callback {
+    findCallback(
+        method_name: string, path: string, vars_out: ref HashTable): Callback {
+
         mutable result;
         exit: {
             def method = methodType(method_name);
@@ -606,6 +664,39 @@ public abstract class Server: IDisposable {
         result;
     }
 
+    findContext(
+        method_name: string, path: string): PageData {
+
+        mutable result;
+        exit: {
+            def method = methodType(method_name);
+            foreach(r in Contexts[method]) {
+                def (route, data) = r.Value;
+                def (ok, _) = route.doMatch(path);
+
+                when(ok) {
+                    result = data;
+                    exit();
+                }
+            }
+        }
+        result;
+    }
+
+    public virtual renderPage(path: string, data: PageData = null): string {
+
+        def ext = Path.GetExtension(path).Substring(1);
+        print("ext = $ext...\n");
+        using(stream = openLocalFile(path)) {
+
+            def renderer = Renderers[ext];
+            def page = renderer.loadPage(stream);
+
+            page.render(data);
+
+        }
+    }
+
     /** Overridden by child classes */
     protected virtual internalServerError(_: Exception): void {
         //...
@@ -619,13 +710,32 @@ public abstract class Server: IDisposable {
     }
 
     /** Overridden by child classes */
-    protected abstract callback(request: Request, response: Response): void;
+    protected virtual callback(
+        context: Context, request: Request, response: Response): void {
+        // If the request.SearchedForFileStream is true, it means that the
+        // request.FileStream was found by searching via the ImplicitExtensions
+        if(request.FileStream != null) {
+            if(request.SearchedForFileStream) {
 
-    handleCallback(context: HttpListenerContext): void {
-        mutable request, response;
+                def renderer = Renderers[request.Extension];
+                def page = renderer.loadPage(request.FileStream);
+
+                response.append(page.render(context.PageData));
+
+                response.Status = (200, "OK");
+            } else {
+                serveFileResponse(context, request, response);
+            }
+        } else {
+            notFoundRespose(context, request, response);
+        }
+    }
+
+    handleCallback(http_ctx: HttpListenerContext): void {
+        mutable request, response, context = Context();
         try {
-            request = Request(context.Request);
-            response = Response(context.Response, Configuration.OutputLength);
+            request = Request(http_ctx.Request);
+            response = Response(http_ctx.Response, Configuration.OutputLength);
 
             print("Requesting: \"/$(request.RawPath)\"...\n");
 
@@ -640,23 +750,27 @@ public abstract class Server: IDisposable {
 
             // find callback (and populate vars from route vars if any)
             mutable vars = HashTable();
-            def cb = findCallback(request.HttpMethod, "/" + request.RawPath, ref vars);
+            def cb = findCallback(
+                request.HttpMethod, "/" + request.RawPath, ref vars);
+
+            context.PageData = findContext(
+                request.HttpMethod, "/" + request.RawPath);
 
             // populate vars from body of POST...
             when(HTTP.POST == methodType(request.HttpMethod)) {
-                processPostInputStream(context.Request, ref vars);
+                processPostInputStream(http_ctx.Request, ref vars);
             }
 
             if(cb != null) {
                 request.Vars = vars;
-                cb(request, response);
+                cb(context, request, response);
             } else {
-                callback(request, response);
+                callback(context, request, response);
             }
         } catch {
             | ex => {
                 internalServerError(ex);
-                internalServerErrorResponse(request, response);
+                internalServerErrorResponse(context, request, response);
             }
         } finally {
             print($"Response Status: $(response.StatusCode) "
@@ -700,10 +814,10 @@ public abstract class Server: IDisposable {
 
         } else {
             exit: {
-                foreach(x in Configuration.ImplicitExtensions) {
-                    result = openLocalFile(request.RawPath + "." + x);
+                foreach(x in Configuration.Renderers) {
+                    result = openLocalFile(request.RawPath + "." + x.Key);
                     when(result != null) {
-                        ext = x;
+                        ext = x.Key;
                         exit();
                     }
                 }
@@ -763,10 +877,23 @@ public abstract class Server: IDisposable {
         }
     }
 
+    static protected extensionToMimeType(ext: string): string {
+        match(ext) {
+            | "js" => "application/javascript"
+            | "json" => "application/json"
+            | "html" => "text/html"
+            | "css" => "text/css"
+            | "ttf" => "application/x-font-ttf"
+            | "woff" => "application/x-font-woff"
+            | "woff2" => "application/octet-stream"
+            | _ => "text/plain"
+        }
+    }
+
     // stock request handlers (can be overridden by clients).
 
     protected virtual internalServerErrorResponse(
-        _req: Request, res: Response): void {
+        _ctx: Context, _req: Request, res: Response): void {
 
         res.append(
             "<html><body><h1>500 Internal Server Error</h1></body><html>");
@@ -774,11 +901,35 @@ public abstract class Server: IDisposable {
     }
 
     protected virtual methodNotAllowedResponse(
-        _req: Request, res: Response): void {
+        _ctx: Context, _req: Request, res: Response): void {
 
         res.append(
             "<html><body><h1>405 Method Not Allowed</h1></body><html>");
         res.Status = (405, "Method Not Allowed");
+    }
+
+    protected virtual notFoundRespose(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.append(
+            "<html><body><h1>404 Not Found</h1></body><html>");
+        response.Status = (404, "Not Found");
+    }
+
+    protected virtual serveFileResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        using(def reader = BinaryReader(request.FileStream)) {
+            mutable continue = true;
+
+            while(continue) {
+                def data = reader.ReadBytes(Configuration.FileChunkLength);
+                response.appendBytes(data);
+                continue = (data.Length == Configuration.FileChunkLength);
+            }
+        }
+        response.ContentType = extensionToMimeType(request.Extension);
+        response.Status = (200, "OK");
     }
 }
 

@@ -51,7 +51,7 @@ clean:
 # http.exe
 
 http.exe_SRC:=$(wildcard src/myserver/*.n)
-http.exe_DLLS:=httplib.dll httplib.db.mysql.dll
+http.exe_DLLS:=httplib.dll httplib.db.mysql.dll httplib.page.nustache.dll
 
 http.exe: $(http.exe_SRC) $(http.exe_DLLS)
 	$(NCC) -no-color  $($@_SRC) -o $@ \
@@ -76,6 +76,17 @@ httplib.db.mysql.dll_SRC:=$(wildcard src/httplib/db/mysql/*.n)
 httplib.db.mysql.dll_DLLS:=httplib.dll
 
 httplib.db.mysql.dll: $(httplib.db.mysql.dll_SRC) $(httplib.db.mysql.dll_DLLS)
+	$(NCC) -t:library -no-color $($@_SRC) -o $@ \
+		$(contrib_refs) $(call make_ref,$($@_DLLS))
+
+
+# ------------------------------------------------------------------------------
+# httplib.page.nustache.dll
+
+httplib.page.nustache.dll_SRC:=$(wildcard src/httplib/page/nustache/*.n)
+httplib.page.nustache.dll_DLLS:=httplib.dll
+
+httplib.page.nustache.dll: $(httplib.page.nustache.dll_SRC) $(httplib.page.nustache.dll_DLLS)
 	$(NCC) -t:library -no-color $($@_SRC) -o $@ \
 		$(contrib_refs) $(call make_ref,$($@_DLLS))
 

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 using Nemerle.IO;
-
-using Nustache.Core;
-using YamlDotNet.Serialization;
 
 
 namespace httplib {
@@ -16,10 +14,8 @@ namespace httplib {
 [Record]
 public class Page {
 
-    type PartialsType = Dictionary[string, string];
-    type ObjectsType = Dictionary[string, object];
-
-    static yaml_deserializer = Deserializer();
+    public type PartialsType = Dictionary[string, string];
+    public type ObjectsType = Dictionary[string, object];
 
     public Path: string { get; set; }
     public Metas: array[string] { get; set; }
@@ -31,28 +27,7 @@ public class Page {
 
     public this() {}
 
-    public static load(path: string): Page {
-        mutable result = null;
-        using(reader = StreamReader(path)) {
-            result = yaml_deserializer.Deserialize.[Page](reader);
-        }
-        result.Path = path;
-        result;
-    }
-
-    public static load(stream: Stream): Page {
-        mutable result = null;
-        using(reader = StreamReader(stream)) {
-            result = yaml_deserializer.Deserialize.[Page](reader);
-        }
-        result;
-    }
-
-    public render(data: ObjectsType = null, parts: PartialsType = null): string {
-        def objects = data ?? Objects;
-        def content = Render.StringToString(
-            Content, objects, templateLocator(_, parts));
-
+    public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
         def title =
             if(!String.IsNullOrEmpty(Title)) {
                 $"\n<title>$Title</title>";
@@ -74,32 +49,16 @@ public class Page {
             }
         }
 
+        def content = renderContent(data, parts);
+
         $"<html><head>$meta$title$stylesheet\n</head>\n"
         $"<body>\n$content\n</body></html>";
     }
 
-    templateLocator(template: string, parts: PartialsType = null): Template {
-        mutable result: Template = null;
-        mutable partial_to_use: string = null;
+    public virtual renderContent(
+        _data: ObjectsType = null, _parts: PartialsType = null): string {
 
-        when(Partials.ContainsKey(template)) {
-            partial_to_use = Partials[template];
-        }
-
-        when( parts != null &&
-            parts.ContainsKey(template) ) {
-
-            partial_to_use = parts[template];
-        }
-
-        when(partial_to_use != null) {
-            result = Template(template);
-            using(def reader = StringReader(partial_to_use)) {
-                result.Load(reader);
-            }
-        }
-
-        result;
+        Content;
     }
 }
 

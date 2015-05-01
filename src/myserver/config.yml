@@ -11,7 +11,12 @@ Prefixes:
 Roots:
   - ./www
   - ./contrib/client
-ImplicitExtensions:
-  - yml
+Renderers:
+  yml:
+    Assembly: httplib.dll
+    Typename: httplib.Renderer
+  nyml:
+    Assembly: httplib.page.nustache.dll
+    Typename: httplib.page.NustacheRenderer
 OutputLength: 800
 FileChunkLength: 1024
