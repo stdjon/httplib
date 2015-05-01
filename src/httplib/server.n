@@ -141,13 +141,25 @@ public abstract class Server: IDisposable {
         Routes[method].Add(pattern, (route, fn));
     }
 
+    public route(routes: list[(Method * string)], fn: Callback): void {
+        foreach((method, path) in routes) {
+            route(method, path, fn);
+        }
+    }
+
     public context(
-        method: Method, path: string, data: PageData = null): void {
+        method: Method, path: string, data: PageData): void {
 
         def route = Route(path);
         def pattern = route.Pattern;
         print("context: $(methodName(method)) '$(path)' added $(data)\n");
         Contexts[method].Add(pattern, (route, data));
+    }
+
+    public context(contexts: list[(Method * string)], data: PageData): void {
+        foreach((method, path) in contexts) {
+            context(method, path, data);
+        }
     }
 
     public update(): void {

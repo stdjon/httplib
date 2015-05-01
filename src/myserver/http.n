@@ -113,7 +113,7 @@ class MyServer: Server {
     }
 
     public showThread(
-        context: Context, request: Request, response: Response): void {
+        context: Context, _request: Request, response: Response): void {
 
         def id = context.Vars["id"];
         def rest = context.Vars["rest"];
@@ -134,10 +134,9 @@ module Test {
 
         using(mutable my_server = MyServer(config_path)) {
 
-            my_server.route(HTTP.GET, "/th/{{id:[0-9]+}}",
-                my_server.showThread);
-            my_server.route(HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}",
-                my_server.showThread);
+            my_server.route([
+                (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
+                (HTTP.GET, "/th/{{id:[0-9]+}}")], my_server.showThread);
 
             my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (ctx, req, res) => {
                 my_server.doMagic(ctx, req, res, "magic.nyml");
@@ -153,7 +152,7 @@ module Test {
                 my_server.doMagic(_, _, _, "magic.nyml"));
 
             // redirection test...
-            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (ctx, req, res) => {
+            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (ctx, _req, res) => {
                 res["Location"] = ctx.Vars["aim"];
                 res.Status = (302, "Moved Permanently");
             });
