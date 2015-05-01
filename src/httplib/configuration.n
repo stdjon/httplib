@@ -1,0 +1,60 @@
+using System.Collections.Generic;
+
+using Nemerle.Utility;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// ServerConfiguration
+
+[Record]
+public class DatabaseConfiguration {
+    /** Database assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Database typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Database connection */
+    [Accessor(flags = WantSetter)] mutable connection: string;
+
+    public this() {}
+}
+
+
+[Record]
+public class RendererConfiguration {
+    /** Database assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Database typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+
+    public this() {}
+}
+
+
+public type Renderers = Dictionary[string, RendererConfiguration];
+public type MimeTypes = Dictionary[string, string];
+
+
+[Record]
+public class ServerConfiguration {
+    /** Database configuration */
+    [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
+    /** Listener prefixes */
+    [Accessor(flags = WantSetter)] mutable prefixes: array[string];
+    /** Filesystem roots for file serving */
+    [Accessor(flags = WantSetter)] mutable roots: array[string];
+    /** Extensions to try (in order) when no extension given in request URI */
+    [Accessor(flags = WantSetter)] mutable renderers: Renderers;
+    /** (Mapping extensions to) MIME Types */
+    [Accessor(flags = WantSetter)] mutable mime_types: MimeTypes;
+    /** Minimum length reserved for response body */
+    [Accessor(flags = WantSetter)] mutable output_length: int;
+    /** File chunk (read) length */
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
+
+    public this() {}
+}
+
+
+} // namespace httplib

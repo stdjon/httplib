@@ -1,0 +1,453 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Net;
+using System.Text.RegularExpressions;
+using System.Text.Encoding;
+
+using Nemerle.Utility;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+
+public type PageData = Dictionary[string, object];
+
+
+//------------------------------------------------------------------------------
+// HTTP (method)
+
+// Defined in order used in http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+public enum HTTP {
+    | INVALID_
+
+    | OPTIONS
+    | GET
+    | HEAD
+    | POST
+    | PUT
+    | DELETE
+    | TRACE
+    | CONNECT
+
+    | COUNT_
+}
+
+
+//------------------------------------------------------------------------------
+// IAssociation
+// NB: we may want to vary on the association value type as well (for cookies).
+
+public interface IAssociation[T] {
+    public type SystemType = T;
+
+    Item[key: string]: string { get; }
+    Keys: array[string] { get; }
+    forEach(lambda: string * string -> void): void;
+    toSystemType(): T;
+}
+
+
+//------------------------------------------------------------------------------
+// Array
+
+public class Array {
+
+    type SystemType = array[string];
+
+    arr: SystemType;
+
+    public this(data: SystemType) {
+        arr = data;
+    }
+
+    public Item[index: int]: string {
+        get { arr[index]; }
+    }
+
+    public Length: int {
+        get { arr.Length; }
+    }
+
+    public forEach(lambda: string -> void): void {
+        foreach(v in arr) {
+            lambda(v);
+        }
+    }
+
+    public toSystemType(): SystemType {
+        arr;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// HashTable
+
+public class HashTable: IAssociation[NameValueCollection] {
+
+    type SystemType = NameValueCollection;
+
+    nvc: SystemType;
+
+    public this() {
+        nvc = SystemType();
+    }
+
+    public this(data: SystemType) {
+        nvc = data;
+    }
+
+    public Item[key: string]: string {
+        get { nvc[key]; }
+        set { nvc[key] = value; }
+    }
+
+    public Keys: array[string] {
+        get { nvc.AllKeys; }
+    }
+
+    public forEach(lambda: string * string -> void): void {
+        foreach(k in Keys) {
+            lambda(k, Item[k]);
+        }
+    }
+
+    public toSystemType(): SystemType {
+        nvc;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// CookieTable
+
+public class CookieTable: IAssociation[CookieCollection] {
+
+    type SystemType = CookieCollection;
+
+    cc: SystemType;
+    // As long as Item[key].set is unimplemented (i.e. cc can't change), we can
+    // cache the cookie keys...
+    mutable keys: array[string];
+
+    public this() {
+        cc = SystemType();
+        keys = null;
+    }
+
+    public this(data: SystemType) {
+        cc = data;
+    }
+
+    public Item[key: string]: string {
+        get { cc[key].Value.ToString(); }
+//        set { cc[key] = value; }
+    }
+
+    public Keys: array[string] {
+        get { cachedKeys(); }
+    }
+
+    public forEach(lambda: string * string -> void): void {
+        foreach(k in Keys) {
+            lambda(k, Item[k]);
+        }
+    }
+
+    public toSystemType(): SystemType {
+        cc;
+    }
+
+    cachedKeys(): array[string] {
+        when(keys == null) {
+            def k = cc.Count;
+            mutable result: array[string];
+
+            Array.Resize(ref result, k);
+            for(mutable i = 0; i < k; i++) {
+                result[i] = cc[i].Name;
+            }
+            keys = result;
+        }
+        keys;
+    }
+}
+
+
+
+//------------------------------------------------------------------------------
+// Context
+
+public class Context {
+    [Accessor(flags = WantSetter)] mutable page_data: PageData;
+};
+
+
+//------------------------------------------------------------------------------
+// Request
+
+public class Request {
+
+    [Accessor] http_method: string;
+    [Accessor] url: Uri;
+    [Accessor] raw_url: string;
+    [Accessor] query_string: HashTable;
+    [Accessor] headers: HashTable;
+    [Accessor] cookies: CookieTable;
+    [Accessor] path: Array;
+    [Accessor] accept: Array;
+    [Accessor] raw_path: string;
+    [Accessor] user_agent: string;
+    [Accessor] is_authenticated: bool;
+    [Accessor] is_secure: bool;
+    [Accessor] is_web_socket: bool;
+    [Accessor] http_version: int;
+    // TODO: is it possible to refactor these setters/mutables away?
+    [Accessor(flags = WantSetter)] mutable vars: HashTable;
+    [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
+    [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
+    [Accessor(flags = WantSetter)] mutable extension: string;
+
+    // Convenience wrapper for headers
+    public Item[key: string]: string {
+        get { Headers[key] }
+    }
+
+    public this(req: HttpListenerRequest) {
+
+        http_method = req.HttpMethod;
+        url = req.Url;
+        raw_url = req.RawUrl;
+        query_string = HashTable(req.QueryString);
+        headers = HashTable(req.Headers);
+        cookies = CookieTable(req.Cookies);
+        path = makePathArray(RawUrl);
+        accept = Array(req.AcceptTypes);
+        raw_path = makeRawPath(Path);
+        user_agent = req.UserAgent;
+        is_authenticated = req.IsAuthenticated;
+        is_secure = req.IsSecureConnection;
+        is_web_socket = req.IsWebSocketRequest;
+        http_version = makeHttpVersion(req.ProtocolVersion);
+        vars = HashTable();
+        file_stream = null;
+        searched_for_file_stream = false;
+        extension = makeExtension(Path);
+    }
+
+    /** convert a RawUrl -> path component Array
+     *  "/a/b//c" -> [ "a", "b", "c" ] */
+    makePathArray(raw_url: string): Array {
+
+        def path_only = raw_url.Split(array['?'], StringSplitOptions.None);
+        def path_section =
+            if(path_only.Length > 0) {
+                path_only[0]
+            } else {
+                raw_url
+            };
+        def path_split = path_section.Split(
+            array['/'], StringSplitOptions.RemoveEmptyEntries );
+
+        Array(path_split);
+    }
+
+    makeExtension(path: Array, full: bool = false): string {
+
+        def last_path =
+            if(path.Length > 0) {
+                path[path.Length - 1];
+            } else {
+                ""
+            }
+        def last_split = last_path.Split(
+            array['.'], StringSplitOptions.None );
+
+        if(last_split.Length > 1) {
+            if(full) {
+                def len = last_split.Length - 1;
+                mutable tmp: array[string] = array(len);
+                Array.Copy(last_split, 1, tmp, 0, len);
+                String.Join(".", tmp)
+            } else {
+                last_split[last_split.Length - 1];
+            }
+        } else {
+            ""
+        }
+    }
+
+    //TODO: "/" + String.Join("/", ...)
+    makeRawPath(path: Array): string {
+        String.Join("/", path.toSystemType());
+    }
+
+    makeHttpVersion(version: Version): int {
+        (version.Major) + 10 + (version.Minor);
+    }
+
+    internal complete(): void {
+        def fs = FileStream;
+        when(fs != null) {
+            fs.Close();
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// Response
+
+public class Response {
+
+    public ContentLength: long {
+        get { response.ContentLength64 }
+        set { response.ContentLength64 = value; }
+    }
+
+    public ContentType: string {
+        get { response.ContentType }
+        set { response.ContentType = value; }
+    }
+
+    public StatusCode: int {
+        get { response.StatusCode }
+        set { response.StatusCode = value; }
+    }
+
+    public StatusDescription: string {
+        get { response.StatusDescription }
+        set { response.StatusDescription = value; }
+    }
+
+    // Convenience wrapper around (StatusCode, StatusDescription)
+    public Status: int * string {
+        get { (StatusCode, StatusDescription) }
+        set { (StatusCode, StatusDescription) = value; }
+    }
+
+    // Convenience wrapper for headers
+    public Item[key: string]: string {
+        get { response.Headers[key] }
+        set { response.Headers[key] = value }
+    }
+
+    mutable response: HttpListenerResponse;
+    mutable output: array[byte];
+
+    public this(res: HttpListenerResponse, output_length = 1024) {
+
+        response = res;
+        output = array(output_length);
+    }
+
+    // interim API pending full cookie support...
+    public setCookie(name: string, value: string): void {
+        response.AppendCookie(Cookie(name, value, "/"));
+    }
+
+    public append(params data: array[string]): void {
+        appendArray(data);
+    }
+
+    public appendArray(data: array[string]): void {
+
+        foreach(d in data) {
+            def buffer = UTF8.GetBytes(d);
+            writeToOutput(buffer);
+        }
+    }
+
+    public appendBytes(data: array[byte]): void {
+        writeToOutput(data);
+    }
+
+    writeToOutput(data: array[byte]): void {
+        def new_length = ContentLength + data.Length;
+
+        when(output.Length < new_length) {
+            def _32 = output.Length * 3 / 2;
+            def nl = if(_32 > new_length) { _32 } else { new_length :> int }
+            Array.Resize(ref output, nl);
+        }
+
+        data.CopyTo(output, ContentLength);
+        ContentLength = new_length;
+    }
+
+    internal complete(): void {
+        def os = response.OutputStream;
+        os.Write(output, 0, ContentLength :> int);
+        os.Close();
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// Route
+
+public class Route {
+
+    [Accessor] pattern: string;
+    regex: Regex;
+    mutable captures: array[string] = array(0);
+
+    public this(path: string) {
+
+        mutable rx = path;
+
+        // {{name}}  -->  ([A-Za-z0-9.-]+)
+        process(ref rx, @"{{(\w+)}}", _ => { @"([A-Za-z0-9_.-]+)" });
+
+        // {{name:pattern}}  -->  (pattern)
+        process(ref rx, @"{{(\w+):(.+)}}", p => { "(" + p + ")" });
+
+        //anchor start/end of regex
+        rx = "^" + rx + "$";
+
+        regex = Regex(rx);
+        pattern = rx;
+    }
+
+    public isMatch(path: string): bool {
+        regex.IsMatch(path)
+    }
+
+    public doMatch(path: string): bool * HashTable {
+        mutable vars = HashTable();
+        def result = regex.IsMatch(path);
+
+        when(result) {
+            def _ = regex.Replace(path, m => {
+
+                for(mutable i = 1; i < m.Groups.Count; i++) {
+                    def k = captures[i - 1];
+                    def v = m.Groups[i].ToString();
+                    vars[k] = v;
+                }
+                ""
+            }, 100, 0);
+        }
+        (result, vars);
+    }
+
+    process(input: ref string, pattern: string, replace: string -> string): void {
+        input = Regex.Replace(input, pattern, m => {
+
+            def v: string = m.Groups[1].ToString();
+            def patt: string = m.Groups[2].ToString();
+            def e = captures.Length;
+
+            Array.Resize(ref captures, e + 1);
+            captures[e] = v;
+
+            replace(patt);
+        });
+    }
+}
+
+
+} // namespace httplib
