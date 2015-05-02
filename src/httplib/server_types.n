@@ -412,7 +412,7 @@ public class Route {
         //anchor start/end of regex
         rx = "^" + rx + "$";
 
-        print("new regex for $path = $rx\n");
+//        print("new regex for $path = $rx\n");
         regex = Regex(rx);
         pattern = rx;
     }

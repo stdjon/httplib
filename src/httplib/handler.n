@@ -1,0 +1,142 @@
+using System;
+using System.IO;
+
+using Nemerle.IO;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+//
+
+public class Handler {
+
+    public virtual Context: Context { get; set; }
+    public virtual Request: Request { get; set; }
+    public virtual Response: Response { get; set; }
+    public virtual Server: Server { get; set; }
+
+    public this(
+        context: Context, request: Request, response: Response, server: Server) {
+
+        Context = context;
+        Request = request;
+        Response = response;
+        Server = server;
+    }
+
+    public virtual callback(): void {
+        // do stuff with Context/Request/Response
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// CallbackHandler
+
+public class CallbackHandler: Handler {
+
+    lambda: Server.Callback;
+
+    public this(
+        context: Context, request: Request, response: Response, server: Server,
+        cb: Server.Callback) {
+
+        base(context, request, response, server);
+        lambda = cb;
+    }
+
+    public override callback(): void {
+        lambda(Context, Request, Response);
+    }
+}
+
+
+public class CallbackHandlerWrapper {
+
+    lambda: Server.Callback;
+
+    public this(cb: Server.Callback) {
+        lambda = cb;
+    }
+
+    public unwrap(
+        context: Context, request: Request, response: Response, server: Server): Handler {
+
+        CallbackHandler(context, request, response, server, lambda);
+
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// ComplexHandler
+
+public class ComplexHandler: Handler {
+
+    public this(
+        context: Context, request: Request, response: Response, server: Server) {
+
+        base(context, request, response, server);
+    }
+
+    public override callback(): void {
+        initialize();
+
+        def path = setPagePath(Request.RawPath);
+        mutable fs = null;
+        when(!String.IsNullOrEmpty(path)) {
+            fs = openFile(path);
+        }
+
+        mutable data = null;
+        when(fs != null) {
+            data = setPageData();
+        }
+
+        def ext = Path.GetExtension(path).Substring(1);
+        mutable renderer = getRenderer(ext);
+        when(renderer != null) {
+            def page = renderer.loadPage(fs);
+            def text = page.render(data);
+            Response.append(text);
+            Response.ContentType = setContentType();
+            Response.Status = setStatus();
+        }
+
+        finish();
+    }
+
+    public virtual initialize(): void {}
+
+    public virtual setPagePath(_path: string): string {
+        Request.RawPath;
+    }
+
+    public virtual openFile(path: string): Stream {
+        Server.openLocalFile(path);
+    }
+
+    public virtual setContentType(): string {
+        "text/plain"
+    }
+
+    public virtual setPageData(): PageData {
+        null
+    }
+
+    public virtual getRenderer(ext: string): Renderer {
+        Server.Renderers[ext];
+    }
+
+    public virtual setStatus(): int * string {
+        (200, "OK");
+    }
+
+    public virtual loadContent(): void {}
+
+    public virtual finish(): void {}
+};
+
+
+} // namespace httplib

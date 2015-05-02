@@ -20,7 +20,8 @@ namespace httplib {
 public abstract class Server: IDisposable {
 
     public type Callback = Context * Request * Response -> void;
-    type RouteMap = Dictionary[string, Route * Callback];
+    type MakeHandler = Context * Request * Response * Server -> Handler;
+    type RouteMap = Dictionary[string, Route * MakeHandler];
     type ContextMap = Dictionary[string, Route * PageData];
 
     type Method = HTTP;
@@ -60,7 +61,7 @@ public abstract class Server: IDisposable {
     }
     contexts: array[ContextMap] = array(MethodCount);
 
-    [Accessor(flags = Protected)]
+    [Accessor(flags = Internal)]
     renderers: Dictionary[string, Renderer] = Dictionary();
 
     static protected loadConfiguration[T](path: string): T {
@@ -132,13 +133,22 @@ public abstract class Server: IDisposable {
         }
     }
 
-    // route("/a/b/c", r => { })
-    public route(method: Method, path: string, fn: Callback): void {
+    public route(method: Method, path: string, handler: MakeHandler): void {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        print("route: $(methodName(method)) '$(path)' added $(fn)\n");
-        Routes[method].Add(pattern, (route, fn));
+        print("handler: $(methodName(method)) '$(path)' added $(handler)\n");
+        Routes[method].Add(pattern, (route, handler));
+    }
+
+    public route(routes: list[(Method * string)], handler: MakeHandler): void {
+        foreach((method, path) in routes) {
+            route(method, path, handler);
+        }
+    }
+
+    public route(method: Method, path: string, fn: Callback): void {
+        route(method, path, CallbackHandlerWrapper(fn).unwrap);
     }
 
     public route(routes: list[(Method * string)], fn: Callback): void {
@@ -167,19 +177,18 @@ public abstract class Server: IDisposable {
         def _ = Listener.BeginGetContext(listenerCallback, this);
     }
 
-    findCallback(
-        method_name: string, path: string, vars_out: ref HashTable): Callback {
+    findHandler(method_name: string,
+        path: string, vars_out: ref HashTable): MakeHandler {
 
         mutable result;
         exit: {
             def method = methodType(method_name);
             foreach(r in Routes[method]) {
-                def (route, fn) = r.Value;
+                def (route, handler) = r.Value;
                 def (ok, vars) = route.doMatch(path);
 
                 when(ok) {
-                    print("'$(path)' matches '$(route.Pattern)'...\n");
-                    result = fn;
+                    result = handler;
                     vars_out = vars;
                     exit();
                 }
@@ -237,7 +246,7 @@ public abstract class Server: IDisposable {
     protected virtual callback(
         context: Context, request: Request, response: Response): void {
         // If the request.SearchedForFileStream is true, it means that the
-        // request.FileStream was found by searching via the ImplicitExtensions
+        // request.FileStream was found by searching via the Extensions
         if(request.FileStream != null) {
             if(request.SearchedForFileStream) {
 
@@ -274,7 +283,8 @@ public abstract class Server: IDisposable {
 
             // find callback (and populate vars from route vars if any)
             mutable vars = HashTable();
-            def cb = findCallback(
+
+            def handler = findHandler(
                 request.HttpMethod, "/" + request.RawPath, ref vars);
 
             context.PageData = findContext(
@@ -286,8 +296,8 @@ public abstract class Server: IDisposable {
                 processPostInputStream(http_ctx.Request, ref vars);
             }
 
-            if(cb != null) {
-                cb(context, request, response);
+            if(handler != null) {
+                handler(context, request, response, this).callback();
             } else {
                 callback(context, request, response);
             }
@@ -313,7 +323,7 @@ public abstract class Server: IDisposable {
         server.handleCallback(context);
     }
 
-    openLocalFile(path: string): FileStream {
+    public openLocalFile(path: string): FileStream {
         mutable result = null;
         exit: {
             foreach(root in Configuration.Roots) {

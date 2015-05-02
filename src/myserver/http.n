@@ -18,13 +18,107 @@ class MyServerConfiguration: ServerConfiguration {
     public this() {}
 }
 
+//------------------------------------------------------------------------------
+// MyHandler
+
+class MyHandler: Handler {
+
+    public this(
+        context: Context, request: Request, response: Response, server: Server) {
+
+        base(context, request, response, server);
+    }
+
+    public override callback(): void {
+        def id = Context.Vars["id"];
+        def rest = Context.Vars["rest"];
+
+        Response.append($"<html><body><h1>Thread (ID=$id)</h1>");
+        Response.append($"<p><tt>[Rest = $rest]</tt></p></body></html>");
+        Response.Status = (200, "OK");
+    }
+};
+
+
+class MyComplexHandler: ComplexHandler {
+
+    public this(
+        context: Context, request: Request, response: Response, server: Server) {
+
+        base(context, request, response, server);
+    }
+
+    public override setPagePath(_path: string): string {
+        "magic.nyml";
+    }
+
+    public override setContentType(): string {
+        "text/html"
+    }
+
+    public override setPageData(): PageData {
+        def nustache_table = PageData() <- [
+            "RawPath" = Request.RawPath,
+            "Path" = Request.Path.toSystemType(),
+        ];
+
+        mutable vars: array[string] = array(0);
+        mutable qs: array[string] = array(0);
+        mutable hdrs: array[string] = array(0);
+        mutable i = 0;
+        Context.Vars.forEach((k, v) => {
+            System.Array.Resize(ref vars, i + 1);
+            vars[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        nustache_table.Add("Vars", vars);
+
+        i = 0;
+        Request.QueryString.forEach((k, v) => {
+            System.Array.Resize(ref qs, i + 1);
+            qs[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        nustache_table.Add("QueryString", qs);
+
+        i = 0;
+        Request.Headers.forEach((k, v) => {
+            System.Array.Resize(ref hdrs, i + 1);
+            hdrs[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        nustache_table.Add("Headers", hdrs);
+
+        when(Context.Vars["name"] != null) {
+            nustache_table.Add("name", Context.Vars["name"]);
+        }
+        nustache_table;
+    }
+
+    public override finish(): void {
+        print("HERE HERE HERE...\n");
+        Response.setCookie("CookieTestName", "CookieTestValue");
+    }
+};
+
+
+class MyTestHandler: MyComplexHandler {
+    public this(
+        context: Context, request: Request, response: Response, server: Server) {
+
+        base(context, request, response, server);
+    }
+
+    public override setPagePath(_path: string): string {
+        "test1.nyml";
+    }
+};
+
 
 //------------------------------------------------------------------------------
 // MyServer
 
 class MyServer: Server {
-
-    type NustacheTable = Dictionary[string, object];
 
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
@@ -37,51 +131,6 @@ class MyServer: Server {
 
     public this(config: MyServerConfiguration) {
         base(config);
-    }
-
-    public doMagic(context: Context, request: Request, response: Response,
-        template: string): void {
-
-        def nustache_table = NustacheTable() <- [
-            "RawPath" = request.RawPath,
-            "Path" = request.Path.toSystemType(),
-        ];
-
-        mutable vars: array[string] = array(0);
-        mutable qs: array[string] = array(0);
-        mutable hdrs: array[string] = array(0);
-        mutable i = 0;
-        context.Vars.forEach((k, v) => {
-            System.Array.Resize(ref vars, i + 1);
-            vars[i] = ($"$k = $v").ToString();
-            i++;
-        });
-        nustache_table.Add("Vars", vars);
-
-        i = 0;
-        request.QueryString.forEach((k, v) => {
-            System.Array.Resize(ref qs, i + 1);
-            qs[i] = ($"$k = $v").ToString();
-            i++;
-        });
-        nustache_table.Add("QueryString", qs);
-
-        i = 0;
-        request.Headers.forEach((k, v) => {
-            System.Array.Resize(ref hdrs, i + 1);
-            hdrs[i] = ($"$k = $v").ToString();
-            i++;
-        });
-        nustache_table.Add("Headers", hdrs);
-
-        when(context.Vars["name"] != null) {
-            nustache_table.Add("name", context.Vars["name"]);
-        }
-
-        def output = renderPage(template, nustache_table);
-        response.append(output);
-        response.setCookie("CookieTestName", "CookieTestValue");
-        response.Status = (200, "OK");
     }
 
     protected override notFoundRespose(
@@ -111,17 +160,6 @@ class MyServer: Server {
             $"$(ex.Message)\n"
             $"$(ex.StackTrace)\n");
     }
-
-    public showThread(
-        context: Context, _request: Request, response: Response): void {
-
-        def id = context.Vars["id"];
-        def rest = context.Vars["rest"];
-
-        response.append($"<html><body><h1>Thread (ID=$id)</h1>");
-        response.append($"<p><tt>[Rest = $rest]</tt></p></body></html>");
-        response.Status = (200, "OK");
-    }
 }
 
 
@@ -136,20 +174,14 @@ module Test {
 
             my_server.route([
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
-                (HTTP.GET, "/th/{{id:[0-9]+}}")], my_server.showThread);
+                (HTTP.GET, "/th/{{id:[0-9]+}}")], MyHandler);
 
-            my_server.route(HTTP.GET, "/a/{{b}}/{{c}}", (ctx, req, res) => {
-                my_server.doMagic(ctx, req, res, "magic.nyml");
-            });
+            my_server.route([
+                (HTTP.GET, "/a/{{b}}/{{c}}"),
+                (HTTP.GET, "/order/{{number:[0-9]+}}"),
+                (HTTP.POST, "/form{{_check}}")], MyComplexHandler);
 
-            my_server.route(HTTP.GET, "/order/{{number:[0-9]+}}",
-                my_server.doMagic(_, _, _, "magic.nyml"));
-
-            my_server.route(HTTP.GET, "/post/{{name}}",
-                my_server.doMagic(_, _, _, "test1.nyml"));
-
-            my_server.route(HTTP.POST, "/form{{_check}}",
-                my_server.doMagic(_, _, _, "magic.nyml"));
+            my_server.route(HTTP.GET, "/post/{{name}}", MyTestHandler);
 
             // redirection test...
             my_server.route(HTTP.GET, "/redir{{aim:.*}}", (ctx, _req, res) => {
