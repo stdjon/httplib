@@ -116,6 +116,61 @@ class MyTestHandler: MyComplexHandler {
 };
 
 
+
+class MyDatabaseHandler: ComplexHandler {
+
+    public this(hd: HandlerData) {
+        base(hd);
+    }
+
+    public override PagePath: string {
+        get { "books.nyml" }
+    }
+
+    public override ContentType: string {
+        get { "text/html" }
+    }
+
+    public override PageData: PageData {
+        get { readDb() }
+    }
+
+    readDb(): PageData {
+        PageData() <- [
+            "Description" = "Here are some authors and books...",
+            "Authors" = getDbArray("Name", "Authors"),
+            "Books" = getDbArray("Title", "Books"),
+        ];
+    }
+
+    getDbArray(column: string, table: string): array[string] {
+        mutable result = array(0);
+        def c = match(column) {
+            | "Name" => "Name"
+            | "Title" => "Title"
+            | _ => "#"
+        };
+        def t = match(table) {
+            | "Authors" => "Authors"
+            | "Books" => "Books"
+            | _ => "#"
+        };
+        def command = Server.Database.createCommand($"SELECT $c FROM $t");
+        using(reader = command.executeReader()) {
+            mutable i = 0;
+            while(reader.Read()) {
+                def a = reader.GetString(0);
+                def j = i;
+                i++;
+                Array.Resize(ref result, i);
+                result[j] = a;
+            }
+        }
+        result;
+    }
+};
+
+
 //------------------------------------------------------------------------------
 // MyServer
 
@@ -183,6 +238,8 @@ module Test {
                 (HTTP.POST, "/form{{_check}}")], MyComplexHandler);
 
             my_server.route(HTTP.GET, "/post/{{name}}", MyTestHandler);
+
+            my_server.route(HTTP.GET, "/data", MyDatabaseHandler);
 
             // redirection test...
             my_server.route(HTTP.GET, "/redir{{location:.*}}", (ctx, _req, res) => {

@@ -48,8 +48,7 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
 
-    [Accessor(flags = Protected)]
-    database: Database;
+    [Accessor] database: Database;
 
     public Routes[i: Method]: RouteMap {
         get { routes[i :> int] }
