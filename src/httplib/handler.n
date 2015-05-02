@@ -7,7 +7,21 @@ using Nemerle.IO;
 namespace httplib {
 
 //------------------------------------------------------------------------------
-//
+// HandlerData
+
+/** This exists basically to make the Handler ctor (and subclasses) simpler and
+ *  easier to write. */
+[Record]
+public class HandlerData {
+    public Context: Context { get; set; }
+    public Request: Request { get; set; }
+    public Response: Response { get; set; }
+    public Server: Server { get; set; }
+}
+
+
+//------------------------------------------------------------------------------
+// Handler
 
 public class Handler {
 
@@ -16,13 +30,11 @@ public class Handler {
     public virtual Response: Response { get; set; }
     public virtual Server: Server { get; set; }
 
-    public this(
-        context: Context, request: Request, response: Response, server: Server) {
-
-        Context = context;
-        Request = request;
-        Response = response;
-        Server = server;
+    public this(hd: HandlerData) {
+        Context = hd.Context;
+        Request = hd.Request;
+        Response = hd.Response;
+        Server = hd.Server;
     }
 
     public virtual callback(): void {
@@ -38,11 +50,8 @@ public class CallbackHandler: Handler {
 
     lambda: Server.Callback;
 
-    public this(
-        context: Context, request: Request, response: Response, server: Server,
-        cb: Server.Callback) {
-
-        base(context, request, response, server);
+    public this(hd: HandlerData, cb: Server.Callback) {
+        base(hd);
         lambda = cb;
     }
 
@@ -60,11 +69,8 @@ public class CallbackHandlerWrapper {
         lambda = cb;
     }
 
-    public unwrap(
-        context: Context, request: Request, response: Response, server: Server): Handler {
-
-        CallbackHandler(context, request, response, server, lambda);
-
+    public unwrap(hd: HandlerData): Handler {
+        CallbackHandler(hd, lambda);
     }
 }
 
@@ -74,10 +80,8 @@ public class CallbackHandlerWrapper {
 
 public class ComplexHandler: Handler {
 
-    public this(
-        context: Context, request: Request, response: Response, server: Server) {
-
-        base(context, request, response, server);
+    public this(hd: HandlerData) {
+        base(hd);
     }
 
     public override callback(): void {

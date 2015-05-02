@@ -23,10 +23,8 @@ class MyServerConfiguration: ServerConfiguration {
 
 class MyHandler: Handler {
 
-    public this(
-        context: Context, request: Request, response: Response, server: Server) {
-
-        base(context, request, response, server);
+    public this(hd: HandlerData) {
+        base(hd);
     }
 
     public override callback(): void {
@@ -42,10 +40,8 @@ class MyHandler: Handler {
 
 class MyComplexHandler: ComplexHandler {
 
-    public this(
-        context: Context, request: Request, response: Response, server: Server) {
-
-        base(context, request, response, server);
+    public this(hd: HandlerData) {
+        base(hd);
     }
 
     public override setPagePath(_path: string): string {
@@ -96,17 +92,15 @@ class MyComplexHandler: ComplexHandler {
     }
 
     public override finish(): void {
-        print("HERE HERE HERE...\n");
         Response.setCookie("CookieTestName", "CookieTestValue");
     }
 };
 
 
 class MyTestHandler: MyComplexHandler {
-    public this(
-        context: Context, request: Request, response: Response, server: Server) {
 
-        base(context, request, response, server);
+    public this(hd: HandlerData) {
+        base(hd);
     }
 
     public override setPagePath(_path: string): string {

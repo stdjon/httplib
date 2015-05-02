@@ -20,7 +20,7 @@ namespace httplib {
 public abstract class Server: IDisposable {
 
     public type Callback = Context * Request * Response -> void;
-    type MakeHandler = Context * Request * Response * Server -> Handler;
+    type MakeHandler = HandlerData -> Handler;
     type RouteMap = Dictionary[string, Route * MakeHandler];
     type ContextMap = Dictionary[string, Route * PageData];
 
@@ -242,7 +242,6 @@ public abstract class Server: IDisposable {
         AuthenticationSchemes.Anonymous;
     }
 
-    /** Overridden by child classes */
     protected virtual callback(
         context: Context, request: Request, response: Response): void {
         // If the request.SearchedForFileStream is true, it means that the
@@ -297,7 +296,8 @@ public abstract class Server: IDisposable {
             }
 
             if(handler != null) {
-                handler(context, request, response, this).callback();
+                def hd = HandlerData(context, request, response, this);
+                handler(hd).callback();
             } else {
                 callback(context, request, response);
             }
@@ -318,9 +318,9 @@ public abstract class Server: IDisposable {
 
     static listenerCallback(result: IAsyncResult): void {
         def server = result.AsyncState :> Server;
-        def context = server.Listener.EndGetContext(result);
+        def http_ctx = server.Listener.EndGetContext(result);
 
-        server.handleCallback(context);
+        server.handleCallback(http_ctx);
     }
 
     public openLocalFile(path: string): FileStream {
