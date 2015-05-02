@@ -183,11 +183,22 @@ public class CookieTable: IAssociation[CookieCollection] {
 // Context
 
 public class Context {
+    [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
+    [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
     [Accessor(flags = WantSetter)] mutable page_data: PageData;
     [Accessor(flags = WantSetter)] mutable vars: HashTable;
 
     public this() {
+        file_stream = null;
+        searched_for_file_stream = false;
         vars = HashTable();
+    }
+
+    internal complete(): void {
+        def fs = FileStream;
+        when(fs != null) {
+            fs.Close();
+        }
     }
 };
 
@@ -212,8 +223,6 @@ public class Request {
     [Accessor] is_web_socket: bool;
     [Accessor] http_version: int;
     // TODO: is it possible to refactor these setters/mutables away?
-    [Accessor(flags = WantSetter)] mutable file_stream: FileStream;
-    [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
     [Accessor(flags = WantSetter)] mutable extension: string;
 
     // Convenience wrapper for headers
@@ -237,8 +246,6 @@ public class Request {
         is_secure = req.IsSecureConnection;
         is_web_socket = req.IsWebSocketRequest;
         http_version = makeHttpVersion(req.ProtocolVersion);
-        file_stream = null;
-        searched_for_file_stream = false;
         extension = makeExtension(Path);
     }
 
@@ -291,13 +298,6 @@ public class Request {
 
     makeHttpVersion(version: Version): int {
         (version.Major) + 10 + (version.Minor);
-    }
-
-    internal complete(): void {
-        def fs = FileStream;
-        when(fs != null) {
-            fs.Close();
-        }
     }
 }
 

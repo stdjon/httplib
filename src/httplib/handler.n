@@ -23,7 +23,7 @@ public class HandlerData {
 //------------------------------------------------------------------------------
 // Handler
 
-public class Handler {
+public abstract class Handler {
 
     public virtual Context: Context { get; set; }
     public virtual Request: Request { get; set; }
@@ -37,7 +37,7 @@ public class Handler {
         Server = hd.Server;
     }
 
-    public virtual callback(): void {
+    public abstract callback(): void {
         // do stuff with Context/Request/Response
     }
 }
@@ -83,7 +83,7 @@ public class ComplexHandler: Handler {
     public override callback(): void {
         initialize();
 
-        def path = setPagePath(Request.RawPath);
+        def path = PagePath;
         mutable fs = null;
         when(!String.IsNullOrEmpty(path)) {
             fs = openFile(path);
@@ -91,7 +91,7 @@ public class ComplexHandler: Handler {
 
         mutable data = null;
         when(fs != null) {
-            data = setPageData();
+            data = PageData;
         }
 
         def ext = Path.GetExtension(path).Substring(1);
@@ -100,8 +100,8 @@ public class ComplexHandler: Handler {
             def page = renderer.loadPage(fs);
             def text = page.render(data);
             Response.append(text);
-            Response.ContentType = setContentType();
-            Response.Status = setStatus();
+            Response.ContentType = ContentType;
+            Response.Status = Status;
         }
 
         finish();
@@ -109,28 +109,28 @@ public class ComplexHandler: Handler {
 
     public virtual initialize(): void {}
 
-    public virtual setPagePath(_path: string): string {
-        Request.RawPath;
+    public virtual PagePath: string {
+        get { Request.RawPath }
     }
 
     public virtual openFile(path: string): Stream {
         Server.openLocalFile(path);
     }
 
-    public virtual setContentType(): string {
-        "text/plain"
+    public virtual ContentType: string {
+        get { Server.extensionToMimeType(Request.Extension); }
     }
 
-    public virtual setPageData(): PageData {
-        null
+    public virtual PageData: PageData {
+        get { null }
     }
 
     public virtual getRenderer(ext: string): Renderer {
         Server.Renderers[ext];
     }
 
-    public virtual setStatus(): int * string {
-        (200, "OK");
+    public virtual Status: int * string {
+        get { (200, "OK") }
     }
 
     public virtual loadContent(): void {}

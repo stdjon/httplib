@@ -18,6 +18,7 @@ class MyServerConfiguration: ServerConfiguration {
     public this() {}
 }
 
+
 //------------------------------------------------------------------------------
 // MyHandler
 
@@ -39,21 +40,27 @@ class MyHandler: Handler {
 
 
 class MyComplexHandler: ComplexHandler {
+    page_data: PageData;
 
     public this(hd: HandlerData) {
         base(hd);
+        page_data = getPageData();
     }
 
-    public override setPagePath(_path: string): string {
-        "magic.nyml";
+    public override PagePath: string {
+        get { "magic.nyml" }
     }
 
-    public override setContentType(): string {
-        "text/html"
+    public override ContentType: string {
+        get { "text/html" }
     }
 
-    public override setPageData(): PageData {
-        def nustache_table = PageData() <- [
+    public override PageData: PageData {
+        get { page_data }
+    }
+
+    getPageData(): PageData {
+        def page_data = PageData() <- [
             "RawPath" = Request.RawPath,
             "Path" = Request.Path.toSystemType(),
         ];
@@ -67,7 +74,7 @@ class MyComplexHandler: ComplexHandler {
             vars[i] = ($"$k = $v").ToString();
             i++;
         });
-        nustache_table.Add("Vars", vars);
+        page_data.Add("Vars", vars);
 
         i = 0;
         Request.QueryString.forEach((k, v) => {
@@ -75,7 +82,7 @@ class MyComplexHandler: ComplexHandler {
             qs[i] = ($"$k = $v").ToString();
             i++;
         });
-        nustache_table.Add("QueryString", qs);
+        page_data.Add("QueryString", qs);
 
         i = 0;
         Request.Headers.forEach((k, v) => {
@@ -83,12 +90,12 @@ class MyComplexHandler: ComplexHandler {
             hdrs[i] = ($"$k = $v").ToString();
             i++;
         });
-        nustache_table.Add("Headers", hdrs);
+        page_data.Add("Headers", hdrs);
 
         when(Context.Vars["name"] != null) {
-            nustache_table.Add("name", Context.Vars["name"]);
+            page_data.Add("name", Context.Vars["name"]);
         }
-        nustache_table;
+        page_data;
     }
 
     public override finish(): void {
@@ -103,8 +110,8 @@ class MyTestHandler: MyComplexHandler {
         base(hd);
     }
 
-    public override setPagePath(_path: string): string {
-        "test1.nyml";
+    public override PagePath: string {
+        get { "test1.nyml" }
     }
 };
 
@@ -127,7 +134,7 @@ class MyServer: Server {
         base(config);
     }
 
-    protected override notFoundRespose(
+    public override notFoundRespose(
         _context: Context, request: Request, response: Response): void {
         def data = PageData() <- [
             "PATH" = request.RawUrl.ToString(),
@@ -138,7 +145,7 @@ class MyServer: Server {
     }
 
     // overridden 500 error response...
-    protected override internalServerErrorResponse(
+    public override internalServerErrorResponse(
         _context: Context, request: Request, response: Response): void {
 
         def data = PageData() <- [
@@ -178,8 +185,8 @@ module Test {
             my_server.route(HTTP.GET, "/post/{{name}}", MyTestHandler);
 
             // redirection test...
-            my_server.route(HTTP.GET, "/redir{{aim:.*}}", (ctx, _req, res) => {
-                res["Location"] = ctx.Vars["aim"];
+            my_server.route(HTTP.GET, "/redir{{location:.*}}", (ctx, _req, res) => {
+                res["Location"] = ctx.Vars["location"];
                 res.Status = (302, "Moved Permanently");
             });
 

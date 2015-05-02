@@ -137,7 +137,7 @@ public abstract class Server: IDisposable {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        print("handler: $(methodName(method)) '$(path)' added $(handler)\n");
+        print("route: $(methodName(method)) '$(path)' added $(handler)\n");
         Routes[method].Add(pattern, (route, handler));
     }
 
@@ -197,9 +197,7 @@ public abstract class Server: IDisposable {
         result;
     }
 
-    findContext(
-        method_name: string, path: string): PageData {
-
+    findContext(method_name: string, path: string): PageData {
         mutable result;
         exit: {
             def method = methodType(method_name);
@@ -217,16 +215,13 @@ public abstract class Server: IDisposable {
     }
 
     public virtual renderPage(path: string, data: PageData = null): string {
-
         def ext = Path.GetExtension(path).Substring(1);
-        print("ext = $ext...\n");
-        using(stream = openLocalFile(path)) {
 
+        using(stream = openLocalFile(path)) {
             def renderer = Renderers[ext];
             def page = renderer.loadPage(stream);
 
             page.render(data);
-
         }
     }
 
@@ -244,28 +239,24 @@ public abstract class Server: IDisposable {
 
     protected virtual callback(
         context: Context, request: Request, response: Response): void {
-        // If the request.SearchedForFileStream is true, it means that the
-        // request.FileStream was found by searching via the Extensions
-        if(request.FileStream != null) {
-            if(request.SearchedForFileStream) {
-
-                def renderer = Renderers[request.Extension];
-                def page = renderer.loadPage(request.FileStream);
-
-                response.append(page.render(context.PageData));
-
-                response.Status = (200, "OK");
-            } else {
-                serveFileResponse(context, request, response);
-            }
-        } else {
-            notFoundRespose(context, request, response);
-        }
+        // If the context.SearchedForFileStream is true, it means that the
+        // context.FileStream was found by searching via the Extensions
+        // (which means that there should be a suitable Renderer available...)
+        def fs = context.FileStream != null;
+        def searched = context.SearchedForFileStream;
+        def lambda =
+            match((fs, searched)) {
+                | (true, true) => renderPageResponse
+                | (true, false) => serveFileResponse
+                |  _ => notFoundRespose
+            };
+        lambda(context, request, response);
     }
 
     handleCallback(http_ctx: HttpListenerContext): void {
-        mutable request, response, context = Context();
+        mutable context, request, response;
         try {
+            context = Context();
             request = Request(http_ctx.Request);
             response = Response(http_ctx.Response, Configuration.OutputLength);
 
@@ -273,10 +264,10 @@ public abstract class Server: IDisposable {
 
             // check for existing file under roots...
             def (fs, ext) = findLocalFileForRequest(request);
-            request.FileStream = fs;
+            context.FileStream = fs;
 
             when(!String.IsNullOrEmpty(ext)) {
-                request.SearchedForFileStream = true;
+                context.SearchedForFileStream = true;
                 request.Extension = ext;
             }
 
@@ -309,10 +300,14 @@ public abstract class Server: IDisposable {
         } finally {
             print($"Response Status: $(response.StatusCode) "
                 $"$(response.StatusDescription)\n");
-            // TODO: using() may be more appropriate here (if request/response
-            //   gain Dispose() methods...)
-            request.complete();
-            response.complete();
+            try {
+                context.complete();
+                response.complete();
+            } catch {
+                | ex => {
+                    internalServerError(ex);
+                }
+            }
         }
     }
 
@@ -385,33 +380,33 @@ public abstract class Server: IDisposable {
 
     static methodType(name: string): Method {
         match(name.ToUpper()) {
-            | "OPTIONS" => HTTP.OPTIONS
-            | "GET" => HTTP.GET
-            | "HEAD" => HTTP.HEAD
-            | "POST" => HTTP.POST
-            | "PUT" => HTTP.PUT
-            | "DELETE" => HTTP.DELETE
-            | "TRACE" => HTTP.TRACE
-            | "CONNECT" => HTTP.CONNECT
-            | _ => HTTP.INVALID_
+            | "OPTIONS" => OPTIONS
+            | "GET" => GET
+            | "HEAD" => HEAD
+            | "POST" => POST
+            | "PUT" => PUT
+            | "DELETE" => DELETE
+            | "TRACE" => TRACE
+            | "CONNECT" => CONNECT
+            | _ => INVALID_
         }
     }
 
     static methodName(mth: Method): string {
         match(mth) {
-            | HTTP.OPTIONS => "OPTIONS"
-            | HTTP.GET => "GET"
-            | HTTP.HEAD => "HEAD"
-            | HTTP.POST => "POST"
-            | HTTP.PUT => "PUT"
-            | HTTP.DELETE => "DELETE"
-            | HTTP.TRACE => "TRACE"
-            | HTTP.CONNECT => "CONNECT"
+            | OPTIONS => "OPTIONS"
+            | GET => "GET"
+            | HEAD => "HEAD"
+            | POST => "POST"
+            | PUT => "PUT"
+            | DELETE => "DELETE"
+            | TRACE => "TRACE"
+            | CONNECT => "CONNECT"
             | _ => "?"
         }
     }
 
-    protected extensionToMimeType(ext: string): string {
+    public extensionToMimeType(ext: string): string {
         def types = Configuration.MimeTypes;
         if(types.ContainsKey(ext)) {
             types[ext]
@@ -426,23 +421,23 @@ public abstract class Server: IDisposable {
 
     // stock request handlers (can be overridden by clients).
 
-    protected virtual internalServerErrorResponse(
-        _ctx: Context, _req: Request, res: Response): void {
+    public virtual internalServerErrorResponse(
+        _context: Context, _request: Request, response: Response): void {
 
-        res.append(
+        response.append(
             "<html><body><h1>500 Internal Server Error</h1></body><html>");
-        res.Status = (500, "Internal Server Error");
+        response.Status = (500, "Internal Server Error");
     }
 
-    protected virtual methodNotAllowedResponse(
-        _ctx: Context, _req: Request, res: Response): void {
+    public virtual methodNotAllowedResponse(
+        _context: Context, _request: Request, response: Response): void {
 
-        res.append(
+        response.append(
             "<html><body><h1>405 Method Not Allowed</h1></body><html>");
-        res.Status = (405, "Method Not Allowed");
+        response.Status = (405, "Method Not Allowed");
     }
 
-    protected virtual notFoundRespose(
+    public virtual notFoundRespose(
         _context: Context, _request: Request, response: Response): void {
 
         response.append(
@@ -450,10 +445,10 @@ public abstract class Server: IDisposable {
         response.Status = (404, "Not Found");
     }
 
-    protected virtual serveFileResponse(
-        _context: Context, request: Request, response: Response): void {
+    public virtual serveFileResponse(
+        context: Context, request: Request, response: Response): void {
 
-        using(def reader = BinaryReader(request.FileStream)) {
+        using(def reader = BinaryReader(context.FileStream)) {
             mutable continue = true;
 
             while(continue) {
@@ -463,6 +458,16 @@ public abstract class Server: IDisposable {
             }
         }
         response.ContentType = extensionToMimeType(request.Extension);
+        response.Status = (200, "OK");
+    }
+
+    public virtual renderPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def renderer = Renderers[request.Extension];
+        def page = renderer.loadPage(context.FileStream);
+
+        response.append(page.render(context.PageData));
         response.Status = (200, "OK");
     }
 }
