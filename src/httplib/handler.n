@@ -58,19 +58,15 @@ public class CallbackHandler: Handler {
     public override callback(): void {
         lambda(Context, Request, Response);
     }
-}
 
+    [Record]
+    public class Wrapper {
 
-public class CallbackHandlerWrapper {
+        lambda: Server.Callback;
 
-    lambda: Server.Callback;
-
-    public this(cb: Server.Callback) {
-        lambda = cb;
-    }
-
-    public unwrap(hd: HandlerData): Handler {
-        CallbackHandler(hd, lambda);
+        public unwrap(hd: HandlerData): Handler {
+            CallbackHandler(hd, lambda);
+        }
     }
 }
 

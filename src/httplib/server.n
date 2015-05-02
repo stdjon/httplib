@@ -148,7 +148,7 @@ public abstract class Server: IDisposable {
     }
 
     public route(method: Method, path: string, fn: Callback): void {
-        route(method, path, CallbackHandlerWrapper(fn).unwrap);
+        route(method, path, CallbackHandler.Wrapper(fn).unwrap);
     }
 
     public route(routes: list[(Method * string)], fn: Callback): void {
