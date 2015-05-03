@@ -11,6 +11,22 @@ class ForumServer: Server {
 
     public this(path: string) {
         base(path);
+
+        route([
+            (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
+            (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
+    }
+
+    public testResponse(
+        context: Context, _request: Request, response: Response): void {
+
+        def id = context.Vars["id"];
+        def rest = context.Vars["rest"];
+
+        response.append(
+            $"<html><body><h1>Thread ID=$id</h1>"
+            $"<p><tt>rest=$rest</tt></p></body></html>");
+        response.Status = (200, "OK");
     }
 }
 
