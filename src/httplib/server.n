@@ -79,7 +79,9 @@ public abstract class Server: IDisposable {
         configuration = config;
         def db = config.Database;
 
-        when(db.Assembly != null && db.Typename != null) {
+        when(db != null &&
+            db.Assembly != null &&
+            db.Typename != null) {
             database = Database.load(db.Assembly, db.Typename, db.Connection);
         }
 
