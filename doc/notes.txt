@@ -1,31 +1,29 @@
 HTTPS support:
 
-A self-signed certificate was created and registered for testing purposes (see
-cer/self-signed/self-signed.cer).
+Windows:
+  A self-signed certificate was created and registered for testing purposes
+  (see cer/windows/self-signed.cer).
 
+  Overview:
+  http://stackoverflow.com/questions/11403333/httplistener-with-https-support
 
-Overview:
-http://stackoverflow.com/questions/11403333/httplistener-with-https-support
-
-Windows 8.1 SDK (for makecert.exe)
-sdksetup.exe - http://www.microsoft.com/click/services/Redirect2.ashx?CR_EAC=300135395
+  Windows 8.1 SDK (for makecert.exe)
+  sdksetup.exe - http://www.microsoft.com/click/services/Redirect2.ashx?CR_EAC=300135395
 
     > set path=%path%;c:\program files\windows kits\8.1\bin\x86
-
     > makecert -n "CN=self-signed-auth" -r -sv server-auth.pvk server-auth.cer
     Succeeded
 
-[As Administrator]
+  [As Administrator]
     > makecert -sk self-signed -iv server-auth.pvk -n "CN=self-signed" -ic server-auth.cer self-signed.cer -sr localmachine -ss My
     Succeeded
 
-
-[As Administrator]
+  [As Administrator]
     > netsh http add sslcert ipport=0.0.0.0:8443 certhash=df52b2cb0a33207c95118f84b8f7b4a3bc8dc9c3 appid={769F2E76-AE87-4825-8157-C82CBF769DDD}
 
     SSL Certificate successfully added
 
-To verify [as Administrator]:
+  To verify [as Administrator]:
     > netsh http show sslcert ipport=0.0.0.0:8443
 
     SSL Certificate bindings:
@@ -45,10 +43,32 @@ To verify [as Administrator]:
         DS Mapper Usage              : Disabled
         Negotiate Client Certificate : Disabled
 
-To uninstall the cert again [as Administrator]:
+  To uninstall the cert again [as Administrator]:
     > netsh http delete sslcert ipport=0.0.0.0:8443
 
     SSL Certificate successfully deleted
+
+Linux:
+  Different certificates may be needed to test https on Linux: see
+  cer/linux/self-signed.cer/.pvk.
+  Note that unlike Windows, Administrator privileges are _not_ required for
+  either the makecert or httpcfg commands.
+
+    > makecert -r -n "CN=self-signed" -sv self-signed.pvk self-signed.cer
+    Mono MakeCert - version 3.1.2.0
+    X.509 Certificate Builder
+    Copyright 2002, 2003 Motus Technologies. Copyright 2004-2008 Novell. BSD licensed.
+
+    Success
+
+    > httpcfg -add -port 8443 -cert self-signed.cer -pvk self-signed.pvk
+
+  To verify the certificate is installed:
+    > httpcfg -list
+    Port: 8443 Thumbprint: C5A355DA2FC5571053ED9F5B2629178712D7EDC0
+
+  To uninstall, use this:
+    > httpcfg -del -port 8443
 
 
 Authentication:
