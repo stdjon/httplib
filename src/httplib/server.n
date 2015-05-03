@@ -105,9 +105,10 @@ public abstract class Server: IDisposable {
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
-        route(HTTP.OPTIONS, ".*", methodNotAllowedResponse);
-        route(HTTP.TRACE, ".*", methodNotAllowedResponse);
-        route(HTTP.CONNECT, ".*", methodNotAllowedResponse);
+        route([
+            (HTTP.OPTIONS, ".*"),
+            (HTTP.TRACE, ".*"),
+            (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
 
         Listener.AuthenticationSchemeSelectorDelegate = req => {
             def request = Request(req);
