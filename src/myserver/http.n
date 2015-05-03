@@ -222,7 +222,6 @@ class MyServer: Server {
 module Test {
     Main(_args: array[string]): void {
 
-        mutable running = true;
         def config_path = "src/myserver/config.yml";
         print("ServerConfiguration: $config_path\n");
 
@@ -253,8 +252,9 @@ module Test {
             });
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
+            my_server.start();
 
-            while(running) {
+            while(my_server.Running) {
                 my_server.update();
                 Thread.Sleep(1000);
             }

@@ -25,6 +25,7 @@ make_ref=$(foreach l,$1,-r $l)
 
 CONTRIB_LIBS:= \
 	contrib/server/MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
+	contrib/server/NDesk.Options-0.2.1.0/NDesk.Options.dll \
 	contrib/server/Nustache-1.14.0.4/Nustache.Core.dll \
 	contrib/server/yamldotnet-3.5.1.85/Release-Signed/YamlDotNet.dll \
 	#
@@ -34,17 +35,31 @@ contrib_refs=$(call make_ref,$(CONTRIB_LIBS))
 # ------------------------------------------------------------------------------
 # Targets
 
-.PHONY: all clean install_contrib run
+.PHONY: all clean install_contrib run frun
 
 
-all: http.exe
+all: forum.exe http.exe
 
-run: install_contrib all
+run: install_contrib http.exe
 	$(call launch_assembly,http.exe)
+
+frun: install_contrib forum.exe
+	$(call launch_assembly,forum.exe)
 
 clean:
 	rm -rf http.exe
 	rm -rf *.dll
+
+
+# ------------------------------------------------------------------------------
+# forum.exe
+
+forum.exe_SRC:=$(wildcard src/forum/*.n)
+forum.exe_DLLS:=httplib.dll httplib.db.mysql.dll httplib.page.nustache.dll
+
+forum.exe: $(forum.exe_SRC) $(forum.exe_DLLS)
+	$(NCC) -no-color  $($@_SRC) -o $@ \
+		$(contrib_refs) $(call make_ref,$($@_DLLS))
 
 
 # ------------------------------------------------------------------------------

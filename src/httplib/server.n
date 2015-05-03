@@ -38,7 +38,7 @@ public abstract class Server: IDisposable {
     }
 
     [Accessor(Flags, flags = Protected)]
-    [FlagAccessor(Running, flags = Protected | WantSetter)]
+    [FlagAccessor(Running, flags = WantSetter)]
     [FlagAccessor(Closed, flags = Protected | WantSetter)]
     mutable state: State = State.Neutral;
 
@@ -113,7 +113,10 @@ public abstract class Server: IDisposable {
             def request = Request(req);
             handleAuthentication(request);
         };
+    }
 
+    public start(): void {
+        Running = true;
         Listener.Start();
     }
 
@@ -174,7 +177,6 @@ public abstract class Server: IDisposable {
     }
 
     public update(): void {
-        Running = true;
         def _ = Listener.BeginGetContext(listenerCallback, this);
     }
 

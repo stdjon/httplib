@@ -1,0 +1,27 @@
+# ------------------------------------------------------------------------------
+# Example MyServer configuration
+---
+Prefixes:
+  - http://localhost:8080/
+  - https://localhost:8443/
+Roots:
+  - ./src/forum/www
+  - ./contrib/client
+Renderers:
+  yml:
+    Assembly: httplib.dll
+    Typename: httplib.Renderer
+  nyml:
+    Assembly: httplib.page.nustache.dll
+    Typename: httplib.page.NustacheRenderer
+MimeTypes:
+  js: application/javascript
+  json: application/json
+  html: text/html
+  css: text/css`
+  ttf: application/x-font-ttf
+  woff: application/x-font-woff
+  woff2: application/octet-stream
+  _: text/plain
+OutputLength: 800
+FileChunkLength: 1024

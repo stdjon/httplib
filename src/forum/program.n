@@ -1,0 +1,75 @@
+using System;
+using System.Threading;
+
+using Nemerle.IO;
+
+using NDesk.Options;
+
+using httplib;
+
+
+namespace forum {
+
+module Program {
+
+    public class Arguments {
+        public this() {
+            ShowHelp = false;
+            Config = "src/forum/default_config.yml";
+            Verbose = 0;
+        }
+        public ShowHelp: bool { get; set }
+        public Config: string { get; set }
+        public Verbose: uint { get; set }
+    };
+
+    public Main(args: array[string]): void {
+
+        def (arguments, options) = parseArguments(args);
+
+        if(arguments.ShowHelp) {
+            showHelp(options);
+        } else {
+            runServer(arguments);
+        }
+    }
+
+    parseArguments(args: array[string]): Arguments * OptionSet {
+        mutable result = Arguments();
+        def options = OptionSet().
+            Add("h|?|help", "Show help.",
+                _ => { result.ShowHelp = true }).
+            Add("v|verbose", "More logging output.",
+                _ => { ++result.Verbose }).
+            Add("c|config=", "Use configuration {FILE}.",
+                v => { result.Config = v });
+        def _ = options.Parse(args);
+        (result, options);
+    }
+
+    showHelp(options: OptionSet): void {
+        print("\nA simple forum application server.\n");
+        print("Usage:\n  forum.exe <options>\n\nwhere <options> are:\n\n");
+        options.WriteOptionDescriptions(Console.Out);
+    }
+
+    runServer(arguments: Arguments): void {
+        using(server = ForumServer(arguments.Config)) {
+
+            server.start();
+            while(server.Running) {
+                try {
+                    server.update();
+                    Thread.Sleep(500);
+                } catch {
+                    | ex => {
+                        print("ERROR! $ex\n");
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+} // namespace forum

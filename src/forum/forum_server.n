@@ -1,0 +1,18 @@
+using System;
+
+using Nemerle.IO;
+
+using httplib;
+
+
+namespace forum {
+
+class ForumServer: Server {
+
+    public this(path: string) {
+        base(path);
+    }
+}
+
+
+} // namespace forum
