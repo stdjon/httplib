@@ -1,0 +1,23 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information
+[assembly: AssemblyTitle("httplib.page.nustache.dll")]
+[assembly: AssemblyDescription("HTTP Server - Nustache Page Renderer")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("httplib.page.nustache")]
+[assembly: AssemblyCopyright("(c) Jon Head 2015")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// ComVisible
+[assembly: ComVisible(false)]
+
+// Guid
+[assembly: Guid("03E2F7F8-99FC-441C-BC1E-6074A6A956EB")]
+
+// Version information
+[assembly: AssemblyVersion("0.0.0.1")]
+[assembly: AssemblyFileVersion("0.0.0.1")]
