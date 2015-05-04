@@ -35,6 +35,27 @@ contrib_refs=$(call make_ref,$(CONTRIB_LIBS))
 
 
 # ------------------------------------------------------------------------------
+# Rules Template
+
+# $1 = path to output assembly
+# $2 = path to source code directory
+# $3 = additional dlls to reference (can be empty)
+# $4 = additional args to ncc (can be empty)
+define emit_rule
+$1_SRC:=$$(wildcard $2/*.n)
+$1_DLLS:=$3
+
+$1: $$($1_SRC) $$($1_DLLS)
+	mkdir -p $$(dir $$@)
+	$$(NCC) $4 -no-color  $$($$@_SRC) -o $$@ $$(refs)
+endef
+
+
+emit_exe_rule=$(call emit_rule,$1,$2,$3)
+emit_dll_rule=$(call emit_rule,$1,$2,$3,-t:library)
+
+
+# ------------------------------------------------------------------------------
 # Targets
 
 .PHONY: all clean install_contrib run frun
@@ -55,56 +76,40 @@ clean:
 # ------------------------------------------------------------------------------
 # bin/forum.exe
 
-bin/forum.exe_SRC:=$(wildcard src/forum/*.n)
-bin/forum.exe_DLLS:=bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll
-
-bin/forum.exe: $(bin/forum.exe_SRC) $(bin/forum.exe_DLLS)
-	@mkdir -p $(dir $@)
-	$(NCC) -no-color  $($@_SRC) -o $@ $(refs)
+$(eval $(call emit_exe_rule,bin/forum.exe, \
+	src/forum, \
+	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll))
 
 
 # ------------------------------------------------------------------------------
 # bin/http.exe
 
-bin/http.exe_SRC:=$(wildcard src/myserver/*.n)
-bin/http.exe_DLLS:=bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll
-
-bin/http.exe: $(bin/http.exe_SRC) $(bin/http.exe_DLLS)
-	@mkdir -p $(dir $@)
-	$(NCC) -no-color  $($@_SRC) -o $@ $(refs)
+$(eval $(call emit_exe_rule,bin/http.exe, \
+	src/myserver, \
+	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll))
 
 
 # ------------------------------------------------------------------------------
 # bin/httplib.dll
 
-bin/httplib.dll_SRC:=$(wildcard src/httplib/*.n)
-bin/httplib.dll_DLLS:=
-
-bin/httplib.dll: $(bin/httplib.dll_SRC) $(bin/httplib.dll_DLLS)
-	@mkdir -p $(dir $@)
-	$(NCC) -t:library -no-color $($@_SRC) -o $@ $(refs)
+$(eval $(call emit_dll_rule,bin/httplib.dll, \
+	src/httplib))
 
 
 # ------------------------------------------------------------------------------
 # bin/httplib.db.mysql.dll
 
-bin/httplib.db.mysql.dll_SRC:=$(wildcard src/httplib/db/mysql/*.n)
-bin/httplib.db.mysql.dll_DLLS:=bin/httplib.dll
-
-bin/httplib.db.mysql.dll: $(bin/httplib.db.mysql.dll_SRC) $(bin/httplib.db.mysql.dll_DLLS)
-	@mkdir -p $(dir $@)
-	$(NCC) -t:library -no-color $($@_SRC) -o $@ $(refs)
+$(eval $(call emit_dll_rule,bin/httplib.db.mysql.dll, \
+	src/httplib/db/mysql, \
+	bin/httplib.dll))
 
 
 # ------------------------------------------------------------------------------
 # bin/httplib.page.nustache.dll
 
-bin/httplib.page.nustache.dll_SRC:=$(wildcard src/httplib/page/nustache/*.n)
-bin/httplib.page.nustache.dll_DLLS:=bin/httplib.dll
-
-bin/httplib.page.nustache.dll: $(bin/httplib.page.nustache.dll_SRC) $(bin/httplib.page.nustache.dll_DLLS)
-	@mkdir -p $(dir $@)
-	$(NCC) -t:library -no-color $($@_SRC) -o $@ $(refs)
+$(eval $(call emit_dll_rule,bin/httplib.page.nustache.dll, \
+	src/httplib/page/nustache, \
+	bin/httplib.dll))
 
 
 # ------------------------------------------------------------------------------
