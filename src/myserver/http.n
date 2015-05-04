@@ -222,7 +222,7 @@ class MyServer: Server {
 module Test {
     Main(_args: array[string]): void {
 
-        def config_path = "src/myserver/config.yml";
+        def config_path = "../src/myserver/config.yml";
         print("ServerConfiguration: $config_path\n");
 
         using(mutable my_server = MyServer(config_path)) {

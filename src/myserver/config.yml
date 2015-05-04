@@ -9,8 +9,8 @@ Prefixes:
   - http://localhost:8080/
   - https://localhost:8443/
 Roots:
-  - ./www
-  - ./contrib/client
+  - ../www
+  - ../contrib/client
 Renderers:
   yml:
     Assembly: httplib.dll

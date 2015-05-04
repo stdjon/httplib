@@ -5,8 +5,8 @@ Prefixes:
   - http://localhost:8080/
   - https://localhost:8443/
 Roots:
-  - ./src/forum/www
-  - ./contrib/client
+  - ../src/forum/www
+  - ../contrib/client
 Renderers:
   yml:
     Assembly: httplib.dll
