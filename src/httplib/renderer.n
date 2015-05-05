@@ -32,7 +32,7 @@ public class Renderer {
             result = yaml_deserializer.Deserialize(reader, PageType) :> Page;
 
             when(use_template && !String.IsNullOrEmpty(result.Template)) {
-                def fs = Server.openLocalFile(result.Template);
+                def fs = Server.openLocalFile(result.Template, true);
                 def template = loadPage(fs, false);
                 result.merge(template);
             }

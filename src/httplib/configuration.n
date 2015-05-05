@@ -44,6 +44,8 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable prefixes: array[string];
     /** Filesystem roots for file serving */
     [Accessor(flags = WantSetter)] mutable roots: array[string];
+    /** Patterns to test when deciding if a file can be served */
+    [Accessor(flags = WantSetter)] mutable file_serving: array[string];
     /** Extensions to try (in order) when no extension given in request URI */
     [Accessor(flags = WantSetter)] mutable renderers: Renderers;
     /** (Mapping extensions to) MIME Types */

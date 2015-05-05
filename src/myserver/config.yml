@@ -11,6 +11,16 @@ Prefixes:
 Roots:
   - ../www
   - ../contrib/client
+FileServing:
+  - /.*css
+  - /.*html
+  - /.*js
+  - /.*ttf
+  - /.*woff
+  - /.*woff2
+  - /magic
+  - /script
+  - /test[0-9]+
 Renderers:
   yml:
     Assembly: httplib.dll

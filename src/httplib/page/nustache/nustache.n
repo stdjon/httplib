@@ -23,7 +23,12 @@ public class NustachePage: Page {
 
         print("NustachePage.renderContent...\n");
         def objects = mergeDicts(Objects, data);
-        Render.StringToString(Content, objects, templateLocator(_, parts));
+
+        if(!String.IsNullOrEmpty(Content)) {
+            Render.StringToString(Content, objects, templateLocator(_, parts));
+        } else {
+            ""
+        }
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {

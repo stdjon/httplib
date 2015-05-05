@@ -86,7 +86,7 @@ public class ComplexHandler: Handler {
         def path = PagePath;
         mutable fs = null;
         when(!String.IsNullOrEmpty(path)) {
-            fs = openFile(path);
+            fs = openFile(path, true);
         }
 
         mutable data = null;
@@ -113,8 +113,8 @@ public class ComplexHandler: Handler {
         get { Request.RawPath }
     }
 
-    public virtual openFile(path: string): Stream {
-        Server.openLocalFile(path);
+    public virtual openFile(path: string, force = false): Stream {
+        Server.openLocalFile(path, force);
     }
 
     public virtual ContentType: string {

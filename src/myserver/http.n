@@ -252,6 +252,7 @@ module Test {
             });
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
+
             my_server.start();
 
             while(my_server.Running) {

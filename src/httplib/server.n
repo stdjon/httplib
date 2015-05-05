@@ -23,6 +23,7 @@ public abstract class Server: IDisposable {
     type MakeHandler = HandlerData -> Handler;
     type RouteMap = Dictionary[string, Route * MakeHandler];
     type ContextMap = Dictionary[string, Route * PageData];
+    type FileServingMap = Dictionary[string, Route];
 
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
@@ -60,6 +61,11 @@ public abstract class Server: IDisposable {
     }
     contexts: array[ContextMap] = array(MethodCount);
 
+    public FileServing: FileServingMap {
+        get { file_serving }
+    }
+    file_serving: FileServingMap = Dictionary();
+
     [Accessor(flags = Internal)]
     renderers: Dictionary[string, Renderer] = Dictionary();
 
@@ -75,10 +81,9 @@ public abstract class Server: IDisposable {
     }
 
     public this(config: ServerConfiguration) {
-
         configuration = config;
-        def db = config.Database;
 
+        def db = Configuration.Database;
         when(db != null &&
             db.Assembly != null &&
             db.Typename != null) {
@@ -89,6 +94,8 @@ public abstract class Server: IDisposable {
             print("Adding \"$p\"...\n");
             Listener.Prefixes.Add(p);
         }
+
+        fileServingArray(Configuration.FileServing);
 
         foreach(x in Configuration.Renderers) {
             def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
@@ -177,6 +184,20 @@ public abstract class Server: IDisposable {
         }
     }
 
+    public fileServing(params paths: array[string]): void {
+        fileServingArray(paths);
+    }
+
+    public fileServingArray(paths: array[string]): void {
+        when(paths != null) {
+            foreach(p in paths) {
+                def route = Route(p);
+                def pattern = route.Pattern;
+                FileServing.Add(pattern, route);
+            }
+        }
+    }
+
     public update(): void {
         _ = Listener.BeginGetContext(listenerCallback, this);
     }
@@ -189,11 +210,9 @@ public abstract class Server: IDisposable {
             def method = methodType(method_name);
             foreach(r in Routes[method]) {
                 def (route, handler) = r.Value;
-                def (ok, vars) = route.doMatch(path);
 
-                when(ok) {
+                when(route.doMatch(path, ref vars_out)) {
                     result = handler;
-                    vars_out = vars;
                     exit();
                 }
             }
@@ -207,9 +226,9 @@ public abstract class Server: IDisposable {
             def method = methodType(method_name);
             foreach(r in Contexts[method]) {
                 def (route, data) = r.Value;
-                def (ok, _) = route.doMatch(path);
+                mutable vars = null;
 
-                when(ok) {
+                when(route.doMatch(path, ref vars)) {
                     result = data;
                     exit();
                 }
@@ -221,7 +240,7 @@ public abstract class Server: IDisposable {
     public virtual renderPage(path: string, data: PageData = null): string {
         def ext = Path.GetExtension(path).Substring(1);
 
-        using(stream = openLocalFile(path)) {
+        using(stream = openLocalFile(path, true)) {
             def renderer = Renderers[ext];
             def page = renderer.loadPage(stream);
 
@@ -302,8 +321,8 @@ public abstract class Server: IDisposable {
                 internalServerErrorResponse(context, request, response);
             }
         } finally {
-            print($"Response Status: $(response.StatusCode) "
-                $"$(response.StatusDescription)\n");
+            def (sc, sd) = (response.StatusCode, response.StatusDescription);
+            print($"Response Status: $sc $sd\n");
             try {
                 context.complete();
                 response.complete();
@@ -322,18 +341,36 @@ public abstract class Server: IDisposable {
         server.handleCallback(http_ctx);
     }
 
-    public openLocalFile(path: string): FileStream {
-        mutable result = null;
+    public fileServingAllowed(path: string): bool {
+        mutable result;
         exit: {
-            foreach(root in Configuration.Roots) {
-                def p = Path.Combine(root, path);
-                def exists = File.Exists(p);
-                def x = if(exists) { "yes" } else { "no" }
+            foreach(f in FileServing) {
+                def route = f.Value;
+                mutable vars = null;
 
-                print($"File exists: \"$p\"? $x\n");
-                when(exists) {
-                    result = FileStream(p, FileMode.Open);
+                when(route.doMatch("/" + path, ref vars)) {
+                    result = true;
                     exit();
+                }
+            }
+        }
+        //print("fileServingAllowed(\"/$path\"): $result\n");
+        result;
+    }
+
+    public openLocalFile(path: string, force = false): FileStream {
+        mutable result = null;
+        when(force || fileServingAllowed(path)) {
+            exit: {
+                foreach(root in Configuration.Roots) {
+                    def p = Path.Combine(root, path);
+                    def exists = File.Exists(p);
+
+                    print($"File exists: \"$p\"? $exists\n");
+                    when(exists) {
+                        result = FileStream(p, FileMode.Open);
+                        exit();
+                    }
                 }
             }
         }
@@ -348,7 +385,8 @@ public abstract class Server: IDisposable {
         } else {
             exit: {
                 foreach(x in Configuration.Renderers) {
-                    result = openLocalFile(request.RawPath + "." + x.Key);
+                    def force = fileServingAllowed(request.RawPath);
+                    result = openLocalFile(request.RawPath + "." + x.Key, force);
                     when(result != null) {
                         ext = x.Key;
                         exit();

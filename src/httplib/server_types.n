@@ -417,15 +417,12 @@ public class Route {
         pattern = rx;
     }
 
-    public isMatch(path: string): bool {
-        regex.IsMatch(path)
-    }
-
-    public doMatch(path: string): bool * HashTable {
-        mutable vars = HashTable();
+    public doMatch(path: string, vars_ref: ref HashTable): bool {
         def result = regex.IsMatch(path);
+        //print("doMatch: '$(regex.ToString())' '$path' -> $result\n");
+        mutable vars = vars_ref; // cannot store ref/out parameters in closures
 
-        when(result) {
+        when(result && vars != null) {
             _ = regex.Replace(path, m => {
 
                 for(mutable i = 1; i < m.Groups.Count; i++) {
@@ -436,7 +433,8 @@ public class Route {
                 ""
             }, 100, 0);
         }
-        (result, vars);
+        vars_ref = vars;
+        result;
     }
 
     process(input: ref string, pattern: string, replace: string -> string): void {
