@@ -22,24 +22,18 @@ public class NustachePage: Page {
         data: ObjectsType = null, parts: PartialsType = null): string {
 
         print("NustachePage.renderContent...\n");
-        def objects = data ?? Objects;
+        def objects = mergeDicts(Objects, data);
         Render.StringToString(Content, objects, templateLocator(_, parts));
     }
 
     templateLocator(template: string, parts: PartialsType = null): Template {
         mutable result = null;
         mutable partial_to_use = null;
+        def partials = mergeDicts(Partials, parts);
 
-        when(Partials.ContainsKey(template)) {
-            partial_to_use = Partials[template];
+        when(partials.ContainsKey(template)) {
+            partial_to_use = partials[template];
         }
-
-        when( parts != null &&
-            parts.ContainsKey(template) ) {
-
-            partial_to_use = parts[template];
-        }
-
         when(partial_to_use != null) {
             result = Template(template);
             using(def reader = StringReader(partial_to_use)) {
@@ -56,6 +50,10 @@ public class NustachePage: Page {
 // NustacheRenderer
 
 public class NustacheRenderer: Renderer {
+
+    public this(server: Server) {
+        base(server);
+    }
 
     public override PageType: Type {
         get { typeof(NustachePage) }

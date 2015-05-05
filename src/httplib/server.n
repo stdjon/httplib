@@ -91,7 +91,7 @@ public abstract class Server: IDisposable {
         }
 
         foreach(x in Configuration.Renderers) {
-            def r = Renderer.load(x.Value.Assembly, x.Value.Typename);
+            def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
             when(r != null) {
                 print("Registering $r for $(x.Key) files...\n");
                 Renderers[x.Key] = r;

@@ -14,16 +14,18 @@ namespace httplib {
 [Record]
 public class Page {
 
-    public type PartialsType = Dictionary[string, string];
-    public type ObjectsType = Dictionary[string, object];
+    type Dict[T] = Dictionary[string, T];
+    public type PartialsType = Dict[string];
+    public type ObjectsType = Dict[object];
 
     public Path: string { get; set; }
-    public Metas: array[string] { get; set; }
+    public Metas: List[string] { get; set; }
     public Title: string { get; set; }
-    public Stylesheets: array[string] { get; set; }
+    public Stylesheets: List[string] { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
+    public Template: string { get; set; }
 
     public this() {}
 
@@ -51,14 +53,60 @@ public class Page {
 
         def content = renderContent(data, parts);
 
-        $"<html><head>$meta$title$stylesheet\n</head>\n"
-        $"<body>\n$content\n</body></html>";
+        $"<html>\n<head>$meta$title$stylesheet\n</head>\n"
+        $"<body>\n$content</body>\n</html>";
     }
 
     public virtual renderContent(
         _data: ObjectsType = null, _parts: PartialsType = null): string {
 
         Content;
+    }
+
+    public merge(other: Page): void {
+        when(Title == null) {
+            Title = other.Title;
+        }
+        when(Content == null) {
+            Content = other.Content;
+        }
+        Metas = mergeLists(other.Metas, Metas);
+        Stylesheets = mergeLists(other.Stylesheets, Stylesheets);
+        Partials = mergeDicts(other.Partials, Partials);
+        Objects = mergeDicts(other.Objects, Objects);
+    }
+
+    protected static mergeLists(
+        a: List[string], b: List[string]): List[string] {
+        mutable result = List();
+
+        when(a != null) {
+            foreach(m in a) {
+                result.Add(m);
+            }
+        }
+        when(b != null) {
+            foreach(m in b) {
+                result.Add(m);
+            }
+        }
+        result;
+    }
+
+    protected static mergeDicts[T](a: Dict[T], b: Dict[T]): Dict[T] {
+        mutable result = Dict();
+
+        when(a != null) {
+            foreach(m in a) {
+                result.Add(m.Key, m.Value);
+            }
+        }
+        when(b != null) {
+            foreach(m in b) {
+                result[m.Key] = m.Value;
+            }
+        }
+        result;
     }
 }
 
