@@ -412,15 +412,14 @@ public abstract class Server: IDisposable {
 
     public extensionToMimeType(ext: string): string {
         def types = Configuration.MimeTypes;
-        if(types.ContainsKey(ext)) {
-            types[ext]
-        } else {
-            if(types.ContainsKey("_")) {
-                types["_"]
-            } else {
-                "text/plain"
-            }
+        mutable result = "text/plain";
+        mutable probe;
+        when(
+            types.TryGetValue(ext, out probe) ||
+            types.TryGetValue("_", out probe) ) {
+                result = probe;
         }
+        result;
     }
 
     // stock request handlers (can be overridden by clients).

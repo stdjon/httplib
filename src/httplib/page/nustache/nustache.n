@@ -28,13 +28,12 @@ public class NustachePage: Page {
 
     templateLocator(template: string, parts: PartialsType = null): Template {
         mutable result = null;
-        mutable partial_to_use = null;
+        mutable partial_to_use;
         def partials = mergeDicts(Partials, parts);
 
-        when(partials.ContainsKey(template)) {
-            partial_to_use = partials[template];
-        }
-        when(partial_to_use != null) {
+        _ = partials.TryGetValue(template, out partial_to_use);
+
+        when(!String.IsNullOrEmpty(partial_to_use)) {
             result = Template(template);
             using(def reader = StringReader(partial_to_use)) {
                 result.Load(reader);
