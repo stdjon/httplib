@@ -43,7 +43,7 @@ module Program {
                 _ => { ++result.Verbose }).
             Add("c|config=", "Use configuration {FILE}.",
                 v => { result.Config = v });
-        def _ = options.Parse(args);
+        _ = options.Parse(args);
         (result, options);
     }
 

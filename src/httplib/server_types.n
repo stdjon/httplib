@@ -426,7 +426,7 @@ public class Route {
         def result = regex.IsMatch(path);
 
         when(result) {
-            def _ = regex.Replace(path, m => {
+            _ = regex.Replace(path, m => {
 
                 for(mutable i = 1; i < m.Groups.Count; i++) {
                     def k = captures[i - 1];

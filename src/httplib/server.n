@@ -178,7 +178,7 @@ public abstract class Server: IDisposable {
     }
 
     public update(): void {
-        def _ = Listener.BeginGetContext(listenerCallback, this);
+        _ = Listener.BeginGetContext(listenerCallback, this);
     }
 
     findHandler(method_name: string,
