@@ -1,0 +1,94 @@
+body {
+  background-image: url("bg-small-basic.png");
+  background-attachment: fixed;
+}
+
+a.navbar-brand {
+  /*font-variant: small-caps;*/
+  font-weight: 900;
+}
+
+* {
+  border-radius: 0;
+
+
+/* word breaks/hyphenation
+ * (TODO: look at Hypenator.js as a better solution?) */
+
+  /* Non standard for webkit */
+  word-break: break-word;
+
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
+  /*letter-spacing: 6px;*/
+}
+
+p {
+  text-indent: 30px;
+  text-align: justify;
+}
+
+a {
+  /*text-decoration: underline;*/
+}
+a:hover {
+/*  letter-spacing: 10px;
+  font-weight: bold;*/
+  background-color: #fdd;
+}
+
+a:active {
+  font-style: italic;
+}
+
+a:link {
+  text-decoration: underline;
+  color: #00f;
+}
+
+a:visited {
+  color: #555;
+}
+
+div.banner {
+  padding-top: 50px;
+}
+div.banner .anchor {
+  margin-top: -55px;
+  padding-top: 55px;
+  margin-bottom: 0px;
+  /*margin-bottom: 60px;*/
+  /*background-color: #ff7;*/
+}
+div.body {
+  padding-top: 10px;
+  background-color: #ff4;
+}
+div.body .anchor {
+  margin-top: -55px;
+  padding-top: 55px;
+  /*padding-bottom: 20px;*/
+}
+div.body p {
+  background-color: #ff9;
+}
+div.guide {
+  padding-top: 10px;
+  background-color: #7f7;
+  height: 1023px;
+}
+div.guide p {
+  background-color: #cfc;
+}
+h1, h2, h3, h4 {
+  font-weight: bold;
+  font-size: 200%;
+}
+.container .jumbotron {
+  border-radius: 0;
+}
+div.jumbotron h1 {
+  font-weight: 900;
+  font-size: 500%;
+}

@@ -1,0 +1,27 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Template Test Page
+Content: >
+  {{>PageLayout}}
+Partials:
+  PageLayout: >
+    {{>Nav}}
+    <div class="container">
+      <div class="banner">
+        {{>Banner}}
+        <div class="col-xs-8 body">
+          {{>Body}}
+        </div>
+        <div class="col-xs-4 guide">
+          {{>Guide}}
+        </div>
+      </div>
+    </div>

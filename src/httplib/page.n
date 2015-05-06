@@ -38,16 +38,20 @@ public class Page {
             }
 
         mutable meta = "";
-        foreach(m in Metas) {
-            when(!String.IsNullOrEmpty(m)) {
-                meta += $"\n<meta $m>"
+        when(Metas != null) {
+            foreach(m in Metas) {
+                when(!String.IsNullOrEmpty(m)) {
+                    meta += $"\n<meta $m>"
+                }
             }
         }
 
         mutable stylesheet = "";
-        foreach(s in Stylesheets) {
-            when(!String.IsNullOrEmpty(s)) {
-                stylesheet += $"\n<link href='$s' rel='stylesheet'>"
+        when(Stylesheets != null) {
+            foreach(s in Stylesheets) {
+                when(!String.IsNullOrEmpty(s)) {
+                    stylesheet += $"\n<link href='$s' rel='stylesheet'>"
+                }
             }
         }
 

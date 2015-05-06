@@ -12,9 +12,16 @@ class ForumServer: Server {
     public this(path: string) {
         base(path);
 
+        route(HTTP.GET, "/", indexResponse);
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
             (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
+    }
+
+    public indexResponse(
+        _context: Context, _request: Request, response: Response): void {
+        response.append(renderPage("index.nyml"));
+        response.Status = (200, "OK");
     }
 
     public testResponse(
@@ -27,6 +34,12 @@ class ForumServer: Server {
             $"<html><body><h1>Thread ID=$id</h1>"
             $"<p><tt>rest=$rest</tt></p></body></html>");
         response.Status = (200, "OK");
+    }
+
+    protected override internalServerError(ex: Exception): void {
+        print("INTERNAL SERVER ERROR!\n"
+            $"$(ex.Message)\n"
+            $"$(ex.StackTrace)\n");
     }
 }
 

@@ -7,6 +7,15 @@ Prefixes:
 Roots:
   - ../src/forum/www
   - ../contrib/client
+FileServing:
+  - /.*css
+  - /.*html
+  - /.*js
+  - /.*map
+  - /.*png
+  - /.*ttf
+  - /.*woff
+  - /.*woff2
 Renderers:
   yml:
     Assembly: httplib.dll
