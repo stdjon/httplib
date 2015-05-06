@@ -36,7 +36,7 @@ class MyHandler: Handler {
         Response.append($"<p><tt>[Rest = $rest]</tt></p></body></html>");
         Response.Status = (200, "OK");
     }
-};
+}
 
 
 class MyComplexHandler: ComplexHandler {
@@ -101,7 +101,7 @@ class MyComplexHandler: ComplexHandler {
     public override finish(): void {
         Response.setCookie("CookieTestName", "CookieTestValue");
     }
-};
+}
 
 
 class MyTestHandler: MyComplexHandler {
@@ -113,7 +113,7 @@ class MyTestHandler: MyComplexHandler {
     public override PagePath: string {
         get { "test1.nyml" }
     }
-};
+}
 
 
 
@@ -168,7 +168,7 @@ class MyDatabaseHandler: ComplexHandler {
         }
         result;
     }
-};
+}
 
 
 //------------------------------------------------------------------------------

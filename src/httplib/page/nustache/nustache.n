@@ -62,7 +62,7 @@ public class NustacheRenderer: Renderer {
     public override PageType: Type {
         get { typeof(NustachePage) }
     }
-};
+}
 
 
 

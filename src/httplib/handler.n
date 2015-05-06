@@ -136,7 +136,7 @@ public class ComplexHandler: Handler {
     public virtual loadContent(): void {}
 
     public virtual finish(): void {}
-};
+}
 
 
 } // namespace httplib

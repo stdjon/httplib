@@ -268,7 +268,7 @@ public abstract class Server: IDisposable {
         def fs = context.FileStream != null;
         def searched = context.SearchedForFileStream;
         def lambda =
-            match((fs, searched)) {
+            match(fs, searched) {
                 | (true, true) => renderPageResponse
                 | (true, false) => serveFileResponse
                 |  _ => notFoundRespose
