@@ -20,6 +20,7 @@ class ForumServer: Server {
 
     public indexResponse(
         _context: Context, _request: Request, response: Response): void {
+
         response.append(renderPage("index.nyml"));
         response.Status = (200, "OK");
     }

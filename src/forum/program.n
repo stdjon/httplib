@@ -36,15 +36,19 @@ module Program {
 
     parseArguments(args: array[string]): Arguments * OptionSet {
         mutable result = Arguments();
-        def options = OptionSet().
-            Add("h|?|help", "Show help.",
-                _ => { result.ShowHelp = true }).
-            Add("v|verbose", "More logging output.",
-                _ => { ++result.Verbose }).
-            Add("c|config=", "Use configuration {FILE}.",
-                v => { result.Config = v });
+        def options = getOptions(result);
         _ = options.Parse(args);
         (result, options);
+    }
+
+    static getOptions(arguments: Arguments): OptionSet {
+        OptionSet().
+            Add("h|?|help", "Show help.",
+                _ => { arguments.ShowHelp = true }).
+            Add("v|verbose", "More logging output.",
+                _ => { ++arguments.Verbose }).
+            Add("c|config=", "Use configuration {FILE}.",
+                v => { arguments.Config = v });
     }
 
     showHelp(options: OptionSet): void {
