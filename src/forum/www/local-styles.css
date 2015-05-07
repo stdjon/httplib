@@ -103,48 +103,102 @@ div.jumbotron h1 {
   height: 16px;
   width: 24px;
 }
-.swatches p span#x444 {
-  background-color: #444;
+
+.swatches p span#x0 {
+  background-color: hsl(0, 55%, 55%);
 }
-.swatches p span#x447 {
-  background-color: #447;
+.swatches p span#x22_5 {
+  background-color: hsl(22.5, 55%, 55%);
 }
-.swatches p span#x474 {
-  background-color: #474;
+.swatches p span#x45 {
+  background-color: hsl(45, 55%, 55%);
 }
-.swatches p span#x477 {
-  background-color: #477;
+.swatches p span#x67_5 {
+  background-color: hsl(67.5, 55%, 55%);
 }
-.swatches p span#x744 {
-  background-color: #744;
+.swatches p span#x90 {
+  background-color: hsl(90, 55%, 55%);
 }
-.swatches p span#x747 {
-  background-color: #747;
+.swatches p span#x112_5 {
+  background-color: hsl(112.5, 55%, 55%);
 }
-.swatches p span#x774 {
-  background-color: #774;
+.swatches p span#x135 {
+  background-color: hsl(135, 55%, 55%);
 }
-.swatches p span#x777 {
-  background-color: #777;
+.swatches p span#x157_5 {
+  background-color: hsl(157.5, 55%, 55%);
 }
-.swatches p span#x44f {
-  background-color: #44f;
+.swatches p span#x180 {
+  background-color: hsl(180, 55%, 55%);
 }
-.swatches p span#x4f4 {
-  background-color: #4f4;
+.swatches p span#x202_5 {
+  background-color: hsl(202.5, 55%, 55%);
 }
-.swatches p span#x4ff {
-  background-color: #4ff;
+.swatches p span#x225 {
+  background-color: hsl(225, 55%, 55%);
 }
-.swatches p span#xf44 {
-  background-color: #f44;
+.swatches p span#x247_5 {
+  background-color: hsl(247.5, 55%, 55%);
 }
-.swatches p span#xf4f {
-  background-color: #f4f;
+.swatches p span#x270 {
+  background-color: hsl(270, 55%, 55%);
 }
-.swatches p span#xff4 {
-  background-color: #ff4;
+.swatches p span#x292_5 {
+  background-color: hsl(292.5, 55%, 55%);
 }
-.swatches p span#xddd {
-  background-color: #ddd;
+.swatches p span#x315 {
+  background-color: hsl(315, 55%, 55%);
 }
+.swatches p span#x337_5 {
+  background-color: hsl(337.5, 33%, 55%);
+}
+
+.swatches p span#y0 {
+  background-color: hsl(0, 88%, 25%);
+}
+.swatches p span#y22_5 {
+  background-color: hsl(22.5, 88%, 25%);
+}
+.swatches p span#y45 {
+  background-color: hsl(45, 88%, 25%);
+}
+.swatches p span#y67_5 {
+  background-color: hsl(67.5, 88%, 25%);
+}
+.swatches p span#y90 {
+  background-color: hsl(90, 88%, 25%);
+}
+.swatches p span#y112_5 {
+  background-color: hsl(112.5, 88%, 25%);
+}
+.swatches p span#y135 {
+  background-color: hsl(135, 88%, 25%);
+}
+.swatches p span#y157_5 {
+  background-color: hsl(157.5, 88%, 25%);
+}
+.swatches p span#y180 {
+  background-color: hsl(180, 88%, 25%);
+}
+.swatches p span#y202_5 {
+  background-color: hsl(202.5, 88%, 25%);
+}
+.swatches p span#y225 {
+  background-color: hsl(225, 88%, 25%);
+}
+.swatches p span#y247_5 {
+  background-color: hsl(247.5, 88%, 25%);
+}
+.swatches p span#y270 {
+  background-color: hsl(270, 88%, 25%);
+}
+.swatches p span#y292_5 {
+  background-color: hsl(292.5, 88%, 25%);
+}
+.swatches p span#y315 {
+  background-color: hsl(315, 88%, 25%);
+}
+.swatches p span#y337_5 {
+  background-color: hsl(337.5, 88%, 25%);
+}
+

@@ -39,21 +39,40 @@ Partials:
   Body: >
     <div class="swatches">
       <p>
-        <span class="swatch" id="x444" onmouseover="setHdrCols('#444')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x447" onmouseover="setHdrCols('#447')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x474" onmouseover="setHdrCols('#474')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x477" onmouseover="setHdrCols('#477')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x744" onmouseover="setHdrCols('#744')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x747" onmouseover="setHdrCols('#747')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x774" onmouseover="setHdrCols('#774')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x777" onmouseover="setHdrCols('#777')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x44f" onmouseover="setHdrCols('#44f')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x4f4" onmouseover="setHdrCols('#4f4')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x4ff" onmouseover="setHdrCols('#4ff')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="xf44" onmouseover="setHdrCols('#f44')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="xf4f" onmouseover="setHdrCols('#f4f')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="xff4" onmouseover="setHdrCols('#ff4')">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="xddd" onmouseover="setHdrCols('#ddd')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x22_5" onmouseover="setHdrCols(22.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x45" onmouseover="setHdrCols(45, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x67_5" onmouseover="setHdrCols(67.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x90" onmouseover="setHdrCols(90, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x112_5" onmouseover="setHdrCols(112.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x135" onmouseover="setHdrCols(135, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x157_5" onmouseover="setHdrCols(157.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x180" onmouseover="setHdrCols(180, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x202_5" onmouseover="setHdrCols(202.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x225" onmouseover="setHdrCols(225, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x247_5" onmouseover="setHdrCols(247.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x270" onmouseover="setHdrCols(270, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x292_5" onmouseover="setHdrCols(292.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x315" onmouseover="setHdrCols(315, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x337_5" onmouseover="setHdrCols(337.5, true)">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+      <p>
+        <span class="swatch" id="y0" onmouseover="setHdrCols(0, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y22_5" onmouseover="setHdrCols(22.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y45" onmouseover="setHdrCols(45, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y67_5" onmouseover="setHdrCols(67.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y90" onmouseover="setHdrCols(90, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y112_5" onmouseover="setHdrCols(112.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y135" onmouseover="setHdrCols(135, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y157_5" onmouseover="setHdrCols(157.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y180" onmouseover="setHdrCols(180, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y202_5" onmouseover="setHdrCols(202.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y225" onmouseover="setHdrCols(225, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y247_5" onmouseover="setHdrCols(247.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y270" onmouseover="setHdrCols(270, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y292_5" onmouseover="setHdrCols(292.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y315" onmouseover="setHdrCols(315, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y337_5" onmouseover="setHdrCols(337.5, false)">&nbsp; &nbsp; &nbsp;</span>
       </p>
     </div>
     <div class="anchor" id="a"><p><a href="#a">Integer pulvinar leo id risus pellentesque vestibulum.</a> Sed diam libero, sodales eget sapien vel, porttitor bibendum enim. Donec sed nibh vitae lorem porttitor blandit in nec ante. Pellentesque vitae metus ipsum. Phasellus sed nunc ac sem malesuada condimentum. Etiam in aliquam lectus. Nam vel sapien diam. Donec pharetra id arcu eget blandit. Proin imperdiet mattis augue in porttitor. Quisque tempus enim id lobortis feugiat. Suspendisse tincidunt risus quis dolor fringilla blandit. Ut sed sapien at purus lacinia porttitor. Nullam iaculis, felis a pretium ornare, dolor nisl semper tortor, vel sagittis lacus est consequat eros. Sed id pretium nisl. Curabitur dolor nisl, laoreet vitae aliquam id, tincidunt sit amet mauris.</p></div>
@@ -118,15 +137,17 @@ Partials:
 
       //swatches/jumbotron colour
       var cols = [
-        "#444", "#447", "#474", "#477", "#744", "#747", "#774", "#777",
-        "#44f", "#4f4", "#4ff", "#f44", "#f4f", "#ff4", "#ddd" ];
-      function setHdrCols(c) {
-        var fg = (c).match(/[fd]/) ? "#444" : "#ccc";
-        $('.container .jumbotron').css('background-color', c);
+          0, 22.5, 45, 67.5, 90, 11.50, 135, 157.5, 180,
+          202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
+      function setHdrCols(c, b) {
+        var fg = b ? "#444" : "#ccc";
+        var sl = b ? '55%, 55%' : '88%, 25%';
+        $('.container .jumbotron').css('background-color', 'hsl(' + c + ', ' + sl + ')');
         $('.container .jumbotron').css('color', fg);
       }
       var idx = Math.floor(Math.random() * cols.length);
-      setHdrCols(cols[idx]);
+      var light = !!Math.floor(Math.random() * 2);
+      setHdrCols(cols[idx], light);
     </script>
   Guide: >
     <div class="nav nav-tabs nav-stacked" data-spy="affix" data-offset-top="0" id="theNav">
