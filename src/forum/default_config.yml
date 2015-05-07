@@ -27,7 +27,7 @@ MimeTypes:
   js: application/javascript
   json: application/json
   html: text/html
-  css: text/css`
+  css: text/css
   ttf: application/x-font-ttf
   woff: application/x-font-woff
   woff2: application/octet-stream
