@@ -19,6 +19,7 @@ public class Page {
     public type ObjectsType = Dict[object];
 
     public Path: string { get; set; }
+    public Lang: string { get; set; }
     public Metas: List[string] { get; set; }
     public Title: string { get; set; }
     public Stylesheets: List[string] { get; set; }
@@ -30,11 +31,17 @@ public class Page {
     public this() {}
 
     public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
+        def lang =
+            if(!String.IsNullOrEmpty(Lang)) {
+                $" lang='$Lang'"
+            } else {
+                ""
+            }
         def title =
             if(!String.IsNullOrEmpty(Title)) {
-                $"\n<title>$Title</title>";
+                $"\n<title>$Title</title>"
             } else {
-                "";
+                ""
             }
 
         mutable meta = "";
@@ -57,7 +64,7 @@ public class Page {
 
         def content = renderContent(data, parts);
 
-        $"<html>\n<head>$meta$title$stylesheet\n</head>\n"
+        $"<html$lang>\n<head>$meta$title$stylesheet\n</head>\n"
         $"<body>\n$content</body>\n</html>";
     }
 
@@ -68,6 +75,9 @@ public class Page {
     }
 
     public merge(other: Page): void {
+        when(Lang == null) {
+            Lang = other.Lang;
+        }
         when(Title == null) {
             Title = other.Title;
         }
