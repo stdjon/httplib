@@ -14,7 +14,7 @@ Partials:
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#"><i class="fa fa-file-text"></i> page name</a>
+          <a id="pagename" class="navbar-brand" href="#"><i class="fa fa-file-text"></i> page name</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <form class="navbar-form navbar-right">
@@ -32,11 +32,30 @@ Partials:
       </div>
     </nav>
   Banner: >
-    <div class="jumbotron anchor" id="">
+    <div class="jumbotron anchor">
       <!--<h1>Title Title Title Title Title Title Title Title Title</h1>-->
       <h1>Supercalifragilisticexpialidocious</h1>
     </div>
   Body: >
+    <div class="swatches">
+      <p>
+        <span class="swatch" id="x444" onmouseover="setHdrCols('#444')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x447" onmouseover="setHdrCols('#447')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x474" onmouseover="setHdrCols('#474')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x477" onmouseover="setHdrCols('#477')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x744" onmouseover="setHdrCols('#744')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x747" onmouseover="setHdrCols('#747')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x774" onmouseover="setHdrCols('#774')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x777" onmouseover="setHdrCols('#777')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x44f" onmouseover="setHdrCols('#44f')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x4f4" onmouseover="setHdrCols('#4f4')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x4ff" onmouseover="setHdrCols('#4ff')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="xf44" onmouseover="setHdrCols('#f44')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="xf4f" onmouseover="setHdrCols('#f4f')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="xff4" onmouseover="setHdrCols('#ff4')">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="xddd" onmouseover="setHdrCols('#ddd')">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+    </div>
     <div class="anchor" id="a"><p><a href="#a">Integer pulvinar leo id risus pellentesque vestibulum.</a> Sed diam libero, sodales eget sapien vel, porttitor bibendum enim. Donec sed nibh vitae lorem porttitor blandit in nec ante. Pellentesque vitae metus ipsum. Phasellus sed nunc ac sem malesuada condimentum. Etiam in aliquam lectus. Nam vel sapien diam. Donec pharetra id arcu eget blandit. Proin imperdiet mattis augue in porttitor. Quisque tempus enim id lobortis feugiat. Suspendisse tincidunt risus quis dolor fringilla blandit. Ut sed sapien at purus lacinia porttitor. Nullam iaculis, felis a pretium ornare, dolor nisl semper tortor, vel sagittis lacus est consequat eros. Sed id pretium nisl. Curabitur dolor nisl, laoreet vitae aliquam id, tincidunt sit amet mauris.</p></div>
     <div class="anchor" id="b"><p>Quisque pharetra velit id velit iaculis pretium. Nullam a justo sed ligula porta semper eu quis enim. Pellentesque pellentesque, metus at facilisis hendrerit, lectus velit facilisis leo, quis volutpat turpis arcu quis enim. Nulla viverra lorem elementum interdum ultricies. Suspendisse accumsan quam nec ante mollis tempus. Morbi vel accumsan diam, eget convallis tellus. Suspendisse potenti.</p></div>
     <div class="anchor" id="c"><p>Vivamus mattis accumsan erat, vel convallis risus pretium nec. Integer nunc nulla, viverra ut sem non, scelerisque vehicula arcu. Fusce bibendum convallis augue sit amet lobortis. Cras porta urna turpis, sodales lobortis purus adipiscing id. Maecenas ullamcorper, turpis suscipit pellentesque fringilla, massa lacus pulvinar mi, nec dignissim velit arcu eget purus. Nam at dapibus tellus, eget euismod nisl. Ut eget venenatis sapien. Vivamus vulputate varius mauris, vel varius nisl facilisis ac. Nulla aliquet justo a nibh ornare, eu congue neque rutrum.</p></div>
@@ -72,30 +91,42 @@ Partials:
     <div class="anchor" id="gg"><p>Nullam hendrerit justo non leo aliquet imperdiet. Etiam in sagittis lectus. Suspendisse ultrices placerat accumsan. Mauris quis dapibus orci. In dapibus velit blandit pharetra tincidunt. Quisque non sapien nec lacus condimentum facilisis ut iaculis enim. Sed viverra interdum bibendum. Donec ac sollicitudin dolor. Sed fringilla vitae lacus at rutrum. Phasellus congue vestibulum ligula sed consequat.</p></div>
     <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
     <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
     <script>
-    $(document).bind('scroll',function(e) {
-      $('.anchor').each(function() {
-        if ( $(this).offset().top < pageYOffset + 10 &&
-          $(this).offset().top + $(this).height() > pageYOffset + 10 ) {
-            var id_ = $(this).attr('id');
-            var id = '#' + id_;
-            var oldId = location.hash;
-            if(oldId !== id) {
-              if(history.replaceState) {
-                history.replaceState({}, document.title + ' ' + id, id);
-              } else {
-                $(this).attr('id', '');
-                location.hash = id;
-                $(this).attr('id', id_);
+      Hyphenator.run();
+
+      //scroll updates URL
+      $(document).bind('scroll',function(e) {
+        $('.anchor').each(function() {
+          if ( $(this).offset().top < pageYOffset + 10 &&
+            $(this).offset().top + $(this).height() > pageYOffset + 10 ) {
+              var id_ = $(this).attr('id') || '';
+              var id = '#' + id_;
+              var oldId = location.hash;
+              if(oldId !== id) {
+                if(history.replaceState) {
+                  history.replaceState({}, document.title + ' ' + id, id);
+                } else {
+                  $(this).attr('id', undefined);
+                  location.hash = id;
+                  $(this).attr('id', id_);
+                }
               }
             }
-          }
-        });
-    });
-    </script>
-    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
-    <script type="text/javascript">
-      Hyphenator.run();
+          });
+      });
+
+      //swatches/jumbotron colour
+      var cols = [
+        "#444", "#447", "#474", "#477", "#744", "#747", "#774", "#777",
+        "#44f", "#4f4", "#4ff", "#f44", "#f4f", "#ff4", "#ddd" ];
+      function setHdrCols(c) {
+        var fg = (c).match(/[fd]/) ? "#444" : "#ccc";
+        $('.container .jumbotron').css('background-color', c);
+        $('.container .jumbotron').css('color', fg);
+      }
+      var idx = Math.floor(Math.random() * cols.length);
+      setHdrCols(cols[idx]);
     </script>
   Guide: >
     <div class="nav nav-tabs nav-stacked" data-spy="affix" data-offset-top="0" id="theNav">

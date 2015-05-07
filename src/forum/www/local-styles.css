@@ -35,7 +35,7 @@ a {
 a:hover {
 /*  letter-spacing: 10px;
   font-weight: bold;*/
-  background-color: #fdd;
+  background-color: #ff8;
 }
 
 a:active {
@@ -63,7 +63,7 @@ div.banner .anchor {
 }
 div.body {
   padding-top: 10px;
-  background-color: #ff4;
+  background-color: #ffe;
 }
 div.body .anchor {
   margin-top: -55px;
@@ -71,15 +71,15 @@ div.body .anchor {
   /*padding-bottom: 20px;*/
 }
 div.body p {
-  background-color: #ff9;
+  background-color: #ffe;
 }
 div.guide {
   padding-top: 10px;
-  background-color: #7f7;
+  background-color: #ffe;
   height: 1023px;
 }
 div.guide p {
-  background-color: #cfc;
+  background-color: #ffe;
 }
 h1, h2, h3, h4 {
   font-weight: bold;
@@ -87,8 +87,64 @@ h1, h2, h3, h4 {
 }
 .container .jumbotron {
   border-radius: 0;
+  /*background-color: #ff4;*/
+  background-color: #44f;
 }
 div.jumbotron h1 {
   font-weight: 900;
   font-size: 500%;
+}
+
+/* Colour swatches (tech demo...) */
+.swatches p {
+  text-align: center;
+}
+.swatches p span {
+  height: 16px;
+  width: 24px;
+}
+.swatches p span#x444 {
+  background-color: #444;
+}
+.swatches p span#x447 {
+  background-color: #447;
+}
+.swatches p span#x474 {
+  background-color: #474;
+}
+.swatches p span#x477 {
+  background-color: #477;
+}
+.swatches p span#x744 {
+  background-color: #744;
+}
+.swatches p span#x747 {
+  background-color: #747;
+}
+.swatches p span#x774 {
+  background-color: #774;
+}
+.swatches p span#x777 {
+  background-color: #777;
+}
+.swatches p span#x44f {
+  background-color: #44f;
+}
+.swatches p span#x4f4 {
+  background-color: #4f4;
+}
+.swatches p span#x4ff {
+  background-color: #4ff;
+}
+.swatches p span#xf44 {
+  background-color: #f44;
+}
+.swatches p span#xf4f {
+  background-color: #f4f;
+}
+.swatches p span#xff4 {
+  background-color: #ff4;
+}
+.swatches p span#xddd {
+  background-color: #ddd;
 }
