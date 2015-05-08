@@ -2,18 +2,10 @@ body {
   background-image: url("bg-small-basic.png");
   background-attachment: fixed;
 }
-
-a.navbar-brand {
-  /*font-variant: small-caps;*/
-  font-weight: 900;
-}
-
 * {
   border-radius: 0;
 
-
-/* word breaks/hyphenation
- * (TODO: look at Hypenator.js as a better solution?) */
+  /* word breaks/hyphenation... */
 
   /* Non standard for webkit */
   word-break: break-word;
@@ -21,45 +13,36 @@ a.navbar-brand {
   -webkit-hyphens: auto;
   -moz-hyphens: auto;
   hyphens: auto;
-  /*letter-spacing: 6px;*/
 }
-
 p {
   text-indent: 30px;
   text-align: justify;
 }
 
-a {
-  /*text-decoration: underline;*/
-}
 a:hover {
-/*  letter-spacing: 10px;
-  font-weight: bold;*/
   background-color: #ff8;
 }
-
 a:active {
-  font-style: italic;
 }
-
 a:link {
   text-decoration: underline;
   color: #00f;
 }
-
 a:visited {
-  color: #555;
+  color: #553;
+}
+a.navbar-brand {
+  font-weight: 900;
 }
 
 div.banner {
   padding-top: 50px;
+  background-color: #ff7;
 }
 div.banner .anchor {
   margin-top: -55px;
   padding-top: 55px;
   margin-bottom: 0px;
-  /*margin-bottom: 60px;*/
-  /*background-color: #ff7;*/
 }
 div.body {
   padding-top: 10px;
@@ -68,26 +51,24 @@ div.body {
 div.body .anchor {
   margin-top: -55px;
   padding-top: 55px;
-  /*padding-bottom: 20px;*/
 }
 div.body p {
   background-color: #ffe;
+  margin-left: 50px;
+  margin-right: 50px;
 }
 div.guide {
-  padding-top: 10px;
-  background-color: #ffe;
-  height: 1023px;
+  padding-top: 30px;
+  text-align: center;
 }
-div.guide p {
-  background-color: #ffe;
-}
+
+/* Jumbotron */
 h1, h2, h3, h4 {
   font-weight: bold;
   font-size: 200%;
 }
 .container .jumbotron {
   border-radius: 0;
-  /*background-color: #ff4;*/
   background-color: #44f;
 }
 div.jumbotron h1 {
@@ -95,15 +76,61 @@ div.jumbotron h1 {
   font-size: 500%;
 }
 
+/* Scrollspy requires this... */
+body, html { height:100%; }
+body > .anchor { min-height:100%; }
+
+/* Nav-tabs */
+ul.nav {
+  margin: 0 auto; 
+  /*margin-left: 50px;*/
+}
+ul.nav-tabs {
+  font-size: 1.35em;
+  font-weight: 800;
+  width: 80px;
+  margin-top: 0px;
+  margin-left: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.067);
+  background-color: #ffe;
+}
+ul.nav-tabs.affix {
+  top: 80px;
+  margin-left: 20px;
+}
+
+ul.nav-tabs li {
+  margin: 0;
+  /*border-left: 5px solid #333;*/
+  /*border-top: 1px solid #ddd;*/
+}
+ul.nav-tabs li:first-child {
+  border-top: none;
+}
+ul.nav-tabs li a {
+  margin: 0;
+  padding: 2px 16px;
+  border-radius: 0;
+}
+ul.nav-tabs li a:hover {
+  background-color: #ff8;
+  text-decoration: underline;
+}
+ul.nav-tabs li.active a {
+  color: #fff;
+  background: #333;
+  border: 2px solid #333;
+}
+ul.nav-tabs li.active a:hover {
+  color: #ff8;
+  background: #333;
+  border: 2px solid #333;
+}
+
 /* Colour swatches (tech demo...) */
 .swatches p {
   text-align: center;
 }
-.swatches p span {
-  height: 16px;
-  width: 24px;
-}
-
 .swatches p span#x0 {
   background-color: hsl(0, 55%, 55%);
 }

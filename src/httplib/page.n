@@ -23,6 +23,7 @@ public class Page {
     public Metas: List[string] { get; set; }
     public Title: string { get; set; }
     public Stylesheets: List[string] { get; set; }
+    public BodyAttributes: List[string] { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
@@ -62,10 +63,19 @@ public class Page {
             }
         }
 
+        mutable body_attrs = "";
+        when(BodyAttributes != null) {
+            foreach(b in BodyAttributes) {
+                when(!String.IsNullOrEmpty(b)) {
+                    body_attrs += $" $b";
+                }
+            }
+        }
+
         def content = renderContent(data, parts);
 
         $"<html$lang>\n<head>$meta$title$stylesheet\n</head>\n"
-        $"<body>\n$content</body>\n</html>";
+        $"<body$body_attrs>\n$content</body>\n</html>";
     }
 
     public virtual renderContent(
@@ -86,6 +96,7 @@ public class Page {
         }
         Metas = mergeLists(other.Metas, Metas);
         Stylesheets = mergeLists(other.Stylesheets, Stylesheets);
+        BodyAttributes = mergeLists(other.BodyAttributes, BodyAttributes);
         Partials = mergeDicts(other.Partials, Partials);
         Objects = mergeDicts(other.Objects, Objects);
     }
