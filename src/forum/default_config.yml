@@ -1,6 +1,10 @@
 # ------------------------------------------------------------------------------
 # Example MyServer configuration
 ---
+Database:
+  Assembly: httplib.db.mysql.dll
+  Typename: httplib.db.MySqlDatabase
+  Connection: server=localhost;userid=forum;password=n0ts3cr3t;database=forum
 Prefixes:
   - http://localhost:8080/
   - https://localhost:8443/
