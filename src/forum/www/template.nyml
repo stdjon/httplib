@@ -18,7 +18,7 @@ Content: >
 Partials:
   PageLayout: >
     {{>Nav}}
-    <div class="container hyphenate">
+    <div class="outside container hyphenate">
       <div class="banner">
         {{>Banner}}
         <div class="col-xs-10 body">
