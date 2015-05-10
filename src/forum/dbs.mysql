@@ -1,3 +1,5 @@
+/* mysql -u forum -D forum -p***** < src\forum\dbs.mysql */
+
 /*----------------------------------------------------------------------------*/
 /* Drop existing tables */
 
