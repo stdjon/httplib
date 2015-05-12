@@ -237,14 +237,16 @@ public abstract class Server: IDisposable {
         result;
     }
 
-    public virtual renderPage(path: string, data: PageData = null): string {
+    public virtual renderPage(
+        path: string, data: PageData = null, pd: PartialData = null): string {
+
         def ext = Path.GetExtension(path).Substring(1);
 
         using(stream = openLocalFile(path, true)) {
             def renderer = Renderers[ext];
             def page = renderer.loadPage(stream);
 
-            page.render(data);
+            page.render(data, pd);
         }
     }
 

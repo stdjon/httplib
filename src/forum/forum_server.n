@@ -1,5 +1,6 @@
 using System;
 
+using Nemerle.Extensions;
 using Nemerle.IO;
 
 using httplib;
@@ -8,6 +9,8 @@ using httplib;
 namespace forum {
 
 class ForumServer: Server {
+
+    nav_state: NavState = NavState();
 
     public this(path: string) {
         base(path);
@@ -21,7 +24,9 @@ class ForumServer: Server {
     public indexResponse(
         _context: Context, _request: Request, response: Response): void {
 
-        response.append(renderPage("index.nyml"));
+        def pd = PartialData() <- [ "NavState" = navState() ];
+
+        response.append(renderPage("index.nyml", null, pd));
         response.Status = (200, "OK");
     }
 
@@ -35,6 +40,11 @@ class ForumServer: Server {
             $"<html><body><h1>Thread ID=$id</h1>"
             $"<p><tt>rest=$rest</tt></p></body></html>");
         response.Status = (200, "OK");
+    }
+
+    public navState(): string {
+        // TODO: need some kind of SessionId...
+        nav_state.Output;
     }
 
     protected override internalServerError(ex: Exception): void {

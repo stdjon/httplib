@@ -34,8 +34,11 @@ a:visited {
 a.navbar-brand {
   font-weight: 900;
 }
+a.navbar-brand:link {
+  text-decoration: none;
+}
 nav.navbar {
-  border-left: 5px solid #f60;
+  border-left: 5px solid #666;
 }
 
 div.outside {
@@ -134,13 +137,13 @@ ul.nav-tabs li.active a {
   color: #fff;
   background: #333;
   border: 0 solid #333;
-  border-left: 5px solid #f60;
+  border-left: 5px solid #666;
 }
 ul.nav-tabs li.active a:hover {
   color: #ff8;
   background: #333;
   border: 0 solid #333;
-  border-left: 5px solid #f60;
+  border-left: 5px solid #666;
 }
 
 /* Colour swatches (tech demo...) */

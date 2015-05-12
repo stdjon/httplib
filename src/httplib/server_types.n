@@ -15,6 +15,7 @@ namespace httplib {
 //------------------------------------------------------------------------------
 
 public type PageData = Dictionary[string, object];
+public type PartialData = Dictionary[string, string];
 
 
 //------------------------------------------------------------------------------
