@@ -69,6 +69,9 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Internal)]
     renderers: Dictionary[string, Renderer] = Dictionary();
 
+    [Accessor(flags = Internal)]
+    module_cache: ModuleCache = ModuleCache();
+
     static protected loadConfiguration[T](path: string): T {
         using(reader = StreamReader(path)) {
             Deserializer.Deserialize.[T](reader);
@@ -102,6 +105,12 @@ public abstract class Server: IDisposable {
             when(r != null) {
                 print("Registering $r for $(x.Key) files...\n");
                 Renderers[x.Key] = r;
+            }
+        }
+
+        when(Configuration.Modules != null) {
+            foreach(m in Configuration.Modules) {
+                ModuleCache.loadModule(m.Assembly, m.Typename);
             }
         }
 
@@ -512,6 +521,14 @@ public abstract class Server: IDisposable {
 
         response.append(page.render(context.PageData));
         response.Status = (200, "OK");
+    }
+
+    public getModuleInterface[T](): T {
+        ModuleCache.getModuleInterface.[T]();
+    }
+
+    public getModuleInterface(iftype: Type): IModuleInterface {
+        ModuleCache.getModuleInterface(iftype);
     }
 }
 

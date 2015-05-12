@@ -172,6 +172,33 @@ class MyDatabaseHandler: ComplexHandler {
 
 
 //------------------------------------------------------------------------------
+// MyTestModule
+
+public interface IMyTestModule: IModuleInterface {
+
+    Name: string { get };
+    testMethod(): string;
+}
+
+
+public class MyTestModule: Module, IMyTestModule {
+
+    // overridden from Module, indicates the module interface we're providing...
+    public override InterfaceType: Type {
+        get { typeof(IMyTestModule) }
+    }
+
+    public Name: string {
+        get { "MyTestModule" }
+    }
+
+    public testMethod(): string {
+        "<p>This is some test text which the module returned.</p>";
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // MyServer
 
 class MyServer: Server {
@@ -249,6 +276,18 @@ module Test {
             my_server.route(HTTP.GET, "/", (_ctx, _req, res) => {
                 res.append(my_server.renderPage("index.yml"));
                 res.Status = (200, "OK");
+            });
+
+            my_server.route(HTTP.GET, "/module", (_ctx, _req, res) => {
+                def iface = my_server.getModuleInterface.[IMyTestModule]();
+                if(iface != null) {
+                    res.append($"<html><body><h1>Module Test [$(iface.Name)]</h1>"
+                        $"$(iface.testMethod())</body></html>");
+                    res.Status = (200, "OK");
+                } else {
+                    res.append("<html><body><h1>Module Missing :(</h1></body></html>");
+                    res.Status = (500, "Module missing");
+                }
             });
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);

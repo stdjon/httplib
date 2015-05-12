@@ -28,6 +28,10 @@ Renderers:
   nyml:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
+Modules:
+  -
+    Assembly: http.exe
+    Typename: MyTestModule
 MimeTypes:
   js: application/javascript
   json: application/json

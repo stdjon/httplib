@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+using Nemerle.IO;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// IModuleInterface
+
+public interface IModuleInterface {
+
+    // Currently an empty interface, this _may_ change in future...
+}
+
+
+//------------------------------------------------------------------------------
+// Module
+
+public abstract class Module {
+
+    public abstract InterfaceType: Type { get };
+
+    // NB: This method is expecting derived Modules to implement (a derivation
+    // of) IModuleInterface directly.
+    public virtual getInterface(): IModuleInterface {
+        this :> IModuleInterface;
+    }
+
+    public virtual getInterface[T](): T {
+        getInterface() :> T;
+    }
+
+    /** Load a DB by reflection, given a DLL and type name. */
+    public static load(
+        path: string, name: string): Module {
+
+        def assembly = Assembly.LoadFrom(path);
+        def mtype = assembly.GetType(name);
+
+        Activator.CreateInstance(mtype) :> Module;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// ModuleCache
+
+public class ModuleCache {
+
+    modules: Dictionary[Type, Module] = Dictionary();
+
+    public loadModule(
+        path: string, name: string): void {
+
+        addModule(Module.load(path, name));
+    }
+
+    public addModule(m: Module): void {
+        modules[m.InterfaceType] = m;
+    }
+
+    public getModuleInterface[T](): T {
+        getModuleInterface(typeof(T)) :> T;
+    }
+
+    public getModuleInterface(iftype: Type): IModuleInterface {
+        mutable result = null;
+        mutable probe;
+
+        when(modules.TryGetValue(iftype, out probe)) {
+            result = probe.getInterface();
+        }
+        result;
+    }
+}
+
+
+} // namespace httplib

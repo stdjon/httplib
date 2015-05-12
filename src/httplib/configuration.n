@@ -23,9 +23,20 @@ public class DatabaseConfiguration {
 
 [Record]
 public class RendererConfiguration {
-    /** Database assembly */
+    /** Renderer assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
-    /** Database typename */
+    /** Renderer typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+
+    public this() {}
+}
+
+
+[Record]
+public class ModuleConfiguration {
+    /** Module assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Module typename */
     [Accessor(flags = WantSetter)] mutable typename: string;
 
     public this() {}
@@ -33,6 +44,7 @@ public class RendererConfiguration {
 
 
 public type Renderers = Dictionary[string, RendererConfiguration];
+public type Modules = List[ModuleConfiguration];
 public type MimeTypes = Dictionary[string, string];
 
 
@@ -46,8 +58,10 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Patterns to test when deciding if a file can be served */
     [Accessor(flags = WantSetter)] mutable file_serving: array[string];
-    /** Extensions to try (in order) when no extension given in request URI */
+    /** Renderers to try (in order) when no extension given in request URI */
     [Accessor(flags = WantSetter)] mutable renderers: Renderers;
+    /** Additional Modules to load */
+    [Accessor(flags = WantSetter)] mutable modules: Modules;
     /** (Mapping extensions to) MIME Types */
     [Accessor(flags = WantSetter)] mutable mime_types: MimeTypes;
     /** Minimum length reserved for response body */
