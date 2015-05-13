@@ -86,9 +86,18 @@ clean:
 
 $(eval $(call emit_exe_rule,bin/forum.exe, \
 	src/forum, \
+	bin/forum.mod.auth.dll \
 	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll \
 	bin/httplib.mod.bbcode.dll bin/httplib.mod.htmlsanitize.dll \
 	bin/httplib.mod.oembed.dll bin/httplib.mod.textile.dll))
+
+
+# ------------------------------------------------------------------------------
+# bin/forum.mod.auth.dll
+
+$(eval $(call emit_dll_rule,bin/forum.mod.auth.dll, \
+	src/forum/mod/auth, \
+	bin/httplib.dll))
 
 
 # ------------------------------------------------------------------------------

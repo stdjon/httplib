@@ -1,0 +1,23 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information
+[assembly: AssemblyTitle("forum.mod.auth.dll")]
+[assembly: AssemblyDescription("forum.exe - Authentication Module")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("forum.mod.auth")]
+[assembly: AssemblyCopyright("(c) Jon Head 2015")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// ComVisible
+[assembly: ComVisible(false)]
+
+// Guid
+[assembly: Guid("93609E37-E4F1-47E4-A549-4588366F1C5A")]
+
+// Version information
+[assembly: AssemblyVersion("0.0.0.1")]
+[assembly: AssemblyFileVersion("0.0.0.1")]
