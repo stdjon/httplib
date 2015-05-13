@@ -41,7 +41,7 @@ module Program {
         (result, options);
     }
 
-    static getOptions(arguments: Arguments): OptionSet {
+    getOptions(arguments: Arguments): OptionSet {
         OptionSet().
             Add("h|?|help", "Show help.",
                 _ => { arguments.ShowHelp = true }).
