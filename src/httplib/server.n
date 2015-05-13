@@ -211,6 +211,14 @@ public abstract class Server: IDisposable {
         _ = Listener.BeginGetContext(listenerCallback, this);
     }
 
+    public getModuleInterface[T](): T {
+        ModuleCache.getModuleInterface.[T]();
+    }
+
+    public getModuleInterface(iftype: Type): IModuleInterface {
+        ModuleCache.getModuleInterface(iftype);
+    }
+
     findHandler(method_name: string,
         path: string, vars_out: ref HashTable): MakeHandler {
 
@@ -521,14 +529,6 @@ public abstract class Server: IDisposable {
 
         response.append(page.render(context.PageData));
         response.Status = (200, "OK");
-    }
-
-    public getModuleInterface[T](): T {
-        ModuleCache.getModuleInterface.[T]();
-    }
-
-    public getModuleInterface(iftype: Type): IModuleInterface {
-        ModuleCache.getModuleInterface(iftype);
     }
 }
 
