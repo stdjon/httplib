@@ -1,0 +1,26 @@
+using System;
+
+using Nemerle.IO;
+
+using OEmbed.Net;
+
+
+namespace httplib.mod {
+
+public interface IOEmbed: IModuleInterface {
+}
+
+
+public class OEmbed: Module, IOEmbed {
+
+    public override InterfaceType: Type {
+        get { typeof(IOEmbed) }
+    }
+
+    public this() {
+        print("Starting OEmbed module...\n");
+    }
+}
+
+
+} // namespace httplib.mod

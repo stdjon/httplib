@@ -1,0 +1,26 @@
+using System;
+
+using Nemerle.IO;
+
+using Ganss.XSS;
+
+
+namespace httplib.mod {
+
+public interface IHtmlSanitizer: IModuleInterface {
+}
+
+
+public class HtmlSanitizer: Module, IHtmlSanitizer {
+
+    public override InterfaceType: Type {
+        get { typeof(IHtmlSanitizer) }
+    }
+
+    public this() {
+        print("Starting HtmlSanitizer module...\n");
+    }
+}
+
+
+} // namespace httplib.mod

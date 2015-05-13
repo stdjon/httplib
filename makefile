@@ -25,9 +25,14 @@ refs=$(contrib_refs) $(call make_ref,$($@_DLLS))
 # Contrib
 
 CONTRIB_LIBS:= \
+	contrib/server/CodeKicker.BBCode-Parser-5.0/CodeKicker.BBCode.dll \
+	contrib/server/HtmlSanitizer.2.0.5595.30325/lib/net40/HtmlSanitizer.dll \
 	contrib/server/MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
 	contrib/server/NDesk.Options-0.2.1.0/NDesk.Options.dll \
 	contrib/server/Nustache-1.14.0.4/Nustache.Core.dll \
+	contrib/server/OEmbed.net-master/bin/Debug/Newtonsoft.Json.Net35.dll \
+	contrib/server/OEmbed.net-master/bin/Debug/OEmbed.Net.dll \
+	contrib/server/Textile-2.0.1/Textile.dll \
 	contrib/server/yamldotnet-3.5.1.85/Release-Signed/YamlDotNet.dll \
 	#
 
@@ -74,11 +79,16 @@ clean:
 
 
 # ------------------------------------------------------------------------------
+# APPLICATIONS
+
+# ------------------------------------------------------------------------------
 # bin/forum.exe
 
 $(eval $(call emit_exe_rule,bin/forum.exe, \
 	src/forum, \
-	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll))
+	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll \
+	bin/httplib.mod.bbcode.dll bin/httplib.mod.htmlsanitize.dll \
+	bin/httplib.mod.oembed.dll bin/httplib.mod.textile.dll))
 
 
 # ------------------------------------------------------------------------------
@@ -90,11 +100,17 @@ $(eval $(call emit_exe_rule,bin/http.exe, \
 
 
 # ------------------------------------------------------------------------------
+# HTTPLIB CORE
+
+# ------------------------------------------------------------------------------
 # bin/httplib.dll
 
 $(eval $(call emit_dll_rule,bin/httplib.dll, \
 	src/httplib))
 
+
+# ------------------------------------------------------------------------------
+# DATABASES
 
 # ------------------------------------------------------------------------------
 # bin/httplib.db.mysql.dll
@@ -105,12 +121,53 @@ $(eval $(call emit_dll_rule,bin/httplib.db.mysql.dll, \
 
 
 # ------------------------------------------------------------------------------
+# MODULES
+
+# ------------------------------------------------------------------------------
+# bin/httplib.mod.bbcode.dll
+
+$(eval $(call emit_dll_rule,bin/httplib.mod.bbcode.dll, \
+	src/httplib/mod/bbcode, \
+	bin/httplib.dll))
+
+
+# ------------------------------------------------------------------------------
+# bin/httplib.mod.htmlsanitize.dll
+
+$(eval $(call emit_dll_rule,bin/httplib.mod.htmlsanitize.dll, \
+	src/httplib/mod/htmlsanitize, \
+	bin/httplib.dll))
+
+
+# ------------------------------------------------------------------------------
+# bin/httplib.mod.oembed.dll
+
+$(eval $(call emit_dll_rule,bin/httplib.mod.oembed.dll, \
+	src/httplib/mod/oembed, \
+	bin/httplib.dll))
+
+
+# ------------------------------------------------------------------------------
+# bin/httplib.mod.textile.dll
+
+$(eval $(call emit_dll_rule,bin/httplib.mod.textile.dll, \
+	src/httplib/mod/textile, \
+	bin/httplib.dll))
+
+
+# ------------------------------------------------------------------------------
+# RENDERERS
+
+# ------------------------------------------------------------------------------
 # bin/httplib.page.nustache.dll
 
 $(eval $(call emit_dll_rule,bin/httplib.page.nustache.dll, \
 	src/httplib/page/nustache, \
 	bin/httplib.dll))
 
+
+# ------------------------------------------------------------------------------
+# CONTRIB
 
 # ------------------------------------------------------------------------------
 # install_contrib

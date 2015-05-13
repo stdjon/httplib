@@ -1,0 +1,26 @@
+using System;
+
+using Nemerle.IO;
+
+using CodeKicker.BBCode;
+
+
+namespace httplib.mod {
+
+public interface IBbCode: IModuleInterface {
+}
+
+
+public class BbCode: Module, IBbCode {
+
+    public override InterfaceType: Type {
+        get { typeof(IBbCode) }
+    }
+
+    public this() {
+        print("Starting BBCode module...\n");
+    }
+}
+
+
+} // namespace httplib.mod
