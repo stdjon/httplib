@@ -29,8 +29,7 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
-  -
-    Assembly: http.exe
+  - Assembly: http.exe
     Typename: MyTestModule
 MimeTypes:
   js: application/javascript

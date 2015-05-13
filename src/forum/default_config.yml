@@ -29,17 +29,13 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
-  -
-    Assembly: httplib.mod.bbcode.dll
+  - Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
-  -
-    Assembly: httplib.mod.htmlsanitize.dll
+  - Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
-  -
-    Assembly: httplib.mod.oembed.dll
+  - Assembly: httplib.mod.oembed.dll
     Typename: httplib.mod.OEmbed
-  -
-    Assembly: httplib.mod.textile.dll
+  - Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile
 MimeTypes:
   js: application/javascript
