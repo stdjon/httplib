@@ -130,6 +130,17 @@ $(eval $(call emit_dll_rule,bin/httplib.db.mysql.dll, \
 
 
 # ------------------------------------------------------------------------------
+# RENDERERS
+
+# ------------------------------------------------------------------------------
+# bin/httplib.page.nustache.dll
+
+$(eval $(call emit_dll_rule,bin/httplib.page.nustache.dll, \
+	src/httplib/page/nustache, \
+	bin/httplib.dll))
+
+
+# ------------------------------------------------------------------------------
 # MODULES
 
 # ------------------------------------------------------------------------------
@@ -161,17 +172,6 @@ $(eval $(call emit_dll_rule,bin/httplib.mod.oembed.dll, \
 
 $(eval $(call emit_dll_rule,bin/httplib.mod.textile.dll, \
 	src/httplib/mod/textile, \
-	bin/httplib.dll))
-
-
-# ------------------------------------------------------------------------------
-# RENDERERS
-
-# ------------------------------------------------------------------------------
-# bin/httplib.page.nustache.dll
-
-$(eval $(call emit_dll_rule,bin/httplib.page.nustache.dll, \
-	src/httplib/page/nustache, \
 	bin/httplib.dll))
 
 
