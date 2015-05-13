@@ -22,6 +22,7 @@ public interface IModuleInterface {
 public abstract class Module {
 
     public abstract InterfaceType: Type { get };
+    public Server: Server { get; internal set };
 
     // NB: This method is expecting derived Modules to implement (a derivation
     // of) IModuleInterface directly.
@@ -53,9 +54,11 @@ public class ModuleCache {
     modules: Dictionary[Type, Module] = Dictionary();
 
     public loadModule(
-        path: string, name: string): void {
+        path: string, name: string, server: Server): void {
 
-        addModule(Module.load(path, name));
+        mutable module_ = Module.load(path, name);
+        module_.Server = server;
+        addModule(module_);
     }
 
     public addModule(m: Module): void {

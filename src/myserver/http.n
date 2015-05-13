@@ -177,6 +177,7 @@ class MyDatabaseHandler: ComplexHandler {
 public interface IMyTestModule: IModuleInterface {
 
     Name: string { get };
+    Server: Server { get }; // Module.Server 'magically' fulfils this API
     testMethod(): string;
 }
 
@@ -281,8 +282,9 @@ module Test {
             my_server.route(HTTP.GET, "/module", (_ctx, _req, res) => {
                 def iface = my_server.getModuleInterface.[IMyTestModule]();
                 if(iface != null) {
+                    def same_server = my_server == iface.Server;
                     res.append($"<html><body><h1>Module Test [$(iface.Name)]</h1>"
-                        $"$(iface.testMethod())</body></html>");
+                        $"$(iface.testMethod())<p>Same server: $same_server</p></body></html>");
                     res.Status = (200, "OK");
                 } else {
                     res.append("<html><body><h1>Module Missing :(</h1></body></html>");
