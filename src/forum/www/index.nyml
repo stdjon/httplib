@@ -171,12 +171,17 @@ Partials:
 
         $('.container .jumbotron').css('background-color', col);
         $('.container .jumbotron').css('color', fg);
-        $('nav.navbar').css('border-left-color', col);
+        //$('nav.navbar').css('border-left-color', col);
         $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
+        var f = document.getElementById('navbar-frame');
+        var w = f.contentWindow;
+        w.postMessage(col, "*");
       }
       var idx = Math.floor(Math.random() * cols.length);
       var light = !!Math.floor(Math.random() * 2);
-      setHdrCols(cols[idx], light);
+      $(window).load(function() {
+        setHdrCols(cols[idx], light);
+      });
     </script>
   Guide: >
     <div id="scrollspy">

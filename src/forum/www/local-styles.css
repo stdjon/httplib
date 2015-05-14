@@ -81,7 +81,7 @@ h1, h2, h3, h4 {
 .container .jumbotron {
   text-align: left;
   border-radius: 0;
-  background-color: #44f;
+  background-color: #666;
   padding: 50px 80px;
 }
 div.jumbotron h1 {
