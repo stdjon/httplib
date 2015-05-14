@@ -3,6 +3,10 @@ Template: template.nyml
 Stylesheets:
   - local-styles.css
 Content: >
+  <style>
+    body { background: none; }
+  </style>
+  <div class="container">
     <nav class="navbar navbar-inverse navbar-fixed-top" id="navbar-outside">
       <div class="container">
         <div class="navbar-header">
@@ -29,13 +33,36 @@ Content: >
         </div><!--/.navbar-collapse -->
       </div>
     </nav>
+    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
     <script>
+      var mainWindow = null;
+
       addEventListener("message", function(msg) {
         if( ('http://localhost:8080' === msg.origin) ||
           ('https://localhost:8443' === msg.origin) ) {
-          var z = document.getElementById('navbar-outside');
-          z.style.borderLeftColor = msg.data;
+          var cmd = msg.data.split('/');
+          switch(cmd[0]) {
+            case 'hdrCol': {
+              var z = document.getElementById('navbar-outside');
+              z.style.borderLeftColor = cmd[1];
+              break;
+            }
+            case 'ehlo': {
+              mainWindow = msg.source;
+              break;
+            }
+          }
         }
       });
+
+      // tell main window about navbar collapses so it can resize the iframe...
+      $('#navbar').on('show.bs.collapse', function () {
+         mainWindow.postMessage('nav/show', '*');
+      });
+      $('#navbar').on('hidden.bs.collapse', function () {
+         mainWindow.postMessage('nav/hide', '*');
+      });
     </script>
+  </div>
 

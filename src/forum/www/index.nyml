@@ -153,6 +153,29 @@ Partials:
           });
       });
 
+      // iframe communication
+      function postIframeMessage(value) {
+        var f = document.getElementById('navbar-frame');
+        var w = f.contentWindow;
+        w.postMessage(value, "*");
+      }
+
+      addEventListener("message", function(msg) {
+        if('https://localhost:8443' === msg.origin) {
+          var cmd = msg.data.split('/');
+          switch(cmd[0]) {
+            case 'nav': {
+              if('show' == cmd[1]) {
+                $('#navbar-frame').height('175px');
+              } else {
+                $('#navbar-frame').height('50px');
+              }
+              break;
+            }
+          }
+        }
+      });
+
       //swatches/jumbotron colour
       function liActiveA(css) {
         css = css || '';
@@ -173,13 +196,14 @@ Partials:
         $('.container .jumbotron').css('color', fg);
         //$('nav.navbar').css('border-left-color', col);
         $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
-        var f = document.getElementById('navbar-frame');
-        var w = f.contentWindow;
-        w.postMessage(col, "*");
+        postIframeMessage('hdrCol/' + col);
       }
       var idx = Math.floor(Math.random() * cols.length);
       var light = !!Math.floor(Math.random() * 2);
+
+      // init!
       $(window).load(function() {
+        postIframeMessage('ehlo');
         setHdrCols(cols[idx], light);
       });
     </script>
