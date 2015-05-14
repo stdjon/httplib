@@ -14,7 +14,7 @@ DELIMITER //
 /* Drop existing tables */
 
 CREATE PROCEDURE drop_tables() BEGIN
-    DROP TABLE IF EXISTS PostsRead, Posts, Threads, Auth, Users;
+    DROP TABLE IF EXISTS PostsRead, Posts, Threads, Categories, Auth, Users;
 END;
 
 
@@ -46,13 +46,27 @@ CREATE PROCEDURE create_tables() BEGIN
         CHARACTER SET utf8;
 
 
-    CREATE TABLE IF NOT EXISTS Threads(
+    CREATE TABLE IF NOT EXISTS Categories(
         Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
-        Title VARCHAR(80),
+        Name VARCHAR(25),
         UserId INT UNSIGNED,
         CreateDate DATETIME,
         Colour VARCHAR(30),
         FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
+    )
+        ENGINE=INNODB
+        CHARACTER SET utf8;
+
+
+    CREATE TABLE IF NOT EXISTS Threads(
+        Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        Title VARCHAR(80),
+        UserId INT UNSIGNED,
+        CategoryId INT UNSIGNED,
+        CreateDate DATETIME,
+        Colour VARCHAR(30),
+        FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE,
+        FOREIGN KEY(CategoryId) REFERENCES Categories(Id) ON DELETE CASCADE
     )
         ENGINE=INNODB
         CHARACTER SET utf8;
