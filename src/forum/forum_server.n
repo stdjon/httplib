@@ -10,8 +10,6 @@ namespace forum {
 
 class ForumServer: Server {
 
-    nav_state: NavState = NavState();
-
     public this(path: string) {
         base(path);
 
@@ -19,17 +17,83 @@ class ForumServer: Server {
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
             (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
-
+        route(HTTP.GET, "/nav-{{action}}", navResponse);
+        route(HTTP.POST, "/nav-signin", navSigninResponse);
         route(HTTP.GET, "/pwtest", pwResponse);
     }
 
     public indexResponse(
-        _context: Context, _request: Request, response: Response): void {
+        _context: Context, request: Request, response: Response): void {
 
-        def pd = PartialData() <- [ "NavState" = navState() ];
-
-        response.append(renderPage("index.nyml", null, pd));
+        response.append(renderPage("index.nyml"));
         response.Status = (200, "OK");
+    }
+
+    public navResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def action = context.Vars["action"];
+        def lambda = match(action) {
+            | "login" => navLoginResponse
+            | "ok" => navOkResponse
+            | _ => methodNotAllowedResponse
+        };
+        lambda(context, request, response);
+    }
+
+    public navLoginResponse(
+        context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+
+            def cookies = request.Cookies;
+            def auth = if(cookies != null) { cookies["_auth"] } else { null };
+            if(!String.IsNullOrEmpty(auth)) {
+                navOkResponse(context, request, response);
+            } else {
+                response.append(renderPage("nav-login.nyml"));
+                response.Status = (200, "OK");
+            }
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navSigninResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def user = context.Vars["user"];
+        def password = context.Vars["password"];
+        def sec = if(request.IsSecure) { "Security OK" } else { "INSECURE OH NOES!?" };
+
+        response.append(
+            "<html><body><h1>Signin attempt</h1>"
+            $"<p>user = $user</p><p>password = $password</p>"
+            "</body></html>");
+
+        if(request.IsSecure) {
+            // System.Net.Cookie flags don't seem to be respected, so set a
+            // cookie header explicitly...
+            response["Set-Cookie"] = "_auth=1; path=/; secure; httponly";
+            response["Location"] = "http://localhost:8080/";
+            response.Status = (303, "See Other");
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navOkResponse(
+        context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+            response.append("<html><body><h1>Login Ok!</h1></body></html>");
+            response.Status = (200, "OK");
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
     }
 
     public testResponse(
@@ -76,11 +140,6 @@ class ForumServer: Server {
             response.append("<html><body><h1>Error: no auth module</h1></body></html>");
             response.Status = (500, "Err");
         }
-    }
-
-    public navState(): string {
-        // TODO: need some kind of SessionId...
-        nav_state.Output;
     }
 
     protected override internalServerError(ex: Exception): void {

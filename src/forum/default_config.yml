@@ -20,7 +20,6 @@ FileServing:
   - /.*ttf
   - /.*woff
   - /.*woff2
-  - /nav-[a-z0-9-]+
 Renderers:
   yml:
     Assembly: httplib.dll

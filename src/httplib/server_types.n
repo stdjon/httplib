@@ -38,6 +38,16 @@ public enum HTTP {
 }
 
 
+// Cookie Flags
+[System.Flags]
+public enum COOKIE {
+    | NONE = 0x00
+    | SECURE = 0x01
+    | HTTP_ONLY = 0x02
+
+    | SECURE_HTTP_ONLY = 0x03
+}
+
 //------------------------------------------------------------------------------
 // IAssociation
 // NB: we may want to vary on the association value type as well (for cookies).
@@ -145,7 +155,16 @@ public class CookieTable: IAssociation[CookieCollection] {
     }
 
     public Item[key: string]: string {
-        get { cc[key].Value.ToString(); }
+        get {
+            mutable v = null;
+            // No CookieCollection.TryGetValue() method...
+            try { v = cc[key].Value; } catch { | _ => {}}
+            if(v != null) {
+                v.ToString();
+            } else {
+                null;
+            }
+        }
 //        set { cc[key] = value; }
     }
 
@@ -340,6 +359,11 @@ public class Response {
         set { response.Headers[key] = value }
     }
 
+    //TODO FIXME XXX TMP
+    public SysCookies: CookieCollection {
+        get { response.Cookies; }
+    }
+
     mutable response: HttpListenerResponse;
     mutable output: array[byte];
 
@@ -350,8 +374,34 @@ public class Response {
     }
 
     // interim API pending full cookie support...
-    public setCookie(name: string, value: string): void {
-        response.AppendCookie(Cookie(name, value, "/"));
+    // NB: flags set on a System.Net.Cookie in this way do not seem to get
+    //   written out into the response header - would be nice to find out why.
+    public setCookie(name: string, value: string, flags = COOKIE.NONE): void {
+
+        def cookie = Cookie(name, value, "/");
+        when((flags & COOKIE.SECURE) != COOKIE.NONE) {
+            cookie.Secure = true;
+        }
+        when((flags & COOKIE.HTTP_ONLY) != COOKIE.NONE) {
+            cookie.HttpOnly = true;
+        }
+        response.AppendCookie(cookie);
+    }
+
+    // interim API pending full cookie support...
+    // NB: flags set on a System.Net.Cookie in this way do not seem to get
+    //   written out into the response header - would be nice to find out why.
+    public setCookie(
+        name: string, value: string, domain: string, flags = COOKIE.NONE): void {
+
+        def cookie = Cookie(name, value, "/", domain);
+        when((flags & COOKIE.SECURE) != COOKIE.NONE) {
+            cookie.Secure = true;
+        }
+        when((flags & COOKIE.HTTP_ONLY) != COOKIE.NONE) {
+            cookie.HttpOnly = true;
+        }
+        response.AppendCookie(cookie);
     }
 
     public append(params data: array[string]): void {
