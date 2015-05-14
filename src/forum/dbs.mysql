@@ -14,7 +14,7 @@ DELIMITER //
 /* Drop existing tables */
 
 CREATE PROCEDURE drop_tables() BEGIN
-    DROP TABLE IF EXISTS PostsRead, Posts, Threads, Users;
+    DROP TABLE IF EXISTS PostsRead, Posts, Threads, Auth, Users;
 END;
 
 
@@ -25,13 +25,22 @@ CREATE PROCEDURE create_tables() BEGIN
     CREATE TABLE IF NOT EXISTS Users(
         Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         Name VARCHAR(25),
-        PwHash VARCHAR(256),
         Level INT UNSIGNED,
         Points INT,
         JoinDate DATETIME,
         Avatar BLOB,
         Motto VARCHAR(40),
         Location VARCHAR(40)
+    )
+        ENGINE=INNODB
+        CHARACTER SET utf8;
+
+
+    CREATE TABLE IF NOT EXISTS Auth(
+        Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+        UserId INT UNSIGNED,
+        PwRecord VARCHAR(256),
+        FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
     )
         ENGINE=INNODB
         CHARACTER SET utf8;
@@ -93,11 +102,15 @@ END;
 
 CREATE PROCEDURE populate_tables() BEGIN
     IF @populate IS NOT NULL THEN
-        INSERT INTO Users(Id, Name, PwHash, Level, Points, JoinDate) VALUES(1, 'jon', '', 0, 0, '2015-01-01');
-        INSERT INTO Users(Id, Name, PwHash, Level, Points, JoinDate) VALUES(2, 'user1', '', 0, 0, '2015-01-02');
-        INSERT INTO Users(Id, Name, PwHash, Level, Points, JoinDate) VALUES(3, 'user2', '', 0, 0, '2015-01-03');
-        INSERT INTO Users(Id, Name, PwHash, Level, Points, JoinDate) VALUES(4, 'blah', '', 0, 0, '2015-01-04');
+        INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(1, 'jon', 0, 0, '2015-01-01');
+        INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(2, 'user1', 0, 0, '2015-01-02');
+        INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(3, 'user2', 0, 0, '2015-01-03');
+        INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(4, 'blah', 0, 0, '2015-01-04');
 
+        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(1, 1, '*nohash*');
+        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(2, 2, '*nohash*');
+        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(3, 3, '*nohash*');
+        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(4, 4, '*nohash*');
 
         INSERT INTO Threads(Id, Title, UserId, CreateDate) VALUES(1, 'test thread', 1, '2015-01-01');
         INSERT INTO Threads(Id, Title, UserId, CreateDate) VALUES(2, 'Another Test Thread', 2, '2015-02-01');
