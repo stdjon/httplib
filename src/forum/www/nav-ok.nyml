@@ -3,6 +3,8 @@ Template: nav-template.nyml
 Stylesheets:
   - local-styles.css
 Partials:
+  NavScriptsPre: |
+    var navCollapseHeight = '120px';
   NavContent: |
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">

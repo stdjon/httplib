@@ -169,7 +169,7 @@ Partials:
           switch(cmd[0]) {
             case 'nav': {
               if('show' == cmd[1]) {
-                $('#navbar-frame').height('175px');
+                $('#navbar-frame').height(cmd[2]);
               } else {
                 $('#navbar-frame').height('50px');
               }
