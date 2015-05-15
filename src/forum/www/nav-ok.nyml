@@ -6,6 +6,11 @@ Partials:
   NavScriptsPre: |
     var navCollapseHeight = '120px';
   NavContent: |
+    <style>
+      a.navbar-brand#uname {
+        font-weight: 100;
+      }
+    </style>
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
@@ -13,10 +18,11 @@ Partials:
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a id="pagename" class="navbar-brand" href="#"><i class="fa fa-diamond"></i> page name</a>
+      <a id="pagename" class="navbar-brand" href="http://localhost:8080/" target="_top">
+       <i class="fa fa-diamond"></i> page name</a>
+      <a id="uname" class="navbar-brand" href="http://localhost:8080/u/{{User}}" target="_top">[{{User}}]</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
-      <a class="navbar-brand">Logged in as {{User}}</a>
       <form class="navbar-form navbar-right">
         <!--
         <div class="input-group">

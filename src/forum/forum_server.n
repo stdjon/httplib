@@ -17,6 +17,7 @@ class ForumServer: Server {
 
         route(HTTP.GET, "/nav-{{action}}", navGetResponse);
         route(HTTP.POST, "/nav-{{action}}", navPostResponse);
+        route(HTTP.GET, "/signup", signupResponse);
 
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
@@ -38,6 +39,7 @@ class ForumServer: Server {
         def action = context.Vars["action"];
         def lambda = match(action) {
             | "login" => navLoginResponse
+            | "empty" => navEmptyResponse
             | _ => methodNotAllowedResponse
         };
         lambda(context, request, response);
@@ -46,22 +48,44 @@ class ForumServer: Server {
     public navPostResponse(
         context: Context, request: Request, response: Response): void {
 
-        def _user = context.Vars["user"];
-        def _password = context.Vars["password"];
         def action = context.Vars["action"];
         def lambda = match(action) {
             | "signin" => navSigninResponse
             | "signout" => navSignoutResponse
+            | "signup" => navSignupResponse
             | _ => methodNotAllowedResponse
         }
         lambda(context, request, response);
+    }
+
+    public signupResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+            def cookies = request.Cookies;
+            def u = if(cookies != null) { cookies["_u"] } else { null };
+            mutable user = "Username";
+            when(!String.IsNullOrEmpty(u)) {
+                user = u;
+            }
+
+            def pd = PageData() <- [
+                "User" = user ?? "Username",
+            ];
+
+            response.append(renderPage("signup.nyml", pd));
+            response["Set-Cookie"] = "_u=; path=/; secure; httponly";
+            response.Status = (200, "OK");
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
     }
 
     public navLoginResponse(
         _context: Context, request: Request, response: Response): void {
 
         if(request.IsSecure) {
-
             def cookies = request.Cookies;
             def auth = if(cookies != null) { cookies["_auth"] } else { null };
             if(!String.IsNullOrEmpty(auth)) {
@@ -72,6 +96,18 @@ class ForumServer: Server {
                 response.append(renderPage("nav-login.nyml"));
                 response.Status = (200, "OK");
             }
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navEmptyResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+            response.append(renderPage("nav-empty.nyml"));
+            response.Status = (200, "OK");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
@@ -100,6 +136,23 @@ class ForumServer: Server {
             // cookie header explicitly...
             response["Set-Cookie"] = "_auth=; path=/; secure; httponly";
             response["Location"] = "http://localhost:8080/";
+            response.Status = (303, "See Other");
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navSignupResponse(
+        context: Context, request: Request, response: Response): void {
+        if(request.IsSecure) {
+            def user = context.Vars["user"];
+            def password = context.Vars["password"];
+            //response.append($"<h1>Username: $user</h1><p>p/w: $password</p>");
+            // System.Net.Cookie flags don't seem to be respected, so set a
+            // cookie header explicitly...
+            response["Set-Cookie"] = $"_u=$user; path=/; secure; httponly";
+            response["Location"] = "https://localhost:8443/signup";
             response.Status = (303, "See Other");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");

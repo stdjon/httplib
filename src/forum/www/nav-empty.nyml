@@ -4,19 +4,22 @@ Stylesheets:
   - local-styles.css
 Partials:
   NavScriptsPre: |
-    var navCollapseHeight = '175px';
+    var navCollapseHeight = '120px';
   NavContent: |
     <div class="navbar-header">
+      <!--
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
         <span class="sr-only">Toggle navigation</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
+      -->
       <a id="pagename" class="navbar-brand" href="http://localhost:8080/" target="_top">
         <i class="fa fa-diamond"></i> page name</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
+      <!--
       <form class="navbar-form navbar-right">
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
@@ -26,8 +29,9 @@ Partials:
           <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
           <input name="password" type="password" placeholder="Password" class="form-control input-sm">
         </div>
-        <button type="submit" class="btn btn-success" formaction="https://localhost:8443/nav-signin" formmethod="post" formtarget="_top">Sign in</button>
-        <button type="submit" class="btn btn-info" formaction="https://localhost:8443/nav-signup" formmethod="post" formtarget="_top">Sign up</button>
+        <button type="submit" class="btn btn-danger" formaction="https://localhost:8443/nav-signout" formmethod="post" formtarget="_top">Sign out</button>
       </form>
+      -->
     </div><!--/.navbar-collapse -->
+
 
