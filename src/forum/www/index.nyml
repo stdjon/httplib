@@ -4,16 +4,16 @@ Stylesheets:
   - local-styles.css
 Title: Title Title Title
 Partials:
-  Nav: >
+  Nav: |
     <iframe id='navbar-frame' src='https://localhost:8443/nav-login'
       width='100%' height='50px' frameborder='0' allowtransparency='true'
       style='position: fixed; z-index: 100;'></iframe>
-  Banner: >
+  Banner: |
     <div class="jumbotron anchor">
       <!--<h1>Title Title Title Title Title Title Title Title Title</h1>-->
       <h1>Supercalifragilisticexpialidocious</h1>
     </div>
-  Body: >
+  Body: |
     <div class="swatches">
       <p>
         <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
@@ -210,7 +210,7 @@ Partials:
         setHdrCols(cols[idx], light);
       });
     </script>
-  Guide: >
+  Guide: |
     <div id="scrollspy">
       <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
         <li><a href="#1">1</a></li>

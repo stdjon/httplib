@@ -14,7 +14,9 @@ Partials:
       <a id="pagename" class="navbar-brand" href="#"><i class="fa fa-diamond"></i> page name</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
+      <a class="navbar-brand">Logged in as {{User}}</a>
       <form class="navbar-form navbar-right">
+        <!--
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
           <input name="user" type="text" placeholder="Username" class="form-control input-sm">
@@ -23,7 +25,8 @@ Partials:
           <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
           <input name="password" type="password" placeholder="Password" class="form-control input-sm">
         </div>
-        <button type="submit" class="btn btn-success" formaction="https://localhost:8443/nav-signin" formmethod="post" formtarget="_top">Sign in</button>
+        -->
+        <button type="submit" class="btn btn-danger" formaction="https://localhost:8443/nav-signout" formmethod="post" formtarget="_top">Sign out</button>
       </form>
     </div><!--/.navbar-collapse -->
 

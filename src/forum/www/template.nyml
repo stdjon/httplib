@@ -13,10 +13,10 @@ Title: Template Test Page
 BodyAttributes:
   - data-spy="scroll"
   - data-target="#scrollspy"
-Content: >
+Content: |
   {{>PageLayout}}
 Partials:
-  PageLayout: >
+  PageLayout: |
     {{>Nav}}
     <div class="outside container hyphenate">
       <div class="banner">

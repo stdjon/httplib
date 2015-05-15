@@ -1,0 +1,62 @@
+---
+Lang: en
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Content: |
+  {{>PageLayout}}
+Partials:
+  PageLayout: |
+    <style>
+      body { background: none; }
+      .form-control:focus {
+        border-color: #f00;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 0, 0, .6);
+      }
+    </style>
+    <div class="container">
+      <nav class="navbar navbar-inverse navbar-fixed-top" id="navbar-outside">
+        <div class="container">
+          {{>NavContent}}
+        </div>
+      </nav>
+      <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+      <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+      <script>
+        {{>NavScripts}}
+      </script>
+    </div>
+  NavScripts: |
+    var mainWindow = null;
+
+    addEventListener("message", function(msg) {
+      if( ('http://localhost:8080' === msg.origin) ||
+        ('https://localhost:8443' === msg.origin) ) {
+        var cmd = msg.data.split('/');
+        switch(cmd[0]) {
+          case 'hdrCol': {
+            var z = document.getElementById('navbar-outside');
+            z.style.borderLeftColor = cmd[1];
+            break;
+          }
+          case 'ehlo': {
+            mainWindow = msg.source;
+            break;
+          }
+        }
+      }
+    });
+
+    // tell main window about navbar collapses so it can resize the iframe...
+    $('#navbar').on('show.bs.collapse', function () {
+       mainWindow.postMessage('nav/show', '*');
+    });
+    $('#navbar').on('hidden.bs.collapse', function () {
+       mainWindow.postMessage('nav/hide', '*');
+    });
