@@ -18,6 +18,7 @@ class ForumServer: Server {
         route(HTTP.GET, "/nav-{{action}}", navGetResponse);
         route(HTTP.POST, "/nav-{{action}}", navPostResponse);
         route(HTTP.GET, "/signup", signupResponse);
+        route(HTTP.POST, "/signup-submit", signupSubmitResponse);
 
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
@@ -75,6 +76,29 @@ class ForumServer: Server {
 
             response.append(renderPage("signup.nyml", pd));
             response["Set-Cookie"] = "_u=; path=/; secure; httponly";
+            response.Status = (200, "OK");
+        } else {
+            response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public signupSubmitResponse(
+        context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+            def user = Uri.UnescapeDataString(context.Vars["user"]);
+            def password = Uri.UnescapeDataString(context.Vars["password"]);
+            def confirm = Uri.UnescapeDataString(context.Vars["confirm"]);
+            def email = Uri.UnescapeDataString(context.Vars["email"]);
+
+            def pd = PageData() <- [
+                "User" = user ?? "Username",
+            ];
+
+//            response.append(renderPage("signup.nyml", pd));
+//            response["Set-Cookie"] = "_u=; path=/; secure; httponly";
+            response.append($"<html><body><h1>u:$user p:$password c:$confirm e:$email</h1></body></html>");
             response.Status = (200, "OK");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
