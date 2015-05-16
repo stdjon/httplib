@@ -40,6 +40,7 @@ CREATE PROCEDURE create_tables() BEGIN
         Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
         UserId INT UNSIGNED,
         PwRecord VARCHAR(256),
+        Email VARCHAR(256),
         FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
     )
         ENGINE=INNODB
@@ -121,10 +122,10 @@ CREATE PROCEDURE populate_tables() BEGIN
         INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(3, 'user2', 0, 0, '2015-01-03');
         INSERT INTO Users(Id, Name, Level, Points, JoinDate) VALUES(4, 'blah', 0, 0, '2015-01-04');
 
-        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(1, 1, '*nohash*');
-        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(2, 2, '*nohash*');
-        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(3, 3, '*nohash*');
-        INSERT INTO Auth(Id, UserId, PwRecord) VALUES(4, 4, '*nohash*');
+        INSERT INTO Auth(Id, UserId, PwRecord, Email) VALUES(1, 1, '*nohash*', 'jon@tmp');
+        INSERT INTO Auth(Id, UserId, PwRecord, Email) VALUES(2, 2, '*nohash*', 'user1@gmail.com');
+        INSERT INTO Auth(Id, UserId, PwRecord, Email) VALUES(3, 3, '*nohash*', 'user2@mail.com');
+        INSERT INTO Auth(Id, UserId, PwRecord, Email) VALUES(4, 4, '*nohash*', 'blah@bl.ah');
 
         INSERT INTO Threads(Id, Title, UserId, CreateDate) VALUES(1, 'test thread', 1, '2015-01-01');
         INSERT INTO Threads(Id, Title, UserId, CreateDate) VALUES(2, 'Another Test Thread', 2, '2015-02-01');
