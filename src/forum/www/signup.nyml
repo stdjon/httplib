@@ -65,6 +65,7 @@ Partials:
     <div class="anchor" id="1"><p>Please enter some details for your account:</p></div>
       <form class="form">
         <span class="input-pre">Username: </span>
+        <span class="feedback" id="userexists"></span>
         <span class="feedback" id="userfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
@@ -89,6 +90,7 @@ Partials:
           <div class="progress-bar progress-bar-danger" style="width: 1%;" id="password_strength"></div>
         </div>
         <span class="input-pre">Email: </span>
+        <span class="feedback" id="emailexists"></span>
         <span class="feedback" id="emailfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
@@ -135,8 +137,22 @@ Partials:
           ok = false;
         }
         $('#userfeedback').html('<em>' + msg + '</em>');
-        userOk = ok; //FIXME - ajax check server DB
-        checkSubmit();
+        userOk = ok;
+        $.ajax({
+          url: "https://localhost:8443/is-user?u=" + v,
+          statusCode: {
+            200: function() {
+              $('#userexists').html('<em>Username already taken!</em>');
+              userOk = false;
+            },
+            404: function() {
+              $('#userexists').html('');
+            }
+          },
+          complete: function() {
+            checkSubmit();
+          }
+        });
       }
 
       function passwordKeypress() {
@@ -177,7 +193,10 @@ Partials:
           msg += ' Consider a stronger password.';
         }
 
-        msg += ' (Crack time estimated as ' + r.crack_time_display + '.)';
+        msg += ' (Crack time estimated as ' +
+          '<a href="https://blogs.dropbox.com/tech/2012/04/' +
+          'zxcvbn-realistic-password-strength-estimation/">' +
+          r.crack_time_display + '</a>.)';
 
         $('#passwordfeedback').html('<em>' + msg + '</em>');
         updatePasswordBar(r.score);
@@ -197,7 +216,21 @@ Partials:
         var msg = ok ? '' : '<em>(Is this a valid email address?)</em>';
         $('#emailfeedback').html(msg);
         emailOk = ok;
-        checkSubmit();
+        $.ajax({
+          url: "https://localhost:8443/is-user?e=" + v,
+          statusCode: {
+            200: function() {
+              $('#emailexists').html('<em>Email address already in use!</em>');
+              emailOk = false;
+            },
+            404: function() {
+              $('#emailexists').html('');
+            }
+          },
+          complete: function() {
+            checkSubmit();
+          }
+        });
       }
 
       function checkPasswords() {

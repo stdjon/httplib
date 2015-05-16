@@ -19,6 +19,7 @@ class ForumServer: Server {
         route(HTTP.POST, "/nav-{{action}}", navPostResponse);
         route(HTTP.GET, "/signup", signupResponse);
         route(HTTP.POST, "/signup-submit", signupSubmitResponse);
+        route(HTTP.GET, "/is-user", isUserResponse);
 
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
@@ -104,6 +105,27 @@ class ForumServer: Server {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
         }
+    }
+
+    public isUserResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def u = request.QueryString["u"];
+        def e = request.QueryString["e"];
+        mutable ok = null;
+        if(!String.IsNullOrEmpty(u)) {
+            mutable command = Database.createCommand(
+                "SELECT Name FROM Users WHERE Name = @Name");
+            command.addParameter("@Name", Uri.UnescapeDataString(u));
+            ok = command.executeScalar() :> string;
+        }
+        else when(!String.IsNullOrEmpty(e)) {
+            mutable command = Database.createCommand(
+                "SELECT Email FROM Auth WHERE Email = @Email");
+            command.addParameter("@Email", Uri.UnescapeDataString(e));
+            ok = command.executeScalar() :> string;
+        }
+        response.Status = if(ok != null) { (200, "OK") } else { (404, "Not Found") };
     }
 
     public navLoginResponse(
