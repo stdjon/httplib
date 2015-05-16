@@ -13,7 +13,7 @@ Partials:
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a id="pagename" class="navbar-brand" href="http://localhost:8080/" target="_top">
+      <a id="pagename" class="navbar-brand" href="{{DefaultInsecurePrefix}}/" target="_top">
         <i class="fa fa-diamond"></i> page name</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
@@ -26,8 +26,8 @@ Partials:
           <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
           <input name="password" type="password" placeholder="Password" class="form-control input-sm">
         </div>
-        <button type="submit" class="btn btn-success" formaction="https://localhost:8443/nav-signin" formmethod="post" formtarget="_top">Sign in</button>
-        <button type="submit" class="btn btn-info" formaction="https://localhost:8443/nav-signup" formmethod="post" formtarget="_top">Sign up</button>
+        <button type="submit" class="btn btn-success" formaction="{{DefaultSecurePrefix}}/nav-signin" formmethod="post" formtarget="_top">Sign in</button>
+        <button type="submit" class="btn btn-info" formaction="{{DefaultSecurePrefix}}/nav-signup" formmethod="post" formtarget="_top">Sign up</button>
       </form>
     </div><!--/.navbar-collapse -->
 

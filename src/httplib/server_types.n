@@ -48,6 +48,7 @@ public enum COOKIE {
     | SECURE_HTTP_ONLY = 0x03
 }
 
+
 //------------------------------------------------------------------------------
 // IAssociation
 // NB: we may want to vary on the association value type as well (for cookies).

@@ -40,8 +40,8 @@ Partials:
     var mainWindow = null;
 
     addEventListener("message", function(msg) {
-      if( ('http://localhost:8080' === msg.origin) ||
-        ('https://localhost:8443' === msg.origin) ) {
+      if( ('{{DefaultSecurePrefix}}' === msg.origin) ||
+        ('{{DefaultInsecurePrefix}}' === msg.origin) ) {
         var cmd = msg.data.split('/');
         switch(cmd[0]) {
           case 'hdrCol': {

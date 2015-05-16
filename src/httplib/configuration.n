@@ -22,6 +22,16 @@ public class DatabaseConfiguration {
 
 
 [Record]
+public class Prefixes {
+    /** Secure (https://) prefixes */
+    [Accessor(flags = WantSetter)] mutable secure: array[string];
+    /** Insecure (http://) prefixes */
+    [Accessor(flags = WantSetter)] mutable insecure: array[string];
+
+    public this() {}
+}
+
+[Record]
 public class RendererConfiguration {
     /** Renderer assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
@@ -53,7 +63,7 @@ public class ServerConfiguration {
     /** Database configuration */
     [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
     /** Listener prefixes */
-    [Accessor(flags = WantSetter)] mutable prefixes: array[string];
+    [Accessor(flags = WantSetter)] mutable prefixes: Prefixes;
     /** Filesystem roots for file serving */
     [Accessor(flags = WantSetter)] mutable roots: array[string];
     /** Patterns to test when deciding if a file can be served */

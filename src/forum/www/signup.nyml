@@ -5,7 +5,7 @@ Stylesheets:
 Title: Title Title Title
 Partials:
   Nav: |
-    <iframe id='navbar-frame' src='https://localhost:8443/nav-empty'
+    <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-empty'
       width='100%' height='50px' frameborder='0' allowtransparency='true'
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
@@ -98,7 +98,9 @@ Partials:
             class="form-control input-sm" onkeypress="emailKeypress()" onkeyup="emailKeypress()">
         </div>
         <br>
-        <button id="submit" type="submit" disabled="disabled" class="btn btn-success" formaction="https://localhost:8443/signup-submit" formmethod="post" formtarget="_top">Sign up</button>
+        <button id="submit" type="submit" disabled="disabled" class="btn btn-success"
+          formaction="{{DefaultSecurePrefix}}/signup-submit" formmethod="post" formtarget="_top">Sign up</button>
+        <input type="hidden" name="redirect" value="{{DefaultPrefix}}/">
       </form>
 
 
@@ -139,7 +141,7 @@ Partials:
         $('#userfeedback').html('<em>' + msg + '</em>');
         userOk = ok;
         $.ajax({
-          url: "https://localhost:8443/is-user?u=" + v,
+          url: "{{DefaultSecurePrefix}}/is-user?u=" + v,
           statusCode: {
             200: function() {
               $('#userexists').html('<em>Username already taken!</em>');
@@ -217,7 +219,7 @@ Partials:
         $('#emailfeedback').html(msg);
         emailOk = ok;
         $.ajax({
-          url: "https://localhost:8443/is-user?e=" + v,
+          url: "{{DefaultSecurePrefix}}/is-user?e=" + v,
           statusCode: {
             200: function() {
               $('#emailexists').html('<em>Email address already in use!</em>');
@@ -292,7 +294,7 @@ Partials:
       }
 
       addEventListener("message", function(msg) {
-        if('https://localhost:8443' === msg.origin) {
+        if('{{DefaultSecurePrefix}}' === msg.origin) {
           var cmd = msg.data.split('/');
           switch(cmd[0]) {
             case 'nav': {

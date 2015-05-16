@@ -6,8 +6,10 @@ Database:
   Typename: httplib.db.MySqlDatabase
   Connection: server=localhost;userid=forum;password=n0ts3cr3t;database=forum
 Prefixes:
-  - http://localhost:8080/
-  - https://localhost:8443/
+  Secure:
+    - https://localhost:8443/
+  Insecure:
+    - http://localhost:8080/
 Roots:
   - ../src/forum/www
   - ../contrib/client

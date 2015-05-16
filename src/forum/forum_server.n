@@ -29,9 +29,14 @@ class ForumServer: Server {
     }
 
     public indexResponse(
-        _context: Context, _request: Request, response: Response): void {
+        _context: Context, request: Request, response: Response): void {
 
-        response.append(renderPage("index.nyml"));
+        def data = PageData() <- [
+            "DefaultSecurePrefix" = DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+            "DefaultPrefix" = getDefaultPrefix(request),
+        ];
+        response.append(renderPage("index.nyml", data));
         response.Status = (200, "OK");
     }
 
@@ -71,11 +76,13 @@ class ForumServer: Server {
                 user = u;
             }
 
-            def pd = PageData() <- [
+            def data = PageData() <- [
                 "User" = user ?? "Username",
+                "DefaultSecurePrefix" = DefaultSecurePrefix,
+                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
             ];
 
-            response.append(renderPage("signup.nyml", pd));
+            response.append(renderPage("signup.nyml", data));
             response["Set-Cookie"] = "_u=; path=/; secure; httponly";
             response.Status = (200, "OK");
         } else {
@@ -139,7 +146,7 @@ class ForumServer: Server {
                 _ = command5.executeNonQuery();
 
                 response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
-                response["Location"] = "http://localhost:8080/";
+                response["Location"] = DefaultInsecurePrefix + "/";
                 response.Status = (303, "See Other");
             }
 
@@ -177,12 +184,17 @@ class ForumServer: Server {
         if(request.IsSecure) {
             def cookies = request.Cookies;
             def auth = if(cookies != null) { cookies["_auth"] } else { null };
+            def data = PageData() <- [
+                "DefaultSecurePrefix" = DefaultSecurePrefix,
+                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+                "DefaultPrefix" = getDefaultPrefix(request),
+            ];
             if(!String.IsNullOrEmpty(auth)) {
-                def data = PageData() <- [ "User" = auth ];
+                _ = data <- [ "User" = auth ];
                 response.append(renderPage("nav-ok.nyml", data));
                 response.Status = (200, "OK");
             } else {
-                response.append(renderPage("nav-login.nyml"));
+                response.append(renderPage("nav-login.nyml", data));
                 response.Status = (200, "OK");
             }
         } else {
@@ -195,7 +207,12 @@ class ForumServer: Server {
         _context: Context, request: Request, response: Response): void {
 
         if(request.IsSecure) {
-            response.append(renderPage("nav-empty.nyml"));
+            def data = PageData() <- [
+                "DefaultSecurePrefix" = DefaultSecurePrefix,
+                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+                "DefaultPrefix" = getDefaultPrefix(request),
+            ];
+            response.append(renderPage("nav-empty.nyml", data));
             response.Status = (200, "OK");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -229,7 +246,7 @@ class ForumServer: Server {
                 // cookie header explicitly...
                 response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
             }
-            response["Location"] = "http://localhost:8080/";
+            response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
 
 
@@ -245,7 +262,7 @@ class ForumServer: Server {
             // System.Net.Cookie flags don't seem to be respected, so set a
             // cookie header explicitly...
             response["Set-Cookie"] = "_auth=; path=/; secure; httponly";
-            response["Location"] = "http://localhost:8080/";
+            response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -258,11 +275,10 @@ class ForumServer: Server {
         if(request.IsSecure) {
             def user = context.Vars["user"];
             def _password = context.Vars["password"];
-            //response.append($"<h1>Username: $user</h1><p>p/w: $password</p>");
             // System.Net.Cookie flags don't seem to be respected, so set a
             // cookie header explicitly...
             response["Set-Cookie"] = $"_u=$user; path=/; secure; httponly";
-            response["Location"] = "https://localhost:8443/signup";
+            response["Location"] = DefaultSecurePrefix + "/signup";
             response.Status = (303, "See Other");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -320,6 +336,14 @@ class ForumServer: Server {
         print("INTERNAL SERVER ERROR!\n"
             $"$(ex.Message)\n"
             $"$(ex.StackTrace)\n");
+    }
+
+    getDefaultPrefix(request: Request): string {
+        if(request.IsSecure) {
+            DefaultSecurePrefix
+        } else {
+            DefaultInsecurePrefix
+        }
     }
 }
 

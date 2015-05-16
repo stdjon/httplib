@@ -72,6 +72,9 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Internal)]
     module_cache: ModuleCache = ModuleCache();
 
+    [Accessor] public default_secure_prefix: string;
+    [Accessor] public default_insecure_prefix: string;
+
     static protected loadConfiguration[T](path: string): T {
         using(reader = StreamReader(path)) {
             Deserializer.Deserialize.[T](reader);
@@ -93,8 +96,19 @@ public abstract class Server: IDisposable {
             database = Database.load(db.Assembly, db.Typename, db.Connection);
         }
 
-        foreach(p in Configuration.Prefixes) {
+        foreach(p in Configuration.Prefixes.Secure) {
             print("Adding \"$p\"...\n");
+            when(!Regex(@"^https://").IsMatch(p)) {
+                throw Exception("Secure prefix must start 'https://...'");
+            }
+            Listener.Prefixes.Add(p);
+        }
+
+        foreach(p in Configuration.Prefixes.Insecure) {
+            print("Adding \"$p\"...\n");
+            when(!Regex(@"^http://").IsMatch(p)) {
+                throw Exception("Insecure prefix must start 'http://...'");
+            }
             Listener.Prefixes.Add(p);
         }
 
@@ -118,6 +132,15 @@ public abstract class Server: IDisposable {
             routes[i] = Dictionary();
             contexts[i] = Dictionary();
         }
+
+        default_secure_prefix = Regex(@"(https://.*)/").Replace(
+            Configuration.Prefixes.Secure[0], "$1");
+
+        default_insecure_prefix = Regex(@"(http://.*)/").Replace(
+            Configuration.Prefixes.Insecure[0], "$1");
+
+        print("Default prefixes:\n"
+            $"  - $DefaultInsecurePrefix\n  - $DefaultSecurePrefix\n");
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
