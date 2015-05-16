@@ -93,14 +93,57 @@ class ForumServer: Server {
             def confirm = Uri.UnescapeDataString(context.Vars["confirm"]);
             def email = Uri.UnescapeDataString(context.Vars["email"]);
 
-            def pd = PageData() <- [
-                "User" = user ?? "Username",
-            ];
 
-//            response.append(renderPage("signup.nyml", pd));
-//            response["Set-Cookie"] = "_u=; path=/; secure; httponly";
-            response.append($"<html><body><h1>u:$user p:$password c:$confirm e:$email</h1></body></html>");
-            response.Status = (200, "OK");
+            mutable command1 = Database.createCommand(
+                "SELECT Name FROM Users WHERE Name = @Name");
+            command1.addParameter("@Name", user);
+            mutable command2 = Database.createCommand(
+                "SELECT Email FROM Auth WHERE Email = @Email");
+            command2.addParameter("@Email", email);
+            def test1 = command1.executeScalar() :> string;
+            def test2 = command2.executeScalar() :> string;
+
+            if(test1 != null || test2 != null || password != confirm) {
+                // TODO: also repeat the validation checks from client side
+                //   user length (3-25), chars
+                //   password length (8-60), chars
+
+                // error with user data.
+                // (need a more considered response though...)
+                response.append("<html><body><h1>Bad Request!</h1></body></html>");
+                response.Status = (400, "Bad Request");
+            } else {
+                def auth = getModuleInterface.[mod.IAuth]();
+                def now = DateTime.Now.ToUniversalTime();
+
+                mutable command3 = Database.createCommand(
+                    "INSERT INTO Users(Name, Level, Points, JoinDate) "
+                        "VALUES (@Name, 0, 0, @JoinDate)");
+                command3.addParameter("@Name", user);
+                command3.addParameter("@JoinDate", now);
+                _ = command3.executeNonQuery();
+
+                mutable command4 = Database.createCommand(
+                    "SELECT Id FROM Users WHERE Name = @Name");
+                command4.addParameter("@Name", user);
+                def id = command4.executeScalar() :> uint;
+
+                def record = auth.createPasswordRecord(password);
+
+                mutable command5 = Database.createCommand(
+                    "INSERT INTO Auth(UserId, PwRecord, Email) "
+                        "VALUES (@UserId, @PwRecord, @Email)");
+                command5.addParameter("@UserId", id);
+                command5.addParameter("@PwRecord", record);
+                command5.addParameter("@Email", email);
+                _ = command5.executeNonQuery();
+
+                response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+                response["Location"] = "http://localhost:8080/";
+                response.Status = (303, "See Other");
+            }
+
+
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
@@ -108,7 +151,7 @@ class ForumServer: Server {
     }
 
     public isUserResponse(
-        context: Context, request: Request, response: Response): void {
+        _context: Context, request: Request, response: Response): void {
 
         def u = request.QueryString["u"];
         def e = request.QueryString["e"];
@@ -163,12 +206,33 @@ class ForumServer: Server {
     public navSigninResponse(
         context: Context, request: Request, response: Response): void {
         if(request.IsSecure) {
-            // System.Net.Cookie flags don't seem to be respected, so set a
-            // cookie header explicitly...
-            def user = context.Vars["user"];
-            response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+            def user = Uri.UnescapeDataString(context.Vars["user"]);
+            def password = Uri.UnescapeDataString(context.Vars["password"]);
+            def auth = getModuleInterface.[mod.IAuth]();
+            def command1 = Database.createCommand(
+                "SELECT Id FROM Users WHERE Name = @Name");
+            command1.addParameter("@Name", user);
+            def id = command1.executeScalar() :> uint?;
+            mutable record;
+            when(id != null) {
+                def command2 = Database.createCommand(
+                    "SELECT PwRecord FROM Auth WHERE UserId = @UserId");
+                command2.addParameter("@UserId", id);
+                record = command2.executeScalar() :> string;
+            }
+
+            def ok = !String.IsNullOrEmpty(record) &&
+                auth.validatePassword(password, record);
+            print("$user - $id - $ok\n$record\n");
+            when(ok) {
+                // System.Net.Cookie flags don't seem to be respected, so set a
+                // cookie header explicitly...
+                response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+            }
             response["Location"] = "http://localhost:8080/";
             response.Status = (303, "See Other");
+
+
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
@@ -193,7 +257,7 @@ class ForumServer: Server {
         context: Context, request: Request, response: Response): void {
         if(request.IsSecure) {
             def user = context.Vars["user"];
-            def password = context.Vars["password"];
+            def _password = context.Vars["password"];
             //response.append($"<h1>Username: $user</h1><p>p/w: $password</p>");
             // System.Net.Cookie flags don't seem to be respected, so set a
             // cookie header explicitly...

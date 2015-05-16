@@ -69,8 +69,8 @@ Partials:
         <span class="feedback" id="userfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
-          <input name="user" id="user_id" type="text" placeholder="{{User}}"
-            class="form-control input-sm" onkeypress="userKeypress()" onkeyup="userKeypress()">
+          <input name="user" id="user_id" type="text" placeholder="Username"
+            class="form-control input-sm" onkeypress="userKeypress()" onkeyup="userKeypress()" value="{{User}}">
         </div>
         <span class="input-pre">Password: </span>
         <span class="feedback" id="passwordfeedback"></span>
@@ -91,7 +91,6 @@ Partials:
         </div>
         <span class="input-pre">Email: </span>
         <span class="feedback" id="userexists"></span>
-        <span class="feedback" id="emailexists"></span>
         <span class="feedback" id="emailfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
