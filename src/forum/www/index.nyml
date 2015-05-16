@@ -192,7 +192,7 @@ Partials:
         '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
 
       var cols = [
-          0, 22.5, 45, 67.5, 90, 11.50, 135, 157.5, 180,
+          0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
           202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
       function setHdrCols(c, b) {
         var fg = b ? "#444" : "#ccc";
