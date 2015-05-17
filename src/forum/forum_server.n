@@ -239,7 +239,7 @@ class ForumServer: Server {
 
             def ok = !String.IsNullOrEmpty(record) &&
                 auth.validatePassword(password, record);
-            Log.d("{0} - {1} - {2}\n{3}", user, id, ok, record);
+            Log.d("Login attempt as {0}: {2}", user, ok, record);
             when(ok) {
                 // System.Net.Cookie flags don't seem to be respected, so set a
                 // cookie header explicitly...
