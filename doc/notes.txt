@@ -1,6 +1,8 @@
 HTTPS support:
+==============
 
 Windows:
+--------
   A self-signed certificate was created and registered for testing purposes
   (see cer/windows/self-signed.cer).
 
@@ -75,8 +77,8 @@ Windows:
     URL reservation successfully deleted
 
 
-
 Linux:
+------
   Different certificates may be needed to test https on Linux: see
   cer/linux/self-signed.cer/.pvk.
   Note that unlike Windows, Administrator privileges are _not_ required for
@@ -104,31 +106,25 @@ Linux:
   will cause an 'Address already in use' error.
 
 
-
-
-Authentication:
-
-    PBKDF2 Key Derivation ('hash stretching'):
-    System.Security.Cryptography.Rfc2898DeriveBytes 
-
-    Salt password data - 32bytes or more:
-    System.Security.Cryptography.RNGCryptoServiceProvider 
-
-
-Database:
+Databases:
+==========
 
   Currently only MySql is supported. Can be installed using either Chocolatey
   or apt-get (depending on platform).
 
-Windows: [As Administrator]
+Windows:
+--------
+    [As Administrator]
     > choco install mysql
 
 Linux (Ubuntu/Debian):
+----------------------
     > sudo apt-get install mysql-server
   Also, if necessary:
     > sudo /etc/init.d/mysql start
 
-To set up user/db for forum software:
+
+To set up user/db for forum software (any platform):
 
     >mysql -u root
     Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -156,3 +152,9 @@ To set up user/db for forum software:
 
     mysql> \q
     Bye
+
+  You can then run something like the following to initialize database tables:
+
+    > mysql -D forum -u forum -p***** < src\forum\dbs.mysql
+    > mysql -D forum -u forum -p***** < src/forum/dbs.mysql
+
