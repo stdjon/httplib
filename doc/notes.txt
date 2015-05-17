@@ -124,7 +124,8 @@ Linux (Ubuntu/Debian):
     > sudo /etc/init.d/mysql start
 
 
-To set up user/db for forum software (any platform):
+To set up user/db for forum software (any platform), log into mysql and run
+the following commands (replace ***** with your database user's password):
 
     >mysql -u root
     Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -144,7 +145,7 @@ To set up user/db for forum software (any platform):
 
     mysql> use forum;
     Database changed
-    mysql> create user forum@localhost identified  by 'n0ts3cr3t';
+    mysql> create user forum@localhost identified  by '*****';
     Query OK, 0 rows affected (0.01 sec)
 
     mysql> grant all on forum.* to forum@localhost;
@@ -153,8 +154,8 @@ To set up user/db for forum software (any platform):
     mysql> \q
     Bye
 
-  You can then run something like the following to initialize database tables:
+  You can then run one of the following to initialize the database tables:
 
-    > mysql -D forum -u forum -p***** < src\forum\dbs.mysql
-    > mysql -D forum -u forum -p***** < src/forum/dbs.mysql
+  [Linux] > mysql -D forum -u forum -p***** < src/forum/init-dbs.mysql
+  [Windows] > mysql -D forum -u forum -p***** < src\forum\init-dbs.mysql
 
