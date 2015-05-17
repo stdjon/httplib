@@ -1,5 +1,6 @@
 .gitignore
 *.exe
 *.dll
+*.log
 *.sw?
 *~

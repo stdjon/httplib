@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Example MyServer configuration
+# Example forum.exe configuration
 ---
 Database:
   Assembly: httplib.db.mysql.dll
@@ -51,3 +51,18 @@ MimeTypes:
   _: text/plain
 OutputLength: 800
 FileChunkLength: 1024
+Logging:
+  Assembly: httplib.log.nlog.dll
+  Typename: httplib.log.NLogLogging
+  Targets:
+    console:
+      Type: ColoredConsoleTarget
+      Layout: "${message}"
+      Colours: { Debug: DarkGreen, Info: Green, Warn: DarkYellow }
+    file:
+      Type: FileTarget
+      Path: "${basedir}/forum-${date:format=yyyyMMddHHmmss:cached=true}.log"
+      Layout: "${date:format=HH\\:mm\\:ss} ${logger} ${message}"
+  Rules:
+    - { Source: "*", Level: Trace, Target: console }
+    - { Source: "*", Level: Info, Target: file }

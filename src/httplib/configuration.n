@@ -6,7 +6,53 @@ using Nemerle.Utility;
 namespace httplib {
 
 //------------------------------------------------------------------------------
-// ServerConfiguration
+
+
+type LogColours = Dictionary[string, string];
+
+// Not all LogTarget fields will be used by every target...
+[Record]
+public class LogTarget {
+    /** Log target type */
+    [Accessor(flags = WantSetter)] mutable type: string;
+    /** Log target layout */
+    [Accessor(flags = WantSetter)] mutable layout: string;
+    /** Log target path */
+    [Accessor(flags = WantSetter)] mutable path: string;
+    /** Colours */
+    [Accessor(flags = WantSetter)] mutable colours: LogColours;
+
+    public this() {}
+}
+
+type LogTargets = Dictionary[string, LogTarget];
+
+
+[Record]
+public class LogRule {
+    /** Log source */
+    [Accessor(flags = WantSetter)] mutable source: string;
+    /** Log level */
+    [Accessor(flags = WantSetter)] mutable level: string;
+    /** Log target */
+    [Accessor(flags = WantSetter)] mutable target: string;
+
+    public this() {}
+}
+
+[Record]
+public class LogConfiguration {
+    /** Logging assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Logging typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Targets */
+    [Accessor(flags = WantSetter)] mutable targets: LogTargets;
+    /** Targets */
+    [Accessor(flags = WantSetter)] mutable rules: array[LogRule];
+
+    public this() {}
+}
 
 [Record]
 public class DatabaseConfiguration {
@@ -58,8 +104,13 @@ public type Modules = List[ModuleConfiguration];
 public type MimeTypes = Dictionary[string, string];
 
 
+//------------------------------------------------------------------------------
+// ServerConfiguration
+
 [Record]
 public class ServerConfiguration {
+    /** Logging configuration */
+    [Accessor(flags = WantSetter)] mutable logging: LogConfiguration;
     /** Database configuration */
     [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
     /** Listener prefixes */

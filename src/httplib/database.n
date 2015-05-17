@@ -2,13 +2,14 @@ using System;
 using System.Data;
 using System.Reflection;
 
-using Nemerle.IO;
 using Nemerle.Utility;
 
 
 namespace httplib {
 
 public abstract class Database: IDisposable  {
+
+    [Accessor] log: ILog = Logging.forThisType();
 
     [Accessor(flags = WantSetter)]
     protected mutable connection: IDbConnection = null;
@@ -57,7 +58,7 @@ public abstract class Database: IDisposable  {
             transaction.Commit();
         } catch {
             | _ => {
-                print("Rolling back...\n");
+                Log.w("Rolling back...");
                 transaction.Rollback();
             }
         }

@@ -67,7 +67,8 @@ module Program {
                     Thread.Sleep(500);
                 } catch {
                     | ex => {
-                        print("ERROR! $ex\n");
+                        server.Log.e(
+                            "ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
                     }
                 }
             }

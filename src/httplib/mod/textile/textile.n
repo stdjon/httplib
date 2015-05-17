@@ -1,6 +1,6 @@
 using System;
 
-using Nemerle.IO;
+using Nemerle.Utility;
 
 using Textile;
 
@@ -13,12 +13,14 @@ public interface ITextile: IModuleInterface {
 
 public class Textile: Module, ITextile {
 
+    [Accessor] log: ILog = Logging.forThisType();
+
     public override InterfaceType: Type {
         get { typeof(ITextile) }
     }
 
     public this() {
-        print("Starting Textile module...\n");
+        Log.i("Starting Textile module...");
     }
 }
 

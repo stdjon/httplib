@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading;
 
 using Nemerle.Extensions;
-using Nemerle.IO;
 using Nemerle.Utility;
 
 using httplib;
@@ -240,18 +239,19 @@ class MyServer: Server {
     }
 
     protected override internalServerError(ex: Exception): void {
-        print("INTERNAL SERVER ERROR!\n"
-            $"$(ex.Message)\n"
-            $"$(ex.StackTrace)\n");
+        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
     }
 }
 
 
 module Test {
+
+    [Accessor] log: ILog = Logging.forType.[MyServer]();
+
     Main(_args: array[string]): void {
 
         def config_path = "../src/myserver/config.yml";
-        print("ServerConfiguration: $config_path\n");
+        Log.i("ServerConfiguration: $config_path\n");
 
         using(mutable my_server = MyServer(config_path)) {
 

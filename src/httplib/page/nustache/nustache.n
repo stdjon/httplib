@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using Nemerle.IO;
+using Nemerle.Utility;
 
 using Nustache.Core;
 using YamlDotNet.Serialization;
@@ -16,12 +16,14 @@ namespace httplib.page {
 [Record]
 public class NustachePage: Page {
 
+    [Accessor] log: ILog = Logging.forThisType();
+
     public this() {}
 
     public override renderContent(
         data: ObjectsType = null, parts: PartialsType = null): string {
 
-        print("NustachePage.renderContent...\n");
+        Log.t("NustachePage.renderContent...");
         def objects = mergeDicts(Objects, data);
 
         if(!String.IsNullOrEmpty(Content)) {

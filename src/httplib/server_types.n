@@ -6,7 +6,6 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Text.Encoding;
 
-using Nemerle.IO;
 using Nemerle.Utility;
 
 
@@ -464,14 +463,12 @@ public class Route {
         //anchor start/end of regex
         rx = "^" + rx + "$";
 
-//        print("new regex for $path = $rx\n");
         regex = Regex(rx);
         pattern = rx;
     }
 
     public doMatch(path: string, vars_ref: ref HashTable): bool {
         def result = regex.IsMatch(path);
-        //print("doMatch: '$(regex.ToString())' '$path' -> $result\n");
         mutable vars = vars_ref; // cannot store ref/out parameters in closures
 
         when(result && vars != null) {

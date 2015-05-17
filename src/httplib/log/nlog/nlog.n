@@ -1,0 +1,164 @@
+using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+using Nemerle.Utility;
+
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+
+
+namespace httplib.log {
+
+public class NLogLogging: Logging {
+
+    [Accessor] assembly: Assembly = typeof(LogManager).Assembly;
+
+    public this(conf: LogConfiguration) {
+        base(conf);
+    }
+
+    public override initialize(conf: LogConfiguration): void {
+        mutable nlog_conf = LoggingConfiguration();
+
+        when(conf.Targets != null) {
+            foreach(t in conf.Targets) {
+                def target = configureTarget(t.Value);
+                nlog_conf.AddTarget(t.Key, target);
+            }
+        }
+
+        when(conf.Rules != null) {
+            foreach(r in conf.Rules) {
+                def target = nlog_conf.FindTargetByName(r.Target);
+                def r = LoggingRule(r.Source, logLevel(r.Level), target);
+                nlog_conf.LoggingRules.Add(r);
+            }
+        }
+
+        LogManager.Configuration = nlog_conf;
+    }
+
+    public override forType(ctype: Type): ILog {
+        NLogLogger(ctype);
+    }
+
+    configureTarget(conf: LogTarget): Target {
+        def ttype = Assembly.GetType("NLog.Targets." + conf.Type);
+        def target = Activator.CreateInstance(ttype) :> Target;
+
+        match(target) {
+            | ColoredConsoleTarget as cct => {
+                configureColoredConsoleTarget(cct, conf);
+            }
+            | ConsoleTarget as ct => {
+                configureConsoleTarget(ct, conf);
+            }
+            | FileTarget as ft => {
+                configureFileTarget(ft, conf);
+            }
+            | _ => {
+                target;
+            }
+        }
+    }
+
+    configureColoredConsoleTarget(cct: ColoredConsoleTarget, conf: LogTarget): Target {
+        cct.Layout = conf.Layout;
+
+        when(conf.Colours != null) {
+            foreach(c in conf.Colours) {
+                cct.RowHighlightingRules.Add(ConsoleRowHighlightingRule(
+                    $"level == LogLevel.$(c.Key)",
+                    colour(c.Value),
+                    ConsoleOutputColor.NoChange));
+            }
+        }
+        cct;
+    }
+
+    configureConsoleTarget(ct: ConsoleTarget, conf: LogTarget): Target {
+        ct.Layout = conf.Layout;
+        ct;
+    }
+
+    configureFileTarget(ft: FileTarget, conf: LogTarget): Target {
+       ft.Layout = conf.Layout;
+       ft.FileName = conf.Path;
+       ft;
+    }
+
+    logLevel(l: string): LogLevel {
+        match(l) {
+            | "Trace" => LogLevel.Trace
+            | "Debug" => LogLevel.Debug
+            | "Info" => LogLevel.Info
+            | "Warn" => LogLevel.Warn
+            | "Error" => LogLevel.Error
+            | "Fatal" => LogLevel.Fatal
+            | _ => LogLevel.Off
+        }
+    }
+
+    colour(c: string): ConsoleOutputColor {
+        match(c) {
+            | "Black" => Black
+            | "DarkBlue" => DarkBlue
+            | "DarkGreen" => DarkGreen
+            | "DarkCyan" => DarkCyan
+            | "DarkRed" => DarkRed
+            | "DarkMagenta" => DarkMagenta
+            | "DarkYellow" => DarkYellow
+            | "Gray" => Gray
+            | "DarkGray" => DarkGray
+            | "Blue" => Blue
+            | "Green" => Green
+            | "Cyan" => Cyan
+            | "Red" => Red
+            | "Magenta" => Magenta
+            | "Yellow" => Yellow
+            | "White" => White
+            | _ => NoChange
+        }
+    }
+}
+
+
+public class NLogLogger: ILog {
+
+    [Accessor] logger: Logger;
+
+    public this(ltype: Type) {
+        logger = LogManager.GetLogger(ltype.FullName);
+    }
+
+    public t(format: string, params objects: array[object]): void {
+        Logger.Trace(format, objects);
+    }
+
+    public d(format: string, params objects: array[object]): void {
+        Logger.Debug(format, objects);
+    }
+
+    public i(format: string, params objects: array[object]): void {
+        Logger.Info(format, objects);
+    }
+
+    public w(format: string, params objects: array[object]): void {
+        Logger.Warn(format, objects);
+    }
+
+    public e(format: string, params objects: array[object]): void {
+        Logger.Error(format, objects);
+    }
+
+    public f(format: string, params objects: array[object]): void {
+        Logger.Fatal(format, objects);
+    }
+
+}
+
+
+} // namespace httplib

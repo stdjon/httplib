@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography;
 
-using Nemerle.IO;
+using Nemerle.Utility;
 
 using httplib;
 
@@ -43,6 +43,8 @@ public interface IAuth: IModuleInterface {
 
 public class Auth: Module, IAuth {
 
+    [Accessor] log: ILog = Logging.forThisType();
+
     public override InterfaceType: Type {
         get { typeof(IAuth) }
     }
@@ -50,7 +52,7 @@ public class Auth: Module, IAuth {
     Salt: RNGCryptoServiceProvider { get; private set; }
 
     public this() {
-        print("Starting Auth module...\n");
+        Log.i("Starting Auth module...");
         Salt = RNGCryptoServiceProvider();
     }
 

@@ -6,7 +6,6 @@ using System.Net;
 using System.Text.Encoding;
 using System.Text.RegularExpressions;
 
-using Nemerle.IO;
 using Nemerle.Utility;
 
 using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
@@ -27,6 +26,8 @@ public abstract class Server: IDisposable {
 
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
+
+    [Accessor] log: ILog;
 
     [Accessor]
     static deserializer: YamlDeserializer = YamlDeserializer();
@@ -89,6 +90,15 @@ public abstract class Server: IDisposable {
     public this(config: ServerConfiguration) {
         configuration = config;
 
+        def lg = Configuration.Logging;
+        when(lg != null &&
+            lg.Assembly != null &&
+            lg.Typename != null) {
+            Logging.load(lg.Assembly, lg.Typename, lg);
+        }
+        log = Logging.forThisType();
+        Log.i("Starting up...");
+
         def db = Configuration.Database;
         when(db != null &&
             db.Assembly != null &&
@@ -97,7 +107,7 @@ public abstract class Server: IDisposable {
         }
 
         foreach(p in Configuration.Prefixes.Secure) {
-            print("Adding \"$p\"...\n");
+            Log.d("Adding prefix \"{0}\"...", p);
             when(!Regex(@"^https://").IsMatch(p)) {
                 throw Exception("Secure prefix must start 'https://...'");
             }
@@ -105,7 +115,7 @@ public abstract class Server: IDisposable {
         }
 
         foreach(p in Configuration.Prefixes.Insecure) {
-            print("Adding \"$p\"...\n");
+            Log.d("Adding prefix \"{0}\"...", p);
             when(!Regex(@"^http://").IsMatch(p)) {
                 throw Exception("Insecure prefix must start 'http://...'");
             }
@@ -117,7 +127,7 @@ public abstract class Server: IDisposable {
         foreach(x in Configuration.Renderers) {
             def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
             when(r != null) {
-                print("Registering $r for $(x.Key) files...\n");
+                Log.d("Registering {0} for {1} files...", r, x.Key);
                 Renderers[x.Key] = r;
             }
         }
@@ -139,8 +149,8 @@ public abstract class Server: IDisposable {
         default_insecure_prefix = Regex(@"(http://.*)/").Replace(
             Configuration.Prefixes.Insecure[0], "$1");
 
-        print("Default prefixes:\n"
-            $"  - $DefaultInsecurePrefix\n  - $DefaultSecurePrefix\n");
+        Log.d("Default prefixes:\n  - {0}\n  - {1}",
+            DefaultInsecurePrefix, DefaultSecurePrefix);
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
@@ -181,7 +191,7 @@ public abstract class Server: IDisposable {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        print("route: $(methodName(method)) '$(path)' added $(handler)\n");
+        Log.i("route: {0} '{1}' added {2}", methodName(method), path, handler);
         Routes[method].Add(pattern, (route, handler));
     }
 
@@ -206,7 +216,7 @@ public abstract class Server: IDisposable {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        print("context: $(methodName(method)) '$(path)' added $(data)\n");
+        Log.i("context: {0} '{1}' added {2}", methodName(method), path, data);
         Contexts[method].Add(pattern, (route, data));
     }
 
@@ -325,7 +335,7 @@ public abstract class Server: IDisposable {
             request = Request(http_ctx.Request);
             response = Response(http_ctx.Response, Configuration.OutputLength);
 
-            print("Requesting: \"/$(request.RawPath)\"...\n");
+            Log.i("Requesting: \"/{0}\"...", request.RawPath);
 
             // check for existing file under roots...
             def (fs, ext) = findLocalFileForRequest(request);
@@ -364,7 +374,7 @@ public abstract class Server: IDisposable {
             }
         } finally {
             def (sc, sd) = (response.StatusCode, response.StatusDescription);
-            print($"Response Status: $sc $sd\n");
+            Log.i("Response Status: {0} {1}", sc, sd);
             try {
                 context.complete();
                 response.complete();
@@ -396,7 +406,7 @@ public abstract class Server: IDisposable {
                 }
             }
         }
-        //print("fileServingAllowed(\"/$path\"): $result\n");
+        Log.d("fileServingAllowed(\"/{0}\"): {1}", path, result);
         result;
     }
 
@@ -408,7 +418,7 @@ public abstract class Server: IDisposable {
                     def p = Path.Combine(root, path);
                     def exists = File.Exists(p);
 
-                    print($"File exists: \"$p\"? $exists\n");
+                    Log.d("File exists: \"{0}\"? {1}", p, exists);
                     when(exists) {
                         result = FileStream(p, FileMode.Open);
                         exit();

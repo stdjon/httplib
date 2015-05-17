@@ -1,6 +1,6 @@
 using System;
 
-using Nemerle.IO;
+using Nemerle.Utility;
 
 using CodeKicker.BBCode;
 
@@ -13,12 +13,14 @@ public interface IBbCode: IModuleInterface {
 
 public class BbCode: Module, IBbCode {
 
+    [Accessor] log: ILog = Logging.forThisType();
+
     public override InterfaceType: Type {
         get { typeof(IBbCode) }
     }
 
     public this() {
-        print("Starting BBCode module...\n");
+        Log.i("Starting BBCode module...");
     }
 }
 

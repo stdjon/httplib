@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-using Nemerle.IO;
 using Nemerle.Utility;
 
 using YamlDotNet.Serialization;
@@ -15,6 +14,7 @@ public class Renderer {
 
     static yaml_deserializer = Deserializer();
 
+    [Accessor] log: ILog = Logging.forThisType();
     [Accessor] server: Server;
 
     public virtual PageType: Type {
@@ -26,7 +26,7 @@ public class Renderer {
     }
 
     public virtual loadPage(stream: Stream, use_template = true): Page {
-        print("Renderer.loadPage [$PageType]...\n");
+        Log.d("Renderer.loadPage [{0}]...", PageType);
         mutable result = null;
         using(reader = StreamReader(stream)) {
             result = yaml_deserializer.Deserialize(reader, PageType) :> Page;

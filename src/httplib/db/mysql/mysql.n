@@ -1,7 +1,6 @@
 using System;
 using System.Data;
 
-using Nemerle.IO;
 using Nemerle.Utility;
 
 using MySql.Data.MySqlClient;
