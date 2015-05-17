@@ -48,6 +48,34 @@ Windows:
 
     SSL Certificate successfully deleted
 
+  To allow use of 127.0.0.1 in addition to localhost (for testing two
+  different 'domains' for http vs https), run the following commmand [as
+  Administrator]:
+
+    > netsh http add urlacl url=https://127.0.0.1:8443/ user=%USERDOMAIN%\%USERNAME% listen=yes
+
+    URL reservation successfully added
+
+  This will block further access to https://localhost:8443/, so you may want
+  to add that back as well:
+
+    > netsh http add urlacl url=https://localhost:8443/ user=%USERDOMAIN%\%USERNAME% listen=yes
+
+    URL reservation successfully added
+
+  To reset the ACLs back to original state, issue the commands with 'add'
+  replaced by 'delete' and only the 'url=' parameter [as Administrator]:
+
+    > netsh http delete urlacl url=https://127.0.0.1:8443/
+
+    URL reservation successfully deleted
+
+    > netsh http delete urlacl url=https://localhost:8443/
+
+    URL reservation successfully deleted
+
+
+
 Linux:
   Different certificates may be needed to test https on Linux: see
   cer/linux/self-signed.cer/.pvk.
@@ -69,6 +97,13 @@ Linux:
 
   To uninstall, use this:
     > httpcfg -del -port 8443
+
+  No special action is required to respond to listen to
+  https://127.0.0.1:8443/ in addition to https://localhost:8443/, but note
+  that it is not possible to add _both_ as prefixes to the same server: this
+  will cause an 'Address already in use' error.
+
+
 
 
 Authentication:
