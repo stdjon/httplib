@@ -99,6 +99,7 @@ public class ModuleConfiguration {
 }
 
 
+public type Databases = Dictionary[string, DatabaseConfiguration];
 public type Renderers = Dictionary[string, RendererConfiguration];
 public type Modules = List[ModuleConfiguration];
 public type MimeTypes = Dictionary[string, string];
@@ -112,7 +113,7 @@ public class ServerConfiguration {
     /** Logging configuration */
     [Accessor(flags = WantSetter)] mutable logging: LogConfiguration;
     /** Database configuration */
-    [Accessor(flags = WantSetter)] mutable database: DatabaseConfiguration;
+    [Accessor(flags = WantSetter)] mutable databases: Databases;
     /** Listener prefixes */
     [Accessor(flags = WantSetter)] mutable prefixes: Prefixes;
     /** Filesystem roots for file serving */

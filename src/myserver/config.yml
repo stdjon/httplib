@@ -1,10 +1,11 @@
 # ------------------------------------------------------------------------------
 # Example MyServer configuration
 ---
-Database:
-  Assembly: httplib.db.mysql.dll
-  Typename: httplib.db.MySqlDatabase
-  Connection: server=localhost;userid=user12;password=34klq*;database=mydb
+Databases:
+  default:
+    Assembly: httplib.db.mysql.dll
+    Typename: httplib.db.MySqlDatabase
+    Connection: server=localhost;userid=user12;password=34klq*;database=mydb
 Prefixes:
   Secure:
     - https://localhost:8443/

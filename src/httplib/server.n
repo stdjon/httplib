@@ -50,7 +50,10 @@ public abstract class Server: IDisposable {
     [Accessor(flags = Protected)]
     configuration: ServerConfiguration;
 
-    [Accessor] database: Database;
+    public Database: Database {
+        get { Databases["default"] }
+    }
+    [Accessor] databases: Dictionary[string, Database] = Dictionary();
 
     public Routes[i: Method]: RouteMap {
         get { routes[i :> int] }
@@ -99,11 +102,22 @@ public abstract class Server: IDisposable {
         log = Logging.forThisType();
         Log.i("Starting up...");
 
-        def db = Configuration.Database;
-        when(db != null &&
-            db.Assembly != null &&
-            db.Typename != null) {
-            database = Database.load(db.Assembly, db.Typename, db.Connection);
+        def dbc = Configuration.Databases;
+        when(dbc != null) {
+            foreach(d in dbc) {
+                def dv = d.Value;
+                mutable db = null;
+                when(dv.Assembly != null &&
+                    dv.Typename != null) {
+                    db = Database.load(dv.Assembly, dv.Typename, dv.Connection);
+                }
+                if(db != null) {
+                    Log.i("Adding a database {0} [{1}]", d.Key, dv.Typename);
+                    databases.Add(d.Key, db);
+                } else {
+                    Log.w("Database {0} not created!", d.Key);
+                }
+            }
         }
 
         foreach(p in Configuration.Prefixes.Secure) {
