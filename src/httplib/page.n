@@ -72,7 +72,8 @@ public class Page {
 
         def content = renderContent(data, parts);
 
-        $"<html$lang>\n<head>$meta$title$stylesheet\n</head>\n"
+        $"<!DOCTYPE html>\n<html$lang>\n"
+        $"<head>$meta$title$stylesheet\n</head>\n"
         $"<body$body_attrs>\n$content</body>\n</html>";
     }
 
