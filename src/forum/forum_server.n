@@ -7,7 +7,7 @@ using httplib;
 
 namespace forum {
 
-class ForumServer: Server {
+public class ForumServer: Server {
 
     public this(path: string) {
         base(path);
@@ -100,12 +100,12 @@ class ForumServer: Server {
             def email = Uri.UnescapeDataString(context.Vars["email"]);
 
 
-            mutable command1 = Database.createCommand(
-                "SELECT Name FROM Users WHERE Name = @Name");
-            command1.addParameter("@Name", user);
-            mutable command2 = Database.createCommand(
-                "SELECT Email FROM Auth WHERE Email = @Email");
-            command2.addParameter("@Email", email);
+            mutable command1 = Database.createCommand("SELECT Name FROM Users "
+                "WHERE Name = @Name") <- [ "@Name" = user ];
+
+            mutable command2 = Database.createCommand("SELECT Email FROM Auth "
+                "WHERE Email = @Email") <- [ "@Email" =  email ];
+
             def test1 = command1.executeScalar() :> string;
             def test2 = command2.executeScalar() :> string;
 
@@ -124,24 +124,27 @@ class ForumServer: Server {
 
                 mutable command3 = Database.createCommand(
                     "INSERT INTO Users(Name, Level, Points, JoinDate) "
-                        "VALUES (@Name, 0, 0, @JoinDate)");
-                command3.addParameter("@Name", user);
-                command3.addParameter("@JoinDate", now);
+                        "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                    "@Name" = user,
+                    "@JoinDate" = now,
+                ];
                 _ = command3.executeNonQuery();
 
                 mutable command4 = Database.createCommand(
-                    "SELECT Id FROM Users WHERE Name = @Name");
-                command4.addParameter("@Name", user);
+                    "SELECT Id FROM Users WHERE "
+                        "Name = @Name") <- [ "@Name" = user ];
+
                 def id = command4.executeScalar() :> uint;
 
                 def record = auth.createPasswordRecord(password);
 
                 mutable command5 = Database.createCommand(
                     "INSERT INTO Auth(UserId, PwRecord, Email) "
-                        "VALUES (@UserId, @PwRecord, @Email)");
-                command5.addParameter("@UserId", id);
-                command5.addParameter("@PwRecord", record);
-                command5.addParameter("@Email", email);
+                        "VALUES (@UserId, @PwRecord, @Email)") <- [
+                    "@UserId" = id,
+                    "@PwRecord" = record,
+                    "@Email" = email,
+                ];
                 _ = command5.executeNonQuery();
 
                 response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
@@ -164,14 +167,16 @@ class ForumServer: Server {
         mutable ok = null;
         if(!String.IsNullOrEmpty(u)) {
             mutable command = Database.createCommand(
-                "SELECT Name FROM Users WHERE Name = @Name");
-            command.addParameter("@Name", Uri.UnescapeDataString(u));
+                "SELECT Name FROM Users WHERE Name = @Name") <- [
+                    "@Name" = Uri.UnescapeDataString(u),
+                ];
             ok = command.executeScalar() :> string;
         }
         else when(!String.IsNullOrEmpty(e)) {
             mutable command = Database.createCommand(
-                "SELECT Email FROM Auth WHERE Email = @Email");
-            command.addParameter("@Email", Uri.UnescapeDataString(e));
+                "SELECT Email FROM Auth WHERE Email = @Email") <- [
+                    "@Email" = Uri.UnescapeDataString(e),
+                ];
             ok = command.executeScalar() :> string;
         }
         response.Status = if(ok != null) { (200, "OK") } else { (404, "Not Found") };
@@ -226,14 +231,14 @@ class ForumServer: Server {
             def password = Uri.UnescapeDataString(context.Vars["password"]);
             def auth = getModuleInterface.[mod.IAuth]();
             def command1 = Database.createCommand(
-                "SELECT Id FROM Users WHERE Name = @Name");
-            command1.addParameter("@Name", user);
+                "SELECT Id FROM Users WHERE "
+                    "Name = @Name") <- [ "@Name" = user ];
             def id = command1.executeScalar() :> uint?;
             mutable record;
             when(id != null) {
                 def command2 = Database.createCommand(
-                    "SELECT PwRecord FROM Auth WHERE UserId = @UserId");
-                command2.addParameter("@UserId", id);
+                    "SELECT PwRecord FROM Auth WHERE "
+                        "UserId = @UserId") <- [ "@UserId" = id ];
                 record = command2.executeScalar() :> string;
             }
 

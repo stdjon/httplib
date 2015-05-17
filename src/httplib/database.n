@@ -117,6 +117,12 @@ public class Command {
         result;
     }
 
+    /** For use with Nemerle.Extensions <- operator...
+     *  db.createCommand("...@X...") <- [ "@X" = x, ... ]; */
+    public virtual Add[T](name: string, value: T): void {
+        addParameter(name, value);
+    }
+
     public virtual addParameter(param: Parameter): void {
         _ = Parameters.Add(param.Parameter);
     }
