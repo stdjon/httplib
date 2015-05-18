@@ -1,0 +1,276 @@
+using System;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using httplib;
+
+using forum.mod;
+
+
+namespace forum.tools {
+
+public class TestData {
+
+    [Accessor] static usernameChars: string =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01223456789'-_";
+    [Accessor] static categoryChars: string =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ      ";
+    [Accessor] static postChars: string =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!.,;:      ";
+    [Accessor] static hexChars: string = "01234567890abcdef";
+
+    [Accessor] log: ILog = Logging.forThisType();
+    [Accessor] server: ForumServer;
+    [Accessor] db: Database;
+    [Accessor] auth: IAuth;
+    [Accessor] random: Random = Random();
+
+    [Accessor] mutable user_count: int = 0;
+    [Accessor] mutable category_count: int = 0;
+    [Accessor] mutable thread_count: int = 0;
+
+    public this(fs: ForumServer) {
+        Log.i("Generating test data...");
+        server = fs;
+        db = server.Database;
+        auth = server.getModuleInterface.[IAuth]();
+    }
+
+    public make(args: Program.Arguments): void {
+
+        Log.i("Generating {0} users...", args.Users);
+        for(mutable i = 0; i < args.Users; i++) {
+            generateUser();
+        }
+
+        user_count = getUserCount();
+
+        Log.i("Generating {0} categories...", args.Categories);
+        for(mutable i = 0; i < args.Categories; i++) {
+            generateCategory();
+        }
+
+        category_count = getCategoryCount();
+
+        Log.i("Generating {0} threads...", args.Threads);
+        for(mutable i = 0; i < args.Threads; i++) {
+            generateThread();
+        }
+
+        thread_count = getThreadCount();
+
+        Log.i("Generating {0} posts...", args.Posts);
+        for(mutable i = 0; i < args.Posts; i++) {
+            generatePost();
+        }
+    }
+
+    generateUser(): void {
+        mutable ok = false;
+        def name = generateUserName();
+        def joindate = DateTime.Now;
+
+        def command1 = Db.createCommand(
+            "INSERT INTO Users(Name, Points, Level, JoinDate) VALUES "
+                "(@Name, 0, 0, @JoinDate)") <- [
+            "@Name" = name,
+            "@JoinDate" = joindate,
+        ];
+        _ = command1.executeNonQuery();
+
+        def command2 = Db.createCommand(
+            "SELECT Id FROM Users WHERE Name=@Name") <- [ "@Name" = name ];
+        def id = command2.executeScalar() :> uint?;
+        mutable pwid = null;
+
+        when(id !=  null) {
+            // allow login with empty string...
+            def record = auth.createPasswordRecord("");
+            def command3 = Db.createCommand(
+                "INSERT INTO Auth(UserId, PwRecord, Email) VALUES "
+                    "(@UserId, @PwRecord, '')") <- [
+                "@UserId" = id,
+                "@PwRecord" = record,
+            ];
+            _ = command3.executeNonQuery();
+
+            def command4 = Db.createCommand(
+                "SELECT Id FROM Auth WHERE UserId=@UserId") <- [ "@UserId" = id ];
+            pwid = command4.executeScalar() :> uint?;
+            ok = (pwid != null);
+        }
+        if(ok) {
+            Log.d("User '{0}' added to database [id={1}, pwid={2}]...", name, id, pwid);
+        } else {
+            Log.w("User '{0}' was not properly added!", name)
+        }
+
+    }
+
+    generateCategory(): void {
+        def name = generateCategoryName();
+        def id = Random.Next(UserCount) + 1;
+        def create_date = DateTime.Now;
+        def colour = generateColour();
+        def command2 = Db.createCommand(
+            "INSERT INTO Categories(Name, UserId, CreateDate, Colour) VALUES "
+                "(@Name, @UserId, @CreateDate, @Colour)") <- [
+            "@Name" = name,
+            "@UserId" = id,
+            "@CreateDate" = create_date,
+            "@Colour" = colour,
+        ];
+        _ = command2.executeNonQuery();
+
+        def command3 = Db.createCommand(
+            "SELECT Id FROM Categories WHERE Name=@Name") <- [ "@Name" = name ];
+        def catid = command3.executeScalar() :> uint?;
+
+        if(catid != null) {
+            Log.d("Category '{0}' added to database [id={1}, user={2}]...", name, catid, id);
+        } else {
+            Log.w("Category '{0}' was not properly added!", name)
+        }
+    }
+
+    generateThread(): void {
+        def title = generateThreadTitle();
+        def uid = Random.Next(UserCount) + 1;
+        def cid = Random.Next(CategoryCount) + 1;
+        def create_date = DateTime.Now;
+        def colour = generateColour();
+        def command2 = Db.createCommand(
+            "INSERT INTO Threads(Title, UserId, CategoryId, CreateDate, Colour) VALUES "
+                "(@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
+            "@Title" = title,
+            "@UserId" = uid,
+            "@CategoryId" = cid,
+            "@CreateDate" = create_date,
+            "@Colour" = colour,
+        ];
+        _ = command2.executeNonQuery();
+
+        def command3 = Db.createCommand(
+            "SELECT Id FROM Threads WHERE Title=@Title") <- [ "@Title" = title ];
+        def thid = command3.executeScalar() :> uint?;
+
+        if(thid != null) {
+            Log.d("Thread '{0}' added to database [id={1}, cat={2}, user={3}]...", title, thid, cid, uid);
+        } else {
+            Log.w("Thread '{0}' was not properly added!", title)
+        }
+    }
+
+    generatePost(): void {
+        def content = generatePostContent();
+        def uid = Random.Next(UserCount) + 1;
+        def tid = Random.Next(ThreadCount) + 1;
+        def create_date = DateTime.Now;
+        def command2 = Db.createCommand(
+            "INSERT INTO Posts(Content, UserId, ThreadId, Points, CreateDate) VALUES "
+                "(@Content, @UserId, @ThreadId, 0, @CreateDate)") <- [
+            "@Content" = content,
+            "@UserId" = uid,
+            "@ThreadId" = tid,
+            "@CreateDate" = create_date,
+        ];
+        _ = command2.executeNonQuery();
+
+        def command3 = Db.createCommand(
+            "SELECT Id FROM Posts WHERE Content=@Content") <- [ "@Content" = content ];
+        def pid = command3.executeScalar() :> uint?;
+
+        if(pid != null) {
+            Log.d("Post added to database [id={0}, th={1}, user={2}]...", pid, tid, uid);
+        } else {
+            Log.w("Post id={0} was not properly added!", pid)
+        }
+    }
+
+    generateUserName(): string {
+        mutable result = "";
+        def length = Random.Next(3, Random.Next(3, 25));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(UsernameChars.Length);
+            name[i] = UsernameChars[x];
+        }
+        result = string(name);
+        //Log.d("User: '{0}'", result);
+        result;
+    }
+
+    generateCategoryName(): string {
+        mutable result = "";
+        def length = Random.Next(3, Random.Next(10, 25));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(CategoryChars.Length);
+            name[i] = CategoryChars[x];
+        }
+        result = string(name);
+        //Log.d("Category: '{0}'", result);
+        result;
+    }
+
+    generateThreadTitle(): string {
+        mutable result = "";
+        def length = Random.Next(3, Random.Next(10, 80));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(CategoryChars.Length);
+            name[i] = CategoryChars[x];
+        }
+        result = string(name);
+        //Log.d("Title: '{0}'", result);
+        result;
+    }
+
+    generatePostContent(): string {
+        mutable result = "";
+        def length = Random.Next(5, Random.Next(30, 800));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(PostChars.Length);
+            name[i] = PostChars[x];
+        }
+        result = string(name);
+        //Log.d("Content: '{0}'", result);
+        result;
+    }
+
+    generateColour(): string {
+        mutable result = "";
+        def length = 6;
+        mutable col: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(HexChars.Length);
+            col[i] = HexChars[x];
+        }
+        result = string(col);
+        //Log.d("Colour: '{0}'", result);
+        result;
+    }
+
+    getUserCount(): int {
+        def commmand = Db.createCommand("SELECT COUNT(Name) FROM Users");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
+    getCategoryCount(): int {
+        def commmand = Db.createCommand("SELECT COUNT(Name) FROM Categories");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
+    getThreadCount(): int {
+        def commmand = Db.createCommand("SELECT COUNT(Title) FROM Threads");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+}
+
+
+} // namespace forum.tools

@@ -64,16 +64,22 @@ emit_dll_rule=$(call emit_rule,$1,$2,$3,-t:library)
 # ------------------------------------------------------------------------------
 # Targets
 
-.PHONY: all clean install_contrib run frun
+.PHONY: all clean install_contrib run frun fdata finit
 
 
-all: bin/forum.exe bin/http.exe
+all: bin/http.exe bin/forum.exe bin/forum-testdata.exe
 
 run: install_contrib bin/http.exe
-	$(call launch_assembly,http.exe)
+	$(call launch_assembly,http.exe) $D
 
 frun: install_contrib bin/forum.exe
-	$(call launch_assembly,forum.exe)
+	$(call launch_assembly,forum.exe) $D
+
+fdata: install_contrib bin/forum-testdata.exe
+	$(call launch_assembly,forum-testdata.exe) $D
+
+finit:
+	mysql -D forum -u forum -p$(PW) < src/forum/init-dbs.mysql
 
 clean:
 	rm -rf bin/
@@ -87,6 +93,19 @@ clean:
 
 $(eval $(call emit_exe_rule,bin/forum.exe, \
 	src/forum, \
+	bin/forum.mod.auth.dll \
+	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll \
+	bin/httplib.log.nlog.dll \
+	bin/httplib.mod.bbcode.dll bin/httplib.mod.htmlsanitize.dll \
+	bin/httplib.mod.oembed.dll bin/httplib.mod.textile.dll))
+
+
+# ------------------------------------------------------------------------------
+# bin/forum-testdata.exe
+
+$(eval $(call emit_exe_rule,bin/forum-testdata.exe, \
+	src/forum/tools/testdata, \
+	bin/forum.exe \
 	bin/forum.mod.auth.dll \
 	bin/httplib.dll bin/httplib.db.mysql.dll bin/httplib.page.nustache.dll \
 	bin/httplib.log.nlog.dll \

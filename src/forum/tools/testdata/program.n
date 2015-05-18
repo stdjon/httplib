@@ -1,0 +1,85 @@
+using System;
+using System.Threading;
+
+using Nemerle.IO;
+
+using NDesk.Options;
+
+using httplib;
+
+
+namespace forum.tools {
+
+public module Program {
+
+    public class Arguments {
+        public this() {
+            ShowHelp = false;
+            Config = "../src/forum/default_config.yml";
+            Users = 15;
+            Categories = 8;
+            Threads = 6;
+            Posts = 100;
+        }
+        public ShowHelp: bool { get; set; }
+        public Config: string { get; set; }
+        public Users: int { get; set; }
+        public Categories: int { get; set; }
+        public Threads: int { get; set; }
+        public Posts: int { get; set; }
+    }
+
+    public Main(args: array[string]): void {
+
+        def (arguments, options) = parseArguments(args);
+
+        if(arguments.ShowHelp) {
+            showHelp(options);
+        } else {
+            run(arguments);
+        }
+    }
+
+    parseArguments(args: array[string]): Arguments * OptionSet {
+        mutable result = Arguments();
+        def options = getOptions(result);
+        _ = options.Parse(args);
+        (result, options);
+    }
+
+    getOptions(arguments: Arguments): OptionSet {
+        OptionSet().
+            Add("h|?|help", "Show help.",
+                _ => { arguments.ShowHelp = true }).
+            Add("c|config=", "Use configuration {FILE}.",
+                v => { arguments.Config = v }).
+            Add("u|users=", "Number of users.",
+                v => { arguments.Users = v }).
+            Add("cat|categories=", "Number of categories.",
+                v => { arguments.Categories = v }).
+            Add("t|threads=", "Number of threads.",
+                v => { arguments.Threads = v }).
+            Add("p|posts=", "Number of posts.",
+                v => { arguments.Posts = v });
+    }
+
+    showHelp(options: OptionSet): void {
+        print("\nA simple forum application server.\n");
+        print("Usage:\n  forum.exe <options>\n\nwhere <options> are:\n\n");
+        options.WriteOptionDescriptions(Console.Out);
+    }
+
+    run(arguments: Arguments): void {
+        // We don't technically need a ForumServer here, but it's an expedient
+        // way to open the database connection and load the modules we want...
+        using(server = ForumServer(arguments.Config)) {
+
+            def test_data = TestData(server);
+            test_data.make(arguments);
+
+        }
+    }
+}
+
+
+} // namespace forum.tools
