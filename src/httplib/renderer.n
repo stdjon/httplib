@@ -10,11 +10,11 @@ using YamlDotNet.Serialization;
 
 namespace httplib {
 
+[HasLogging]
 public class Renderer {
 
     static yaml_deserializer = Deserializer();
 
-    [Accessor] log: ILog = Logging.forThisType();
     [Accessor] server: Server;
 
     public virtual PageType: Type {

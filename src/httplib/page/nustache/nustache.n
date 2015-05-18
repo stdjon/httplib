@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using Nemerle.Utility;
-
 using Nustache.Core;
 using YamlDotNet.Serialization;
 
@@ -14,9 +12,8 @@ namespace httplib.page {
 // NustachePage
 
 [YamlRecord]
+[HasLogging]
 public class NustachePage: Page {
-
-    [Accessor] log: ILog = Logging.forThisType();
 
     public override renderContent(
         data: ObjectsType = null, parts: PartialsType = null): string {

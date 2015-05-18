@@ -1,7 +1,5 @@
 using System;
 
-using Nemerle.Utility;
-
 using CodeKicker.BBCode;
 
 
@@ -11,9 +9,8 @@ public interface IBbCode: ITextTransform {
 }
 
 
+[HasLogging]
 public class BbCode: Module, IBbCode {
-
-    [Accessor] log: ILog = Logging.forThisType();
 
     public override InterfaceType: Type {
         get { typeof(IBbCode) }

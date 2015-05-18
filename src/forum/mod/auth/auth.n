@@ -1,8 +1,6 @@
 using System;
 using System.Security.Cryptography;
 
-using Nemerle.Utility;
-
 using httplib;
 
 
@@ -41,15 +39,17 @@ public interface IAuth: IModuleInterface {
 }
 
 
+[HasLogging]
 public class Auth: Module, IAuth {
-
-    [Accessor] log: ILog = Logging.forThisType();
 
     public override InterfaceType: Type {
         get { typeof(IAuth) }
     }
 
     Salt: RNGCryptoServiceProvider { get; private set; }
+
+    public IterationCount: int { get; private set; }
+    public HashLength: int { get; private set; }
 
     public this() {
         initialize();
@@ -75,9 +75,6 @@ public class Auth: Module, IAuth {
             }
         }
     }
-
-    public IterationCount: int { get; private set; }
-    public HashLength: int { get; private set; }
 
     public createSalt(): array[byte] {
         mutable result: array[byte] = array(HashLength);

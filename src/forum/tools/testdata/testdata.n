@@ -10,6 +10,7 @@ using forum.mod;
 
 namespace forum.tools {
 
+[HasLogging]
 public class TestData {
 
     [Accessor] static usernameChars: string =
@@ -20,7 +21,6 @@ public class TestData {
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!.,;:      ";
     [Accessor] static hexChars: string = "01234567890abcdef";
 
-    [Accessor] log: ILog = Logging.forThisType();
     [Accessor] server: ForumServer;
     [Accessor] db: Database;
     [Accessor] auth: IAuth;

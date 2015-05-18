@@ -1,7 +1,5 @@
 using System;
 
-using Nemerle.Utility;
-
 using Ganss.XSS;
 
 
@@ -11,9 +9,8 @@ public interface IHtmlSanitizer: ITextTransform {
 }
 
 
+[HasLogging]
 public class HtmlSanitizer: Module, IHtmlSanitizer {
-
-    [Accessor] log: ILog = Logging.forThisType();
 
     public override InterfaceType: Type {
         get { typeof(IHtmlSanitizer) }

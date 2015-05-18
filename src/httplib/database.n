@@ -7,9 +7,8 @@ using Nemerle.Utility;
 
 namespace httplib {
 
+[HasLogging]
 public abstract class Database: IDisposable  {
-
-    [Accessor] log: ILog = Logging.forThisType();
 
     [Accessor(flags = WantSetter)]
     protected mutable connection: IDbConnection = null;
