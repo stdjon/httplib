@@ -9,7 +9,7 @@ namespace httplib {
 //------------------------------------------------------------------------------
 // Page
 
-[Record]
+[YamlRecord]
 public class Page {
 
     type Dict[T] = Dictionary[string, T];
@@ -26,8 +26,6 @@ public class Page {
     public Partials: PartialsType { get; set; }
     public Objects: ObjectsType { get; set; }
     public Template: string { get; set; }
-
-    public this() {}
 
     public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
         def lang =

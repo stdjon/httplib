@@ -13,12 +13,10 @@ namespace httplib.page {
 //------------------------------------------------------------------------------
 // NustachePage
 
-[Record]
+[YamlRecord]
 public class NustachePage: Page {
 
     [Accessor] log: ILog = Logging.forThisType();
-
-    public this() {}
 
     public override renderContent(
         data: ObjectsType = null, parts: PartialsType = null): string {

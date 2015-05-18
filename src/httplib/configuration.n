@@ -11,7 +11,7 @@ namespace httplib {
 type LogColours = Dictionary[string, string];
 
 // Not all LogTarget fields will be used by every target...
-[Record]
+[YamlRecord]
 public class LogTarget {
     /** Log target type */
     [Accessor(flags = WantSetter)] mutable type: string;
@@ -21,14 +21,12 @@ public class LogTarget {
     [Accessor(flags = WantSetter)] mutable path: string;
     /** Colours */
     [Accessor(flags = WantSetter)] mutable colours: LogColours;
-
-    public this() {}
 }
 
 
 type LogTargets = Dictionary[string, LogTarget];
 
-[Record]
+[YamlRecord]
 public class LogRule {
     /** Log source */
     [Accessor(flags = WantSetter)] mutable source: string;
@@ -36,11 +34,9 @@ public class LogRule {
     [Accessor(flags = WantSetter)] mutable level: string;
     /** Log target */
     [Accessor(flags = WantSetter)] mutable target: string;
-
-    public this() {}
 }
 
-[Record]
+[YamlRecord]
 public class LogConfiguration {
     /** Logging assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
@@ -50,11 +46,9 @@ public class LogConfiguration {
     [Accessor(flags = WantSetter)] mutable targets: LogTargets;
     /** Targets */
     [Accessor(flags = WantSetter)] mutable rules: array[LogRule];
-
-    public this() {}
 }
 
-[Record]
+[YamlRecord]
 public class DatabaseConfiguration {
     /** Database assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
@@ -62,40 +56,32 @@ public class DatabaseConfiguration {
     [Accessor(flags = WantSetter)] mutable typename: string;
     /** Database connection */
     [Accessor(flags = WantSetter)] mutable connection: string;
-
-    public this() {}
 }
 
 
-[Record]
+[YamlRecord]
 public class Prefixes {
     /** Secure (https://) prefixes */
     [Accessor(flags = WantSetter)] mutable secure: array[string];
     /** Insecure (http://) prefixes */
     [Accessor(flags = WantSetter)] mutable insecure: array[string];
-
-    public this() {}
 }
 
-[Record]
+[YamlRecord]
 public class RendererConfiguration {
     /** Renderer assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
     /** Renderer typename */
     [Accessor(flags = WantSetter)] mutable typename: string;
-
-    public this() {}
 }
 
 
-[Record]
+[YamlRecord]
 public class ModuleConfiguration {
     /** Module assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
     /** Module typename */
     [Accessor(flags = WantSetter)] mutable typename: string;
-
-    public this() {}
 }
 
 
@@ -108,7 +94,7 @@ public type MimeTypes = Dictionary[string, string];
 //------------------------------------------------------------------------------
 // ServerConfiguration
 
-[Record]
+[YamlRecord]
 public class ServerConfiguration {
     /** Logging configuration */
     [Accessor(flags = WantSetter)] mutable logging: LogConfiguration;
@@ -130,8 +116,6 @@ public class ServerConfiguration {
     [Accessor(flags = WantSetter)] mutable output_length: int;
     /** File chunk (read) length */
     [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
-
-    public this() {}
 }
 
 

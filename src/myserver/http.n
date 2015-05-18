@@ -12,9 +12,8 @@ using httplib;
 //------------------------------------------------------------------------------
 // MyServerConfiguration
 
-[Record]
+[YamlRecord]
 class MyServerConfiguration: ServerConfiguration {
-    public this() {}
 }
 
 
