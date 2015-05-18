@@ -111,7 +111,9 @@ CREATE TABLE IF NOT EXISTS Uploads(
 /* Insert guest user */
 /* UserId = 1, no valid PwRecord, so impossible to log in. */
 
-INSERT INTO Users(Name, Level, Points, JoinDate) VALUES('guest', 0, 0, null);
+INSERT INTO Users(Name, Level, Points, JoinDate, Motto) VALUES(
+    'guest', 0, 0, null, 'I am just a guest.');
+
 SET @guest_id = (SELECT Id FROM Users WHERE  Name = 'guest');
 INSERT INTO Auth(UserId, PwRecord, Email) VALUES(@guest_id, '', '');
 
