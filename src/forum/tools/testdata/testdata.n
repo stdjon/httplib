@@ -13,7 +13,7 @@ namespace forum.tools {
 public class TestData {
 
     [Accessor] static usernameChars: string =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01223456789'-_";
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_01223456789'-";
     [Accessor] static categoryChars: string =
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ      ";
     [Accessor] static postChars: string =
@@ -70,12 +70,16 @@ public class TestData {
         mutable ok = false;
         def name = generateUserName();
         def joindate = DateTime.Now;
+        def motto = generateMotto();
+        def location = generateMotto();
 
         def command1 = Db.createCommand(
-            "INSERT INTO Users(Name, Points, Level, JoinDate) VALUES "
-                "(@Name, 0, 0, @JoinDate)") <- [
+            "INSERT INTO Users(Name, Points, Level, JoinDate, Motto, Location) VALUES "
+                "(@Name, 0, 0, @JoinDate, @Motto, @Location)") <- [
             "@Name" = name,
             "@JoinDate" = joindate,
+            "@Motto" = motto,
+            "@Location" = location,
         ];
         _ = command1.executeNonQuery();
 
@@ -190,11 +194,26 @@ public class TestData {
 
     generateUserName(): string {
         mutable result = "";
+        mutable disallow_last = 12;
         def length = Random.Next(3, Random.Next(3, 25));
         mutable name: array[char] = array(length);
         for(mutable i = 0; i < length; i++) {
-            def x = Random.Next(UsernameChars.Length);
+            def x = Random.Next(UsernameChars.Length - disallow_last);
             name[i] = UsernameChars[x];
+            disallow_last = 0;
+        }
+        result = string(name);
+        //Log.d("User: '{0}'", result);
+        result;
+    }
+
+    generateMotto(): string {
+        mutable result = "";
+        def length = Random.Next(3, Random.Next(15, 40));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(PostChars.Length);
+            name[i] = PostChars[x];
         }
         result = string(name);
         //Log.d("User: '{0}'", result);
