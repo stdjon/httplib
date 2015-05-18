@@ -43,7 +43,10 @@ nav.navbar {
 
 div.outside {
   background-color: rgba(246, 246, 230, .75); /*#f6f6e6, slightly transparent */
+  border-left: 5px solid #666;
   padding: 0;
+  padding-bottom: 48px;
+  margin-bottom: 36px;
 }
 div.banner {
   padding-top: 50px;
@@ -56,6 +59,7 @@ div.banner .anchor {
 }
 div.body {
   padding-top: 10px;
+  padding-bottom: 30px;
   background-color: #ffe;
   border-left: 5px solid #ffb;
 }
@@ -79,10 +83,16 @@ h1, h2, h3, h4 {
   font-size: 200%;
 }
 .container .jumbotron {
+  padding: 50px 80px;
   text-align: left;
   border-radius: 0;
+  /**/
   background-color: #666;
-  padding: 50px 80px;
+  color: #ccc;
+  /*/
+  background-color: #888;
+  color: #444;
+  /**/
 }
 div.jumbotron h1 {
   font-weight: 900;

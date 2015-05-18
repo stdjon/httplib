@@ -202,6 +202,7 @@ Partials:
         $('.container .jumbotron').css('background-color', col);
         $('.container .jumbotron').css('color', fg);
         //$('nav.navbar').css('border-left-color', col);
+        $('div.outside').css('border-left-color', col);
         $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
         postIframeMessage('hdrCol/' + col);
       }
