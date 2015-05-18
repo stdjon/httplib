@@ -166,4 +166,51 @@ public class Parameter {
 }
 
 
+/** Extensions to IDataRecord to allow the use of the following syntaxes:
+ *
+ *    def s = idr.GetValue("s", ""); // reference type
+ *    def i = idr.GetValue.[int?]("i", 0); // nullable value type
+ *
+ *  Or, if a default of 'null' or a default value type is acceptable:
+ *
+ *    def s = idr.GetValue.[string]("s"); // reference type
+ *    def i = idr.GetValue.[int]("i"); // non-nullable value type
+ *
+ *  None of these methods will throw exceptions in the (unexceptional) event of
+ *  hitting a null data value in the DB.
+ */
+public module IDataRecordExtensions {
+
+    public GetValue[T](
+        this r: IDataRecord, field: string, default: T): T {
+
+        def ordinal = r.GetOrdinal(field);
+        r.GetValue.[T](ordinal, default);
+    }
+
+    public GetValue[T](
+        this r: IDataRecord, field: int, default: T): T {
+
+        if(r.IsDBNull(field)) {
+            default;
+        } else {
+            unchecked r.GetValue(field) :> T;
+        }
+    }
+
+    public GetValue[T](this r: IDataRecord, field: string): T {
+        def ordinal = r.GetOrdinal(field);
+        r.GetValue.[T](ordinal);
+    }
+
+    public GetValue[T](this r: IDataRecord, field: int): T {
+        if(r.IsDBNull(field)) {
+            default(T);
+        } else {
+            unchecked r.GetValue(field) :> T;
+        }
+    }
+}
+
+
 } // namespace httplib

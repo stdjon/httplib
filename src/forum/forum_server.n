@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Nemerle.Extensions;
 
@@ -19,6 +20,12 @@ public class ForumServer: Server {
         route(HTTP.GET, "/signup", signupResponse);
         route(HTTP.POST, "/signup-submit", signupSubmitResponse);
         route(HTTP.GET, "/is-user", isUserResponse);
+
+        route([
+            (HTTP.GET, "/u"),
+            (HTTP.GET, "/u/{{num:[0-9]+}}")], usersRedirectPageResponse);
+        route(HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}", usersPageResponse);
+        route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}", userPageResponse);
 
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
@@ -180,6 +187,128 @@ public class ForumServer: Server {
             ok = command.executeScalar() :> string;
         }
         response.Status = if(ok != null) { (200, "OK") } else { (404, "Not Found") };
+    }
+
+    public usersRedirectPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def num = context.Vars["num"];
+        mutable from = 1;
+
+        when(!String.IsNullOrEmpty(num)) {
+            from = Int32.Parse(num);
+        }
+        def to = from + 24; //TODO: configurable?
+
+        response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
+        response.Status = (303, "See Other");
+    }
+
+    public usersPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def from = Int32.Parse(context.Vars["from"]);
+        def to = Int32.Parse(context.Vars["to"]);
+        def dist = to + 1 - from;
+        mutable users: array[Dictionary[string, string]] = array(dist);
+        mutable i = 0;
+
+        def command = Database.createCommand(
+            "SELECT Name, Level, Points, Motto FROM Users "
+                "ORDER BY Name LIMIT @From, @To") <- [
+                "@From" = from,
+                "@To" = to,
+            ];
+
+        using(reader = command.executeReader()) {
+            while(reader.Read() && i < dist) {
+                def u = reader.GetValue.[string]("Name");
+                when(u != null) {
+                    def points= reader.GetValue.[int?]("Points", 0);
+                    def level = reader.GetValue.[uint?]("Level", 0);
+                    def motto = reader.GetValue("Motto", "");
+                    users[i] = Dictionary() <- [
+                        "Num" = (from + i).ToString(),
+                        "Name" = u,
+                        "Points" = points.ToString(),
+                        "Level" = level.ToString(),
+                        "Motto" = motto,
+                    ];
+                    i++;
+                }
+            }
+        }
+
+        when(i < dist) {
+            Array.Resize(ref users, i);
+        }
+
+        def prf = getDefaultPrefix(request);
+        mutable prev = null;
+        mutable next = null;
+
+        Log.d("from = {0} > 1 {1}", from, from > 1);
+        when(from > 1) {
+            def pf = Math.Max(1, from - dist);
+            def pt = pf + dist - 1;
+            prev = $"$prf/u/$pf-$pt";
+        }
+        Log.d("prev = {0}", prev);
+
+        Log.d("to = {0} < {1} {2}", to, getUserCount(), to < getUserCount());
+        when(to < getUserCount()) {
+            def nf = from + dist;
+            def nt = nf + dist - 1;
+            next = $"$prf/u/$nf-$nt";
+        }
+        Log.d("next = {0}", next);
+
+        def data = PageData() <- [
+            "DefaultSecurePrefix" = DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+            "DefaultPrefix" = getDefaultPrefix(request),
+            "Users" = users,
+            "Prev" = prev,
+            "Next" = next,
+        ];
+
+        response.append(renderPage("users.nyml", data));
+        response.Status = (200, "OK");
+    }
+
+    public userPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def user = context.Vars["user"];
+
+        def command = Database.createCommand(
+            "SELECT Motto, Location, JoinDate, Points, Level FROM Users WHERE "
+                "Name = @Name") <- [ "@Name" = user ];
+
+        using(reader = command.executeReader()) {
+            mutable data = PageData();
+            when(reader.Read()) {
+
+                def date = reader.GetValue.[DateTime?]("JoinDate");
+                _ = data <- [
+                    "User" = user,
+                    "Motto" = reader.GetValue("Motto", ""),
+                    "Location" = reader.GetValue("Location", ""),
+                    "JoinDate" = if(date != null) { date.ToString() } else { "never" },
+                    "Points" = reader.GetValue.[int?]("Points", 0),
+                    "Level" = reader.GetValue.[uint?]("Level", 0),
+                ];
+            }
+
+            _ = data <- [
+                "DefaultSecurePrefix" = DefaultSecurePrefix,
+                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+                "DefaultPrefix" = getDefaultPrefix(request),
+            ];
+
+            response.append(renderPage("user.nyml", data));
+            response.Status = (200, "OK");
+        }
     }
 
     public navLoginResponse(
@@ -346,6 +475,12 @@ public class ForumServer: Server {
         } else {
             DefaultInsecurePrefix
         }
+    }
+
+    getUserCount(): int {
+        def commmand = Database.createCommand("SELECT COUNT(Name) FROM Users");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
     }
 }
 
