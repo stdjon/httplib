@@ -7,7 +7,7 @@ using Ganss.XSS;
 
 namespace httplib.mod {
 
-public interface IHtmlSanitizer: IModuleInterface {
+public interface IHtmlSanitizer: ITextTransform {
 }
 
 
@@ -21,6 +21,10 @@ public class HtmlSanitizer: Module, IHtmlSanitizer {
 
     public this() {
         Log.i("Starting HtmlSanitizer module...");
+    }
+
+    public transform(input: string): string {
+        input;
     }
 }
 

@@ -7,7 +7,7 @@ using CodeKicker.BBCode;
 
 namespace httplib.mod {
 
-public interface IBbCode: IModuleInterface {
+public interface IBbCode: ITextTransform {
 }
 
 
@@ -21,6 +21,10 @@ public class BbCode: Module, IBbCode {
 
     public this() {
         Log.i("Starting BBCode module...");
+    }
+
+    public transform(input: string): string {
+        input;
     }
 }
 

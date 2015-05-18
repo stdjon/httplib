@@ -7,7 +7,7 @@ using Textile;
 
 namespace httplib.mod {
 
-public interface ITextile: IModuleInterface {
+public interface ITextile: ITextTransform {
 }
 
 
@@ -21,6 +21,10 @@ public class Textile: Module, ITextile {
 
     public this() {
         Log.i("Starting Textile module...");
+    }
+
+    public transform(input: string): string {
+        input;
     }
 }
 
