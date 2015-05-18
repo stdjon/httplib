@@ -148,7 +148,7 @@ public abstract class Server: IDisposable {
 
         when(Configuration.Modules != null) {
             foreach(m in Configuration.Modules) {
-                ModuleCache.loadModule(m.Assembly, m.Typename, this);
+                ModuleCache.loadModule(m, this);
             }
         }
 

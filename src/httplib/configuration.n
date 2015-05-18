@@ -8,7 +8,7 @@ namespace httplib {
 //------------------------------------------------------------------------------
 
 
-type LogColours = Dictionary[string, string];
+public type LogColours = Dictionary[string, string];
 
 // Not all LogTarget fields will be used by every target...
 [YamlRecord]
@@ -24,7 +24,7 @@ public class LogTarget {
 }
 
 
-type LogTargets = Dictionary[string, LogTarget];
+public type LogTargets = Dictionary[string, LogTarget];
 
 [YamlRecord]
 public class LogRule {
@@ -76,12 +76,16 @@ public class RendererConfiguration {
 }
 
 
+public type ModuleData = Dictionary[string, string];
+
 [YamlRecord]
 public class ModuleConfiguration {
     /** Module assembly */
     [Accessor(flags = WantSetter)] mutable assembly: string;
     /** Module typename */
     [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Module initialization data */
+    [Accessor(flags = WantSetter)] mutable data: ModuleData;
 }
 
 

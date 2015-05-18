@@ -33,13 +33,17 @@ public abstract class Module {
     }
 
     /** Load a DB by reflection, given a DLL and type name. */
-    public static load(
-        path: string, name: string): Module {
+    public static load(conf: ModuleConfiguration): Module {
 
-        def assembly = Assembly.LoadFrom(path);
-        def mtype = assembly.GetType(name);
+        def assembly = Assembly.LoadFrom(conf.Assembly);
+        def mtype = assembly.GetType(conf.Typename);
+        def data = conf.Data;
 
-        Activator.CreateInstance(mtype) :> Module;
+        if(data == null) {
+            Activator.CreateInstance(mtype) :> Module;
+        } else {
+            Activator.CreateInstance(mtype, data) :> Module;
+        }
     }
 }
 
@@ -52,9 +56,9 @@ public class ModuleCache {
     modules: Dictionary[Type, Module] = Dictionary();
 
     public loadModule(
-        path: string, name: string, server: Server): void {
+        conf: ModuleConfiguration, server: Server): void {
 
-        mutable module_ = Module.load(path, name);
+        mutable module_ = Module.load(conf);
         module_.Server = server;
         addModule(module_);
     }
