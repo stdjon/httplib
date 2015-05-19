@@ -129,30 +129,32 @@ public class ForumServer: Server {
                 def auth = getModuleInterface.[mod.IAuth]();
                 def now = DateTime.Now.ToUniversalTime();
 
-                mutable command3 = Database.createCommand(
-                    "INSERT INTO Users(Name, Level, Points, JoinDate) "
-                        "VALUES (@Name, 0, 0, @JoinDate)") <- [
-                    "@Name" = user,
-                    "@JoinDate" = now,
-                ];
-                _ = command3.executeNonQuery();
+                Database.withTransaction(_ => {
+                    mutable command3 = Database.createCommand(
+                        "INSERT INTO Users(Name, Level, Points, JoinDate) "
+                            "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                        "@Name" = user,
+                        "@JoinDate" = now,
+                    ];
+                    _ = command3.executeNonQuery();
 
-                mutable command4 = Database.createCommand(
-                    "SELECT Id FROM Users WHERE "
-                        "Name = @Name") <- [ "@Name" = user ];
+                    mutable command4 = Database.createCommand(
+                        "SELECT Id FROM Users WHERE "
+                            "Name = @Name") <- [ "@Name" = user ];
 
-                def id = command4.executeScalar() :> uint;
+                    def id = command4.executeScalar() :> uint;
 
-                def record = auth.createPasswordRecord(password);
+                    def record = auth.createPasswordRecord(password);
 
-                mutable command5 = Database.createCommand(
-                    "INSERT INTO Auth(UserId, PwRecord, Email) "
-                        "VALUES (@UserId, @PwRecord, @Email)") <- [
-                    "@UserId" = id,
-                    "@PwRecord" = record,
-                    "@Email" = email,
-                ];
-                _ = command5.executeNonQuery();
+                    mutable command5 = Database.createCommand(
+                        "INSERT INTO Auth(UserId, PwRecord, Email) "
+                            "VALUES (@UserId, @PwRecord, @Email)") <- [
+                        "@UserId" = id,
+                        "@PwRecord" = record,
+                        "@Email" = email,
+                    ];
+                    _ = command5.executeNonQuery();
+                });
 
                 response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
                 response["Location"] = DefaultInsecurePrefix + "/";
