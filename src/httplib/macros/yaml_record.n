@@ -1,0 +1,18 @@
+using Nemerle;
+using Nemerle.Compiler;
+
+
+namespace httplib {
+
+/** A [YamlRecord] is basically the same as a [Record] except that it also
+ *  defines a default public constructor on the type.
+ */
+[MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
+macro YamlRecord(typeBuilder : TypeBuilder) {
+
+    typeBuilder.AddMacroAttribute(<[ Record ]>);
+    typeBuilder.Define(<[ decl: public this() {} ]>);
+}
+
+
+} // namespace httplib

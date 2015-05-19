@@ -1,0 +1,215 @@
+using System;
+using System.Data;
+using System.Reflection;
+
+using Nemerle.Utility;
+
+
+namespace httplib {
+
+[HasLogging]
+public abstract class Database: IDisposable  {
+
+    [Accessor(flags = WantSetter)]
+    protected mutable connection: IDbConnection = null;
+
+    public virtual Initialized: bool {
+        get { Connection != null }
+    }
+
+    public this(connection: string = null) {
+        when(connection != null) {
+            initialize(connection);
+        }
+        when(Connection != null) {
+            open();
+        }
+    }
+
+    public Dispose(): void {
+        shutdown();
+    }
+
+    protected override Finalize(): void {
+        shutdown();
+    }
+
+    shutdown(): void {
+        close();
+        Connection.Dispose();
+    }
+
+    public abstract initialize(connection: string): void;
+
+    public virtual open(): void {
+        Connection.Open();
+    }
+
+    public virtual close(): void {
+        Connection.Close();
+    }
+
+    public withTransaction(lambda: Database -> void): void {
+        mutable transaction = null;
+        try {
+            transaction = Connection.BeginTransaction();
+            _ = lambda(this);
+            transaction.Commit();
+        } catch {
+            | _ => {
+                Log.w("Rolling back...");
+                transaction.Rollback();
+            }
+        }
+    }
+
+    public virtual createCommand(query: string = null): Command {
+        mutable result = Command(Connection.CreateCommand());
+        when(query != null) {
+            result.Query = query;
+        }
+        result;
+    }
+
+    /** Load a DB by reflection, given a DLL and type name. */
+    public static load(
+        path: string, name: string, param: string = null): Database {
+
+        def assembly = Assembly.LoadFrom(path);
+        def dbtype = assembly.GetType(name);
+
+        Activator.CreateInstance(dbtype, param) :> Database;
+    }
+}
+
+
+public class Command {
+
+    [Accessor]
+    protected mutable command: IDbCommand = null;
+
+    public virtual Query: string {
+        get { Command.CommandText; }
+        set { Command.CommandText = value; }
+    }
+
+    public virtual Parameters: IDataParameterCollection {
+        get { Command.Parameters; }
+    }
+
+    public this(c: IDbCommand) {
+        command = c;
+    }
+
+    public virtual createParameter(
+        name: string = null, value: object = null): Parameter {
+
+        mutable result = Parameter(Command.CreateParameter());
+
+        when(name != null) {
+            result.Name = name;
+        }
+        when(value != null) {
+            result.Value = value;
+        }
+
+        result;
+    }
+
+    /** For use with Nemerle.Extensions <- operator...
+     *  db.createCommand("...@X...") <- [ "@X" = x, ... ]; */
+    public virtual Add[T](name: string, value: T): void {
+        addParameter(name, value);
+    }
+
+    public virtual addParameter(param: Parameter): void {
+        _ = Parameters.Add(param.Parameter);
+    }
+
+    public virtual addParameter(name: string, value: object): void {
+        addParameter(createParameter(name, value));
+    }
+
+    public virtual executeNonQuery(): int {
+        Command.ExecuteNonQuery();
+    }
+
+    public virtual executeReader(): IDataReader {
+        Command.ExecuteReader();
+    }
+
+    public virtual executeScalar(): object {
+        Command.ExecuteScalar();
+    }
+}
+
+
+public class Parameter {
+
+    [Accessor]
+    protected mutable parameter: IDbDataParameter = null;
+
+    public virtual Name: string {
+        get { Parameter.ParameterName; }
+        set { Parameter.ParameterName = value; }
+    }
+
+    public virtual Value: object {
+        get { Parameter.Value; }
+        set { Parameter.Value = value; }
+    }
+
+    public this(p: IDbDataParameter) {
+        parameter = p;
+    }
+}
+
+
+/** Extensions to IDataRecord to allow the use of the following syntaxes:
+ *
+ *    def s = idr.GetValue("s", ""); // reference type
+ *    def i = idr.GetValue.[int?]("i", 0); // nullable value type
+ *
+ *  Or, if a default of 'null' or a default value type is acceptable:
+ *
+ *    def s = idr.GetValue.[string]("s"); // reference type
+ *    def i = idr.GetValue.[int]("i"); // non-nullable value type
+ *
+ *  None of these methods will throw exceptions in the (unexceptional) event of
+ *  hitting a null data value in the DB.
+ */
+public module IDataRecordExtensions {
+
+    public GetValue[T](
+        this r: IDataRecord, field: string, default: T): T {
+
+        def ordinal = r.GetOrdinal(field);
+        r.GetValue.[T](ordinal, default);
+    }
+
+    public GetValue[T](
+        this r: IDataRecord, field: int, default: T): T {
+
+        if(r.IsDBNull(field)) {
+            default;
+        } else {
+            unchecked r.GetValue(field) :> T;
+        }
+    }
+
+    public GetValue[T](this r: IDataRecord, field: string): T {
+        def ordinal = r.GetOrdinal(field);
+        r.GetValue.[T](ordinal);
+    }
+
+    public GetValue[T](this r: IDataRecord, field: int): T {
+        if(r.IsDBNull(field)) {
+            default(T);
+        } else {
+            unchecked r.GetValue(field) :> T;
+        }
+    }
+}
+
+
+} // namespace httplib

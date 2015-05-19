@@ -1,0 +1,306 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using httplib;
+
+
+//------------------------------------------------------------------------------
+// MyServerConfiguration
+
+[YamlRecord]
+class MyServerConfiguration: ServerConfiguration {
+}
+
+
+//------------------------------------------------------------------------------
+// MyHandler
+
+class MyHandler: Handler {
+
+    public this(hd: HandlerData) {
+        base(hd);
+    }
+
+    public override callback(): void {
+        def id = Context.Vars["id"];
+        def rest = Context.Vars["rest"];
+
+        Response.append($"<html><body><h1>Thread (ID=$id)</h1>");
+        Response.append($"<p><tt>[Rest = $rest]</tt></p></body></html>");
+        Response.Status = (200, "OK");
+    }
+}
+
+
+class MyComplexHandler: ComplexHandler {
+    page_data: PageData;
+
+    public this(hd: HandlerData) {
+        base(hd);
+        page_data = getPageData();
+    }
+
+    public override PagePath: string {
+        get { "magic.nyml" }
+    }
+
+    public override ContentType: string {
+        get { "text/html" }
+    }
+
+    public override PageData: PageData {
+        get { page_data }
+    }
+
+    getPageData(): PageData {
+        def page_data = PageData() <- [
+            "RawPath" = Request.RawPath,
+            "Path" = Request.Path.toSystemType(),
+        ];
+
+        mutable vars: array[string] = array(0);
+        mutable qs: array[string] = array(0);
+        mutable hdrs: array[string] = array(0);
+        mutable i = 0;
+        Context.Vars.forEach((k, v) => {
+            System.Array.Resize(ref vars, i + 1);
+            vars[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        page_data.Add("Vars", vars);
+
+        i = 0;
+        Request.QueryString.forEach((k, v) => {
+            System.Array.Resize(ref qs, i + 1);
+            qs[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        page_data.Add("QueryString", qs);
+
+        i = 0;
+        Request.Headers.forEach((k, v) => {
+            System.Array.Resize(ref hdrs, i + 1);
+            hdrs[i] = ($"$k = $v").ToString();
+            i++;
+        });
+        page_data.Add("Headers", hdrs);
+
+        when(Context.Vars["name"] != null) {
+            page_data.Add("name", Context.Vars["name"]);
+        }
+        page_data;
+    }
+
+    public override finish(): void {
+        Response.setCookie("CookieTestName", "CookieTestValue");
+    }
+}
+
+
+class MyTestHandler: MyComplexHandler {
+
+    public this(hd: HandlerData) {
+        base(hd);
+    }
+
+    public override PagePath: string {
+        get { "test1.nyml" }
+    }
+}
+
+
+
+class MyDatabaseHandler: ComplexHandler {
+
+    public this(hd: HandlerData) {
+        base(hd);
+    }
+
+    public override PagePath: string {
+        get { "books.nyml" }
+    }
+
+    public override ContentType: string {
+        get { "text/html" }
+    }
+
+    public override PageData: PageData {
+        get { readDb() }
+    }
+
+    readDb(): PageData {
+        PageData() <- [
+            "Description" = "Here are some authors and books...",
+            "Authors" = getDbArray("Name", "Authors"),
+            "Books" = getDbArray("Title", "Books"),
+        ];
+    }
+
+    getDbArray(column: string, table: string): array[string] {
+        mutable result = array(0);
+        def c = match(column) {
+            | "Name" => "Name"
+            | "Title" => "Title"
+            | _ => "#"
+        };
+        def t = match(table) {
+            | "Authors" => "Authors"
+            | "Books" => "Books"
+            | _ => "#"
+        };
+        def command = Server.Database.createCommand($"SELECT $c FROM $t");
+        using(reader = command.executeReader()) {
+            mutable i = 0;
+            while(reader.Read()) {
+                def a = reader.GetString(0);
+                def j = i;
+                i++;
+                Array.Resize(ref result, i);
+                result[j] = a;
+            }
+        }
+        result;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// MyTestModule
+
+public interface IMyTestModule: IModuleInterface {
+
+    Name: string { get };
+    Server: Server { get }; // Module.Server 'magically' fulfils this API
+    testMethod(): string;
+}
+
+
+public class MyTestModule: Module, IMyTestModule {
+
+    // overridden from Module, indicates the module interface we're providing...
+    public override InterfaceType: Type {
+        get { typeof(IMyTestModule) }
+    }
+
+    public Name: string {
+        get { "MyTestModule" }
+    }
+
+    public testMethod(): string {
+        "<p>This is some test text which the module returned.</p>";
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// MyServer
+
+class MyServer: Server {
+
+    public new Configuration: MyServerConfiguration {
+        get { base.Configuration :> MyServerConfiguration }
+    }
+
+    public this(path: string) {
+        def config = loadConfiguration.[MyServerConfiguration](path);
+        base(config);
+    }
+
+    public this(config: MyServerConfiguration) {
+        base(config);
+    }
+
+    public override notFoundRespose(
+        _context: Context, request: Request, response: Response): void {
+        def data = PageData() <- [
+            "PATH" = request.RawUrl.ToString(),
+        ];
+        def output = renderPage("404.nyml", data);
+        response.append(output);
+        response.Status = (404, "Not Found");
+    }
+
+    // overridden 500 error response...
+    public override internalServerErrorResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        def data = PageData() <- [
+            "PATH" = request.RawUrl.ToString(),
+        ];
+        def output = renderPage("500.nyml", data);
+        response.append(output);
+        response.Status = (500, "Internal Server Error");
+    }
+
+    protected override internalServerError(ex: Exception): void {
+        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+    }
+}
+
+
+module Test {
+
+    [Accessor] log: ILog = Logging.forType.[MyServer]();
+
+    Main(_args: array[string]): void {
+
+        def config_path = "../src/myserver/config.yml";
+        Log.i("ServerConfiguration: $config_path\n");
+
+        using(mutable my_server = MyServer(config_path)) {
+
+            my_server.route([
+                (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
+                (HTTP.GET, "/th/{{id:[0-9]+}}")], MyHandler);
+
+            my_server.route([
+                (HTTP.GET, "/a/{{b}}/{{c}}"),
+                (HTTP.GET, "/order/{{number:[0-9]+}}"),
+                (HTTP.POST, "/form{{_check}}")], MyComplexHandler);
+
+            my_server.route(HTTP.GET, "/post/{{name}}", MyTestHandler);
+
+            my_server.route(HTTP.GET, "/data", MyDatabaseHandler);
+
+            // redirection test...
+            my_server.route(HTTP.GET, "/redir{{location:.*}}", (ctx, _req, res) => {
+                res["Location"] = ctx.Vars["location"];
+                res.Status = (302, "Moved Permanently");
+            });
+
+            my_server.route(HTTP.GET, "/", (_ctx, _req, res) => {
+                res.append(my_server.renderPage("index.yml"));
+                res.Status = (200, "OK");
+            });
+
+            my_server.route(HTTP.GET, "/module", (_ctx, _req, res) => {
+                def iface = my_server.getModuleInterface.[IMyTestModule]();
+                if(iface != null) {
+                    def same_server = my_server == iface.Server;
+                    res.append($"<html><body><h1>Module Test [$(iface.Name)]</h1>"
+                        $"$(iface.testMethod())<p>Same server: $same_server</p></body></html>");
+                    res.Status = (200, "OK");
+                } else {
+                    res.append("<html><body><h1>Module Missing :(</h1></body></html>");
+                    res.Status = (500, "Module missing");
+                }
+            });
+
+            my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
+
+            my_server.start();
+
+            while(my_server.Running) {
+                my_server.update();
+                Thread.Sleep(1000);
+            }
+        }
+    }
+}
+
+

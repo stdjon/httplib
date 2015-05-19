@@ -1,0 +1,126 @@
+using System.Collections.Generic;
+
+using Nemerle.Utility;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+
+
+public type LogColours = Dictionary[string, string];
+
+// Not all LogTarget fields will be used by every target...
+[YamlRecord]
+public class LogTarget {
+    /** Log target type */
+    [Accessor(flags = WantSetter)] mutable type: string;
+    /** Log target layout */
+    [Accessor(flags = WantSetter)] mutable layout: string;
+    /** Log target path */
+    [Accessor(flags = WantSetter)] mutable path: string;
+    /** Colours */
+    [Accessor(flags = WantSetter)] mutable colours: LogColours;
+}
+
+
+public type LogTargets = Dictionary[string, LogTarget];
+
+[YamlRecord]
+public class LogRule {
+    /** Log source */
+    [Accessor(flags = WantSetter)] mutable source: string;
+    /** Log level */
+    [Accessor(flags = WantSetter)] mutable level: string;
+    /** Log target */
+    [Accessor(flags = WantSetter)] mutable target: string;
+}
+
+[YamlRecord]
+public class LogConfiguration {
+    /** Logging assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Logging typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Targets */
+    [Accessor(flags = WantSetter)] mutable targets: LogTargets;
+    /** Targets */
+    [Accessor(flags = WantSetter)] mutable rules: array[LogRule];
+}
+
+[YamlRecord]
+public class DatabaseConfiguration {
+    /** Database assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Database typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Database connection */
+    [Accessor(flags = WantSetter)] mutable connection: string;
+}
+
+
+[YamlRecord]
+public class Prefixes {
+    /** Secure (https://) prefixes */
+    [Accessor(flags = WantSetter)] mutable secure: array[string];
+    /** Insecure (http://) prefixes */
+    [Accessor(flags = WantSetter)] mutable insecure: array[string];
+}
+
+[YamlRecord]
+public class RendererConfiguration {
+    /** Renderer assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Renderer typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+}
+
+
+public type ModuleData = Dictionary[string, string];
+
+[YamlRecord]
+public class ModuleConfiguration {
+    /** Module assembly */
+    [Accessor(flags = WantSetter)] mutable assembly: string;
+    /** Module typename */
+    [Accessor(flags = WantSetter)] mutable typename: string;
+    /** Module initialization data */
+    [Accessor(flags = WantSetter)] mutable data: ModuleData;
+}
+
+
+public type Databases = Dictionary[string, DatabaseConfiguration];
+public type Renderers = Dictionary[string, RendererConfiguration];
+public type Modules = List[ModuleConfiguration];
+public type MimeTypes = Dictionary[string, string];
+
+
+//------------------------------------------------------------------------------
+// ServerConfiguration
+
+[YamlRecord]
+public class ServerConfiguration {
+    /** Logging configuration */
+    [Accessor(flags = WantSetter)] mutable logging: LogConfiguration;
+    /** Database configuration */
+    [Accessor(flags = WantSetter)] mutable databases: Databases;
+    /** Listener prefixes */
+    [Accessor(flags = WantSetter)] mutable prefixes: Prefixes;
+    /** Filesystem roots for file serving */
+    [Accessor(flags = WantSetter)] mutable roots: array[string];
+    /** Patterns to test when deciding if a file can be served */
+    [Accessor(flags = WantSetter)] mutable file_serving: array[string];
+    /** Renderers to try (in order) when no extension given in request URI */
+    [Accessor(flags = WantSetter)] mutable renderers: Renderers;
+    /** Additional Modules to load */
+    [Accessor(flags = WantSetter)] mutable modules: Modules;
+    /** (Mapping extensions to) MIME Types */
+    [Accessor(flags = WantSetter)] mutable mime_types: MimeTypes;
+    /** Minimum length reserved for response body */
+    [Accessor(flags = WantSetter)] mutable output_length: int;
+    /** File chunk (read) length */
+    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
+}
+
+
+} // namespace httplib

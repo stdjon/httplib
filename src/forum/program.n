@@ -1,0 +1,108 @@
+using System;
+using System.IO;
+using System.Threading;
+
+using Nemerle.IO;
+
+using NDesk.Options;
+
+using httplib;
+
+
+namespace forum {
+
+module Program {
+
+    public class Arguments {
+        public this() {
+            ShowHelp = false;
+            Config = "../src/forum/default_config.yml";
+            Verbose = 0;
+        }
+        public ShowHelp: bool { get; set }
+        public Config: string { get; set }
+        public Verbose: uint { get; set }
+    }
+
+    public Main(args: array[string]): void {
+
+        def (arguments, options) = parseArguments(args);
+
+        if(arguments.ShowHelp) {
+            showHelp(options);
+        } else {
+            runServer(arguments);
+        }
+    }
+
+    parseArguments(args: array[string]): Arguments * OptionSet {
+        mutable result = Arguments();
+        def options = getOptions(result);
+        _ = options.Parse(args);
+        (result, options);
+    }
+
+    getOptions(arguments: Arguments): OptionSet {
+        OptionSet().
+            Add("h|?|help", "Show help.",
+                _ => { arguments.ShowHelp = true }).
+            Add("v|verbose", "More logging output.",
+                _ => { ++arguments.Verbose }).
+            Add("c|config=", "Use configuration {FILE}.",
+                v => { arguments.Config = v });
+    }
+
+    showHelp(options: OptionSet): void {
+        print("\nA simple forum application server.\n");
+        print("Usage:\n  forum.exe <options>\n\nwhere <options> are:\n\n");
+        options.WriteOptionDescriptions(Console.Out);
+    }
+
+    runServer(arguments: Arguments): void {
+
+        mutable mod_time = File.GetLastWriteTime(arguments.Config);
+        mutable restarting = false;
+        using(mutable server = ForumServer(arguments.Config)) {
+
+            def checkConfigWriteTime() {
+                def t = File.GetLastWriteTime(arguments.Config);
+                when(t != mod_time) {
+                    mod_time = t;
+                    restarting = true;
+                    server.Log.i("Configuration changed - restarting...");
+                    server.stop();
+                }
+            }
+
+            def handleRestart() {
+                when(restarting && !server.Running) {
+                    server = ForumServer(arguments.Config);
+                    server.start();
+                    restarting = false;
+                }
+            }
+
+            server.start();
+            while(server.Running) {
+                try {
+                    checkConfigWriteTime();
+
+                    server.update();
+                    Thread.Sleep(500);
+
+                    handleRestart();
+
+
+                } catch {
+                    | ex => {
+                        server.Log.e(
+                            "ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+} // namespace forum

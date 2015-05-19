@@ -1,0 +1,34 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Test Page
+Content: >
+  <div class="container">
+    <h1><i class="fa fa-spinner fa-pulse"></i> Test Page</h1>
+    <p>Test page test page...</p>
+    <p>{{>frag1}}</p>
+    <!-- ghetto form for POST testing... -->
+    <form action='/form_posted' method='POST'>
+    Name: <input type='text' name='myname' value='{{name}}'>
+    <br>
+    Password: <input type='password' name='mypass' value=''>
+    <br>
+    <input type='radio' name='sex' value='male' checked>Male
+    <br>
+    <input type='radio' name='sex' value='female'>Female
+    <br>
+    <input type='submit' value='Submit'>
+    </form>
+  </div>
+Partials:
+  frag1: This is a test.
+Objects:
+  name: Jon
+  age: 39

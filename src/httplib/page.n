@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// Page
+
+[YamlRecord]
+public class Page {
+
+    type Dict[T] = Dictionary[string, T];
+    public type PartialsType = Dict[string];
+    public type ObjectsType = Dict[object];
+
+    public Path: string { get; set; }
+    public Lang: string { get; set; }
+    public Metas: List[string] { get; set; }
+    public Title: string { get; set; }
+    public Stylesheets: List[string] { get; set; }
+    public BodyAttributes: List[string] { get; set; }
+    public Content: string { get; set; }
+    public Partials: PartialsType { get; set; }
+    public Objects: ObjectsType { get; set; }
+    public Template: string { get; set; }
+
+    public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
+        def lang =
+            if(!String.IsNullOrEmpty(Lang)) {
+                $" lang='$Lang'"
+            } else {
+                ""
+            }
+        def title =
+            if(!String.IsNullOrEmpty(Title)) {
+                $"\n<title>$Title</title>"
+            } else {
+                ""
+            }
+
+        mutable meta = "";
+        when(Metas != null) {
+            foreach(m in Metas) {
+                when(!String.IsNullOrEmpty(m)) {
+                    meta += $"\n<meta $m>"
+                }
+            }
+        }
+
+        mutable stylesheet = "";
+        when(Stylesheets != null) {
+            foreach(s in Stylesheets) {
+                when(!String.IsNullOrEmpty(s)) {
+                    stylesheet += $"\n<link href='$s' rel='stylesheet'>"
+                }
+            }
+        }
+
+        mutable body_attrs = "";
+        when(BodyAttributes != null) {
+            foreach(b in BodyAttributes) {
+                when(!String.IsNullOrEmpty(b)) {
+                    body_attrs += $" $b";
+                }
+            }
+        }
+
+        def content = renderContent(data, parts);
+
+        $"<!DOCTYPE html>\n<html$lang>\n"
+        $"<head>$meta$title$stylesheet\n</head>\n"
+        $"<body$body_attrs>\n$content</body>\n</html>";
+    }
+
+    public virtual renderContent(
+        _data: ObjectsType = null, _parts: PartialsType = null): string {
+
+        Content;
+    }
+
+    public merge(other: Page): void {
+        when(Lang == null) {
+            Lang = other.Lang;
+        }
+        when(Title == null) {
+            Title = other.Title;
+        }
+        when(Content == null) {
+            Content = other.Content;
+        }
+        Metas = mergeLists(other.Metas, Metas);
+        Stylesheets = mergeLists(other.Stylesheets, Stylesheets);
+        BodyAttributes = mergeLists(other.BodyAttributes, BodyAttributes);
+        Partials = mergeDicts(other.Partials, Partials);
+        Objects = mergeDicts(other.Objects, Objects);
+    }
+
+    protected static mergeLists(
+        a: List[string], b: List[string]): List[string] {
+        mutable result = List();
+
+        when(a != null) {
+            foreach(m in a) {
+                result.Add(m);
+            }
+        }
+        when(b != null) {
+            foreach(m in b) {
+                result.Add(m);
+            }
+        }
+        result;
+    }
+
+    protected static mergeDicts[T](a: Dict[T], b: Dict[T]): Dict[T] {
+        mutable result = Dict();
+
+        when(a != null) {
+            foreach(m in a) {
+                result.Add(m.Key, m.Value);
+            }
+        }
+        when(b != null) {
+            foreach(m in b) {
+                result[m.Key] = m.Value;
+            }
+        }
+        result;
+    }
+}
+
+
+} // namespace httplib

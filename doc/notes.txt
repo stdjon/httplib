@@ -1,0 +1,161 @@
+HTTPS support:
+==============
+
+Windows:
+--------
+  A self-signed certificate was created and registered for testing purposes
+  (see cer/windows/self-signed.cer).
+
+  Overview:
+  http://stackoverflow.com/questions/11403333/httplistener-with-https-support
+
+  Windows 8.1 SDK (for makecert.exe)
+  sdksetup.exe - http://www.microsoft.com/click/services/Redirect2.ashx?CR_EAC=300135395
+
+    > set path=%path%;c:\program files\windows kits\8.1\bin\x86
+    > makecert -n "CN=self-signed-auth" -r -sv server-auth.pvk server-auth.cer
+    Succeeded
+
+  [As Administrator]
+    > makecert -sk self-signed -iv server-auth.pvk -n "CN=self-signed" -ic server-auth.cer self-signed.cer -sr localmachine -ss My
+    Succeeded
+
+  [As Administrator]
+    > netsh http add sslcert ipport=0.0.0.0:8443 certhash=df52b2cb0a33207c95118f84b8f7b4a3bc8dc9c3 appid={769F2E76-AE87-4825-8157-C82CBF769DDD}
+
+    SSL Certificate successfully added
+
+  To verify [as Administrator]:
+    > netsh http show sslcert ipport=0.0.0.0:8443
+
+    SSL Certificate bindings:
+    -------------------------
+
+        IP:port                      : 0.0.0.0:8443
+        Certificate Hash             : df52b2cb0a33207c95118f84b8f7b4a3bc8dc9c3
+        Application ID               : {769f2e76-ae87-4825-8157-c82cbf769ddd}
+        Certificate Store Name       : (null)
+        Verify Client Certificate Revocation : Enabled
+        Verify Revocation Using Cached Client Certificate Only : Disabled
+        Usage Check                  : Enabled
+        Revocation Freshness Time    : 0
+        URL Retrieval Timeout        : 0
+        Ctl Identifier               : (null)
+        Ctl Store Name               : (null)
+        DS Mapper Usage              : Disabled
+        Negotiate Client Certificate : Disabled
+
+  To uninstall the cert again [as Administrator]:
+    > netsh http delete sslcert ipport=0.0.0.0:8443
+
+    SSL Certificate successfully deleted
+
+  To allow use of 127.0.0.1 in addition to localhost (for testing two
+  different 'domains' for http vs https), run the following commmand [as
+  Administrator]:
+
+    > netsh http add urlacl url=https://127.0.0.1:8443/ user=%USERDOMAIN%\%USERNAME% listen=yes
+
+    URL reservation successfully added
+
+  This will block further access to https://localhost:8443/, so you may want
+  to add that back as well:
+
+    > netsh http add urlacl url=https://localhost:8443/ user=%USERDOMAIN%\%USERNAME% listen=yes
+
+    URL reservation successfully added
+
+  To reset the ACLs back to original state, issue the commands with 'add'
+  replaced by 'delete' and only the 'url=' parameter [as Administrator]:
+
+    > netsh http delete urlacl url=https://127.0.0.1:8443/
+
+    URL reservation successfully deleted
+
+    > netsh http delete urlacl url=https://localhost:8443/
+
+    URL reservation successfully deleted
+
+
+Linux:
+------
+  Different certificates may be needed to test https on Linux: see
+  cer/linux/self-signed.cer/.pvk.
+  Note that unlike Windows, Administrator privileges are _not_ required for
+  either the makecert or httpcfg commands.
+
+    > makecert -r -n "CN=self-signed" -sv self-signed.pvk self-signed.cer
+    Mono MakeCert - version 3.1.2.0
+    X.509 Certificate Builder
+    Copyright 2002, 2003 Motus Technologies. Copyright 2004-2008 Novell. BSD licensed.
+
+    Success
+
+    > httpcfg -add -port 8443 -cert self-signed.cer -pvk self-signed.pvk
+
+  To verify the certificate is installed:
+    > httpcfg -list
+    Port: 8443 Thumbprint: C5A355DA2FC5571053ED9F5B2629178712D7EDC0
+
+  To uninstall, use this:
+    > httpcfg -del -port 8443
+
+  No special action is required to respond to listen to
+  https://127.0.0.1:8443/ in addition to https://localhost:8443/, but note
+  that it is not possible to add _both_ as prefixes to the same server: this
+  will cause an 'Address already in use' error.
+
+
+Databases:
+==========
+
+  Currently only MySql is supported. Can be installed using either Chocolatey
+  or apt-get (depending on platform).
+
+Windows:
+--------
+    [As Administrator]
+    > choco install mysql
+
+Linux (Ubuntu/Debian):
+----------------------
+    > sudo apt-get install mysql-server
+  Also, if necessary:
+    > sudo /etc/init.d/mysql start
+
+
+To set up user/db for forum software (any platform), log into mysql and run
+the following commands (replace ***** with your database user's password):
+
+    >mysql -u root
+    Welcome to the MySQL monitor.  Commands end with ; or \g.
+    Your MySQL connection id is 68
+    Server version: 5.6.24 MySQL Community Server (GPL)
+
+    Copyright (c) 2000, 2015, Oracle and/or its affiliates. All rights reserved.
+
+    Oracle is a registered trademark of Oracle Corporation and/or its
+    affiliates. Other names may be trademarks of their respective
+    owners.
+
+    Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+    mysql> create database forum;
+    Query OK, 1 row affected (0.00 sec)
+
+    mysql> use forum;
+    Database changed
+    mysql> create user forum@localhost identified  by '*****';
+    Query OK, 0 rows affected (0.01 sec)
+
+    mysql> grant all on forum.* to forum@localhost;
+    Query OK, 0 rows affected (0.02 sec)
+
+    mysql> \q
+    Bye
+
+  You can then run one of the following to initialize the database tables:
+
+  [Linux] > mysql -D forum -u forum -p***** < src/forum/init-dbs.mysql
+  [Windows] > mysql -D forum -u forum -p***** < src\forum\init-dbs.mysql
+

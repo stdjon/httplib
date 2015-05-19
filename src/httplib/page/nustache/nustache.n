@@ -1,0 +1,66 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+using Nustache.Core;
+using YamlDotNet.Serialization;
+
+
+namespace httplib.page {
+
+//------------------------------------------------------------------------------
+// NustachePage
+
+[YamlRecord]
+[HasLogging]
+public class NustachePage: Page {
+
+    public override renderContent(
+        data: ObjectsType = null, parts: PartialsType = null): string {
+
+        Log.t("NustachePage.renderContent...");
+        def objects = mergeDicts(Objects, data);
+
+        if(!String.IsNullOrEmpty(Content)) {
+            Render.StringToString(Content, objects, templateLocator(_, parts));
+        } else {
+            ""
+        }
+    }
+
+    templateLocator(template: string, parts: PartialsType = null): Template {
+        mutable result = null;
+        mutable partial_to_use;
+        def partials = mergeDicts(Partials, parts);
+
+        _ = partials.TryGetValue(template, out partial_to_use);
+
+        when(!String.IsNullOrEmpty(partial_to_use)) {
+            result = Template(template);
+            using(def reader = StringReader(partial_to_use)) {
+                result.Load(reader);
+            }
+        }
+
+        result;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// NustacheRenderer
+
+public class NustacheRenderer: Renderer {
+
+    public this(server: Server) {
+        base(server);
+    }
+
+    public override PageType: Type {
+        get { typeof(NustachePage) }
+    }
+}
+
+
+
+} // namespace httplib

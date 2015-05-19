@@ -1,0 +1,62 @@
+# ------------------------------------------------------------------------------
+# Example MyServer configuration
+---
+Databases:
+  default:
+    Assembly: httplib.db.mysql.dll
+    Typename: httplib.db.MySqlDatabase
+    Connection: server=localhost;userid=user12;password=34klq*;database=mydb
+Prefixes:
+  Secure:
+    - https://localhost:8443/
+  Insecure:
+    - http://localhost:8080/
+Roots:
+  - ../src/myserver/www
+  - ../contrib/client
+FileServing:
+  - /.*css
+  - /.*html
+  - /.*js
+  - /.*ttf
+  - /.*woff
+  - /.*woff2
+  - /magic
+  - /script
+  - /test[0-9]+
+Renderers:
+  yml:
+    Assembly: httplib.dll
+    Typename: httplib.Renderer
+  nyml:
+    Assembly: httplib.page.nustache.dll
+    Typename: httplib.page.NustacheRenderer
+Modules:
+  - Assembly: http.exe
+    Typename: MyTestModule
+MimeTypes:
+  js: application/javascript
+  json: application/json
+  html: text/html
+  css: text/css
+  ttf: application/x-font-ttf
+  woff: application/x-font-woff
+  woff2: application/octet-stream
+  _: text/plain
+OutputLength: 800
+FileChunkLength: 1024
+Logging:
+  Assembly: httplib.log.nlog.dll
+  Typename: httplib.log.NLogLogging
+  Targets:
+    console:
+      Type: ColoredConsoleTarget
+      Layout: "${message}"
+      Colours: { Debug: DarkGreen, Info: Green, Warn: DarkYellow }
+    file:
+      Type: FileTarget
+      Path: "${basedir}/http-${date:format=yyyyMMddHHmmss:cached=true}.log"
+      Layout: "${date:format=HH\\:mm\\:ss} ${logger} ${message}"
+  Rules:
+    - { Source: "*", Level: Trace, Target: console }
+    - { Source: "*", Level: Info, Target: file }

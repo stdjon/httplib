@@ -1,0 +1,596 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
+using System.Net;
+using System.Text.Encoding;
+using System.Text.RegularExpressions;
+
+using Nemerle.Utility;
+
+using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// Server
+
+public abstract class Server: IDisposable {
+
+    public type Callback = Context * Request * Response -> void;
+    type MakeHandler = HandlerData -> Handler;
+    type RouteMap = Dictionary[string, Route * MakeHandler];
+    type ContextMap = Dictionary[string, Route * PageData];
+    type FileServingMap = Dictionary[string, Route];
+
+    type Method = HTTP;
+    public static MethodCount = HTTP.COUNT_ :> int;
+
+    [Accessor] log: ILog;
+
+    [Accessor]
+    static deserializer: YamlDeserializer = YamlDeserializer();
+
+    [System.Flags]
+    public enum State {
+        | Neutral = 0x00
+        | Running = 0x01
+        | Closed = 0x02
+        | WillClose = 0x04
+    }
+
+    [Accessor(Flags, flags = Protected)]
+    [FlagAccessor(Running, flags = WantSetter)]
+    [FlagAccessor(Closed, flags = Protected | WantSetter)]
+    [FlagAccessor(WillClose, flags = Protected | WantSetter)]
+    mutable state: State = State.Neutral;
+
+    [Accessor(flags = Protected)]
+    listener: HttpListener = HttpListener();
+
+    [Accessor(flags = Protected)]
+    configuration: ServerConfiguration;
+
+    public Database: Database {
+        get { Databases["default"] }
+    }
+    [Accessor] databases: Dictionary[string, Database] = Dictionary();
+
+    public Routes[i: Method]: RouteMap {
+        get { routes[i :> int] }
+    }
+    routes: array[RouteMap] = array(MethodCount);
+
+    public Contexts[i: Method]: ContextMap {
+        get { contexts[i :> int] }
+    }
+    contexts: array[ContextMap] = array(MethodCount);
+
+    public FileServing: FileServingMap {
+        get { file_serving }
+    }
+    file_serving: FileServingMap = Dictionary();
+
+    [Accessor(flags = Internal)]
+    renderers: Dictionary[string, Renderer] = Dictionary();
+
+    [Accessor(flags = Internal)]
+    module_cache: ModuleCache = ModuleCache();
+
+    [Accessor] public default_secure_prefix: string;
+    [Accessor] public default_insecure_prefix: string;
+
+    static protected loadConfiguration[T](path: string): T {
+        using(reader = StreamReader(path)) {
+            Deserializer.Deserialize.[T](reader);
+        }
+    }
+
+    public this(path: string) {
+        def config = loadConfiguration.[ServerConfiguration](path);
+        this(config);
+    }
+
+    public this(config: ServerConfiguration) {
+        configuration = config;
+
+        def lg = Configuration.Logging;
+        when(lg != null &&
+            lg.Assembly != null &&
+            lg.Typename != null) {
+            Logging.load(lg.Assembly, lg.Typename, lg);
+        }
+        log = Logging.forThisType();
+        Log.i("Starting up...");
+
+        def dbc = Configuration.Databases;
+        when(dbc != null) {
+            foreach(d in dbc) {
+                def dv = d.Value;
+                mutable db = null;
+                when(dv.Assembly != null &&
+                    dv.Typename != null) {
+                    db = Database.load(dv.Assembly, dv.Typename, dv.Connection);
+                }
+                if(db != null) {
+                    Log.i("Adding a database {0} [{1}]", d.Key, dv.Typename);
+                    databases.Add(d.Key, db);
+                } else {
+                    Log.w("Database {0} not created!", d.Key);
+                }
+            }
+        }
+
+        foreach(p in Configuration.Prefixes.Secure) {
+            Log.d("Adding prefix \"{0}\"...", p);
+            when(!Regex(@"^https://").IsMatch(p)) {
+                throw Exception("Secure prefix must start 'https://...'");
+            }
+            Listener.Prefixes.Add(p);
+        }
+
+        foreach(p in Configuration.Prefixes.Insecure) {
+            Log.d("Adding prefix \"{0}\"...", p);
+            when(!Regex(@"^http://").IsMatch(p)) {
+                throw Exception("Insecure prefix must start 'http://...'");
+            }
+            Listener.Prefixes.Add(p);
+        }
+
+        fileServingArray(Configuration.FileServing);
+
+        foreach(x in Configuration.Renderers) {
+            def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
+            when(r != null) {
+                Log.d("Registering {0} for {1} files...", r, x.Key);
+                Renderers[x.Key] = r;
+            }
+        }
+
+        when(Configuration.Modules != null) {
+            foreach(m in Configuration.Modules) {
+                ModuleCache.loadModule(m, this);
+            }
+        }
+
+        for(mutable i = 0; i < MethodCount; i++) {
+            routes[i] = Dictionary();
+            contexts[i] = Dictionary();
+        }
+
+        default_secure_prefix = Regex(@"(https://.*)/").Replace(
+            Configuration.Prefixes.Secure[0], "$1");
+
+        default_insecure_prefix = Regex(@"(http://.*)/").Replace(
+            Configuration.Prefixes.Insecure[0], "$1");
+
+        Log.d("Default prefixes:\n  - {0}\n  - {1}",
+            DefaultInsecurePrefix, DefaultSecurePrefix);
+
+        // install default handlers for several methods...
+        route(HTTP.INVALID_, ".*", internalServerErrorResponse);
+        route([
+            (HTTP.OPTIONS, ".*"),
+            (HTTP.TRACE, ".*"),
+            (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
+
+        Listener.AuthenticationSchemeSelectorDelegate = req => {
+            def request = Request(req);
+            handleAuthentication(request);
+        };
+    }
+
+    public start(): void {
+        Running = true;
+        Listener.Start();
+    }
+
+    public stop(): void {
+        WillClose = true;
+    }
+
+    public Dispose(): void {
+        shutdown();
+    }
+
+    protected override Finalize(): void {
+        shutdown();
+    }
+
+    shutdown(): void {
+
+        when(!Closed) {
+            Listener.Close();
+            Running = false;
+            Closed = true;
+        }
+    }
+
+    public route(method: Method, path: string, handler: MakeHandler): void {
+
+        def route = Route(path);
+        def pattern = route.Pattern;
+        Log.i("route: {0} '{1}' added {2}", methodName(method), path, handler);
+        Routes[method].Add(pattern, (route, handler));
+    }
+
+    public route(routes: list[(Method * string)], handler: MakeHandler): void {
+        foreach((method, path) in routes) {
+            route(method, path, handler);
+        }
+    }
+
+    public route(method: Method, path: string, fn: Callback): void {
+        route(method, path, CallbackHandler.Wrapper(fn).unwrap);
+    }
+
+    public route(routes: list[(Method * string)], fn: Callback): void {
+        foreach((method, path) in routes) {
+            route(method, path, fn);
+        }
+    }
+
+    public context(
+        method: Method, path: string, data: PageData): void {
+
+        def route = Route(path);
+        def pattern = route.Pattern;
+        Log.i("context: {0} '{1}' added {2}", methodName(method), path, data);
+        Contexts[method].Add(pattern, (route, data));
+    }
+
+    public context(contexts: list[(Method * string)], data: PageData): void {
+        foreach((method, path) in contexts) {
+            context(method, path, data);
+        }
+    }
+
+    public fileServing(params paths: array[string]): void {
+        fileServingArray(paths);
+    }
+
+    public fileServingArray(paths: array[string]): void {
+        when(paths != null) {
+            foreach(p in paths) {
+                def route = Route(p);
+                def pattern = route.Pattern;
+                FileServing.Add(pattern, route);
+            }
+        }
+    }
+
+    public update(): void {
+        when(Running) {
+            if(WillClose) {
+                shutdown();
+            } else {
+                _ = Listener.BeginGetContext(listenerCallback, this);
+            }
+        }
+    }
+
+    public getModuleInterface[T](): T {
+        ModuleCache.getModuleInterface.[T]();
+    }
+
+    public getModuleInterface(iftype: Type): IModuleInterface {
+        ModuleCache.getModuleInterface(iftype);
+    }
+
+    findHandler(method_name: string,
+        path: string, vars_out: ref HashTable): MakeHandler {
+
+        mutable result;
+        exit: {
+            def method = methodType(method_name);
+            foreach(r in Routes[method]) {
+                def (route, handler) = r.Value;
+
+                when(route.doMatch(path, ref vars_out)) {
+                    result = handler;
+                    exit();
+                }
+            }
+        }
+        result;
+    }
+
+    findContext(method_name: string, path: string): PageData {
+        mutable result;
+        exit: {
+            def method = methodType(method_name);
+            foreach(r in Contexts[method]) {
+                def (route, data) = r.Value;
+                mutable vars = null;
+
+                when(route.doMatch(path, ref vars)) {
+                    result = data;
+                    exit();
+                }
+            }
+        }
+        result;
+    }
+
+    public virtual renderPage(
+        path: string, data: PageData = null, pd: PartialData = null): string {
+
+        def ext = Path.GetExtension(path).Substring(1);
+
+        using(stream = openLocalFile(path, true)) {
+            def renderer = Renderers[ext];
+            def page = renderer.loadPage(stream);
+
+            page.render(data, pd);
+        }
+    }
+
+    /** Overridden by child classes */
+    protected virtual internalServerError(_: Exception): void {
+        //...
+    }
+
+    /** Overridden by child classes */
+    protected virtual handleAuthentication(
+        _request: Request): AuthenticationSchemes {
+
+        AuthenticationSchemes.Anonymous;
+    }
+
+    protected virtual callback(
+        context: Context, request: Request, response: Response): void {
+        // If the context.SearchedForFileStream is true, it means that the
+        // context.FileStream was found by searching via the Extensions
+        // (which means that there should be a suitable Renderer available...)
+        def fs = context.FileStream != null;
+        def searched = context.SearchedForFileStream;
+        def lambda =
+            match(fs, searched) {
+                | (true, true) => renderPageResponse
+                | (true, false) => serveFileResponse
+                |  _ => notFoundRespose
+            };
+        lambda(context, request, response);
+    }
+
+    handleCallback(http_ctx: HttpListenerContext): void {
+        mutable context, request, response;
+        try {
+            context = Context();
+            request = Request(http_ctx.Request);
+            response = Response(http_ctx.Response, Configuration.OutputLength);
+
+            Log.i("Requesting: \"/{0}\"...", request.RawPath);
+
+            // check for existing file under roots...
+            def (fs, ext) = findLocalFileForRequest(request);
+            context.FileStream = fs;
+
+            when(!String.IsNullOrEmpty(ext)) {
+                context.SearchedForFileStream = true;
+                request.Extension = ext;
+            }
+
+            // find callback (and populate vars from route vars if any)
+            mutable vars = HashTable();
+
+            def handler = findHandler(
+                request.HttpMethod, "/" + request.RawPath, ref vars);
+
+            context.PageData = findContext(
+                request.HttpMethod, "/" + request.RawPath);
+            context.Vars = vars;
+
+            // populate vars from body of POST...
+            when(HTTP.POST == methodType(request.HttpMethod)) {
+                processPostInputStream(http_ctx.Request, ref vars);
+            }
+
+            if(handler != null) {
+                def hd = HandlerData(context, request, response, this);
+                handler(hd).callback();
+            } else {
+                callback(context, request, response);
+            }
+        } catch {
+            | ex => {
+                internalServerError(ex);
+                internalServerErrorResponse(context, request, response);
+            }
+        } finally {
+            def (sc, sd) = (response.StatusCode, response.StatusDescription);
+            Log.i("Response Status: {0} {1}", sc, sd);
+            try {
+                context.complete();
+                response.complete();
+            } catch {
+                | ex => {
+                    internalServerError(ex);
+                }
+            }
+        }
+    }
+
+    static listenerCallback(result: IAsyncResult): void {
+        def server = result.AsyncState :> Server;
+        when(!server.WillClose) {
+            def http_ctx = server.Listener.EndGetContext(result);
+            server.handleCallback(http_ctx);
+        }
+    }
+
+    public fileServingAllowed(path: string): bool {
+        mutable result;
+        exit: {
+            foreach(f in FileServing) {
+                def route = f.Value;
+                mutable vars = null;
+
+                when(route.doMatch("/" + path, ref vars)) {
+                    result = true;
+                    exit();
+                }
+            }
+        }
+        Log.d("fileServingAllowed(\"/{0}\"): {1}", path, result);
+        result;
+    }
+
+    public openLocalFile(path: string, force = false): FileStream {
+        mutable result = null;
+        when(force || fileServingAllowed(path)) {
+            exit: {
+                foreach(root in Configuration.Roots) {
+                    def p = Path.Combine(root, path);
+                    def exists = File.Exists(p);
+
+                    Log.d("File exists: \"{0}\"? {1}", p, exists);
+                    when(exists) {
+                        result = FileStream(p, FileMode.Open);
+                        exit();
+                    }
+                }
+            }
+        }
+        result;
+    }
+
+    findLocalFileForRequest(request: Request): FileStream * string {
+        mutable result = null, ext = null;
+        if(!String.IsNullOrEmpty(request.Extension)) {
+            result = openLocalFile(request.RawPath);
+
+        } else {
+            exit: {
+                foreach(x in Configuration.Renderers) {
+                    def force = fileServingAllowed(request.RawPath);
+                    result = openLocalFile(request.RawPath + "." + x.Key, force);
+                    when(result != null) {
+                        ext = x.Key;
+                        exit();
+                    }
+                }
+            }
+        }
+        (result, ext);
+    }
+
+    processPostInputStream(
+        request: HttpListenerRequest, vars_out: ref HashTable): void {
+
+        when(request.InputStream != null) {
+            using(mutable reader = StreamReader(
+                request.InputStream, request.ContentEncoding)) {
+
+                def str = reader.ReadToEnd();
+                def each_var = str.Split(array['&', ';'], StringSplitOptions.None);
+
+                when(each_var.Length > 0) {
+                    foreach(v in each_var) {
+                        def s = v.Split(array['='], StringSplitOptions.None);
+
+                        when(s.Length > 1) {
+                            vars_out[s[0].ToString()] = s[1].ToString();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    static methodType(name: string): Method {
+        match(name.ToUpper()) {
+            | "OPTIONS" => OPTIONS
+            | "GET" => GET
+            | "HEAD" => HEAD
+            | "POST" => POST
+            | "PUT" => PUT
+            | "DELETE" => DELETE
+            | "TRACE" => TRACE
+            | "CONNECT" => CONNECT
+            | _ => INVALID_
+        }
+    }
+
+    static methodName(mth: Method): string {
+        match(mth) {
+            | OPTIONS => "OPTIONS"
+            | GET => "GET"
+            | HEAD => "HEAD"
+            | POST => "POST"
+            | PUT => "PUT"
+            | DELETE => "DELETE"
+            | TRACE => "TRACE"
+            | CONNECT => "CONNECT"
+            | _ => "?"
+        }
+    }
+
+    public extensionToMimeType(ext: string): string {
+        def types = Configuration.MimeTypes;
+        mutable result = "text/plain";
+        mutable probe;
+        when(
+            types.TryGetValue(ext, out probe) ||
+            types.TryGetValue("_", out probe) ) {
+                result = probe;
+        }
+        result;
+    }
+
+    // stock request handlers (can be overridden by clients).
+
+    public virtual internalServerErrorResponse(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.append(
+            "<html><body><h1>500 Internal Server Error</h1></body><html>");
+        response.Status = (500, "Internal Server Error");
+    }
+
+    public virtual methodNotAllowedResponse(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.append(
+            "<html><body><h1>405 Method Not Allowed</h1></body><html>");
+        response.Status = (405, "Method Not Allowed");
+    }
+
+    public virtual notFoundRespose(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.append(
+            "<html><body><h1>404 Not Found</h1></body><html>");
+        response.Status = (404, "Not Found");
+    }
+
+    public virtual serveFileResponse(
+        context: Context, request: Request, response: Response): void {
+
+        using(def reader = BinaryReader(context.FileStream)) {
+            mutable continue = true;
+
+            while(continue) {
+                def data = reader.ReadBytes(Configuration.FileChunkLength);
+                response.appendBytes(data);
+                continue = (data.Length == Configuration.FileChunkLength);
+            }
+        }
+        response.ContentType = extensionToMimeType(request.Extension);
+        response.Status = (200, "OK");
+    }
+
+    public virtual renderPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def renderer = Renderers[request.Extension];
+        def page = renderer.loadPage(context.FileStream);
+
+        response.append(page.render(context.PageData));
+        response.Status = (200, "OK");
+    }
+}
+
+
+} // namespace httplib

@@ -1,0 +1,14 @@
+---
+Content: >
+  <div class="container">
+    <h1><i class="fa fa-search"></i> Template Test Page</h1>
+    <p>{{Parent}}</p>
+    <p>{{Child}}</p>
+    <p>{{>Parent}}</p>
+    <p>{{>Child}}</p>
+  </div>
+Template: template.nyml
+Objects:
+  Child: This is an object on the child page.
+Partials:
+  Child: This is a partial on the child page.

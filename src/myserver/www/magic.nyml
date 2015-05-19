@@ -1,0 +1,113 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Magic!
+Content: >
+  <div class="container">
+    <h1><i class="fa fa-magic"></i> httplib "Magic" Response</h1>
+    {{^MAGIC}}
+    <p>RawPath: <tt>{{RawPath}}</tt></p>
+    <p>QueryString:<ol>{{#QueryString}}<li><tt>{{.}}</tt></li>{{/QueryString}}</ol></p>
+    <p>Headers:<ol>{{#Headers}}<li><tt>{{.}}</tt></li>{{/Headers}}</ol></p>
+    <p>Path:<ol>{{#Path}}<li><tt>{{.}}</tt></li>{{/Path}}</ol></p>
+    <p>Vars:<ol>{{#Vars}}<li><tt>{{.}}</tt></li>{{/Vars}}</ol></p>
+    {{/MAGIC}}
+    {{#MAGIC}}
+    <p>
+      <div class="panel panel-info" id="changeme">
+        <div class="panel-heading">
+          <i class="fa fa-star" id="star1"></i>
+          This is the page at <tt>/magic</tt>, loaded directly.
+          <i class="fa fa-star-o" id="star2"></i>
+        </div>
+      </div>
+      <blockquote>
+        <i class="fa fa-quote-left"></i>
+        Some stuff
+        <i class="fa fa-quote-right"></i>
+        <small><cite>Some Guy</cite></small>
+      </blockquote>
+      <div class="table-responsive">
+        <table class="table table-condensed table-striped">
+          <thead>
+            <tr class="info">
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <caption>
+            <small>Some tabular data...</small>
+          </caption>
+          <tbody>
+            <tr>
+              <td>Bob</td>
+              <td>Carter</td>
+              <td>bobcarter@mail.com</td>
+            </tr>
+            <tr>
+              <td>A. N.</td>
+              <td>Other</td>
+              <td>another@mail.com</td>
+            </tr>
+            <tr>
+              <td>Ted</td>
+              <td>Todd</td>
+              <td>tedtodd@mail.com</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <dl class="dl-horizontal col-md-6">
+        <dt>User Agent</dt>
+        <dd>An HTML user agent is any device that interprets HTML documents.</dd>
+        <dt>Client-side Scripting</dt>
+        <dd>Client-side scripting generally refers to the category of computer programs on the web that are executed client-side i.e. by the user's web browser.</dd>
+        <dt>Document Tree</dt>
+        <dd>The tree of elements encoded in the source document.</dd>
+      </dl>
+      <a id="x">
+      <div class="list-group col-md-6">
+        <a href="#x" class="list-group-item list-group-item-success"><i class="fa fa-magic"></i> Success</a>
+        <a href="#x" class="list-group-item list-group-item-info"><i class="fa fa-info"></i> Info</a>
+        <a href="#x" class="list-group-item list-group-item-warning"><i class="fa fa-exclamation-triangle"></i> Warning</a>
+        <a href="#x" class="list-group-item list-group-item-danger"><i class="fa fa-exclamation-circle"></i> Danger!</a>
+      </div>
+      </a>
+    </p>
+    <script src="jquery-1.11.2/jquery-1.11.2.js"></script>
+    <script src="bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+    <script>
+      $(document).ready(function() {
+        var starclasses = [ 'fa-star', 'fa-star-o' ];
+        var star = 0;
+        var panelclasses = [ 'panel-info', 'panel-success', 'panel-warning', 'panel-danger'];
+        var panel = 0;
+        setInterval(
+          function() {
+            // 'animate' stars
+            $('#star1').removeClass(starclasses[star]);
+            $('#star2').addClass(starclasses[star]);
+            star = (star + 1) % starclasses.length;
+            $('#star1').addClass(starclasses[star]);
+            $('#star2').removeClass(starclasses[star]);
+
+            // 'animate' panel
+            $('#changeme').removeClass(panelclasses[panel]);
+            panel = (panel + 1) % panelclasses.length;
+            $('#changeme').addClass(panelclasses[panel]);
+          },
+          500);
+      });
+    </script>
+    {{/MAGIC}}
+  </div>
+Partials:
+Objects:

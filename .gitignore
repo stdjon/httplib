@@ -1,0 +1,7 @@
+.gitignore
+userconf.mak
+*.exe
+*.dll
+*.log
+*.sw?
+*~

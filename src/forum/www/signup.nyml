@@ -1,0 +1,346 @@
+---
+Template: template.nyml
+Stylesheets:
+  - local-styles.css
+Title: Title Title Title
+Partials:
+  Nav: |
+    <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-empty'
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>Sign up</h1>
+    </div>
+  Body: |
+    <style>
+      div.input-group span.input-pre { width: 150; }
+      div.feedback { width: 100; }
+      div.progress { margin: 0; margin-top: 4px; }
+      .form-control:focus {
+        border-color: #f00;
+        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 0, 0, .6);
+      }
+      em { color: #666; }
+      tt { color: #000; background-color: #ffb; font-style: normal; }
+    </style>
+    <div class="swatches">
+      <p>
+        <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x22_5" onmouseover="setHdrCols(22.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x45" onmouseover="setHdrCols(45, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x67_5" onmouseover="setHdrCols(67.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x90" onmouseover="setHdrCols(90, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x112_5" onmouseover="setHdrCols(112.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x135" onmouseover="setHdrCols(135, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x157_5" onmouseover="setHdrCols(157.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x180" onmouseover="setHdrCols(180, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x202_5" onmouseover="setHdrCols(202.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x225" onmouseover="setHdrCols(225, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x247_5" onmouseover="setHdrCols(247.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x270" onmouseover="setHdrCols(270, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x292_5" onmouseover="setHdrCols(292.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x315" onmouseover="setHdrCols(315, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x337_5" onmouseover="setHdrCols(337.5, true)">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+      <p>
+        <span class="swatch" id="y0" onmouseover="setHdrCols(0, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y22_5" onmouseover="setHdrCols(22.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y45" onmouseover="setHdrCols(45, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y67_5" onmouseover="setHdrCols(67.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y90" onmouseover="setHdrCols(90, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y112_5" onmouseover="setHdrCols(112.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y135" onmouseover="setHdrCols(135, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y157_5" onmouseover="setHdrCols(157.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y180" onmouseover="setHdrCols(180, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y202_5" onmouseover="setHdrCols(202.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y225" onmouseover="setHdrCols(225, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y247_5" onmouseover="setHdrCols(247.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y270" onmouseover="setHdrCols(270, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y292_5" onmouseover="setHdrCols(292.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y315" onmouseover="setHdrCols(315, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y337_5" onmouseover="setHdrCols(337.5, false)">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+    </div>
+    <div class="anchor" id="1"><p>Please enter some details for your account:</p></div>
+      <form class="form">
+        <span class="input-pre">Username: </span>
+        <span class="feedback" id="userexists"></span>
+        <span class="feedback" id="userfeedback"></span>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
+          <input name="user" id="user_id" type="text" placeholder="Username"
+            class="form-control input-sm" onkeypress="userKeypress()" onkeyup="userKeypress()" value="{{User}}">
+        </div>
+        <span class="input-pre">Password: </span>
+        <span class="feedback" id="passwordfeedback"></span>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+          <input name="password" id="password_id" type="password" placeholder="Password"
+            class="form-control input-sm" onkeypress="passwordKeypress()" onkeyup="passwordKeypress()">
+        </div>
+        <span class="input-pre">Password (confirmation): </span>
+        <span class="feedback" id="confirmfeedback"></span>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+          <input name="confirm" id="confirm_id" type="password" placeholder="Password"
+            class="form-control input-sm" onkeypress="confirmKeypress()" onkeyup="confirmKeypress()">
+        </div>
+        <div class="progress">
+          <div class="progress-bar progress-bar-danger" style="width: 1%;" id="password_strength"></div>
+        </div>
+        <span class="input-pre">Email: </span>
+        <span class="feedback" id="userexists"></span>
+        <span class="feedback" id="emailfeedback"></span>
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
+          <input name="email" id="email_id" type="email" placeholder="Email"
+            class="form-control input-sm" onkeypress="emailKeypress()" onkeyup="emailKeypress()">
+        </div>
+        <br>
+        <button id="submit" type="submit" disabled="disabled" class="btn btn-success"
+          formaction="{{DefaultSecurePrefix}}/signup-submit" formmethod="post" formtarget="_top">Sign up</button>
+        <input type="hidden" name="redirect" value="{{DefaultPrefix}}/">
+      </form>
+
+
+    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
+    <script src="/zxcvbn-async.js"></script>
+    <script>
+      Hyphenator.run();
+
+      var passwordValue = '';
+      var confirmValue = '';
+      var userOk = false;
+      var passwordOk = false;
+      var emailOk = false;
+
+      // keypresses
+      function userKeypress() {
+        var ok = true;
+        var v = $('#user_id').val();
+        var msg = '';
+        if(!v.match(/^[A-Za-z_]/)) {
+          msg += 'Please start your username with a letter.';
+          ok = false;
+        }
+        if(v.length < 3) {
+          msg += ' Please use at least 3 characters.';
+          ok = false;
+        }
+        if(v.length > 25) {
+          msg += ' Please use 25 characters or less.';
+          ok = false;
+        }
+        if(v.match(/[ !"#$%&()*+,./:;<=>?@\[\\\]^`{|}~]/)) {
+          msg += " Please use only letters, numbers or the symbols <tt>'-_</tt>."
+          ok = false;
+        }
+        $('#userfeedback').html('<em>' + msg + '</em>');
+        userOk = ok;
+        $.ajax({
+          url: "{{DefaultSecurePrefix}}/is-user?u=" + v,
+          statusCode: {
+            200: function() {
+              $('#userexists').html('<em>Username already taken!</em>');
+              userOk = false;
+            },
+            404: function() {
+              $('#userexists').html('');
+            }
+          },
+          complete: function() {
+            checkSubmit();
+          }
+        });
+      }
+
+      function passwordKeypress() {
+        var v = $('#password_id').val();
+        passwordValue = v;
+        checkPasswords();
+        var r = zxcvbn(v);
+        var pwOkUpper = passwordValue.match(/[A-Z]/);
+        var pwOkLower = passwordValue.match(/[a-z]/);
+        var pwOkNumber = passwordValue.match(/[0-9]/);
+        var pwOkSymbol = passwordValue.match(/[ !"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]/); //"
+        var pwOkLength = passwordValue.length > 7;
+        var pwOkLength2 = passwordValue.length <= 60;
+        var passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkSymbol && pwOkLength && pwOkLength2;
+        var p = [];
+        if(!pwOkUpper) { p.push('an uppercase letter'); }
+        if(!pwOkLower) { p.push('a lowercase letter'); }
+        if(!pwOkNumber) { p.push('a number'); }
+        if(!pwOkSymbol) { p.push('a symbol'); }
+        var msg = '';
+        if(p.length > 0) {
+          var adds;
+          if(p.length > 1) {
+            var last = p.pop();
+            adds = p.join(', ') + ' and ' + last;
+          } else {
+            adds = p[0];
+          }
+            msg += 'Please add ' + adds + '.';
+        }
+        if(!pwOkLength) {
+          msg += ' Please use at least 8 characters.';
+        }
+        if(!pwOkLength2) {
+          msg += ' Please use 60 characters or less.';
+        }
+        if(r.score < 3) {
+          msg += ' Consider a stronger password.';
+        }
+
+        msg += ' (Crack time estimated as ' +
+          '<a href="https://blogs.dropbox.com/tech/2012/04/' +
+          'zxcvbn-realistic-password-strength-estimation/">' +
+          r.crack_time_display + '</a>.)';
+
+        $('#passwordfeedback').html('<em>' + msg + '</em>');
+        updatePasswordBar(r.score);
+        checkSubmit();
+      }
+
+      function confirmKeypress() {
+        var v = $('#confirm_id').val();
+        confirmValue = v;
+        checkPasswords();
+        checkSubmit();
+      }
+
+      function emailKeypress() {
+        var v = $('#email_id').val();
+        var ok = (v.length > 2) && v.match(/.@.../);
+        var msg = ok ? '' : '<em>(Is this a valid email address?)</em>';
+        $('#emailfeedback').html(msg);
+        emailOk = ok;
+        $.ajax({
+          url: "{{DefaultSecurePrefix}}/is-user?e=" + v,
+          statusCode: {
+            200: function() {
+              $('#emailexists').html('<em>Email address already in use!</em>');
+              emailOk = false;
+            },
+            404: function() {
+              $('#emailexists').html('');
+            }
+          },
+          complete: function() {
+            checkSubmit();
+          }
+        });
+      }
+
+      function checkPasswords() {
+        var ok = passwordValue === confirmValue;
+        $('#confirmfeedback').html(ok ? '' : "<em>Passwords don't match</em>");
+        passwordOk = ok;
+      }
+
+      var pwCols = ['danger', 'danger', 'warning', 'info', 'success'];
+      var pwWidth = ['1%', '25%', '50%', '75%', '100%'];
+      var pwScore = 0;
+      function updatePasswordBar(score) {
+        $('#password_strength').css("width", pwWidth[score]);
+        //$('#password_strength').html(score);
+        $('#password_strength').removeClass("progress-bar-" + pwCols[pwScore]);
+        $('#password_strength').addClass("progress-bar-" + pwCols[score]);
+        pwScore = score;
+      }
+
+      function checkSubmit() {
+        var cansubmit = userOk && passwordOk && emailOk;
+        //alert("u" + userOk + " p" + passwordOk + " e" + emailOk + " -> " + cansubmit);
+        $('#submit').attr('disabled', cansubmit ? null : 'disabled');
+      }
+
+      // Required for scrollspy (see http://www.iwstudio.it/scrollspy/)
+      $(window).resize(function(){
+        $('[data-spy="scroll"]').each(function() {
+          var $spy = $(this).scrollspy('refresh');
+        });
+      });
+
+      //scroll updates URL
+      $(document).bind('scroll',function(e) {
+        $('.anchor').each(function() {
+          if ( $(this).offset().top < pageYOffset + 10 &&
+            $(this).offset().top + $(this).height() > pageYOffset + 10 ) {
+              var id_ = $(this).attr('id') || '';
+              var id = '#' + id_;
+              var oldId = location.hash;
+              if(oldId !== id) {
+                if(history.replaceState) {
+                  history.replaceState({}, document.title + ' ' + id, id);
+                } else {
+                  $(this).attr('id', undefined);
+                  location.hash = id;
+                  $(this).attr('id', id_);
+                }
+              }
+            }
+          });
+      });
+
+      // iframe communication
+      function postIframeMessage(value) {
+        var f = document.getElementById('navbar-frame');
+        var w = f.contentWindow;
+        w.postMessage(value, "*");
+      }
+
+      addEventListener("message", function(msg) {
+        if('{{DefaultSecurePrefix}}' === msg.origin) {
+          var cmd = msg.data.split('/');
+          switch(cmd[0]) {
+            case 'nav': {
+              if('show' == cmd[1]) {
+                $('#navbar-frame').height(cmd[2]);
+              } else {
+                $('#navbar-frame').height('50px');
+              }
+              break;
+            }
+          }
+        }
+      });
+
+      //swatches/jumbotron colour
+      function liActiveA(css) {
+        css = css || '';
+        return 'ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {' + css + '}'
+      }
+      $('head').append(
+        '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
+
+      var cols = [
+          0, 22.5, 45, 67.5, 90, 11.50, 135, 157.5, 180,
+          202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
+      function setHdrCols(c, b) {
+        var fg = b ? "#444" : "#ccc";
+        var sl = b ? '55%, 55%' : '88%, 25%';
+        var col = 'hsl(' + c + ', ' + sl + ')';
+
+        $('.container .jumbotron').css('background-color', col);
+        $('.container .jumbotron').css('color', fg);
+        //$('nav.navbar').css('border-left-color', col);
+        $('div.outside').css('border-left-color', col);
+        $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
+        postIframeMessage('hdrCol/' + col);
+      }
+      var idx = Math.floor(Math.random() * cols.length);
+      var light = !!Math.floor(Math.random() * 2);
+
+      // init!
+      $(window).load(function() {
+        postIframeMessage('ehlo');
+        setHdrCols(cols[idx], light);
+      });
+
+    </script>
+  Guide: |
+    <div/>

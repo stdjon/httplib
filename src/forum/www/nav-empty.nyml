@@ -1,0 +1,16 @@
+---
+Template: nav-template.nyml
+Stylesheets:
+  - local-styles.css
+Partials:
+  NavScriptsPre: |
+    var navCollapseHeight = '120px';
+  NavContent: |
+    <div class="navbar-header">
+      <a id="pagename" class="navbar-brand" href="{{DefaultInsecurePrefix}}/" target="_top">
+        <i class="fa fa-diamond"></i> page name</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+    </div><!--/.navbar-collapse -->
+
+

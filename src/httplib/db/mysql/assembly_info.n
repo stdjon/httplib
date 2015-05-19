@@ -1,0 +1,23 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information
+[assembly: AssemblyTitle("httplib.db.mysql.dll")]
+[assembly: AssemblyDescription("HTTP Server - MySql Driver")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("httplib.db.mysql")]
+[assembly: AssemblyCopyright("(c) Jon Head 2015")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// ComVisible
+[assembly: ComVisible(false)]
+
+// Guid
+[assembly: Guid("994EDDD4-0770-4F05-A2AE-4F6E017B4255")]
+
+// Version information
+[assembly: AssemblyVersion("0.0.0.1")]
+[assembly: AssemblyFileVersion("0.0.0.1")]

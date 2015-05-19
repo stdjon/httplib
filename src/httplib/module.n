@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// IModuleInterface
+
+public interface IModuleInterface {
+
+    // Currently an empty interface, this _may_ change in future...
+}
+
+
+//------------------------------------------------------------------------------
+// Module
+
+public abstract class Module {
+
+    public abstract InterfaceType: Type { get };
+    public Server: Server { get; internal set };
+
+    // NB: This method is expecting derived Modules to implement (a derivation
+    // of) IModuleInterface directly.
+    public virtual getInterface(): IModuleInterface {
+        this :> IModuleInterface;
+    }
+
+    public virtual getInterface[T](): T {
+        getInterface() :> T;
+    }
+
+    /** Load a DB by reflection, given a DLL and type name. */
+    public static load(conf: ModuleConfiguration): Module {
+
+        def assembly = Assembly.LoadFrom(conf.Assembly);
+        def mtype = assembly.GetType(conf.Typename);
+        def data = conf.Data;
+
+        if(data == null) {
+            Activator.CreateInstance(mtype) :> Module;
+        } else {
+            Activator.CreateInstance(mtype, data) :> Module;
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// ModuleCache
+
+public class ModuleCache {
+
+    modules: Dictionary[Type, Module] = Dictionary();
+
+    public loadModule(
+        conf: ModuleConfiguration, server: Server): void {
+
+        mutable module_ = Module.load(conf);
+        module_.Server = server;
+        addModule(module_);
+    }
+
+    public addModule(m: Module): void {
+        modules[m.InterfaceType] = m;
+    }
+
+    public getModuleInterface[T](): T {
+        getModuleInterface(typeof(T)) :> T;
+    }
+
+    public getModuleInterface(iftype: Type): IModuleInterface {
+        mutable result = null;
+        mutable probe;
+
+        when(modules.TryGetValue(iftype, out probe)) {
+            result = probe.getInterface();
+        }
+        result;
+    }
+}
+
+
+} // namespace httplib

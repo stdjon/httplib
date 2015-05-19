@@ -1,0 +1,54 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+
+using Nemerle.Utility;
+
+using YamlDotNet.Serialization;
+
+
+namespace httplib {
+
+[HasLogging]
+public class Renderer {
+
+    static yaml_deserializer = Deserializer();
+
+    [Accessor] server: Server;
+
+    public virtual PageType: Type {
+        get { typeof(Page) }
+    }
+
+    public this(s: Server) {
+        server = s;
+    }
+
+    public virtual loadPage(stream: Stream, use_template = true): Page {
+        Log.d("Renderer.loadPage [{0}]...", PageType);
+        mutable result = null;
+        using(reader = StreamReader(stream)) {
+            result = yaml_deserializer.Deserialize(reader, PageType) :> Page;
+
+            when(use_template && !String.IsNullOrEmpty(result.Template)) {
+                def fs = Server.openLocalFile(result.Template, true);
+                def template = loadPage(fs, false);
+                result.merge(template);
+            }
+        }
+        result;
+    }
+
+    /** Load a Renderer by reflection, given a DLL and type name. */
+    public static load(path: string, name: string, server: Server): Renderer {
+
+        def assembly = Assembly.LoadFrom(path);
+        def rtype = assembly.GetType(name);
+
+        Activator.CreateInstance(rtype, server) :> Renderer;
+    }
+}
+
+
+}

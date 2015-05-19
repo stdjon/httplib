@@ -1,0 +1,25 @@
+using System;
+
+using OEmbed.Net;
+
+
+namespace httplib.mod {
+
+public interface IOEmbed: IModuleInterface {
+}
+
+
+[HasLogging]
+public class OEmbed: Module, IOEmbed {
+
+    public override InterfaceType: Type {
+        get { typeof(IOEmbed) }
+    }
+
+    public this() {
+        Log.i("Starting OEmbed module...");
+    }
+}
+
+
+} // namespace httplib.mod

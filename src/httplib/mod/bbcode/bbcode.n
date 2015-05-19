@@ -1,0 +1,29 @@
+using System;
+
+using CodeKicker.BBCode;
+
+
+namespace httplib.mod {
+
+public interface IBbCode: ITextTransform {
+}
+
+
+[HasLogging]
+public class BbCode: Module, IBbCode {
+
+    public override InterfaceType: Type {
+        get { typeof(IBbCode) }
+    }
+
+    public this() {
+        Log.i("Starting BBCode module...");
+    }
+
+    public transform(input: string): string {
+        input;
+    }
+}
+
+
+} // namespace httplib.mod

@@ -1,0 +1,29 @@
+using System;
+
+using Ganss.XSS;
+
+
+namespace httplib.mod {
+
+public interface IHtmlSanitizer: ITextTransform {
+}
+
+
+[HasLogging]
+public class HtmlSanitizer: Module, IHtmlSanitizer {
+
+    public override InterfaceType: Type {
+        get { typeof(IHtmlSanitizer) }
+    }
+
+    public this() {
+        Log.i("Starting HtmlSanitizer module...");
+    }
+
+    public transform(input: string): string {
+        input;
+    }
+}
+
+
+} // namespace httplib.mod

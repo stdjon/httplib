@@ -1,0 +1,29 @@
+using System;
+
+using Textile;
+
+
+namespace httplib.mod {
+
+public interface ITextile: ITextTransform {
+}
+
+
+[HasLogging]
+public class Textile: Module, ITextile {
+
+    public override InterfaceType: Type {
+        get { typeof(ITextile) }
+    }
+
+    public this() {
+        Log.i("Starting Textile module...");
+    }
+
+    public transform(input: string): string {
+        input;
+    }
+}
+
+
+} // namespace httplib.mod

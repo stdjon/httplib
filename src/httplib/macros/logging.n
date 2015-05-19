@@ -1,0 +1,18 @@
+using Nemerle;
+using Nemerle.Compiler;
+
+
+namespace httplib {
+
+/** [HasLogging] */
+[MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
+macro HasLogging(typeBuilder : TypeBuilder) {
+
+    typeBuilder.Define(
+        <[ decl: _log_: ILog = Logging.forThisType(); ]> );
+    typeBuilder.Define(
+        <[ decl: public Log: ILog { get { _log_; } } ]> );
+}
+
+
+} // namespace httplib

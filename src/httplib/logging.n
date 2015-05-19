@@ -1,0 +1,73 @@
+using System;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
+
+namespace httplib {
+
+public interface ILog {
+
+    t(format: string, params objects: array[object]): void;
+    d(format: string, params objects: array[object]): void;
+    i(format: string, params objects: array[object]): void;
+    w(format: string, params objects: array[object]): void;
+    e(format: string, params objects: array[object]): void;
+    f(format: string, params objects: array[object]): void;
+}
+
+
+public class NullLog: ILog {
+    public t(_f: string, params _o: array[object]): void {}
+    public d(_f: string, params _o: array[object]): void {}
+    public i(_f: string, params _o: array[object]): void {}
+    public w(_f: string, params _o: array[object]): void {}
+    public e(_f: string, params _o: array[object]): void {}
+    public f(_f: string, params _o: array[object]): void {}
+}
+
+
+public abstract class Logging {
+
+    static Instance: Logging { get; set; }
+
+    public this(conf: LogConfiguration) {
+        initialize(conf);
+    }
+
+    public abstract initialize(conf: LogConfiguration): void;
+
+    public abstract forType(ctype: Type): ILog;
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public static forThisType(): ILog {
+        if(Instance != null) {
+            // Emulating how NLogManager.GetCurrentClassLogger() behaves.
+            def callingType = StackFrame(1).GetMethod().DeclaringType;
+            Instance.forType(callingType);
+        } else {
+            NullLog();
+        }
+    }
+
+    public static forType[T](): ILog {
+        if(Instance != null) {
+            Instance.forType(typeof(T));
+        } else {
+            NullLog();
+        }
+    }
+
+    public static load(
+        path: string, name: string, conf: LogConfiguration): void {
+
+        def assembly = Assembly.LoadFrom(path);
+        def dbtype = assembly.GetType(name);
+
+        Instance = Activator.CreateInstance(dbtype, conf) :> Logging;
+        forThisType().t("Logging is up!");
+    }
+}
+
+
+} // namespace httplib

@@ -1,0 +1,12 @@
+using System;
+
+
+namespace httplib {
+
+public interface ITextTransform: IModuleInterface {
+
+    transform(input: string): string;
+}
+
+
+}

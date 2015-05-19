@@ -1,0 +1,260 @@
+body {
+  background-image: url("bg-small-basic.png");
+  background-attachment: fixed;
+}
+* {
+  border-radius: 0;
+
+  /* word breaks/hyphenation... */
+
+  /* Non standard for webkit */
+  word-break: break-word;
+
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
+}
+p {
+  text-indent: 30px;
+  text-align: justify;
+}
+
+a:hover {
+  background-color: #ff8;
+}
+a:active {
+}
+a:link {
+  text-decoration: underline;
+  color: #00f;
+}
+a:visited {
+  color: #553;
+}
+a.navbar-brand {
+  font-weight: 900;
+}
+a.navbar-brand:link {
+  text-decoration: none;
+}
+nav.navbar {
+  border-left: 5px solid #666;
+}
+
+div.outside {
+  background-color: rgba(246, 246, 230, .75); /*#f6f6e6, slightly transparent */
+  border-left: 5px solid #666;
+  padding: 0;
+  padding-bottom: 48px;
+  margin-bottom: 36px;
+}
+div.banner {
+  padding-top: 50px;
+  background-color: #ff7;
+}
+div.banner .anchor {
+  margin-top: -55px;
+  padding-top: 55px;
+  margin-bottom: 0px;
+}
+div.body {
+  padding-top: 10px;
+  padding-bottom: 30px;
+  background-color: #ffe;
+  border-left: 5px solid #ffb;
+}
+div.body .anchor {
+  margin-top: -55px;
+  padding-top: 55px;
+}
+div.body p {
+  background-color: #ffe;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+div.guide {
+  padding-top: 30px;
+  text-align: center;
+}
+
+/* Jumbotron */
+h1, h2, h3, h4 {
+  font-weight: bold;
+  font-size: 200%;
+}
+.container .jumbotron {
+  padding: 50px 80px;
+  text-align: left;
+  border-radius: 0;
+  /**/
+  background-color: #666;
+  color: #ccc;
+  /*/
+  background-color: #888;
+  color: #444;
+  /**/
+}
+div.jumbotron h1 {
+  font-weight: 900;
+  font-size: 500%;
+}
+
+/* Scrollspy requires this... */
+body, html { height:100%; }
+body > .anchor { min-height:100%; }
+
+/* Nav-tabs */
+ul.nav {
+  margin: 0 auto; 
+  /*margin-left: 50px;*/
+}
+ul.nav-tabs {
+  font-size: 1.35em;
+  font-weight: 800;
+  width: 80px;
+  margin-top: 0px;
+  margin-left: 20px;
+  background-color: #ffe;
+}
+ul.nav-tabs.affix {
+  top: 80px;
+  margin-left: 20px;
+}
+
+ul.nav-tabs li {
+  margin: 0;
+  /*border-left: 5px solid #333;*/
+  /*border-top: 1px solid #ddd;*/
+}
+ul.nav-tabs li:first-child {
+  border-top: none;
+}
+ul.nav-tabs li a {
+  margin: 0;
+  padding: 2px 16px;
+  border-radius: 0;
+  border: 0 solid #ff8;
+  border-left: 5px solid #ffb;
+}
+ul.nav-tabs li a:hover {
+  background-color: #ff8;
+  text-decoration: underline;
+  padding: 2px 16px;
+  border: 0 solid #ff8;
+  border-left: 5px solid #ff4;
+}
+ul.nav-tabs li.active a {
+  color: #fff;
+  background: #333;
+  border: 0 solid #333;
+  border-left: 5px solid #666;
+}
+ul.nav-tabs li.active a:hover {
+  color: #ff8;
+  background: #333;
+  border: 0 solid #333;
+  border-left: 5px solid #666;
+}
+
+/* Colour swatches (tech demo...) */
+.swatches p {
+  text-align: center;
+}
+.swatches p span#x0 {
+  background-color: hsl(0, 55%, 55%);
+}
+.swatches p span#x22_5 {
+  background-color: hsl(22.5, 55%, 55%);
+}
+.swatches p span#x45 {
+  background-color: hsl(45, 55%, 55%);
+}
+.swatches p span#x67_5 {
+  background-color: hsl(67.5, 55%, 55%);
+}
+.swatches p span#x90 {
+  background-color: hsl(90, 55%, 55%);
+}
+.swatches p span#x112_5 {
+  background-color: hsl(112.5, 55%, 55%);
+}
+.swatches p span#x135 {
+  background-color: hsl(135, 55%, 55%);
+}
+.swatches p span#x157_5 {
+  background-color: hsl(157.5, 55%, 55%);
+}
+.swatches p span#x180 {
+  background-color: hsl(180, 55%, 55%);
+}
+.swatches p span#x202_5 {
+  background-color: hsl(202.5, 55%, 55%);
+}
+.swatches p span#x225 {
+  background-color: hsl(225, 55%, 55%);
+}
+.swatches p span#x247_5 {
+  background-color: hsl(247.5, 55%, 55%);
+}
+.swatches p span#x270 {
+  background-color: hsl(270, 55%, 55%);
+}
+.swatches p span#x292_5 {
+  background-color: hsl(292.5, 55%, 55%);
+}
+.swatches p span#x315 {
+  background-color: hsl(315, 55%, 55%);
+}
+.swatches p span#x337_5 {
+  background-color: hsl(337.5, 33%, 55%);
+}
+
+.swatches p span#y0 {
+  background-color: hsl(0, 88%, 25%);
+}
+.swatches p span#y22_5 {
+  background-color: hsl(22.5, 88%, 25%);
+}
+.swatches p span#y45 {
+  background-color: hsl(45, 88%, 25%);
+}
+.swatches p span#y67_5 {
+  background-color: hsl(67.5, 88%, 25%);
+}
+.swatches p span#y90 {
+  background-color: hsl(90, 88%, 25%);
+}
+.swatches p span#y112_5 {
+  background-color: hsl(112.5, 88%, 25%);
+}
+.swatches p span#y135 {
+  background-color: hsl(135, 88%, 25%);
+}
+.swatches p span#y157_5 {
+  background-color: hsl(157.5, 88%, 25%);
+}
+.swatches p span#y180 {
+  background-color: hsl(180, 88%, 25%);
+}
+.swatches p span#y202_5 {
+  background-color: hsl(202.5, 88%, 25%);
+}
+.swatches p span#y225 {
+  background-color: hsl(225, 88%, 25%);
+}
+.swatches p span#y247_5 {
+  background-color: hsl(247.5, 88%, 25%);
+}
+.swatches p span#y270 {
+  background-color: hsl(270, 88%, 25%);
+}
+.swatches p span#y292_5 {
+  background-color: hsl(292.5, 88%, 25%);
+}
+.swatches p span#y315 {
+  background-color: hsl(315, 88%, 25%);
+}
+.swatches p span#y337_5 {
+  background-color: hsl(337.5, 88%, 25%);
+}
+
