@@ -92,7 +92,6 @@ module Program {
 
                     handleRestart();
 
-
                 } catch {
                     | ex => {
                         server.Log.e(
