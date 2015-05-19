@@ -1,19 +1,27 @@
 # ------------------------------------------------------------------------------
-# Config
+# CONFIGURATION
+
+-include userconf.mak
 
 ifeq ($(OS),Windows_NT)
 
-# Windows configuration
+# ------------------------------------------------------------------------------
+# Windows/.NET configuration
+
 NCC:=ncc
 launch_assembly=cd bin/ && ./$1
 
 else
 
-# Linux/Mono configuration:
-NCC_PATH:=/home/jon/devel/nemerle-1.2
+ifeq ($(NCC_PATH),)
+$(error "Please set NCC_PATH to point to the Nemerle compiler (ncc.exe)")
+endif
+
+# ------------------------------------------------------------------------------
+# Linux/Mono configuration
+
 NCC:=mono $(NCC_PATH)/ncc.exe
-launch_assembly=export MONO_PATH=$(MONO_PATH) && cd bin/ && mono $1
-MONO_PATH:=$(NCC_PATH)
+launch_assembly=export MONO_PATH=$(NCC_PATH) && cd bin/ && mono $1
 
 endif
 
