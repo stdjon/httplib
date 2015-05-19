@@ -55,7 +55,7 @@ public module Program {
                 v => { arguments.Config = v }).
             Add("u|users=", "Number of users.",
                 v => { arguments.Users = v }).
-            Add("cat|categories=", "Number of categories.",
+            Add("C|categories=", "Number of categories.",
                 v => { arguments.Categories = v }).
             Add("t|threads=", "Number of threads.",
                 v => { arguments.Threads = v }).
@@ -64,8 +64,8 @@ public module Program {
     }
 
     showHelp(options: OptionSet): void {
-        print("\nA simple forum application server.\n");
-        print("Usage:\n  forum.exe <options>\n\nwhere <options> are:\n\n");
+        print("\nWrite test data into the forum server database.\n");
+        print("Usage:\n  forum-testdata.exe <options>\n\nwhere <options> are:\n\n");
         options.WriteOptionDescriptions(Console.Out);
     }
 
