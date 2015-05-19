@@ -37,11 +37,13 @@ public abstract class Server: IDisposable {
         | Neutral = 0x00
         | Running = 0x01
         | Closed = 0x02
+        | WillClose = 0x04
     }
 
     [Accessor(Flags, flags = Protected)]
     [FlagAccessor(Running, flags = WantSetter)]
     [FlagAccessor(Closed, flags = Protected | WantSetter)]
+    [FlagAccessor(WillClose, flags = Protected | WantSetter)]
     mutable state: State = State.Neutral;
 
     [Accessor(flags = Protected)]
@@ -184,6 +186,10 @@ public abstract class Server: IDisposable {
         Listener.Start();
     }
 
+    public stop(): void {
+        WillClose = true;
+    }
+
     public Dispose(): void {
         shutdown();
     }
@@ -255,7 +261,13 @@ public abstract class Server: IDisposable {
     }
 
     public update(): void {
-        _ = Listener.BeginGetContext(listenerCallback, this);
+        when(Running) {
+            if(WillClose) {
+                shutdown();
+            } else {
+                _ = Listener.BeginGetContext(listenerCallback, this);
+            }
+        }
     }
 
     public getModuleInterface[T](): T {
@@ -402,9 +414,10 @@ public abstract class Server: IDisposable {
 
     static listenerCallback(result: IAsyncResult): void {
         def server = result.AsyncState :> Server;
-        def http_ctx = server.Listener.EndGetContext(result);
-
-        server.handleCallback(http_ctx);
+        when(!server.WillClose) {
+            def http_ctx = server.Listener.EndGetContext(result);
+            server.handleCallback(http_ctx);
+        }
     }
 
     public fileServingAllowed(path: string): bool {

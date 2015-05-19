@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 
 using Nemerle.IO;
@@ -58,13 +59,40 @@ module Program {
     }
 
     runServer(arguments: Arguments): void {
-        using(server = ForumServer(arguments.Config)) {
+
+        mutable mod_time = File.GetLastWriteTime(arguments.Config);
+        mutable restarting = false;
+        using(mutable server = ForumServer(arguments.Config)) {
+
+            def checkConfigWriteTime() {
+                def t = File.GetLastWriteTime(arguments.Config);
+                when(t != mod_time) {
+                    mod_time = t;
+                    restarting = true;
+                    server.Log.i("Configuration changed - restarting...");
+                    server.stop();
+                }
+            }
+
+            def handleRestart() {
+                when(restarting && !server.Running) {
+                    server = ForumServer(arguments.Config);
+                    server.start();
+                    restarting = false;
+                }
+            }
 
             server.start();
             while(server.Running) {
                 try {
+                    checkConfigWriteTime();
+
                     server.update();
                     Thread.Sleep(500);
+
+                    handleRestart();
+
+
                 } catch {
                     | ex => {
                         server.Log.e(
