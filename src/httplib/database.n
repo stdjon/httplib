@@ -76,9 +76,9 @@ public abstract class Database: IDisposable  {
         path: string, name: string, param: string = null): Database {
 
         def assembly = Assembly.LoadFrom(path);
-        def dbtype = assembly.GetType(name);
+        def type = assembly.GetType(name);
 
-        Activator.CreateInstance(dbtype, param) :> Database;
+        Activator.CreateInstance(type, param) :> Database;
     }
 }
 

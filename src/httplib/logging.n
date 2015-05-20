@@ -37,7 +37,7 @@ public abstract class Logging {
 
     public abstract initialize(conf: LogConfiguration): void;
 
-    public abstract forType(ctype: Type): ILog;
+    public abstract forType(type: Type): ILog;
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     public static forThisType(): ILog {
@@ -62,9 +62,9 @@ public abstract class Logging {
         path: string, name: string, conf: LogConfiguration): void {
 
         def assembly = Assembly.LoadFrom(path);
-        def dbtype = assembly.GetType(name);
+        def type = assembly.GetType(name);
 
-        Instance = Activator.CreateInstance(dbtype, conf) :> Logging;
+        Instance = Activator.CreateInstance(type, conf) :> Logging;
         forThisType().t("Logging is up!");
     }
 }

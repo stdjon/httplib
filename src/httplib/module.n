@@ -36,13 +36,13 @@ public abstract class Module {
     public static load(conf: ModuleConfiguration): Module {
 
         def assembly = Assembly.LoadFrom(conf.Assembly);
-        def mtype = assembly.GetType(conf.Typename);
+        def type = assembly.GetType(conf.Typename);
         def data = conf.Data;
 
         if(data == null) {
-            Activator.CreateInstance(mtype) :> Module;
+            Activator.CreateInstance(type) :> Module;
         } else {
-            Activator.CreateInstance(mtype, data) :> Module;
+            Activator.CreateInstance(type, data) :> Module;
         }
     }
 }
@@ -71,11 +71,11 @@ public class ModuleCache {
         getModuleInterface(typeof(T)) :> T;
     }
 
-    public getModuleInterface(iftype: Type): IModuleInterface {
+    public getModuleInterface(type: Type): IModuleInterface {
         mutable result = null;
         mutable probe;
 
-        when(modules.TryGetValue(iftype, out probe)) {
+        when(modules.TryGetValue(type, out probe)) {
             result = probe.getInterface();
         }
         result;

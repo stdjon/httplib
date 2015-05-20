@@ -41,13 +41,13 @@ public class NLogLogging: Logging {
         LogManager.Configuration = nlog_conf;
     }
 
-    public override forType(ctype: Type): ILog {
-        NLogLogger(ctype);
+    public override forType(type: Type): ILog {
+        NLogLogger(type);
     }
 
     configureTarget(conf: LogTarget): Target {
-        def ttype = Assembly.GetType("NLog.Targets." + conf.Type);
-        def target = Activator.CreateInstance(ttype) :> Target;
+        def type = Assembly.GetType("NLog.Targets." + conf.Type);
+        def target = Activator.CreateInstance(type) :> Target;
 
         match(target) {
             | ColoredConsoleTarget as cct => {
@@ -130,8 +130,8 @@ public class NLogLogger: ILog {
 
     [Accessor] logger: Logger;
 
-    public this(ltype: Type) {
-        logger = LogManager.GetLogger(ltype.FullName);
+    public this(type: Type) {
+        logger = LogManager.GetLogger(type.FullName);
     }
 
     public t(format: string, params objects: array[object]): void {

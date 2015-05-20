@@ -44,9 +44,9 @@ public class Renderer {
     public static load(path: string, name: string, server: Server): Renderer {
 
         def assembly = Assembly.LoadFrom(path);
-        def rtype = assembly.GetType(name);
+        def type = assembly.GetType(name);
 
-        Activator.CreateInstance(rtype, server) :> Renderer;
+        Activator.CreateInstance(type, server) :> Renderer;
     }
 }
 

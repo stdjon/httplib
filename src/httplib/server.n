@@ -274,8 +274,8 @@ public abstract class Server: IDisposable {
         ModuleCache.getModuleInterface.[T]();
     }
 
-    public getModuleInterface(iftype: Type): IModuleInterface {
-        ModuleCache.getModuleInterface(iftype);
+    public getModuleInterface(type: Type): IModuleInterface {
+        ModuleCache.getModuleInterface(type);
     }
 
     findHandler(method_name: string,
