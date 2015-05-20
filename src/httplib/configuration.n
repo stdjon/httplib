@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using Nemerle.Utility;
-
 
 namespace httplib {
 
@@ -14,13 +12,13 @@ public type LogColours = Dictionary[string, string];
 [YamlRecord]
 public class LogTarget {
     /** Log target type */
-    [Accessor(flags = WantSetter)] mutable type: string;
+    public Type: string { get; set; };
     /** Log target layout */
-    [Accessor(flags = WantSetter)] mutable layout: string;
+    public Layout: string { get; set; };
     /** Log target path */
-    [Accessor(flags = WantSetter)] mutable path: string;
+    public Path: string { get; set; };
     /** Colours */
-    [Accessor(flags = WantSetter)] mutable colours: LogColours;
+    public Colours: LogColours { get; set; };
 }
 
 
@@ -29,50 +27,50 @@ public type LogTargets = Dictionary[string, LogTarget];
 [YamlRecord]
 public class LogRule {
     /** Log source */
-    [Accessor(flags = WantSetter)] mutable source: string;
+    public Source: string { get; set; };
     /** Log level */
-    [Accessor(flags = WantSetter)] mutable level: string;
+    public Level: string { get; set; };
     /** Log target */
-    [Accessor(flags = WantSetter)] mutable target: string;
+    public Target: string { get; set; };
 }
 
 [YamlRecord]
 public class LogConfiguration {
     /** Logging assembly */
-    [Accessor(flags = WantSetter)] mutable assembly: string;
+    public Assembly: string { get; set; };
     /** Logging typename */
-    [Accessor(flags = WantSetter)] mutable typename: string;
+    public Typename: string { get; set; };
     /** Targets */
-    [Accessor(flags = WantSetter)] mutable targets: LogTargets;
+    public Targets: LogTargets { get; set; };
     /** Targets */
-    [Accessor(flags = WantSetter)] mutable rules: array[LogRule];
+    public Rules: array[LogRule] { get; set; };
 }
 
 [YamlRecord]
 public class DatabaseConfiguration {
     /** Database assembly */
-    [Accessor(flags = WantSetter)] mutable assembly: string;
+    public Assembly: string { get; set; };
     /** Database typename */
-    [Accessor(flags = WantSetter)] mutable typename: string;
+    public Typename: string { get; set; };
     /** Database connection */
-    [Accessor(flags = WantSetter)] mutable connection: string;
+    public Connection: string { get; set; };
 }
 
 
 [YamlRecord]
 public class Prefixes {
     /** Secure (https://) prefixes */
-    [Accessor(flags = WantSetter)] mutable secure: array[string];
+    public Secure: array[string] { get; set; };
     /** Insecure (http://) prefixes */
-    [Accessor(flags = WantSetter)] mutable insecure: array[string];
+    public Insecure: array[string] { get; set; };
 }
 
 [YamlRecord]
 public class RendererConfiguration {
     /** Renderer assembly */
-    [Accessor(flags = WantSetter)] mutable assembly: string;
+    public Assembly: string { get; set; };
     /** Renderer typename */
-    [Accessor(flags = WantSetter)] mutable typename: string;
+    public Typename: string { get; set; };
 }
 
 
@@ -81,11 +79,11 @@ public type ModuleData = Dictionary[string, string];
 [YamlRecord]
 public class ModuleConfiguration {
     /** Module assembly */
-    [Accessor(flags = WantSetter)] mutable assembly: string;
+    public Assembly: string { get; set; };
     /** Module typename */
-    [Accessor(flags = WantSetter)] mutable typename: string;
+    public Typename: string { get; set; };
     /** Module initialization data */
-    [Accessor(flags = WantSetter)] mutable data: ModuleData;
+    public Data: ModuleData { get; set; };
 }
 
 
@@ -101,25 +99,25 @@ public type MimeTypes = Dictionary[string, string];
 [YamlRecord]
 public class ServerConfiguration {
     /** Logging configuration */
-    [Accessor(flags = WantSetter)] mutable logging: LogConfiguration;
+    public Logging: LogConfiguration { get; set; };
     /** Database configuration */
-    [Accessor(flags = WantSetter)] mutable databases: Databases;
+    public Databases: Databases { get; set; };
     /** Listener prefixes */
-    [Accessor(flags = WantSetter)] mutable prefixes: Prefixes;
+    public Prefixes: Prefixes { get; set; };
     /** Filesystem roots for file serving */
-    [Accessor(flags = WantSetter)] mutable roots: array[string];
+    public Roots: array[string] { get; set; };
     /** Patterns to test when deciding if a file can be served */
-    [Accessor(flags = WantSetter)] mutable file_serving: array[string];
+    public FileServing: array[string] { get; set; };
     /** Renderers to try (in order) when no extension given in request URI */
-    [Accessor(flags = WantSetter)] mutable renderers: Renderers;
+    public Renderers: Renderers { get; set; };
     /** Additional Modules to load */
-    [Accessor(flags = WantSetter)] mutable modules: Modules;
+    public Modules: Modules { get; set; };
     /** (Mapping extensions to) MIME Types */
-    [Accessor(flags = WantSetter)] mutable mime_types: MimeTypes;
+    public MimeTypes: MimeTypes { get; set; };
     /** Minimum length reserved for response body */
-    [Accessor(flags = WantSetter)] mutable output_length: int;
+    public OutputLength: int { get; set; };
     /** File chunk (read) length */
-    [Accessor(flags = WantSetter)] mutable file_chunk_length: int;
+    public FileChunkLength: int { get; set; };
 }
 
 
