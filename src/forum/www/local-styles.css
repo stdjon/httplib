@@ -156,6 +156,26 @@ ul.nav-tabs li.active a:hover {
   border-left: 5px solid #666;
 }
 
+/* Highlights for 'posts' */
+div.anchor p {
+  margin-top: 1px;
+  margin-bottom: 1px;
+  padding: 3px 15px;
+  border-left: 5px solid #ffd;
+}
+div.anchor:nth-child(odd) p {
+  background-color: #ffd;
+  border-left: 5px solid #ffc;
+}
+div.anchor.trg p {
+  background-color: #ffc;
+  border-left: 5px solid #666;
+}
+div.anchor.trg:nth-child(odd) p {
+  background-color: #ffffc4;
+  border-left: 5px solid #666;
+}
+
 /* Colour swatches (tech demo...) */
 .swatches p {
   text-align: center;

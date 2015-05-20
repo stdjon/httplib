@@ -66,14 +66,14 @@
     background-color: #f0f0f0;
     border-radius:5px;
   }
-/*  div#main div.trg div{
-    background-color: #fcfcd8;
+  div#main div.trg div{
+    background-color: #ffffd8;
     border-radius:5px;
   }
   div#main div.shade.trg div{
-    background-color: #ededd0;
+    background-color: #f0f0d0;
     border-radius:5px;
-  }*/
+  }
 /*  div#main p{
     border: 2px solid #ddd;
     border-radius: 4px;
@@ -491,8 +491,10 @@
 <script>
 $(document).bind('scroll',function(e) {
   $('div.anchor').each(function() {
+    $(this).removeClass('trg');
     if ( $(this).offset().top < pageYOffset + 10 &&
       $(this).offset().top + $(this).height() > pageYOffset + 10 ) {
+        $(this).addClass('trg');
         var id = '#' + $(this).attr('id');
         var oldId = location.hash;
         if(oldId !== id) {
