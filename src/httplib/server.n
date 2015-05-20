@@ -16,6 +16,7 @@ namespace httplib {
 //------------------------------------------------------------------------------
 // Server
 
+[HasLogging(LazyInit)]
 public abstract class Server: IDisposable {
 
     public type Callback = Context * Request * Response -> void;
@@ -26,8 +27,6 @@ public abstract class Server: IDisposable {
 
     type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
-
-    [Accessor] log: ILog;
 
     [Accessor]
     static deserializer: YamlDeserializer = YamlDeserializer();
@@ -101,7 +100,8 @@ public abstract class Server: IDisposable {
             lg.Typename != null) {
             Logging.load(lg.Assembly, lg.Typename, lg);
         }
-        log = Logging.forThisType();
+
+        // Now logging is configured, we can start using Log API...
         Log.i("Starting up...");
 
         def dbc = Configuration.Databases;
