@@ -59,7 +59,7 @@ Logging:
     console:
       Type: ColoredConsoleTarget
       Layout: "${message}"
-      Colours: { Debug: DarkGreen, Info: Green, Warn: DarkYellow }
+      Colours: { Debug: DarkGreen, Info: Green, Warn: Cyan }
     file:
       Type: FileTarget
       Path: "${basedir}/forum-${date:format=yyyyMMddHHmmss:cached=true}.log"

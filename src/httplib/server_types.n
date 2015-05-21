@@ -159,11 +159,8 @@ public class CookieTable: IAssociation[CookieCollection] {
             mutable v = null;
             // No CookieCollection.TryGetValue() method...
             try { v = cc[key].Value; } catch { | _ => {}}
-            if(v != null) {
-                v.ToString();
-            } else {
-                null;
-            }
+
+            (v != null) ? v.ToString() : null;
         }
 //        set { cc[key] = value; }
     }
@@ -275,11 +272,8 @@ public class Request {
 
         def path_only = raw_url.Split(array['?'], StringSplitOptions.None);
         def path_section =
-            if(path_only.Length > 0) {
-                path_only[0]
-            } else {
-                raw_url
-            };
+            (path_only.Length > 0) ? path_only[0] : raw_url;
+
         def path_split = path_section.Split(
             array['/'], StringSplitOptions.RemoveEmptyEntries );
 
@@ -289,11 +283,8 @@ public class Request {
     makeExtension(path: Array, full: bool = false): string {
 
         def last_path =
-            if(path.Length > 0) {
-                path[path.Length - 1];
-            } else {
-                ""
-            }
+            (path.Length > 0) ? path[path.Length - 1] : "";
+
         def last_split = last_path.Split(
             array['.'], StringSplitOptions.None );
 
@@ -424,9 +415,9 @@ public class Response {
         def new_length = ContentLength + data.Length;
 
         when(output.Length < new_length) {
-            def _32 = output.Length * 3 / 2;
-            def nl = if(_32 > new_length) { _32 } else { new_length :> int }
-            Array.Resize(ref output, nl);
+            def size = output.Length * 3 / 2;
+            def resize = (size > new_length) ? size : new_length :> int;
+            Array.Resize(ref output, resize);
         }
 
         data.CopyTo(output, ContentLength);

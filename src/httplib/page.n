@@ -29,17 +29,9 @@ public class Page {
 
     public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
         def lang =
-            if(!String.IsNullOrEmpty(Lang)) {
-                $" lang='$Lang'"
-            } else {
-                ""
-            }
+            !String.IsNullOrEmpty(Lang) ? $" lang='$Lang'" : "";
         def title =
-            if(!String.IsNullOrEmpty(Title)) {
-                $"\n<title>$Title</title>"
-            } else {
-                ""
-            }
+            !String.IsNullOrEmpty(Title) ? $"\n<title>$Title</title>" : "";
 
         mutable meta = "";
         when(Metas != null) {
