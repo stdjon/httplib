@@ -76,7 +76,7 @@ public class ForumServer: Server {
 
         if(request.IsSecure) {
             def cookies = request.Cookies;
-            def u = if(cookies != null) { cookies["_u"] } else { null };
+            def u = (cookies != null) ? cookies["_u"] : null;
             mutable user = "Username";
             when(!String.IsNullOrEmpty(u)) {
                 user = u;
@@ -188,7 +188,7 @@ public class ForumServer: Server {
                 ];
             ok = command.executeScalar() :> string;
         }
-        response.Status = if(ok != null) { (200, "OK") } else { (404, "Not Found") };
+        response.Status = (ok != null) ? (200, "OK") : (404, "Not Found");
     }
 
     public usersRedirectPageResponse(
@@ -296,7 +296,7 @@ public class ForumServer: Server {
                     "User" = user,
                     "Motto" = reader.GetValue("Motto", ""),
                     "Location" = reader.GetValue("Location", ""),
-                    "JoinDate" = if(date != null) { date.ToString() } else { "never" },
+                    "JoinDate" = (date != null) ? date.ToString() : "never",
                     "Points" = reader.GetValue.[int?]("Points", 0),
                     "Level" = reader.GetValue.[uint?]("Level", 0),
                 ];
@@ -318,7 +318,7 @@ public class ForumServer: Server {
 
         if(request.IsSecure) {
             def cookies = request.Cookies;
-            def auth = if(cookies != null) { cookies["_auth"] } else { null };
+            def auth = (cookies != null) ? cookies["_auth"] : null;
             def data = PageData() <- [
                 "DefaultSecurePrefix" = DefaultSecurePrefix,
                 "DefaultInsecurePrefix" = DefaultInsecurePrefix,

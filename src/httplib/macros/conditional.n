@@ -1,0 +1,30 @@
+using Nemerle;
+using Nemerle.Compiler;
+
+
+namespace httplib {
+
+/** Nemerle's if statement is fine in statement contexts, but can be a little
+ *  clunky in some expression contexts (e.g.):
+ *
+ *  def v = if(x) { y } else { z };
+ *
+ *  We want to allow C/C++ style conditional expressions:
+ *
+ *  def v = x ? y : z;
+ *
+ */
+macro @?(condition, predicate) {
+
+    match(predicate) {
+        | <[ $pass : $fail ]> => {
+            <[ if($condition) { $pass } else { $fail }; ]>
+        }
+        | _ => {
+            Message.Error("Invalid syntax for '?' operator...");
+            <[ () ]>;
+        }
+    }
+}
+
+} // namespace httplib
