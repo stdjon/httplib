@@ -1,9 +1,42 @@
 using System;
+using System.Text;
 
 using Textile;
 
 
 namespace httplib.mod {
+
+// TODO: this type ought to be defined by the Textile.dll (according to the
+//   source code on codeplex.com). Not sure why it's not being found...
+class StringBuilderOutput: IOutputter {
+
+    newline: string;
+    mutable builder: StringBuilder = null;
+
+    public this(nl = "\n") {
+        newline = nl;
+    }
+
+    public GetFormattedText(): string {
+        builder.ToString();
+    }
+
+    public Begin(): void {
+        builder = StringBuilder();
+    }
+
+    public End(): void {
+    }
+
+    public Write(text: string): void {
+        _ = builder.Append(text);
+    }
+
+    public WriteLine(line: string): void {
+        _ = builder.Append(line + newline);
+    }
+}
+
 
 public interface ITextile: ITextTransform {
 }
@@ -16,12 +49,26 @@ public class Textile: Module, ITextile {
         get { typeof(ITextile) }
     }
 
+    Formatter: TextileFormatter { get; private set; }
+    Output: StringBuilderOutput { get; private set; }
+
     public this() {
-        Log.i("Starting Textile module...");
+        initialize();
+    }
+
+    public this(conf: ModuleData) {
+        initialize(conf);
+    }
+
+    initialize(conf: ModuleData = null): void {
+        Log.i("Starting Textile module... (conf: {0})", conf);
+        Output = StringBuilderOutput();
+        Formatter = TextileFormatter(Output);
     }
 
     public transform(input: string): string {
-        input;
+        Formatter.Format(input);
+        Output.GetFormattedText();
     }
 }
 

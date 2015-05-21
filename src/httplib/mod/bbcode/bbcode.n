@@ -1,7 +1,15 @@
 using System;
+using System.Collections.Generic;
+
+using Nemerle.Extensions;
 
 using CodeKicker.BBCode;
 
+
+/** A note from the CodeKicker.BBCode source code:
+ *  "In order to use this library, we require a link to http://codekicker.de/
+ *  from you. Licensed unter the Creative Commons Attribution 3.0 Licence:
+ *  http://creativecommons.org/licenses/by/3.0/." */
 
 namespace httplib.mod {
 
@@ -16,12 +24,35 @@ public class BbCode: Module, IBbCode {
         get { typeof(IBbCode) }
     }
 
+    Parser: BBCodeParser { get; private set; }
+
     public this() {
-        Log.i("Starting BBCode module...");
+        initialize();
+    }
+
+    public this(conf: ModuleData) {
+        initialize(conf);
+    }
+
+    initialize(conf: ModuleData = null): void {
+        Log.i("Starting BBCode module... (conf: {0})", conf);
+
+        Parser = BBCodeParser(List() <- [
+            BBTag("b", "<b>", "</b>"),
+            BBTag("i", "<span style=\"font-style:italic;\">", "</span>"),
+            BBTag("u", "<span style=\"text-decoration:underline;\">", "</span>"),
+            BBTag("code", "<pre class=\"prettyprint\">", "</pre>"),
+            BBTag("img", "<img src=\"${content}\" />", "", false, true),
+            BBTag("quote", "<blockquote>", "</blockquote>"),
+            BBTag("list", "<ul>", "</ul>"),
+            BBTag("*", "<li>", "</li>", true, false),
+            BBTag("url", "<a href=\"${href}\">", "</a>",
+                BBAttribute("href", ""), BBAttribute("href", "href") ),
+        ]);
     }
 
     public transform(input: string): string {
-        input;
+        Parser.ToHtml(input);
     }
 }
 

@@ -1,11 +1,37 @@
 using System;
 
 using OEmbed.Net;
+using OEmbed.Net.Domain;
 
+
+// TODO: this is a WIP, we will probably need to check incoming URL's against a
+//   list of known providers to synthesise a request URL.
 
 namespace httplib.mod {
 
+public variant OEMB {
+    | LINK {
+        public url: string;
+    }
+    | PHOTO {
+        public url: string;
+        public width: int;
+        public height: int;
+    }
+    | RICH {
+        public url: string;
+    }
+    | VIDEO {
+        public url: string;
+        public width: int;
+        public height: int;
+    }
+}
+
+
 public interface IOEmbed: IModuleInterface {
+
+    getEmbed(data: OEMB): string;
 }
 
 
@@ -16,8 +42,38 @@ public class OEmbed: Module, IOEmbed {
         get { typeof(IOEmbed) }
     }
 
+    
+
     public this() {
-        Log.i("Starting OEmbed module...");
+        initialize();
+    }
+
+    public this(conf: ModuleData) {
+        initialize(conf);
+    }
+
+    initialize(conf: ModuleData = null): void {
+        Log.i("Starting OEmbed module... (conf: {0})", conf);
+    }
+
+    public getEmbed(input: OEMB): string {
+        match(input) {
+            | LINK(_u) => {
+                "" // not really sure what to do here...
+            }
+            | PHOTO(u, _, _) => {
+                def c = Consumer.[Photo]();
+                "<img src='" + c.GetObject(u).Url + "'></img>";
+            }
+            | RICH(u) => {
+                def c = Consumer.[Rich]();
+                c.GetObject(u).Html;
+            }
+            | VIDEO(u, _, _) => {
+                def c = Consumer.[Video]();
+                c.GetObject(u).Html;
+            }
+        }
     }
 }
 

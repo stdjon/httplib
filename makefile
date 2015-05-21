@@ -34,6 +34,7 @@ refs=$(contrib_refs) $(call make_ref,$($@_DLLS))
 
 CONTRIB_LIBS:= \
 	contrib/server/CodeKicker.BBCode-Parser-5.0/CodeKicker.BBCode.dll \
+	contrib/server/CsQuery-1.3.4/lib/net40/CsQuery.dll \
 	contrib/server/HtmlSanitizer.2.0.5595.30325/lib/net40/HtmlSanitizer.dll \
 	contrib/server/MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
 	contrib/server/NDesk.Options-0.2.1.0/NDesk.Options.dll \

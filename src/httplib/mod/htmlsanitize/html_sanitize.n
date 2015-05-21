@@ -16,12 +16,24 @@ public class HtmlSanitizer: Module, IHtmlSanitizer {
         get { typeof(IHtmlSanitizer) }
     }
 
+    Sanitizer: Ganss.XSS.HtmlSanitizer { get; private set; }
+
     public this() {
-        Log.i("Starting HtmlSanitizer module...");
+        initialize();
+    }
+
+    public this(conf: ModuleData) {
+        initialize(conf);
+    }
+
+    initialize(conf: ModuleData = null): void {
+        Log.i("Starting HtmlSanitizer module... (conf: {0})", conf);
+
+        Sanitizer = HtmlSanitizer();
     }
 
     public transform(input: string): string {
-        input;
+        Sanitizer.Sanitize(input);
     }
 }
 
