@@ -10,6 +10,11 @@
 BIN?=bin
 CONTRIB?=contrib/server
 
+# Initializing these as empty non-recursive variables. (Target rules will append
+# to these as they are evaluated.)
+EXE_TARGETS:=
+DLL_TARGETS:=
+
 
 ifeq ($(OS),Windows_NT)
 
@@ -32,7 +37,6 @@ NCC?=mono $(NCC_PATH)/ncc.exe
 launch_assembly=export MONO_PATH=$(NCC_PATH) && cd $(BIN)/ && mono $1
 
 endif
-
 
 
 # ------------------------------------------------------------------------------
@@ -68,47 +72,40 @@ refs=$(contrib_refs) $(local_refs)
 # ------------------------------------------------------------------------------
 # Rules Template
 
-# $1 = output assembly name
-# $2 = path to source code directory
-# $3 = additional dlls to reference (can be empty)
-# $4 = additional args to ncc (can be empty, usually set by derived emits)
+# $1 = target type (EXE, DLL)
+# $2 = output assembly name
+# $3 = path to source code directory
+# $4 = additional dlls to reference (can be empty)
+# $5 = additional args to ncc (can be empty, usually set by derived emits)
 define emit_rule
-$(BIN)/$1_SRC:=$$(wildcard $2/*.n)
-$(BIN)/$1_DLLS:=$$(foreach d,$3,$(BIN)/$$d)
+$1_TARGETS+=$(BIN)/$2
+$(BIN)/$2_SRC:=$$(wildcard $3/*.n)
+$(BIN)/$2_DLLS:=$$(foreach d,$4,$(BIN)/$$d)
 
-$(BIN)/$1: $$($(BIN)/$1_SRC) $$($(BIN)/$1_DLLS)
+$(BIN)/$2: $$($(BIN)/$2_SRC) $$($(BIN)/$2_DLLS)
 	@mkdir -p $$(dir $$@)
-	$$(NCC) -no-color -o $$@ $$($$@_SRC) $$(refs) $4
+	$$(NCC) -no-color -o $$@ $$($$@_SRC) $$(refs) $5
 endef
 
 
-emit_exe_rule=$(call emit_rule,$1,$2,$3)
-emit_dll_rule=$(call emit_rule,$1,$2,$3,-t:library)
-emit_macro_dll_rule=$(call emit_rule,$1,$2,$3,-r Nemerle.Compiler.dll -t:library)
+# Emit a rule for a .exe
+emit_exe_rule=$(call emit_rule,EXE,$1,$2,$3)
+
+# Emit a rule for a .dll assembly
+emit_dll_rule=$(call emit_rule,DLL,$1,$2,$3,-t:library)
+
+# Emit a rule for a .dll containing Nemerle macros
+emit_macro_dll_rule=$(call emit_rule,DLL,$1,$2,$3,-r Nemerle.Compiler.dll -t:library)
 
 
 # ------------------------------------------------------------------------------
-# Targets
+# Rules setup
 
+# all is the default
+all:
+
+# Phony targets
 .PHONY: all clean install_contrib run frun fdata finit
-
-
-all: install_contrib $(BIN)/http.exe $(BIN)/forum.exe $(BIN)/forum-testdata.exe
-
-run: $(BIN)/http.exe
-	$(call launch_assembly,http.exe) $D
-
-frun: $(BIN)/forum.exe
-	$(call launch_assembly,forum.exe) $D
-
-fdata: $(BIN)/forum-testdata.exe
-	$(call launch_assembly,forum-testdata.exe) $D
-
-finit:
-	mysql -D forum -u forum -p$(PW) < src/forum/init-dbs.mysql
-
-clean:
-	rm -rf $(BIN)/
 
 # An empty default rule for any target not otherwise defined. This negates all
 # make's built-in rules (and stops it from spending considerable time evaulating
@@ -247,7 +244,45 @@ $(eval $(call emit_dll_rule,httplib.mod.textile.dll, \
 
 
 # ------------------------------------------------------------------------------
-# CONTRIB
+
+# EXE_TARGETS and DLL_TARGETS should be filled out at this point
+TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
+
+
+# ------------------------------------------------------------------------------
+# RULES
+
+.PHONY: all clean install_contrib run frun fdata finit
+
+all: install_contrib $(EXE_TARGETS)
+
+run: $(BIN)/http.exe
+	$(call launch_assembly,http.exe) $D
+
+frun: $(BIN)/forum.exe
+	$(call launch_assembly,forum.exe) $D
+
+fdata: $(BIN)/forum-testdata.exe
+	$(call launch_assembly,forum-testdata.exe) $D
+
+finit:
+	mysql -D forum -u forum -p$(PW) < src/forum/init-dbs.mysql
+
+clean:
+	rm -rf $(BIN)/
+
+# make show V=(variable)
+show:
+	@echo
+	@echo $(V)="$($(V))"
+	@echo
+
+# make show:(variable)
+show\:%:
+	@echo
+	@echo $(@:show:%=%)="$($(@:show:%=%))"
+	@echo
+
 
 # ------------------------------------------------------------------------------
 # install_contrib
