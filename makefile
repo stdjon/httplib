@@ -76,9 +76,9 @@ define emit_rule
 $(BIN)/$1_SRC:=$$(wildcard $2/*.n)
 $(BIN)/$1_DLLS:=$$(foreach d,$3,$(BIN)/$$d)
 
-$(BIN)/$1: install_contrib $$($(BIN)/$1_SRC) $$($(BIN)/$1_DLLS)
+$(BIN)/$1: $$($(BIN)/$1_SRC) $$($(BIN)/$1_DLLS)
 	@mkdir -p $$(dir $$@)
-	$$(NCC) -no-color $$($$@_SRC) -o $$@ $$(refs) $4
+	$$(NCC) -no-color -o $$@ $$($$@_SRC) $$(refs) $4
 endef
 
 
@@ -93,7 +93,7 @@ emit_macro_dll_rule=$(call emit_rule,$1,$2,$3,-r Nemerle.Compiler.dll -t:library
 .PHONY: all clean install_contrib run frun fdata finit
 
 
-all: $(BIN)/http.exe $(BIN)/forum.exe $(BIN)/forum-testdata.exe
+all: install_contrib $(BIN)/http.exe $(BIN)/forum.exe $(BIN)/forum-testdata.exe
 
 run: $(BIN)/http.exe
 	$(call launch_assembly,http.exe) $D
