@@ -119,10 +119,9 @@ clean:
 
 $(eval $(call emit_exe_rule,forum.exe, \
 	src/forum, \
-	forum.mod.auth.dll \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
-	httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
+	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
 	httplib.mod.oembed.dll httplib.mod.textile.dll))
 
 
@@ -132,19 +131,10 @@ $(eval $(call emit_exe_rule,forum.exe, \
 $(eval $(call emit_exe_rule,forum-testdata.exe, \
 	src/forum/tools/testdata, \
 	forum.exe \
-	forum.mod.auth.dll \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
-	httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
+	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
 	httplib.mod.oembed.dll httplib.mod.textile.dll))
-
-
-# ------------------------------------------------------------------------------
-# forum.mod.auth.dll
-
-$(eval $(call emit_dll_rule,forum.mod.auth.dll, \
-	src/forum/mod/auth, \
-	httplib.dll httplib.macros.dll))
 
 
 # ------------------------------------------------------------------------------
@@ -153,8 +143,8 @@ $(eval $(call emit_dll_rule,forum.mod.auth.dll, \
 $(eval $(call emit_exe_rule,http.exe, \
 	src/myserver, \
 	httplib.dll httplib.macros.dll \
-	httplib.db.mysql.dll httplib.page.nustache.dll \
-	httplib.log.nlog.dll))
+	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
+	httplib.mod.auth.dll))
 
 
 # ------------------------------------------------------------------------------
@@ -210,6 +200,14 @@ $(eval $(call emit_dll_rule,httplib.page.nustache.dll, \
 
 # ------------------------------------------------------------------------------
 # MODULES
+
+# ------------------------------------------------------------------------------
+# httplib.mod.auth.dll
+
+$(eval $(call emit_dll_rule,httplib.mod.auth.dll, \
+	src/httplib/mod/auth, \
+	httplib.dll httplib.macros.dll))
+
 
 # ------------------------------------------------------------------------------
 # httplib.mod.bbcode.dll

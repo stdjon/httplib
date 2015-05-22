@@ -5,8 +5,6 @@ using Nemerle.Utility;
 
 using httplib;
 
-using forum.mod;
-
 
 namespace forum.tools {
 

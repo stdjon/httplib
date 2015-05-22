@@ -30,8 +30,6 @@ public class ForumServer: Server {
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
             (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
-
-        route(HTTP.GET, "/pwtest", pwResponse);
     }
 
     public indexResponse(
@@ -126,42 +124,47 @@ public class ForumServer: Server {
                 response.append("<html><body><h1>Bad Request!</h1></body></html>");
                 response.Status = (400, "Bad Request");
             } else {
-                def auth = getModuleInterface.[mod.IAuth]();
-                def now = DateTime.Now.ToUniversalTime();
+                def auth = getModuleInterface.[mod.IPbkdf2Auth]();
 
-                Database.withTransaction(_ => {
-                    mutable command3 = Database.createCommand(
-                        "INSERT INTO Users(Name, Level, Points, JoinDate) "
-                            "VALUES (@Name, 0, 0, @JoinDate)") <- [
-                        "@Name" = user,
-                        "@JoinDate" = now,
-                    ];
-                    _ = command3.executeNonQuery();
+                if(auth != null) {
+                    def now = DateTime.Now.ToUniversalTime();
 
-                    mutable command4 = Database.createCommand(
-                        "SELECT Id FROM Users WHERE "
-                            "Name = @Name") <- [ "@Name" = user ];
+                    Database.withTransaction(_ => {
+                        mutable command3 = Database.createCommand(
+                            "INSERT INTO Users(Name, Level, Points, JoinDate) "
+                                "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                            "@Name" = user,
+                            "@JoinDate" = now,
+                        ];
+                        _ = command3.executeNonQuery();
 
-                    def id = command4.executeScalar() :> uint;
+                        mutable command4 = Database.createCommand(
+                            "SELECT Id FROM Users WHERE "
+                                "Name = @Name") <- [ "@Name" = user ];
 
-                    def record = auth.createPasswordRecord(password);
+                        def id = command4.executeScalar() :> uint;
 
-                    mutable command5 = Database.createCommand(
-                        "INSERT INTO Auth(UserId, PwRecord, Email) "
-                            "VALUES (@UserId, @PwRecord, @Email)") <- [
-                        "@UserId" = id,
-                        "@PwRecord" = record,
-                        "@Email" = email,
-                    ];
-                    _ = command5.executeNonQuery();
-                });
+                        def record = auth.createPasswordRecord(password);
 
-                response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
-                response["Location"] = DefaultInsecurePrefix + "/";
-                response.Status = (303, "See Other");
+                        mutable command5 = Database.createCommand(
+                            "INSERT INTO Auth(UserId, PwRecord, Email) "
+                                "VALUES (@UserId, @PwRecord, @Email)") <- [
+                            "@UserId" = id,
+                            "@PwRecord" = record,
+                            "@Email" = email,
+                        ];
+                        _ = command5.executeNonQuery();
+                    });
+
+                    response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+                    response["Location"] = DefaultInsecurePrefix + "/";
+                    response.Status = (303, "See Other");
+
+                } else {
+                   internalServerErrorResponse(context, request, response);
+                    Log.w("IPbkdf2Auth module was not found.");
+                }
             }
-
-
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
@@ -360,7 +363,7 @@ public class ForumServer: Server {
         if(request.IsSecure) {
             def user = Uri.UnescapeDataString(context.Vars["user"]);
             def password = Uri.UnescapeDataString(context.Vars["password"]);
-            def auth = getModuleInterface.[mod.IAuth]();
+            def auth = getModuleInterface.[mod.IPbkdf2Auth]();
             def command1 = Database.createCommand(
                 "SELECT Id FROM Users WHERE "
                     "Name = @Name") <- [ "@Name" = user ];
@@ -431,40 +434,6 @@ public class ForumServer: Server {
             $"<html><body><h1>Thread ID=$id</h1>"
             $"<p><tt>rest=$rest</tt></p></body></html>");
         response.Status = (200, "OK");
-    }
-
-    public pwResponse(
-        _context: Context, _request: Request, response: Response): void {
-
-        def auth = getModuleInterface.[mod.IAuth]();
-        if(auth != null) {
-            def test_pw = "n0ts3cr3t";
-            def record = auth.createPasswordRecord(test_pw);
-            mutable sw = Diagnostics.Stopwatch();
-            sw.Start();
-            def valid = auth.validatePassword(test_pw, record);
-            sw.Stop();
-            def tvalid = sw.ElapsedMilliseconds;
-            sw.Reset();
-            sw.Start();
-            def invalid = auth.validatePassword("owls", record);
-            sw.Stop();
-            def tinvalid = sw.ElapsedMilliseconds;
-            sw.Reset();
-            response.append("<html><body><h1>Auth test</h1>"
-                $"<p>Input password is: '$test_pw'.</p>"
-                $"<p>Password record is: '$record'.</p>"
-                $"<p>Password record length is: '$(record.Length)'.</p>"
-                $"<p>Validation result is: '$valid'.</p>"
-                $"<p>Validation took: $(tvalid)ms.</p>"
-                $"<p>Failed result is: '$invalid'.</p>"
-                $"<p>Failed took: $(tinvalid)ms.</p>"
-                "</body></html>");
-            response.Status = (200, "OK");
-        } else {
-            response.append("<html><body><h1>Error: no auth module</h1></body></html>");
-            response.Status = (500, "Err");
-        }
     }
 
     protected override internalServerError(ex: Exception): void {

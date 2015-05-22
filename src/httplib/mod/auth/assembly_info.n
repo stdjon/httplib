@@ -3,11 +3,11 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information
-[assembly: AssemblyTitle("forum.mod.auth.dll")]
-[assembly: AssemblyDescription("forum.exe - Authentication Module")]
+[assembly: AssemblyTitle("httplib.mod.auth.dll")]
+[assembly: AssemblyDescription("HTTP Server module - Authentication")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("forum.mod.auth")]
+[assembly: AssemblyProduct("httplib.mod.auth")]
 [assembly: AssemblyCopyright("(c) Jon Head 2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

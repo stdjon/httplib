@@ -34,6 +34,11 @@ Renderers:
 Modules:
   - Assembly: http.exe
     Typename: MyTestModule
+  - Assembly: httplib.mod.auth.dll
+    Typename: httplib.mod.Pbkdf2Auth
+    Data:
+      IterationCount: 300
+      HashLength: 25
 MimeTypes:
   js: application/javascript
   json: application/json

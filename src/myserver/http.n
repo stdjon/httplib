@@ -237,6 +237,41 @@ class MyServer: Server {
         response.Status = (500, "Internal Server Error");
     }
 
+
+    public pwResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def auth = getModuleInterface.[mod.IPbkdf2Auth]();
+        if(auth != null) {
+            def test_pw = "n0ts3cr3t";
+            def record = auth.createPasswordRecord(test_pw);
+            mutable sw = Diagnostics.Stopwatch();
+            sw.Start();
+            def valid = auth.validatePassword(test_pw, record);
+            sw.Stop();
+            def tvalid = sw.ElapsedMilliseconds;
+            sw.Reset();
+            sw.Start();
+            def invalid = auth.validatePassword("owls", record);
+            sw.Stop();
+            def tinvalid = sw.ElapsedMilliseconds;
+            sw.Reset();
+            response.append("<html><body><h1>Auth test</h1>"
+                $"<p>Input password is: '$test_pw'.</p>"
+                $"<p>Password record is: '$record'.</p>"
+                $"<p>Password record length is: '$(record.Length)'.</p>"
+                $"<p>Validation result is: '$valid'.</p>"
+                $"<p>Validation took: $(tvalid)ms.</p>"
+                $"<p>Failed result is: '$invalid'.</p>"
+                $"<p>Failed took: $(tinvalid)ms.</p>"
+                "</body></html>");
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+            Log.w("IPbkdf2Auth module was not found.");
+        }
+    }
+
     protected override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
     }
@@ -290,6 +325,8 @@ module Test {
                     res.Status = (500, "Module missing");
                 }
             });
+
+            my_server.route(HTTP.GET, "/pwtest", my_server.pwResponse);
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 

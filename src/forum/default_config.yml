@@ -31,8 +31,8 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
-  - Assembly: forum.mod.auth.dll
-    Typename: forum.mod.Auth
+  - Assembly: httplib.mod.auth.dll
+    Typename: httplib.mod.Pbkdf2Auth
   - Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
   - Assembly: httplib.mod.htmlsanitize.dll
