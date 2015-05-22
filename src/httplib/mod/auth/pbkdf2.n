@@ -6,13 +6,13 @@ using httplib;
 
 namespace httplib.mod {
 
-/** This interface describes a PBKDF2-based Authentication module based in part
- *  on Taylor Hornby's implementation in C#, available at:
- *  https://crackstation.net/hashing-security.htm#aspsourcecode */
 public interface IPbkdf2Auth: IAuth {
 }
 
 
+/** This module implements a PBKDF2-based Authentication module based in part on
+ *  Taylor Hornby's implementation in C#, available online at:
+ *  https://crackstation.net/hashing-security.htm#aspsourcecode */
 [HasLogging]
 public class Pbkdf2Auth: Module, IPbkdf2Auth {
 
