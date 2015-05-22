@@ -110,6 +110,11 @@ finit:
 clean:
 	rm -rf $(BIN)/
 
+# An empty default rule for any target not otherwise defined. This negates all
+# make's built-in rules (and stops it from spending considerable time evaulating
+# them). This is equivalent to specifying -r on the commandline.
+%: ;
+
 
 # ------------------------------------------------------------------------------
 # APPLICATIONS
