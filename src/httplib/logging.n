@@ -59,10 +59,10 @@ public abstract class Logging {
     }
 
     public static load(
-        path: string, name: string, conf: LogConfiguration): void {
+        conf: LogConfiguration): void {
 
-        def assembly = Assembly.LoadFrom(path);
-        def type = assembly.GetType(name);
+        def assembly = Assembly.LoadFrom(conf.Assembly);
+        def type = assembly.GetType(conf.Typename);
 
         Instance = Activator.CreateInstance(type, conf) :> Logging;
         forThisType().t("Logging is up!");

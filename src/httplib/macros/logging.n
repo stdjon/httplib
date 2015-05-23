@@ -6,38 +6,20 @@ namespace httplib {
 
 /** [HasLogging] */
 [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
-macro HasLogging(typeBuilder : TypeBuilder, params args: list[PExpr]) {
+macro HasLogging(typeBuilder : TypeBuilder) {
 
-    mutable lazy_init = false;
+    typeBuilder.Define( <[ decl: static mutable log: ILog; ]> );
 
-    foreach(a in args) {
-        match(a) {
-            | <[ LazyInit ]> => lazy_init = true;
-            | _ as x => Message.Error(
-                $"'$x' is not a valid argument to HasLogging macro");
-        }
-    }
-
-    if(lazy_init) {
-        typeBuilder.Define( <[ decl: mutable log: ILog; ]> );
-
-        typeBuilder.Define( <[ decl:
-            public Log: ILog {
-                get {
-                    when(log == null) {
-                        log = Logging.forThisType();
-                    }
-                    log;
+    typeBuilder.Define( <[ decl:
+        public static Log: ILog {
+            get {
+                when(log == null) {
+                    log = Logging.forThisType();
                 }
-            } ]> );
-
-    } else {
-        typeBuilder.Define( <[ decl:
-            log: ILog = Logging.forThisType(); ]> );
-
-        typeBuilder.Define( <[ decl:
-            public Log: ILog { get { log; } } ]> );
-    }
+                log;
+            }
+        }
+    ]> );
 }
 
 

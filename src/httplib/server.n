@@ -16,7 +16,7 @@ namespace httplib {
 //------------------------------------------------------------------------------
 // Server
 
-[HasLogging(LazyInit)]
+[HasLogging]
 public abstract class Server: IDisposable {
 
     public type Callback = Context * Request * Response -> void;
@@ -81,12 +81,14 @@ public abstract class Server: IDisposable {
     [Accessor] public default_insecure_prefix: string;
 
     static protected loadConfiguration[T](path: string): T {
+        // ** Logging is not possible here! **
         using(reader = StreamReader(path)) {
             Deserializer.Deserialize.[T](reader);
         }
     }
 
     public this(path: string) {
+        // ** Logging is not possible here! **
         def config = loadConfiguration.[ServerConfiguration](path);
         this(config);
     }
@@ -94,11 +96,11 @@ public abstract class Server: IDisposable {
     public this(config: ServerConfiguration) {
         configuration = config;
 
-        def lg = Configuration.Logging;
-        when(lg != null &&
-            lg.Assembly != null &&
-            lg.Typename != null) {
-            Logging.load(lg.Assembly, lg.Typename, lg);
+        def log = Configuration.Logging;
+        when(log != null &&
+            log.Assembly != null &&
+            log.Typename != null) {
+            Logging.load(log);
         }
 
         // Now logging is configured, we can start using Log API...
