@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 using Nemerle.Extensions;
 
@@ -10,8 +11,14 @@ namespace forum {
 
 public class ForumServer: Server {
 
+    SessionTokenLength: int { get { 60 } } // TODO: Config
+    SessionTokenDuration: int { get { 30 } } // TODO: Config
+    Rng: RNGCryptoServiceProvider { get; private set; }
+
     public this(path: string) {
         base(path);
+
+        Rng = RNGCryptoServiceProvider();
 
         route(HTTP.GET, "/", indexResponse);
 
@@ -125,6 +132,7 @@ public class ForumServer: Server {
                 response.Status = (400, "Bad Request");
             } else {
                 def auth = getModuleInterface.[mod.IPbkdf2Auth]();
+                mutable token = null;
 
                 if(auth != null) {
                     def now = DateTime.Now.ToUniversalTime();
@@ -154,9 +162,14 @@ public class ForumServer: Server {
                             "@Email" = email,
                         ];
                         _ = command5.executeNonQuery();
+
+                        def (ok, t) = registerSessionToken(id);
+                        when(ok) {
+                            token = t;
+                        }
                     });
 
-                    response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+                    response["Set-Cookie"] = $"_session=$token; path=/; secure; httponly";
                     response["Location"] = DefaultInsecurePrefix + "/";
                     response.Status = (303, "See Other");
 
@@ -321,16 +334,32 @@ public class ForumServer: Server {
 
         if(request.IsSecure) {
             def cookies = request.Cookies;
-            def auth = (cookies != null) ? cookies["_auth"] : null;
+            def session = (cookies != null) ? cookies["_session"] : null;
             def data = PageData() <- [
                 "DefaultSecurePrefix" = DefaultSecurePrefix,
                 "DefaultInsecurePrefix" = DefaultInsecurePrefix,
                 "DefaultPrefix" = getDefaultPrefix(request),
             ];
-            if(!String.IsNullOrEmpty(auth)) {
-                _ = data <- [ "User" = auth ];
+            mutable id: uint = 0;
+
+            when(!String.IsNullOrEmpty(session)) {
+                expireSessionTokens();
+
+                def commmand = Database.createCommand(
+                    "SELECT (UserId) FROM Sessions WHERE (Token = @Token)") <- ["@Token" = session];
+                def v = commmand.executeScalar() :> uint?;
+                id = (v != null) ? (v :> uint) : 0;
+            }
+
+            if(id > 0) {
+                def commmand2 = Database.createCommand(
+                    "SELECT Name FROM Users WHERE Id=@Id") <- ["@Id" = id];
+                def name = commmand2.executeScalar() :> string;
+                _ = data <- [ "User" = name ];
+
                 response.append(renderPage("nav-ok.nyml", data));
                 response.Status = (200, "OK");
+
             } else {
                 response.append(renderPage("nav-login.nyml", data));
                 response.Status = (200, "OK");
@@ -369,6 +398,7 @@ public class ForumServer: Server {
                     "Name = @Name") <- [ "@Name" = user ];
             def id = command1.executeScalar() :> uint?;
             mutable record;
+            //mutable token;
             when(id != null) {
                 def command2 = Database.createCommand(
                     "SELECT PwRecord FROM Auth WHERE "
@@ -380,9 +410,11 @@ public class ForumServer: Server {
                 auth.validatePassword(password, record);
             Log.d("Login attempt as {0}: {2}", user, ok, record);
             when(ok) {
+
+                def (_ok2, token) = registerSessionToken(id :> uint);
                 // System.Net.Cookie flags don't seem to be respected, so set a
                 // cookie header explicitly...
-                response["Set-Cookie"] = $"_auth=$user; path=/; secure; httponly";
+                response["Set-Cookie"] = $"_session=$token; path=/; secure; httponly";
             }
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
@@ -452,6 +484,53 @@ public class ForumServer: Server {
         def commmand = Database.createCommand("SELECT COUNT(Name) FROM Users");
         def ex = commmand.executeScalar() :> long;
         unchecked ex :> int;
+    }
+
+    public getSessionToken(): string {
+        def bytes = array(SessionTokenLength);
+        Rng.GetBytes(bytes);
+        def result = Convert.ToBase64String(bytes);
+        Log.t("result.Length = {0}", result.Length);
+        result;
+    }
+
+    public compareSessionTokens(a: string, b: string): bool {
+        def ba = Convert.FromBase64String(a);
+        def bb = Convert.FromBase64String(b);
+        mutable cmp = a.Length ^ b.Length;
+        for(mutable i = 0; i < SessionTokenLength; i++) {
+            def ca = ba[i % a.Length];
+            def cb = bb[i % b.Length];
+            cmp |= ca ^ cb;
+        }
+        cmp == 0;
+    }
+
+    public registerSessionToken(id: uint): (bool * string) {
+        def token = getSessionToken();
+        def expiry = DateTime.Now.
+            AddMinutes(SessionTokenDuration).ToUniversalTime();
+
+        mutable command = Database.createCommand(
+            "INSERT INTO Sessions(UserId, Token, ExpiryTime) "
+                "VALUES(@UserId, @Token, @ExpiryTime)") <- [
+            "@UserId" = id,
+            "@Token" = token,
+            "@ExpiryTime" = expiry,
+
+        ];
+        def ok = command.executeNonQuery();
+        (ok == 1, token);
+    }
+
+    public expireSessionTokens(): void {
+
+        def now = DateTime.Now.ToUniversalTime();
+
+        def command = Database.createCommand(
+            "DELETE FROM Sessions WHERE (ExpiryTime < @Now)") <- [ "@Now" = now ];
+        def rows = command.executeNonQuery();
+        Log.i("Deleted {0} expired session tokens...", rows);
     }
 }
 

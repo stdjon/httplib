@@ -12,7 +12,8 @@
 /*----------------------------------------------------------------------------*/
 /* Drop existing tables */
 
-DROP TABLE IF EXISTS PostsRead, Posts, Threads, Categories, Auth, Users;
+DROP TABLE IF EXISTS
+    PostsRead, Posts, Threads, Categories, Sessions, Auth, Users;
 
 
 /*----------------------------------------------------------------------------*/
@@ -37,6 +38,17 @@ CREATE TABLE IF NOT EXISTS Auth(
     UserId INT UNSIGNED,
     PwRecord VARCHAR(256),
     Email VARCHAR(256),
+    FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
+)
+    ENGINE=INNODB
+    CHARACTER SET utf8;
+
+
+CREATE TABLE IF NOT EXISTS Sessions(
+    Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    Token VARCHAR(256) BINARY,
+    UserId INT UNSIGNED,
+    ExpiryTime DATETIME,
     FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
 )
     ENGINE=INNODB
