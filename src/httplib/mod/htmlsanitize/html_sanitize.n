@@ -18,15 +18,7 @@ public class HtmlSanitizer: Module, IHtmlSanitizer {
 
     Sanitizer: Ganss.XSS.HtmlSanitizer { get; private set; }
 
-    public this() {
-        initialize();
-    }
-
-    public this(conf: ModuleData) {
-        initialize(conf);
-    }
-
-    initialize(conf: ModuleData = null): void {
+    public this(conf: ModuleData = null) {
         Log.i("Starting HtmlSanitizer module... (conf: {0})", conf);
 
         Sanitizer = HtmlSanitizer();

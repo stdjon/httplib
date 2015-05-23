@@ -26,15 +26,7 @@ public class BbCode: Module, IBbCode {
 
     Parser: BBCodeParser { get; private set; }
 
-    public this() {
-        initialize();
-    }
-
-    public this(conf: ModuleData) {
-        initialize(conf);
-    }
-
-    initialize(conf: ModuleData = null): void {
+    public this(conf: ModuleData = null) {
         Log.i("Starting BBCode module... (conf: {0})", conf);
 
         Parser = BBCodeParser(List() <- [

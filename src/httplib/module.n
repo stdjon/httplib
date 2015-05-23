@@ -39,11 +39,7 @@ public abstract class Module {
         def type = assembly.GetType(conf.Typename);
         def data = conf.Data;
 
-        if(data == null) {
-            Activator.CreateInstance(type) :> Module;
-        } else {
-            Activator.CreateInstance(type, data) :> Module;
-        }
+        Activator.CreateInstance(type, data) :> Module;
     }
 }
 

@@ -52,15 +52,7 @@ public class Textile: Module, ITextile {
     Formatter: TextileFormatter { get; private set; }
     Output: StringBuilderOutput { get; private set; }
 
-    public this() {
-        initialize();
-    }
-
-    public this(conf: ModuleData) {
-        initialize(conf);
-    }
-
-    initialize(conf: ModuleData = null): void {
+    public this(conf: ModuleData = null) {
         Log.i("Starting Textile module... (conf: {0})", conf);
         Output = StringBuilderOutput();
         Formatter = TextileFormatter(Output);

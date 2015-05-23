@@ -25,15 +25,8 @@ public class Pbkdf2Auth: Module, IPbkdf2Auth {
     public IterationCount: int { get; private set; }
     public HashLength: int { get; private set; }
 
-    public this() {
-        initialize();
-    }
 
-    public this(conf: ModuleData) {
-        initialize(conf);
-    }
-
-    initialize(conf: ModuleData = null): void {
+    public this(conf: ModuleData = null) {
         Log.i("Starting Pbkdf2Auth module... (conf: {0})", conf);
         Salt = RNGCryptoServiceProvider();
         IterationCount = 12500;
