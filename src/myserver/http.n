@@ -191,6 +191,9 @@ public class MyTestModule: Module, IMyTestModule {
         get { "MyTestModule" }
     }
 
+    public this(_conf: ModuleData) {
+    }
+
     public testMethod(): string {
         "<p>This is some test text which the module returned.</p>";
     }
