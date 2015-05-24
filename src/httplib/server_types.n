@@ -160,7 +160,7 @@ public class CookieTable: IAssociation[CookieCollection] {
             // No CookieCollection.TryGetValue() method...
             try { v = cc[key].Value; } catch { | _ => {}}
 
-            (v != null) ? v.ToString() : null;
+            v ?? v.ToString();
         }
 //        set { cc[key] = value; }
     }

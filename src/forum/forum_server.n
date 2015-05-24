@@ -81,7 +81,7 @@ public class ForumServer: Server {
 
         if(request.IsSecure) {
             def cookies = request.Cookies;
-            def u = (cookies != null) ? cookies["_u"] : null;
+            def u = cookies ? cookies["_u"] : null;
             mutable user = "Username";
             when(!String.IsNullOrEmpty(u)) {
                 user = u;
@@ -204,7 +204,7 @@ public class ForumServer: Server {
                 ];
             ok = command.executeScalar() :> string;
         }
-        response.Status = (ok != null) ? (200, "OK") : (404, "Not Found");
+        response.Status = ok ? (200, "OK") : (404, "Not Found");
     }
 
     public usersRedirectPageResponse(
@@ -312,7 +312,7 @@ public class ForumServer: Server {
                     "User" = user,
                     "Motto" = reader.GetValue("Motto", ""),
                     "Location" = reader.GetValue("Location", ""),
-                    "JoinDate" = (date != null) ? date.ToString() : "never",
+                    "JoinDate" = date ? date.ToString() : "never",
                     "Points" = reader.GetValue.[int?]("Points", 0),
                     "Level" = reader.GetValue.[uint?]("Level", 0),
                 ];
@@ -334,7 +334,7 @@ public class ForumServer: Server {
 
         if(request.IsSecure) {
             def cookies = request.Cookies;
-            def session = (cookies != null) ? cookies["_session"] : null;
+            def session = cookies ? cookies["_session"] : null;
             def data = PageData() <- [
                 "DefaultSecurePrefix" = DefaultSecurePrefix,
                 "DefaultInsecurePrefix" = DefaultInsecurePrefix,
@@ -348,7 +348,7 @@ public class ForumServer: Server {
                 def commmand = Database.createCommand(
                     "SELECT (UserId) FROM Sessions WHERE (Token = @Token)") <- ["@Token" = session];
                 def v = commmand.executeScalar() :> uint?;
-                id = (v != null) ? (v :> uint) : 0;
+                id = v ? (v :> uint) : 0;
             }
 
             if(id > 0) {

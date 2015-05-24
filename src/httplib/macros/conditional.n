@@ -7,18 +7,39 @@ namespace httplib {
 /** Nemerle's if statement is fine in statement contexts, but can be a little
  *  clunky in some expression contexts (e.g.):
  *
- *  def v = if(x) { y } else { z };
+ *    def v = if(x) { y } else { z };
  *
  *  We want to allow C/C++ style conditional expressions:
  *
- *  def v = x ? y : z;
+ *    def v = x ? y : z;
  *
+ *  If 'x' is not already a Boolean expression, then 'x != null' is checked.
+ *  This allows syntax like the following (where o is an object reference):
+ *
+ *    def v = o ? o.someMethod() : someDefault;
  */
 macro @?(condition, predicate) {
 
+    def typer = Macros.ImplicitCTX();
+    def texpr = typer.TypeExpr(condition);
+
+    def cond = match(texpr.Type.Hint) {
+        | Some(expr) when expr.TypeInfo != null => {
+            if(expr.TypeInfo.FullName == "System.Boolean") {
+                condition;
+            } else {
+                <[ $condition != null ]>
+            }
+        }
+        | _ => {
+            Message.Error("Invalid condition type for '?' operator.");
+            <[ () ]>
+        }
+    }
+
     match(predicate) {
         | <[ $pass : $fail ]> => {
-            <[ if($condition) { $pass } else { $fail }; ]>
+            <[ if($cond) { $pass } else { $fail }; ]>
         }
         | _ => {
             Message.Error("Invalid syntax for '?' operator...");
