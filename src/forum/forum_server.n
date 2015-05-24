@@ -429,9 +429,20 @@ public class ForumServer: Server {
     public navSignoutResponse(
         _context: Context, request: Request, response: Response): void {
         if(request.IsSecure) {
+            def cookies = request.Cookies;
+            def session = cookies ? cookies["_session"] : null;
+            when(!String.IsNullOrEmpty(session)) {
+                def command = Database.createCommand(
+                    "DELETE FROM Sessions WHERE (Token = @Token)") <- [
+                        "@Token" = session
+                    ];
+                def rows = command.executeNonQuery();
+                Log.i("Deleted {0} session tokens (user sign out)...", rows);
+            }
+
             // System.Net.Cookie flags don't seem to be respected, so set a
             // cookie header explicitly...
-            response["Set-Cookie"] = "_auth=; path=/; secure; httponly";
+            response["Set-Cookie"] = "_session=; path=/; secure; httponly";
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
         } else {
