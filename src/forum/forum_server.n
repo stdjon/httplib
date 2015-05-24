@@ -34,6 +34,8 @@ public class ForumServer: Server {
         route(HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}", usersPageResponse);
         route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}", userPageResponse);
 
+        route(HTTP.GET, "/p/{{num:[0-9]+}}", postPageResponse);
+
         route([
             (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
             (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
@@ -211,11 +213,7 @@ public class ForumServer: Server {
         context: Context, request: Request, response: Response): void {
 
         def num = context.Vars["num"];
-        mutable from = 1;
-
-        when(!String.IsNullOrEmpty(num)) {
-            from = Int32.Parse(num);
-        }
+        def from = !String.IsNullOrEmpty(num) ? Int32.Parse(num) : 1;
         def to = from + 24; //TODO: configurable?
 
         response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
@@ -328,6 +326,62 @@ public class ForumServer: Server {
             response.Status = (200, "OK");
         }
     }
+
+    public postPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def pid = Int32.Parse(context.Vars["num"]);
+        def command = Database.createCommand(
+            "SELECT UserId, ThreadId, CreateDate, Points, Content FROM "
+                "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
+
+        mutable uid;
+        mutable thid;
+        mutable date;
+        mutable points;
+        mutable content;
+        mutable ok = false;
+        mutable data = PageData() <- [
+            "DefaultSecurePrefix" = DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+            "DefaultPrefix" = getDefaultPrefix(request),
+        ];
+
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                uid = reader.GetValue.[uint?]("UserId", 0);
+                thid = reader.GetValue.[uint?]("ThreadId", 0);
+                date = reader.GetValue.[DateTime?]("CreateDate");
+                points = reader.GetValue.[int?]("Points", 0);
+                content = reader.GetValue("Content");
+                ok = true;
+            }
+        }
+
+        when(ok) {
+            def command2 = Database.createCommand(
+                "SELECT Name from Users WHERE Id = @Id") <- [ "@Id" = uid ];
+            def name = command2.executeScalar() :> string;
+
+            def command3 = Database.createCommand(
+                "SELECT Title from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
+            def title = command3.executeScalar() :> string;
+
+            _ = data <- [
+                "PostId" = pid,
+                "User" = name,
+                "Thread" = title,
+                "ThreadId" = thid,
+                "CreateDate" = date ? date.ToString() : "never",
+                "Points" = points,
+                "Content" = content,
+            ];
+        }
+
+        response.append(renderPage("post.nyml", data));
+        response.Status = (200, "OK");
+    }
+
 
     public navLoginResponse(
         _context: Context, request: Request, response: Response): void {
