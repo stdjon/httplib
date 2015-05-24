@@ -1,7 +1,7 @@
 ---
 Template: template.nyml
 Stylesheets:
-  - local-styles.css
+  - /local-styles.css
 Title: Title Title Title
 Partials:
   Nav: |

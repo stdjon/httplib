@@ -1,0 +1,178 @@
+---
+Template: template.nyml
+Stylesheets:
+  - /local-styles.css
+Title: Title Title Title
+Partials:
+  Nav: |
+    <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-login'
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}</h1>
+    </div>
+  Body: |
+    <div class="swatches">
+      <p>
+        <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x22_5" onmouseover="setHdrCols(22.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x45" onmouseover="setHdrCols(45, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x67_5" onmouseover="setHdrCols(67.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x90" onmouseover="setHdrCols(90, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x112_5" onmouseover="setHdrCols(112.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x135" onmouseover="setHdrCols(135, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x157_5" onmouseover="setHdrCols(157.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x180" onmouseover="setHdrCols(180, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x202_5" onmouseover="setHdrCols(202.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x225" onmouseover="setHdrCols(225, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x247_5" onmouseover="setHdrCols(247.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x270" onmouseover="setHdrCols(270, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x292_5" onmouseover="setHdrCols(292.5, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x315" onmouseover="setHdrCols(315, true)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="x337_5" onmouseover="setHdrCols(337.5, true)">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+      <p>
+        <span class="swatch" id="y0" onmouseover="setHdrCols(0, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y22_5" onmouseover="setHdrCols(22.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y45" onmouseover="setHdrCols(45, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y67_5" onmouseover="setHdrCols(67.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y90" onmouseover="setHdrCols(90, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y112_5" onmouseover="setHdrCols(112.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y135" onmouseover="setHdrCols(135, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y157_5" onmouseover="setHdrCols(157.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y180" onmouseover="setHdrCols(180, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y202_5" onmouseover="setHdrCols(202.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y225" onmouseover="setHdrCols(225, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y247_5" onmouseover="setHdrCols(247.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y270" onmouseover="setHdrCols(270, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y292_5" onmouseover="setHdrCols(292.5, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y315" onmouseover="setHdrCols(315, false)">&nbsp; &nbsp; &nbsp;</span>
+        <span class="swatch" id="y337_5" onmouseover="setHdrCols(337.5, false)">&nbsp; &nbsp; &nbsp;</span>
+      </p>
+    </div>
+    {{#Title}}
+      <p>Thread started by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
+    {{/Title}}
+    {{#Posts}}
+      <div class="anchor" id="{{Number}}">
+        <p><small><a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>:</small>
+        {{Content}}<br>
+        <small><i>&mdash;<a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> {{CreateDate}}</i></small></p>
+      </div>
+    {{/Posts}}
+    {{^Posts}}
+      <p>Something seems to have gone awry here...</p>
+    {{/Posts}}
+
+
+    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
+    <script>
+      Hyphenator.run();
+
+      // Required for scrollspy (see http://www.iwstudio.it/scrollspy/)
+      $(window).resize(function(){
+        $('[data-spy="scroll"]').each(function() {
+          var $spy = $(this).scrollspy('refresh');
+        });
+      });
+
+      //scroll updates URL
+      $(document).bind('scroll',function(e) {
+        $('.anchor').each(function() {
+          $(this).removeClass('trg');
+          if ( $(this).offset().top < pageYOffset + 25 &&
+            $(this).offset().top + $(this).height() > pageYOffset + 25 ) {
+              $(this).addClass('trg');
+              var id_ = $(this).attr('id') || '';
+              var id = '#' + id_;
+              var oldId = location.hash;
+              if(oldId !== id) {
+                if(history.replaceState) {
+                  history.replaceState({}, document.title + ' ' + id, id);
+                } else {
+                  $(this).attr('id', undefined);
+                  location.hash = id;
+                  $(this).attr('id', id_);
+                }
+              }
+            }
+          });
+      });
+
+      // iframe communication
+      function postIframeMessage(value) {
+        var f = document.getElementById('navbar-frame');
+        var w = f.contentWindow;
+        w.postMessage(value, "*");
+      }
+
+      addEventListener("message", function(msg) {
+        if('{{DefaultSecurePrefix}}' === msg.origin) {
+          var cmd = msg.data.split('/');
+          switch(cmd[0]) {
+            case 'nav': {
+              if('show' == cmd[1]) {
+                $('#navbar-frame').height(cmd[2]);
+              } else {
+                $('#navbar-frame').height('50px');
+              }
+              break;
+            }
+          }
+        }
+      });
+
+      //swatches/jumbotron colour
+      function liActiveA(css) {
+        css = css || '';
+        return 'ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {' + css + '}'
+      }
+      function divAnchorTrg(css) {
+        css = css || '';
+        return 'div.anchor.trg p, div.anchor.trg:nth-child(odd) p {' + css + '}'
+      }
+      $('head').append(
+        '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
+      $('head').append(
+        '<style id="trg-colour" type="text/css">' + divAnchorTrg() + '</style>');
+
+      var cols = [
+          0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
+          202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
+      function setHdrCols(c, b) {
+        var fg = b ? "#444" : "#ccc";
+        var sl = b ? '55%, 55%' : '88%, 25%';
+        var col = 'hsl(' + c + ', ' + sl + ')';
+
+        $('.container .jumbotron').css('background-color', col);
+        $('.container .jumbotron').css('color', fg);
+        //$('nav.navbar').css('border-left-color', col);
+        $('div.outside').css('border-left-color', col);
+        $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
+        $('#trg-colour').text(divAnchorTrg('border-left-color: ' + col + ';'));
+        postIframeMessage('hdrCol/' + col);
+      }
+      var idx = Math.floor(Math.random() * cols.length);
+      var light = !!Math.floor(Math.random() * 2);
+
+      // init!
+      $(window).load(function() {
+        postIframeMessage('ehlo');
+        setHdrCols(cols[idx], light);
+      });
+    </script>
+  Guide: |
+    {{#Title}}
+    <div id="scrollspy">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
+      {{#Markers}}
+        <li><a href="#{{Mark}}">{{Mark}}</a></li>
+      {{/Markers}}
+      </ul>
+    </div>
+    {{/Title}}
+
+

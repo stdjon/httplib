@@ -37,8 +37,8 @@ public class ForumServer: Server {
         route(HTTP.GET, "/p/{{num:[0-9]+}}", postPageResponse);
 
         route([
-            (HTTP.GET, "/th/{{id:[0-9]+}}/{{rest:.*}}"),
-            (HTTP.GET, "/th/{{id:[0-9]+}}")], testResponse);
+            (HTTP.GET, "/th/{{id:[0-9]+}}"),
+            (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}")], threadPageResponse);
     }
 
     public indexResponse(
@@ -84,13 +84,10 @@ public class ForumServer: Server {
         if(request.IsSecure) {
             def cookies = request.Cookies;
             def u = cookies ? cookies["_u"] : null;
-            mutable user = "Username";
-            when(!String.IsNullOrEmpty(u)) {
-                user = u;
-            }
+            mutable user = !String.IsNullOrEmpty(u) ? u : null;
 
             def data = PageData() <- [
-                "User" = user ?? "Username",
+                "User" = user,
                 "DefaultSecurePrefix" = DefaultSecurePrefix,
                 "DefaultInsecurePrefix" = DefaultInsecurePrefix,
             ];
@@ -226,7 +223,7 @@ public class ForumServer: Server {
         def from = Int32.Parse(context.Vars["from"]);
         def to = Int32.Parse(context.Vars["to"]);
         def dist = to + 1 - from;
-        mutable users: array[Dictionary[string, string]] = array(dist);
+        mutable users: PageDataArray = array(dist);
         mutable i = 0;
 
         def command = Database.createCommand(
@@ -240,10 +237,10 @@ public class ForumServer: Server {
             while(reader.Read() && i < dist) {
                 def u = reader.GetValue.[string]("Name");
                 when(u != null) {
-                    def points= reader.GetValue.[int?]("Points", 0);
+                    def points = reader.GetValue.[int?]("Points", 0);
                     def level = reader.GetValue.[uint?]("Level", 0);
                     def motto = reader.GetValue("Motto", "");
-                    users[i] = Dictionary() <- [
+                    users[i] = PageData() <- [
                         "Num" = (from + i).ToString(),
                         "Name" = u,
                         "Points" = points.ToString(),
@@ -382,6 +379,102 @@ public class ForumServer: Server {
         response.Status = (200, "OK");
     }
 
+    public threadPageResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def thid = Int32.Parse(context.Vars["id"]);
+        def fr_st = context.Vars["from"];
+        def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
+        def to_st = context.Vars["to"];
+        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 49);  //TODO: configurable?
+        def dist = to + 1 - from;
+
+        def command = Database.createCommand(
+            "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
+                "WHERE Id = @Id") <- [ "@Id" = thid ];
+
+        mutable data = PageData() <- [
+            "DefaultSecurePrefix" = DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = DefaultInsecurePrefix,
+            "DefaultPrefix" = getDefaultPrefix(request),
+        ];
+        mutable ok = false;
+        mutable uid;
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                uid = reader.GetValue.[uint?]("UserId", 0);
+                _ = data <- [
+                    "Title" = reader.GetValue("Title"),
+                    "UserId" = uid,
+                    "CategoryId" = reader.GetValue.[uint?]("CategoryId", 0),
+                    "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
+                    "Colour" = reader.GetValue("Colour"),
+                ];
+                ok = true;
+            }
+        }
+        when(uid != null) {
+            _ = data <- [ "UserName" = getUserName(uid :> uint) ];
+        }
+
+        when(ok) {
+            mutable posts: PageDataArray = array(dist);
+            mutable i = 0;
+
+            def command2 = Database.createCommand(
+                "SELECT Id, UserId, Points, CreateDate, Content FROM Posts WHERE "
+                    "ThreadId = @ThreadId ORDER BY CreateDate LIMIT @From, @To") <- [
+                "@ThreadId" = thid,
+                "@From" = from,
+                "@To" = to
+            ];
+
+            using(reader = command2.executeReader()) {
+                while(reader.Read() && i < dist) {
+                    def id = reader.GetValue.[uint?]("Id", 0);
+                    uid = reader.GetValue.[uint?]("UserId", 0);
+                    def points = reader.GetValue.[int?]("Points", 0);
+                    def date = reader.GetValue.[DateTime?]("CreateDate");
+                    def content = reader.GetValue("Content");
+
+                    posts[i] = PageData() <- [
+                        "Number" = from + i,
+                        "PostId" = id,
+                        "UserId" = uid,
+                        "Points" = points,
+                        "CreateDate" = date,
+                        "Content" = content,
+                    ];
+                    i++;
+                }
+            }
+            when(i < dist) {
+                Array.Resize(ref posts, i);
+            }
+            def limit = i;
+
+            for(i = 0; i < limit; i++) {
+                _ = posts[i] <- [
+                    "UserName" = getUserName(posts[i]["UserId"] :> uint),
+                ];
+            }
+
+            // Add a marker for every fifth post (1, 6, 11...)
+            def marker_count = (limit + 4) / 5;
+            def markers: PageDataArray = array(marker_count);
+            for(i = 0; i < marker_count; i++) {
+                markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
+            }
+
+            _ = data <- [
+                "Posts" = posts,
+                "Markers" = markers,
+            ];
+        }
+
+        response.append(renderPage("thread.nyml", data));
+        response.Status = (200, "OK");
+    }
 
     public navLoginResponse(
         _context: Context, request: Request, response: Response): void {
@@ -406,10 +499,7 @@ public class ForumServer: Server {
             }
 
             if(id > 0) {
-                def commmand2 = Database.createCommand(
-                    "SELECT Name FROM Users WHERE Id=@Id") <- ["@Id" = id];
-                def name = commmand2.executeScalar() :> string;
-                _ = data <- [ "User" = name ];
+                _ = data <- [ "User" = getUserName(id) ];
 
                 response.append(renderPage("nav-ok.nyml", data));
                 response.Status = (200, "OK");
@@ -521,18 +611,6 @@ public class ForumServer: Server {
         }
     }
 
-    public testResponse(
-        context: Context, _request: Request, response: Response): void {
-
-        def id = context.Vars["id"];
-        def rest = context.Vars["rest"];
-
-        response.append(
-            $"<html><body><h1>Thread ID=$id</h1>"
-            $"<p><tt>rest=$rest</tt></p></body></html>");
-        response.Status = (200, "OK");
-    }
-
     protected override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
     }
@@ -549,6 +627,21 @@ public class ForumServer: Server {
         def commmand = Database.createCommand("SELECT COUNT(Name) FROM Users");
         def ex = commmand.executeScalar() :> long;
         unchecked ex :> int;
+    }
+
+    getPostCount(thread_id: uint): int {
+        def commmand = Database.createCommand(
+            "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [
+                "@ThreadId" = thread_id,
+            ];
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
+    getUserName(user_id: uint): string {
+        def commmand = Database.createCommand(
+            "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
+        commmand.executeScalar() :> string;
     }
 
     public getSessionToken(): string {
@@ -584,12 +677,11 @@ public class ForumServer: Server {
             "@ExpiryTime" = expiry,
 
         ];
-        def ok = command.executeNonQuery();
-        (ok == 1, token);
+        def rows = command.executeNonQuery();
+        (rows == 1, token);
     }
 
     public expireSessionTokens(): void {
-
         def now = DateTime.Now.ToUniversalTime();
 
         def command = Database.createCommand(
