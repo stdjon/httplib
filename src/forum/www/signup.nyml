@@ -2,7 +2,7 @@
 Template: template.nyml
 Stylesheets:
   - local-styles.css
-Title: Title Title Title
+Title: Sign up
 Partials:
   Nav: |
     <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-empty'

@@ -15,14 +15,12 @@ namespace httplib.page {
 [HasLogging]
 public class NustachePage: Page {
 
-    public override renderContent(
-        data: ObjectsType = null, parts: PartialsType = null): string {
+    protected override renderString(
+        template: string, data: ObjectsType, parts: PartialsType = null): string {
 
-        Log.t("NustachePage.renderContent...");
-        def objects = mergeDicts(Objects, data);
-
-        if(!String.IsNullOrEmpty(Content)) {
-            Render.StringToString(Content, objects, templateLocator(_, parts));
+        if(!String.IsNullOrEmpty(template)) {
+            def objects = mergeDicts(Objects, data);
+            Render.StringToString(template, objects, templateLocator(_, parts));
         } else {
             ""
         }

@@ -27,11 +27,15 @@ public class Page {
     public Objects: ObjectsType { get; set; }
     public Template: string { get; set; }
 
-    public virtual render(data: ObjectsType = null, parts: PartialsType = null): string {
+    public virtual render(
+        data: ObjectsType = null, parts: PartialsType = null): string {
+
         def lang =
             !String.IsNullOrEmpty(Lang) ? $" lang='$Lang'" : "";
+
+        def t = renderTitle(data);
         def title =
-            !String.IsNullOrEmpty(Title) ? $"\n<title>$Title</title>" : "";
+            !String.IsNullOrEmpty(t) ? $"\n<title>$t</title>" : "";
 
         mutable meta = "";
         when(Metas != null) {
@@ -68,9 +72,20 @@ public class Page {
     }
 
     public virtual renderContent(
-        _data: ObjectsType = null, _parts: PartialsType = null): string {
+        data: ObjectsType = null, parts: PartialsType = null): string {
 
-        Content;
+        renderString(Content, data, parts);
+    }
+
+    public virtual renderTitle(data: ObjectsType = null): string {
+
+        renderString(Title, data, null);
+    }
+
+    protected virtual renderString(template: string,
+        _data: ObjectsType, _parts: PartialsType = null): string {
+
+        template;
     }
 
     public merge(other: Page): void {
