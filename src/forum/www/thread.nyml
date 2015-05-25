@@ -56,9 +56,19 @@ Partials:
     {{/Title}}
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
-        <p><small><a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>:</small>
-        {{Content}}<br>
-        <small><i>&mdash;<a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> {{CreateDate}}</i></small></p>
+        <div class="post">
+          <small><a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>:</small>
+          {{Content}}<br>
+          <div class="rhs"><small> &mdash;<a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          {{CreateDate}}</small>
+          <span style="word-spacing: 15px;">
+          &nbsp;<i class="fa fa-reply" onclick="alert('reply!')"></i>
+          <i class="fa fa-edit" onclick="alert('edit!')"></i>
+          <i class="fa fa-quote-left" onclick="alert('quote!')"></i>
+          <i class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></i>
+          <i class="fa fa-star-o" onclick="alert('star!')"></i></div>
+          </span>
+        </div>
       </div>
     {{/Posts}}
     {{^Posts}}
@@ -82,7 +92,7 @@ Partials:
     }
     function divAnchorTrg(css) {
       css = css || '';
-      return 'div.anchor.trg p, div.anchor.trg:nth-child(odd) p {' + css + '}'
+      return 'div.anchor.trg div.post, div.anchor.trg:nth-child(odd) div.post {' + css + '}'
     }
     $('head').append(
       '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');

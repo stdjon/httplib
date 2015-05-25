@@ -67,10 +67,14 @@ div.body .anchor {
   margin-top: -55px;
   padding-top: 55px;
 }
-div.body p {
+div.body div.post {
   background-color: #ffe;
   margin-left: 50px;
   margin-right: 50px;
+  text-align: justify;
+}
+div.rhs {
+  text-align: right;
 }
 div.guide {
   padding-top: 30px;
@@ -157,21 +161,21 @@ ul.nav-tabs li.active a:hover {
 }
 
 /* Highlights for 'posts' */
-div.anchor p {
+div.anchor div.post {
   margin-top: 1px;
   margin-bottom: 1px;
   padding: 3px 15px;
   border-left: 5px solid #ffd;
 }
-div.anchor:nth-child(odd) p {
+div.anchor:nth-child(odd) div.post {
   background-color: #ffd;
   border-left: 5px solid #ffc;
 }
-div.anchor.trg p {
+div.anchor.trg div.post {
   background-color: #ffc;
   border-left: 5px solid #666;
 }
-div.anchor.trg:nth-child(odd) p {
+div.anchor.trg:nth-child(odd) div.post {
   background-color: #ffffc4;
   border-left: 5px solid #666;
 }
