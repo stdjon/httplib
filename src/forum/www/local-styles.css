@@ -73,6 +73,11 @@ div.body div.post {
   margin-right: 50px;
   text-align: justify;
 }
+div.body img.avatar {
+  float: left;
+  margin: 0px 12px;
+  border: 1px dotted #ccc;
+}
 div.rhs {
   text-align: right;
 }

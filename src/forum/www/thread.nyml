@@ -57,6 +57,7 @@ Partials:
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
         <div class="post">
+          <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
           <small><a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>:</small>
           {{Content}}<br>
           <div class="rhs"><small> &mdash;<a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
