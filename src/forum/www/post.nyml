@@ -60,67 +60,31 @@ Partials:
       <p>Points: <em>{{Points}}</em></p>
     {{/PostId}}
     </div>
+  PageScripts: |
+    //swatches/jumbotron colour
+    function liActiveA(css) {
+      css = css || '';
+      return 'ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {' + css + '}'
+    }
+    $('head').append(
+      '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
 
+    var cols = [
+        0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
+        202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
+    function setHdrCols(c, b) {
+      var fg = b ? "#444" : "#ccc";
+      var sl = b ? '55%, 55%' : '88%, 25%';
+      var col = 'hsl(' + c + ', ' + sl + ')';
 
-    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
-    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
-    <script>
-      Hyphenator.run();
+      $('.container .jumbotron').css('background-color', col);
+      $('.container .jumbotron').css('color', fg);
+      //$('nav.navbar').css('border-left-color', col);
+      $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
+      $('div.outside').css('border-left-color', col);
+      postIframeMessage('hdrCol/' + col);
+    }
+    var idx = Math.floor(Math.random() * cols.length);
+    var light = !!Math.floor(Math.random() * 2);
 
-      // iframe communication
-      function postIframeMessage(value) {
-        var f = document.getElementById('navbar-frame');
-        var w = f.contentWindow;
-        w.postMessage(value, "*");
-      }
-
-      addEventListener("message", function(msg) {
-        if('{{DefaultSecurePrefix}}' === msg.origin) {
-          var cmd = msg.data.split('/');
-          switch(cmd[0]) {
-            case 'nav': {
-              if('show' == cmd[1]) {
-                $('#navbar-frame').height(cmd[2]);
-              } else {
-                $('#navbar-frame').height('50px');
-              }
-              break;
-            }
-          }
-        }
-      });
-
-      //swatches/jumbotron colour
-      function liActiveA(css) {
-        css = css || '';
-        return 'ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {' + css + '}'
-      }
-      $('head').append(
-        '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
-
-      var cols = [
-          0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
-          202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
-      function setHdrCols(c, b) {
-        var fg = b ? "#444" : "#ccc";
-        var sl = b ? '55%, 55%' : '88%, 25%';
-        var col = 'hsl(' + c + ', ' + sl + ')';
-
-        $('.container .jumbotron').css('background-color', col);
-        $('.container .jumbotron').css('color', fg);
-        //$('nav.navbar').css('border-left-color', col);
-        $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
-        $('div.outside').css('border-left-color', col);
-        postIframeMessage('hdrCol/' + col);
-      }
-      var idx = Math.floor(Math.random() * cols.length);
-      var light = !!Math.floor(Math.random() * 2);
-
-      // init!
-      $(window).load(function() {
-        postIframeMessage('ehlo');
-        setHdrCols(cols[idx], light);
-      });
-    </script>
 

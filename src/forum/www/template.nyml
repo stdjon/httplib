@@ -29,3 +29,73 @@ Partials:
         </div>
       </div>
     </div>
+    {{>Scripts}}
+  Scripts: |
+    {{>LoadScripts}}
+    <script>
+      {{>SharedScripts}}
+    </script>
+  LoadScripts: |
+    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
+    {{>PageLoadScripts}}
+  SharedScripts: |
+    Hyphenator.run();
+    {{>PageScripts}}
+    // Required for scrollspy (see http://www.iwstudio.it/scrollspy/)
+    $(window).resize(function(){
+      $('[data-spy="scroll"]').each(function() {
+        var $spy = $(this).scrollspy('refresh');
+      });
+    });
+    //scroll updates URL
+    $(document).bind('scroll',function(e) {
+      $('.anchor').each(function() {
+        $(this).removeClass('trg');
+        if ( $(this).offset().top < pageYOffset + 25 &&
+          $(this).offset().top + $(this).height() > pageYOffset + 25 ) {
+            $(this).addClass('trg');
+            var id_ = $(this).attr('id') || '';
+            var id = '#' + id_;
+            var oldId = location.hash;
+            if(oldId !== id) {
+              if(history.replaceState) {
+                history.replaceState({}, document.title + ' ' + id, id);
+              } else {
+                $(this).attr('id', undefined);
+                location.hash = id;
+                $(this).attr('id', id_);
+              }
+            }
+          }
+        });
+    });
+    // iframe communication
+    function postIframeMessage(value) {
+      var f = document.getElementById('navbar-frame');
+      var w = f.contentWindow;
+      w.postMessage(value, "*");
+    }
+    addEventListener("message", function(msg) {
+      if('{{DefaultSecurePrefix}}' === msg.origin) {
+        var cmd = msg.data.split('/');
+        switch(cmd[0]) {
+          case 'nav': {
+            if('show' == cmd[1]) {
+              $('#navbar-frame').height(cmd[2]);
+            } else {
+              $('#navbar-frame').height('50px');
+            }
+            break;
+          }
+        }
+      }
+    });
+    // init!
+    $(window).load(function() {
+      postIframeMessage('ehlo');
+      setHdrCols(cols[idx], light);
+    });
+
+
