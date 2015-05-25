@@ -93,7 +93,7 @@ public class ForumServer: Server {
             ];
 
             response.append(renderPage("signup.nyml", data));
-            response["Set-Cookie"] = "_u=; path=/; secure; httponly";
+            response.setCookie("_u", "", COOKIE.SECURE_HTTP_ONLY);
             response.Status = (200, "OK");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -168,7 +168,7 @@ public class ForumServer: Server {
                         }
                     });
 
-                    response["Set-Cookie"] = $"_session=$token; path=/; secure; httponly";
+                    response.setCookie("_session", token, COOKIE.SECURE_HTTP_ONLY);
                     response["Location"] = DefaultInsecurePrefix + "/";
                     response.Status = (303, "See Other");
 
@@ -556,9 +556,7 @@ public class ForumServer: Server {
             when(ok) {
 
                 def (_ok2, token) = registerSessionToken(id :> uint);
-                // System.Net.Cookie flags don't seem to be respected, so set a
-                // cookie header explicitly...
-                response["Set-Cookie"] = $"_session=$token; path=/; secure; httponly";
+                response.setCookie("_session", token, COOKIE.SECURE_HTTP_ONLY);
             }
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
@@ -586,7 +584,7 @@ public class ForumServer: Server {
 
             // System.Net.Cookie flags don't seem to be respected, so set a
             // cookie header explicitly...
-            response["Set-Cookie"] = "_session=; path=/; secure; httponly";
+            response.setCookie("_session", "", COOKIE.SECURE_HTTP_ONLY);
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
         } else {
@@ -600,9 +598,8 @@ public class ForumServer: Server {
         if(request.IsSecure) {
             def user = context.Vars["user"];
             def _password = context.Vars["password"];
-            // System.Net.Cookie flags don't seem to be respected, so set a
-            // cookie header explicitly...
-            response["Set-Cookie"] = $"_u=$user; path=/; secure; httponly";
+
+            response.setCookie("_u", user, COOKIE.SECURE_HTTP_ONLY);
             response["Location"] = DefaultSecurePrefix + "/signup";
             response.Status = (303, "See Other");
         } else {

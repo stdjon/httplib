@@ -38,14 +38,28 @@ public enum HTTP {
 }
 
 
+//------------------------------------------------------------------------------
 // Cookie Flags
-[System.Flags]
+
+[Flags]
 public enum COOKIE {
     | NONE = 0x00
     | SECURE = 0x01
     | HTTP_ONLY = 0x02
 
     | SECURE_HTTP_ONLY = 0x03
+}
+
+
+public class CookieFlagExtensions {
+
+    public static isSecure(this cookie: COOKIE): bool {
+        (cookie & COOKIE.SECURE) != COOKIE.NONE;
+    }
+
+    public static isHttpOnly(this cookie: COOKIE): bool {
+        (cookie & COOKIE.HTTP_ONLY) != COOKIE.NONE;
+    }
 }
 
 
@@ -348,7 +362,9 @@ public class Response {
     // Convenience wrapper for headers
     public Item[key: string]: string {
         get { response.Headers[key] }
-        set { response.Headers[key] = value }
+        // TODO: more extensive testing whether the below is actually better than
+        //   response.Headers[key] = value in all situations...
+        set { response.Headers.Add($"$key: $value") }
     }
 
     //TODO FIXME XXX TMP
@@ -365,35 +381,28 @@ public class Response {
         output = array(output_length);
     }
 
-    // interim API pending full cookie support...
-    // NB: flags set on a System.Net.Cookie in this way do not seem to get
-    //   written out into the response header - would be nice to find out why.
     public setCookie(name: string, value: string, flags = COOKIE.NONE): void {
 
-        def cookie = Cookie(name, value, "/");
-        when((flags & COOKIE.SECURE) != COOKIE.NONE) {
-            cookie.Secure = true;
-        }
-        when((flags & COOKIE.HTTP_ONLY) != COOKIE.NONE) {
-            cookie.HttpOnly = true;
-        }
-        response.AppendCookie(cookie);
+        setCookie(name, value, null, flags);
     }
 
-    // interim API pending full cookie support...
-    // NB: flags set on a System.Net.Cookie in this way do not seem to get
+    // NB: Secure/HttpOnly flags set on a System.Net.Cookie do not seem to get
     //   written out into the response header - would be nice to find out why.
+    //   (For now, we can write out the Set-Cookie header in full, which works
+    //   acceptably.)
     public setCookie(
         name: string, value: string, domain: string, flags = COOKIE.NONE): void {
 
-        def cookie = Cookie(name, value, "/", domain);
-        when((flags & COOKIE.SECURE) != COOKIE.NONE) {
-            cookie.Secure = true;
-        }
-        when((flags & COOKIE.HTTP_ONLY) != COOKIE.NONE) {
-            cookie.HttpOnly = true;
-        }
-        response.AppendCookie(cookie);
+        def domain_spec =
+            !String.IsNullOrEmpty(domain) ? $";Domain=$domain" : "";
+        def secure = flags.isSecure() ? "; Secure" : "";
+        def http_only = flags.isHttpOnly() ? "; HttpOnly" : "";
+
+        // From my testing, this single-string WebHeaderCollection.Add() method
+        // is the _only_ reliable way to set multiple cookies with different
+        // flags in the same Response.
+        response.Headers.Add(
+            $"Set-Cookie: $name=$value; Path=/$domain_spec$secure$http_only");
     }
 
     public append(params data: array[string]): void {
