@@ -8,8 +8,6 @@ Metas:
 Stylesheets:
   - /bootstrap-3.3.4-dist/css/bootstrap.css
   - /font-awesome-4.3.0/css/font-awesome.css
-  - /markitup-1.1.14/markitup/skins/markitup/style.css
-  - /markitup-1.1.14/markitup/sets/default/style.css
 Title: Edit
 Content: |
   <style>
@@ -31,45 +29,52 @@ Content: |
   <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
   <script src="/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
   <script>
-    var oldText = "";
-    function postText(e) {
-      var text = $(this).val();
+    function textUpdate(text, oldText) {
+      var result = {};
       if(oldText != text) {
         var obj = {};
         var i = 0;
         var l = text.length;
         var oL = oldText.length;
-        //var m = l < oL ? l : oL;
 
-        //insertion
-        if(l > oL) {
-          var ll = l - oL;
+        if(l - oL == 1) {
+          // single char insertion
           while(i < oL && text[i] == oldText[i]) {
             i++;
           }
-          obj.A = "insert";
-          obj.Text = text.slice(i, i + ll);
-          obj.Pos = i;
-        } else if(l < oL) {
-          var ll = oL - l;
+          result.a = i;
+          result.b = i;
+          result.s = text[i];
+        } else if (oL - l == 1) {
+          // single char deletion
+          //var ll = oL - l;
           while(i < l && text[i] == oldText[i]) {
             i++;
           }
-          obj.A = "delete";
-          obj.Text = oldText.slice(i, i + ll);
-          obj.Pos = i;
+          result.a = i;
+          result.b = i + 1;
+          result.s = '';
         } else {
           while(i < l && text[i] == oldText[i]) {
             i++;
           }
           var j = 0;
-          while(j < l && text[l - j] == oldText[l - j]) {
+          while(j < oL && text[l - j] == oldText[oL - j]) {
             j++;
           }
-          obj.A = "replace";
-          obj.Text = text.slice(i, l - j + 1);
-          obj.Pos = i;
+          var adj = (oL > l) ? 2 : 1;
+          result.a = i;
+          result.b = (oL - j) + adj;
+          result.s = text.slice(i, (l - j) + adj);
         }
+      }
+      return result;
+    }
+    var oldText = "";
+    function postText(e) {
+      var text = $(this).val();
+      if(text != oldText) {
+        var obj = textUpdate(text, oldText);
         $("#transit").html(JSON.stringify(obj));
 
         $.ajax({
@@ -77,7 +82,7 @@ Content: |
           dataType: 'text',
           global: false,
           url: '/edit-do',
-          data: 'txt='+encodeURIComponent(obj.Text) + '&pos=' + obj.Pos + '&act=' + obj.A,
+          data: 'a=' + obj.a + '&b=' + obj.b + '&s='+encodeURIComponent(obj.s),
           success: function(data) {
             $("#preview").html(data);
           }
@@ -91,7 +96,7 @@ Content: |
       dataType: 'text',
       global: false,
       url: '/edit-do',
-      data: 'txt=0&pos=0&act=reset',
+      data: 'a=0&b=0&s=',
       success: function(data) {
         $("#preview").html(data);
       }

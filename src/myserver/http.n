@@ -331,24 +331,16 @@ module Test {
             mutable editText = "";
 
             my_server.route(HTTP.POST, "/edit-do", (ctx, _req, res) => {
-                def txt = ctx.Vars["txt"];
-                def pos = Int32.Parse(ctx.Vars["pos"]);
-                def act = ctx.Vars["act"];
+                def a = Int32.Parse(ctx.Vars["a"]);
+                def b = Int32.Parse(ctx.Vars["b"]);
+                def s = ctx.Vars["s"];
 
-                match(act) {
-                    | "insert" => {
-                        editText = editText.Substring(0, pos) + txt + editText.Substring(pos);
-                    }
-                    | "delete" => {
-                        def len = txt.Length;
-                        editText = editText.Substring(0, pos) + editText.Substring(pos + len);
-                    }
-                    | "replace" => {
-                        def len = txt.Length;
-                        editText = editText.Substring(0, pos) + txt + editText.Substring(pos + len);
-                    }
-                    | "reset" => {
+                match(a, b, s) {
+                    | (0, 0, "") => {
                         editText = "";
+                    }
+                    | _ => {
+                        editText = editText.Substring(0, a) + s + editText.Substring(b);
                     }
                 }
 
