@@ -21,6 +21,8 @@ FileServing:
   - /.*ttf
   - /.*woff
   - /.*woff2
+  - /.*png
+  - /edit
   - /magic
   - /script
   - /test[0-9]+

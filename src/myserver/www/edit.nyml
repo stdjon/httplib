@@ -1,0 +1,101 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+  - /markitup-1.1.14/markitup/skins/markitup/style.css
+  - /markitup-1.1.14/markitup/sets/default/style.css
+Title: Edit
+Content: |
+  <style>
+    div pre, div textarea { margin-top: 10px; margin-bottom: 10px; }
+  </style>
+  <div class="container">
+    <h1>Text edit example</h1>
+    <p>Type some stuff into the editor, check out the preview...</p>
+    <div class="col-md-6" style="background-color: #bdf; height: 250px;">
+      <textarea id="input" style="width: 350px;"></textarea>
+    </div>
+    <div class="col-md-6" style="background-color: #dfb; height: 50px;">
+      <pre><span id="transit"></span></pre>
+    </div>
+    <div class="col-md-6" style="background-color: #fdb; height: 200px;">
+      <pre><span id="preview"></span></pre>
+    </div>
+  </div>
+  <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
+  <script src="/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+  <script>
+    var oldText = "";
+    function postText(e) {
+      var text = $(this).val();
+      if(oldText != text) {
+        var obj = {};
+        var i = 0;
+        var l = text.length;
+        var oL = oldText.length;
+        //var m = l < oL ? l : oL;
+
+        //insertion
+        if(l > oL) {
+          var ll = l - oL;
+          while(i < oL && text[i] == oldText[i]) {
+            i++;
+          }
+          obj.A = "insert";
+          obj.Text = text.slice(i, i + ll);
+          obj.Pos = i;
+        } else if(l < oL) {
+          var ll = oL - l;
+          while(i < l && text[i] == oldText[i]) {
+            i++;
+          }
+          obj.A = "delete";
+          obj.Text = oldText.slice(i, i + ll);
+          obj.Pos = i;
+        } else {
+          while(i < l && text[i] == oldText[i]) {
+            i++;
+          }
+          var j = 0;
+          while(j < l && text[l - j] == oldText[l - j]) {
+            j++;
+          }
+          obj.A = "replace";
+          obj.Text = text.slice(i, l - j + 1);
+          obj.Pos = i;
+        }
+        $("#transit").html(JSON.stringify(obj));
+
+        $.ajax({
+          type: 'POST',
+          dataType: 'text',
+          global: false,
+          url: '/edit-do',
+          data: 'txt='+encodeURIComponent(obj.Text) + '&pos=' + obj.Pos + '&act=' + obj.A,
+          success: function(data) {
+            $("#preview").html(data);
+          }
+        });
+        oldText = text;
+      }
+    }
+    $("#input").on("input", postText);
+    $.ajax({
+      type: 'POST',
+      dataType: 'text',
+      global: false,
+      url: '/edit-do',
+      data: 'txt=0&pos=0&act=reset',
+      success: function(data) {
+        $("#preview").html(data);
+      }
+    });
+  </script>
+Partials:
+Objects:

@@ -328,6 +328,34 @@ module Test {
 
             my_server.route(HTTP.GET, "/pwtest", my_server.pwResponse);
 
+            mutable editText = "";
+
+            my_server.route(HTTP.POST, "/edit-do", (ctx, _req, res) => {
+                def txt = ctx.Vars["txt"];
+                def pos = Int32.Parse(ctx.Vars["pos"]);
+                def act = ctx.Vars["act"];
+
+                match(act) {
+                    | "insert" => {
+                        editText = editText.Substring(0, pos) + txt + editText.Substring(pos);
+                    }
+                    | "delete" => {
+                        def len = txt.Length;
+                        editText = editText.Substring(0, pos) + editText.Substring(pos + len);
+                    }
+                    | "replace" => {
+                        def len = txt.Length;
+                        editText = editText.Substring(0, pos) + txt + editText.Substring(pos + len);
+                    }
+                    | "reset" => {
+                        editText = "";
+                    }
+                }
+
+                res.append(editText);
+                res.Status = (200, "OK");
+            });
+
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 
             my_server.start();
