@@ -17,7 +17,7 @@ Content: |
     <h1>Text edit example</h1>
     <p>Type some stuff into the editor, check out the preview...</p>
     <div class="col-md-6" style="background-color: #bdf; height: 250px;">
-      <textarea id="input" style="width: 350px;"></textarea>
+      <textarea autofocus id="input" style="width: 350px;"></textarea>
     </div>
     <div class="col-md-6" style="background-color: #dfb; height: 50px;">
       <pre><span id="transit"></span></pre>
@@ -33,38 +33,59 @@ Content: |
       var result = {};
       if(oldText != text) {
         var obj = {};
-        var i = 0;
+        var i = 0, k = -1;
         var l = text.length;
         var oL = oldText.length;
+        var needFullCheck = true;
 
         if(l - oL == 1) {
-          // single char insertion
+          // check for single char insertion
           while(i < oL && text[i] == oldText[i]) {
             i++;
           }
-          result.a = i;
-          result.b = i;
-          result.s = text[i];
+
+          if((i == oL) || (text[i + 1] === oldText[i])) {
+            result.a = i;
+            result.b = i;
+            result.s = text[i];
+            needFullCheck = false;
+          } else {
+            k = i;
+          }
         } else if (oL - l == 1) {
-          // single char deletion
-          //var ll = oL - l;
+          // check for single char deletion
           while(i < l && text[i] == oldText[i]) {
             i++;
           }
-          result.a = i;
-          result.b = i + 1;
-          result.s = '';
-        } else {
-          while(i < l && text[i] == oldText[i]) {
-            i++;
+
+          if((i == l) || (oldText[i + 1] == text[i])) {
+            result.a = i;
+            result.b = i + 1;
+            result.s = '';
+            needFullCheck = false;
+          } else {
+            k = i;
+          }
+        }
+        if(needFullCheck) {
+          if(k >= 0) {
+            i = k;
+          } else {
+            while(i < l && text[i] == oldText[i]) {
+              i++;
+            }
           }
           var j = 0;
           while(j < oL && text[l - j] == oldText[oL - j]) {
             j++;
           }
           var adj = (oL > l) ? 2 : 1;
+          var b =  (oL - j) + adj;
+          if(b > oL) {
+            b = oL;
+          }
           result.a = i;
-          result.b = (oL - j) + adj;
+          result.b = b;
           result.s = text.slice(i, (l - j) + adj);
         }
       }

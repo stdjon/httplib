@@ -331,8 +331,8 @@ module Test {
             mutable editText = "";
 
             my_server.route(HTTP.POST, "/edit-do", (ctx, _req, res) => {
-                def a = Int32.Parse(ctx.Vars["a"]);
-                def b = Int32.Parse(ctx.Vars["b"]);
+                def a = Math.Max(0, Int32.Parse(ctx.Vars["a"]));
+                def b = Math.Min(Int32.Parse(ctx.Vars["b"]), editText.Length);
                 def s = ctx.Vars["s"];
 
                 match(a, b, s) {
