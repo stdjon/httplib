@@ -90,7 +90,7 @@ Partials:
           <div class="progress-bar progress-bar-danger" style="width: 1%;" id="password_strength"></div>
         </div>
         <span class="input-pre">Email: </span>
-        <span class="feedback" id="userexists"></span>
+        <span class="feedback" id="emailexists"></span>
         <span class="feedback" id="emailfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><i class="fa fa-envelope-o fa-fw"></i></span>
