@@ -442,6 +442,30 @@ public class Response {
         output = array(output_length);
     }
 
+    public setCookie(name: string, value: string, flags = COOKIE.NONE): void {
+
+        setCookie(name, value, null, flags);
+    }
+
+    // NB: Secure/HttpOnly flags set on a System.Net.Cookie do not seem to get
+    //   written out into the response header - would be nice to find out why.
+    //   (For now, we can write out the Set-Cookie header in full, which works
+    //   acceptably.)
+    public setCookie(
+        name: string, value: string, domain: string, flags = COOKIE.NONE): void {
+
+        def domain_spec =
+            !String.IsNullOrEmpty(domain) ? $";Domain=$domain" : "";
+        def secure = flags.isSecure() ? "; Secure" : "";
+        def http_only = flags.isHttpOnly() ? "; HttpOnly" : "";
+
+        // From my testing, this single-string WebHeaderCollection.Add() method
+        // is the _only_ reliable way to set multiple cookies with different
+        // flags in the same Response.
+        response.Headers.Add(
+            $"Set-Cookie: $name=$value; Path=/$domain_spec$secure$http_only");
+    }
+
     public append(params data: array[string]): void {
         appendArray(data);
     }
