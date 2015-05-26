@@ -443,11 +443,6 @@ public class Response {
     }
 
     public append(params data: array[string]): void {
-        appendArray(data);
-    }
-
-    public appendArray(data: array[string]): void {
-
         foreach(d in data) {
             def buffer = UTF8.GetBytes(d);
             writeToOutput(buffer);

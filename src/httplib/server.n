@@ -140,7 +140,7 @@ public abstract class Server: IDisposable {
             Listener.Prefixes.Add(p);
         }
 
-        fileServingArray(Configuration.FileServing);
+        fileServing(Configuration.FileServing);
 
         foreach(x in Configuration.Renderers) {
             def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
@@ -249,10 +249,6 @@ public abstract class Server: IDisposable {
     }
 
     public fileServing(params paths: array[string]): void {
-        fileServingArray(paths);
-    }
-
-    public fileServingArray(paths: array[string]): void {
         when(paths != null) {
             foreach(p in paths) {
                 def route = Route(p);
