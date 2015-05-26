@@ -316,7 +316,7 @@ public abstract class Server: IDisposable {
 
         def ext = Path.GetExtension(path).Substring(1);
 
-        using(stream = openLocalFile(path, true)) {
+        using(stream = openLocalFile(path)) {
             def renderer = Renderers[ext];
             def page = renderer.loadPage(stream);
 
@@ -435,19 +435,17 @@ public abstract class Server: IDisposable {
         result;
     }
 
-    public openLocalFile(path: string, force = false): FileStream {
+    public openLocalFile(path: string): FileStream {
         mutable result = null;
-        when(force || fileServingAllowed(path)) {
-            exit: {
-                foreach(root in Configuration.Roots) {
-                    def p = Path.Combine(root, path);
-                    def exists = File.Exists(p);
+        exit: {
+            foreach(root in Configuration.Roots) {
+                def p = Path.Combine(root, path);
+                def exists = File.Exists(p);
 
-                    Log.d("File exists: \"{0}\"? {1}", p, exists);
-                    when(exists) {
-                        result = FileStream(p, FileMode.Open);
-                        exit();
-                    }
+                Log.d("File exists: \"{0}\"? {1}", p, exists);
+                when(exists) {
+                    result = FileStream(p, FileMode.Open);
+                    exit();
                 }
             }
         }
@@ -456,17 +454,19 @@ public abstract class Server: IDisposable {
 
     findLocalFileForRequest(request: Request): FileStream * string {
         mutable result = null, ext = null;
-        if(!String.IsNullOrEmpty(request.Extension)) {
-            result = openLocalFile(request.RawPath);
 
-        } else {
-            exit: {
-                foreach(x in Configuration.Renderers) {
-                    def force = fileServingAllowed(request.RawPath);
-                    result = openLocalFile(request.RawPath + "." + x.Key, force);
-                    when(result != null) {
-                        ext = x.Key;
-                        exit();
+        when(fileServingAllowed(request.RawPath)) {
+            if(!String.IsNullOrEmpty(request.Extension)) {
+                result = openLocalFile(request.RawPath);
+
+            } else {
+                exit: {
+                    foreach(x in Configuration.Renderers) {
+                        result = openLocalFile(request.RawPath + "." + x.Key);
+                        when(result != null) {
+                            ext = x.Key;
+                            exit();
+                        }
                     }
                 }
             }
