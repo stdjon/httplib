@@ -97,7 +97,7 @@ class MyComplexHandler: ComplexHandler {
     }
 
     public override finish(): void {
-        Response.setCookie("CookieTestName", "CookieTestValue");
+        Response.Cookies.add("CookieTestName", "CookieTestValue");
     }
 }
 

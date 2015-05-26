@@ -210,6 +210,69 @@ public class CookieTable: IAssociation[CookieCollection] {
 }
 
 
+//------------------------------------------------------------------------------
+// CookieSetter
+
+public class CookieSetter {
+
+    response: HttpListenerResponse;
+
+    public this(r: HttpListenerResponse) {
+        response = r;
+    }
+
+    public add(name: string, value: string, flags = COOKIE.NONE): void {
+
+        add(name, value, null, null, flags);
+    }
+
+    public add(name: string,
+        value: string, domain: string, flags = COOKIE.NONE): void {
+
+        add(name, value, domain, null, flags);
+    }
+
+    public add(name: string,
+        value: string, expiry: DateTime?, flags = COOKIE.NONE): void {
+
+        add(name, value, null, expiry, flags);
+    }
+
+    // NB: Secure/HttpOnly flags set on a System.Net.Cookie do not seem to get
+    //   written out into the response header - would be nice to find out why.
+    //   (For now, we can write out the Set-Cookie header in full, which works
+    //   acceptably.)
+    public add(name: string, value: string,
+        domain: string, expiry: DateTime?, flags = COOKIE.NONE): void {
+
+        def domain_spec =
+            !String.IsNullOrEmpty(domain) ? $"; Domain=$domain" : "";
+
+        def expiry_fmt = expiry ?
+            (expiry :> DateTime).ToUniversalTime().ToString("r") : null;
+        def expiry_spec = expiry_fmt ? $"; Expires=$expiry_fmt": "";
+
+        def secure = flags.isSecure() ? "; Secure" : "";
+        def http_only = flags.isHttpOnly() ? "; HttpOnly" : "";
+
+        // From my testing, this method WebHeaderCollection.Add(string) is the
+        // _only_ reliable way to set multiple cookies with different flags in
+        // the same Response.
+        response.Headers.Add($"Set-Cookie: $name=$value; "
+            $"Path=/$domain_spec$expiry_spec$secure$http_only");
+    }
+
+    public expire(name: string, flags = COOKIE.NONE): void {
+        expire(name, null, flags);
+    }
+
+    public expire(name: string,
+        domain: string, flags = COOKIE.NONE): void {
+
+        add(name, null, domain, DateTime.Now.AddMinutes(-10), flags);
+    }
+}
+
 
 //------------------------------------------------------------------------------
 // Context
@@ -367,42 +430,16 @@ public class Response {
         set { response.Headers.Add($"$key: $value") }
     }
 
-    //TODO FIXME XXX TMP
-    public SysCookies: CookieCollection {
-        get { response.Cookies; }
-    }
+    public Cookies: CookieSetter { get; private set; }
 
     mutable response: HttpListenerResponse;
     mutable output: array[byte];
 
     public this(res: HttpListenerResponse, output_length = 1024) {
 
+        Cookies = CookieSetter(res);
         response = res;
         output = array(output_length);
-    }
-
-    public setCookie(name: string, value: string, flags = COOKIE.NONE): void {
-
-        setCookie(name, value, null, flags);
-    }
-
-    // NB: Secure/HttpOnly flags set on a System.Net.Cookie do not seem to get
-    //   written out into the response header - would be nice to find out why.
-    //   (For now, we can write out the Set-Cookie header in full, which works
-    //   acceptably.)
-    public setCookie(
-        name: string, value: string, domain: string, flags = COOKIE.NONE): void {
-
-        def domain_spec =
-            !String.IsNullOrEmpty(domain) ? $";Domain=$domain" : "";
-        def secure = flags.isSecure() ? "; Secure" : "";
-        def http_only = flags.isHttpOnly() ? "; HttpOnly" : "";
-
-        // From my testing, this single-string WebHeaderCollection.Add() method
-        // is the _only_ reliable way to set multiple cookies with different
-        // flags in the same Response.
-        response.Headers.Add(
-            $"Set-Cookie: $name=$value; Path=/$domain_spec$secure$http_only");
     }
 
     public append(params data: array[string]): void {

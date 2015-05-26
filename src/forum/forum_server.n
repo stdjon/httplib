@@ -93,7 +93,7 @@ public class ForumServer: Server {
             ];
 
             response.append(renderPage("signup.nyml", data));
-            response.setCookie("_u", "", COOKIE.SECURE_HTTP_ONLY);
+            response.Cookies.expire("_u", COOKIE.SECURE_HTTP_ONLY);
             response.Status = (200, "OK");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -132,6 +132,7 @@ public class ForumServer: Server {
             } else {
                 def auth = getModuleInterface.[mod.IPbkdf2Auth]();
                 mutable token = null;
+                mutable expiry;
 
                 if(auth != null) {
                     def now = DateTime.Now.ToUniversalTime();
@@ -162,13 +163,15 @@ public class ForumServer: Server {
                         ];
                         _ = command5.executeNonQuery();
 
-                        def (ok, t) = registerSessionToken(id);
+                        def (ok, t, x) = registerSessionToken(id);
                         when(ok) {
                             token = t;
+                            expiry = x;
                         }
                     });
 
-                    response.setCookie("_session", token, COOKIE.SECURE_HTTP_ONLY);
+                    response.Cookies.add(
+                        "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
                     response["Location"] = DefaultInsecurePrefix + "/";
                     response.Status = (303, "See Other");
 
@@ -555,8 +558,9 @@ public class ForumServer: Server {
             Log.d("Login attempt as {0}: {2}", user, ok, record);
             when(ok) {
 
-                def (_ok2, token) = registerSessionToken(id :> uint);
-                response.setCookie("_session", token, COOKIE.SECURE_HTTP_ONLY);
+                def (_ok2, token, expiry) = registerSessionToken(id :> uint);
+                response.Cookies.add(
+                    "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
             }
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
@@ -582,6 +586,7 @@ public class ForumServer: Server {
                 Log.i("Deleted {0} session tokens (user sign out)...", rows);
             }
 
+            response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
             response["Location"] = DefaultInsecurePrefix + "/";
             response.Status = (303, "See Other");
         } else {
@@ -596,7 +601,7 @@ public class ForumServer: Server {
             def user = context.Vars["user"];
             def _password = context.Vars["password"];
 
-            response.setCookie("_u", user, COOKIE.SECURE_HTTP_ONLY);
+            response.Cookies.add("_u", user, COOKIE.SECURE_HTTP_ONLY);
             response["Location"] = DefaultSecurePrefix + "/signup";
             response.Status = (303, "See Other");
         } else {
@@ -658,7 +663,7 @@ public class ForumServer: Server {
         cmp == 0;
     }
 
-    public registerSessionToken(id: uint): (bool * string) {
+    public registerSessionToken(id: uint): (bool * string * DateTime) {
         def token = getSessionToken();
         def expiry = DateTime.Now.
             AddMinutes(SessionTokenDuration).ToUniversalTime();
@@ -672,7 +677,7 @@ public class ForumServer: Server {
 
         ];
         def rows = command.executeNonQuery();
-        (rows == 1, token);
+        (rows == 1, token, expiry);
     }
 
     public expireSessionTokens(): void {
