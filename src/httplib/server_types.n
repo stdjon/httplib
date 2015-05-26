@@ -510,7 +510,7 @@ public class Route {
                 for(mutable i = 1; i < m.Groups.Count; i++) {
                     def k = captures[i - 1];
                     def v = m.Groups[i].ToString();
-                    vars[k] = v;
+                    vars[k] = Uri.UnescapeDataString(v);
                 }
                 ""
             }, 100, 0);

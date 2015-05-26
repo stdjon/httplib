@@ -105,10 +105,10 @@ public class ForumServer: Server {
         context: Context, request: Request, response: Response): void {
 
         if(request.IsSecure) {
-            def user = Uri.UnescapeDataString(context.Vars["user"]);
-            def password = Uri.UnescapeDataString(context.Vars["password"]);
-            def confirm = Uri.UnescapeDataString(context.Vars["confirm"]);
-            def email = Uri.UnescapeDataString(context.Vars["email"]);
+            def user = context.Vars["user"];
+            def password = context.Vars["password"];
+            def confirm = context.Vars["confirm"];
+            def email = context.Vars["email"];
 
 
             mutable command1 = Database.createCommand("SELECT Name FROM Users "
@@ -195,14 +195,14 @@ public class ForumServer: Server {
         if(!String.IsNullOrEmpty(u)) {
             mutable command = Database.createCommand(
                 "SELECT Name FROM Users WHERE Name = @Name") <- [
-                    "@Name" = Uri.UnescapeDataString(u),
+                    "@Name" = u,
                 ];
             ok = command.executeScalar() :> string;
         }
         else when(!String.IsNullOrEmpty(e)) {
             mutable command = Database.createCommand(
                 "SELECT Email FROM Auth WHERE Email = @Email") <- [
-                    "@Email" = Uri.UnescapeDataString(e),
+                    "@Email" = e,
                 ];
             ok = command.executeScalar() :> string;
         }
@@ -537,8 +537,8 @@ public class ForumServer: Server {
     public navSigninResponse(
         context: Context, request: Request, response: Response): void {
         if(request.IsSecure) {
-            def user = Uri.UnescapeDataString(context.Vars["user"]);
-            def password = Uri.UnescapeDataString(context.Vars["password"]);
+            def user = context.Vars["user"];
+            def password = context.Vars["password"];
             def auth = getModuleInterface.[mod.IPbkdf2Auth]();
             def command1 = Database.createCommand(
                 "SELECT Id FROM Users WHERE "

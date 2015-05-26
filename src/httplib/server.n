@@ -489,7 +489,9 @@ public abstract class Server: IDisposable {
                         def s = v.Split(array['='], StringSplitOptions.None);
 
                         when(s.Length > 1) {
-                            vars_out[s[0].ToString()] = s[1].ToString();
+                            def k = Uri.UnescapeDataString(s[0].ToString());
+                            def v = Uri.UnescapeDataString(s[1].ToString());
+                            vars_out[k] = v;
                         }
                     }
                 }
