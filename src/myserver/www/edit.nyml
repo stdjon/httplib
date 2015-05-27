@@ -16,8 +16,16 @@ Content: |
   <div class="container">
     <h1>Text edit example</h1>
     <p>Type some stuff into the editor, check out the preview...</p>
-    <div class="col-md-6" style="background-color: hsl(240,80%,80%); height: 360px;">
+    <div class="col-md-5" style="background-color: hsl(240,80%,80%); height: 360px;">
       <textarea autofocus id="input" style="width: 350px; height: 320px;"></textarea>
+    </div>
+    <div class="col-md-1" style="background-color: hsl(240,80%,80%); height: 360px;">
+      <div style="padding: 10px;">
+        <button title="Sync" onclick="syncText()"><i class="fa fa-fw fa-refresh"></i></button>
+        <button title="BBCode" onclick="bbmode()"><i class="fa fa-fw fa-bold"></i></button>
+        <button title="Textile" onclick="txmode()"><i class="fa fa-fw fa-text-width"></i></button>
+        <!--button title="Settings"><i class="fa fa-fw fa-gears"></i></button-->
+      </div>
     </div>
     <div class="col-md-6" style="background-color: hsl(60,80%,80%); height: 90px;">
       <pre style="height: 70px;"><span id="transit-out"></span></pre>
@@ -79,8 +87,12 @@ Content: |
     }
     function parsePreview(data) {
       var o = JSON.parse(data);
-      previewText = previewText.slice(0, o.a) + o.s + previewText.slice(o.b);
-      $("#transit-in").html(data);
+      if(o.v) {
+        previewText = o.v;
+      } else {
+        previewText = previewText.slice(0, o.a) + o.s + previewText.slice(o.b);
+      }
+      $("#transit-in").text(data);
       $("#preview").html(previewText);
     }
     var oldText = "";
@@ -89,7 +101,7 @@ Content: |
       var text = $(this).val();
       if(text != oldText) {
         var obj = diffText(oldText, text);
-        $("#transit-out").html(JSON.stringify(obj));
+        $("#transit-out").text(JSON.stringify(obj));
 
         $.ajax({
           type: 'POST',
@@ -101,6 +113,30 @@ Content: |
         });
         oldText = text;
       }
+    }
+    function syncText() {
+      var text = $("#input").val();
+      $("#transit-out").text(JSON.stringify({ v: text }));
+      $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/edit-do',
+        data: 'v=' + text,
+        success: parsePreview
+      });
+    }
+    function bbmode() { mode('bbcode'); }
+    function txmode() { mode('textile'); }
+    function mode(m) {
+      $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/edit-do',
+        data: 'm=' + m,
+        success: parsePreview
+      });
     }
     $("#input").on("input", postText);
     $.ajax({

@@ -43,6 +43,8 @@ Modules:
       HashLength: 25
   - Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
+  - Assembly: httplib.mod.textile.dll
+    Typename: httplib.mod.Textile
 MimeTypes:
   js: application/javascript
   json: application/json

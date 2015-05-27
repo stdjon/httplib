@@ -211,6 +211,7 @@ class MyServer: Server {
 
     [Accessor(flags = WantSetter)] mutable edit_text: string = "";
     [Accessor(flags = WantSetter)] mutable encoded_text: string = "";
+    [Accessor(flags = WantSetter)] mutable edit_mode: string = "bbcode";
 
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
@@ -284,26 +285,49 @@ class MyServer: Server {
     public editTextResponse(
         context: Context, _request: Request, response: Response): void {
 
-        def a = Math.Max(0, Int32.Parse(context.Vars["a"]));
-        def b = Math.Min(Int32.Parse(context.Vars["b"]), EditText.Length);
-        def s = context.Vars["s"];
+        mutable sync = false;
+        def m = context.Vars["m"];
+        if(m != null) {
+            match(m) {
+                | "bbcode" | "textile" => edit_mode = m
+                | _ => {}
+            }
+        } else {
 
-        EditText =
-            match(a, b, s) {
-                | (0, 0, "") => ""
-                | _ => {
-                    EditText.Substring(0, a) + s + EditText.Substring(b)
-                }
-            };
+            def v = context.Vars["v"];
 
-        // even though this is a silly toy example, it's still vulnerable
-        // to <script> attacks and the like.
+            EditText =
+                if(v != null) {
+                    sync = true;
+                    v
+                } else {
+                    def a = Math.Max(0, Int32.Parse(context.Vars["a"]));
+                    def b = Math.Min(Int32.Parse(context.Vars["b"]), EditText.Length);
+                    def s = context.Vars["s"];
+
+                    match(a, b, s) {
+                        | (0, 0, "") => ""
+                        | _ => {
+                            EditText.Substring(0, a) + s + EditText.Substring(b)
+                        }
+                    }
+                };
+        }
+
         def bbcode = getModuleInterface.[mod.IBbCode]();
-        def encoded = bbcode ?
-            bbcode.transform(EditText) :
-            WebUtility.HtmlEncode(EditText);
+        def textile = getModuleInterface.[mod.ITextile]();
 
-        def encode_json = diffText(EncodedText, encoded);
+        def encoded = match(edit_mode) {
+            | "bbcode" => bbcode.transform(EditText)
+            | "textile" => textile.transform(EditText)
+            // even though this is a silly toy example, it's still vulnerable
+            // to <script> attacks and the like.
+            | _ => WebUtility.HtmlEncode(EditText)
+        };
+
+        def encode_json = sync ?
+            syncText(EncodedText) :
+            diffText(EncodedText, encoded);
         EncodedText = encoded;
 
         response.append(encode_json);
@@ -382,6 +406,18 @@ class MyServer: Server {
             jw.WritePropertyName("b");
             jw.WriteValue(b);
             jw.WritePropertyName("s");
+            jw.WriteValue(s);
+            jw.WriteEndObject();
+        }
+        sb.ToString();
+    }
+
+    syncText(s: string): string {
+        def sb = StringBuilder();
+        def sw = StringWriter(sb);
+        using(jw = JsonTextWriter(sw)) {
+            jw.WriteStartObject();
+            jw.WritePropertyName("v");
             jw.WriteValue(s);
             jw.WriteEndObject();
         }
