@@ -29,73 +29,54 @@ Content: |
   <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
   <script src="/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
   <script>
-    function textUpdate(text, oldText) {
-      var result = {};
-      if(oldText != text) {
-        var obj = {};
-        var i = 0, k = -1;
-        var l = text.length;
-        var oL = oldText.length;
-        var needFullCheck = true;
-
-        if(l - oL == 1) {
-          // check for single char insertion
-          while(i < oL && text[i] == oldText[i]) {
-            i++;
-          }
-
-          if((i == oL) || (text[i + 1] === oldText[i])) {
-            result.a = i;
-            result.b = i;
-            result.s = text[i];
-            needFullCheck = false;
-          } else {
-            k = i;
-          }
-        } else if (oL - l == 1) {
-          // check for single char deletion
-          while(i < l && text[i] == oldText[i]) {
-            i++;
-          }
-
-          if((i == l) || (oldText[i + 1] == text[i])) {
-            result.a = i;
-            result.b = i + 1;
-            result.s = '';
-            needFullCheck = false;
-          } else {
-            k = i;
-          }
-        }
-        if(needFullCheck) {
-          if(k >= 0) {
-            i = k;
-          } else {
-            while(i < l && text[i] == oldText[i]) {
-              i++;
-            }
-          }
-          var j = 0;
-          while(j < oL && text[l - j] == oldText[oL - j]) {
-            j++;
-          }
-          var adj = (oL > l) ? 2 : 1;
-          var b =  (oL - j) + adj;
-          if(b > oL) {
-            b = oL;
-          }
-          result.a = i;
-          result.b = b;
-          result.s = text.slice(i, (l - j) + adj);
-        }
+    function diffText(o, n) {
+      if(o === n) {
+        return { a: 0, b: 0, s: '' };
       }
-      return result;
+      var ol = o.length;
+      var nl = n.length;
+      var ml = Math.min(ol, nl);
+      var i = 0;
+      var a, b, s;
+      while(i < ml  && (o[i] === n[i])) {
+        i++;
+      }
+      a = i;
+      if(nl == ol) {
+        var j = i;
+        while(j < ml && (o[j] !== n[j])) {
+          j++;
+        }
+        b = j;
+        s = n.slice(i, j);
+      } else if(nl > ol) {
+        var j = (nl - 1), k = (ol - 1);
+        while(j > i && k > i && (o[k] === n[j])) {
+          j--;
+          k--;
+        }
+        b = k+1;
+        s = n.slice(i, j+1);
+
+      } else { // nl < ol
+        var j = nl, k = ol;
+        while(j > i && k > i && (o[k] === n[j])) {
+          j--;
+          k--;
+        }
+        b = k;
+        if(o[k] !== n[i]) {
+          b++;
+        }
+        s = n.slice(i, (b-i));
+      }
+      return { a: a, b: b, s: s };
     }
     var oldText = "";
     function postText(e) {
       var text = $(this).val();
       if(text != oldText) {
-        var obj = textUpdate(text, oldText);
+        var obj = diffText(oldText, text);
         $("#transit").html(JSON.stringify(obj));
 
         $.ajax({

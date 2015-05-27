@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Threading;
 
 using Nemerle.Extensions;
@@ -330,21 +331,27 @@ module Test {
 
             mutable editText = "";
 
+            // This kind of web API (sending tiny string deltas) would be a good
+            // use for a WebSocket connection (in due course).
             my_server.route(HTTP.POST, "/edit-do", (ctx, _req, res) => {
+
                 def a = Math.Max(0, Int32.Parse(ctx.Vars["a"]));
                 def b = Math.Min(Int32.Parse(ctx.Vars["b"]), editText.Length);
                 def s = ctx.Vars["s"];
 
-                match(a, b, s) {
-                    | (0, 0, "") => {
-                        editText = "";
-                    }
-                    | _ => {
-                        editText = editText.Substring(0, a) + s + editText.Substring(b);
-                    }
-                }
+                editText =
+                    match(a, b, s) {
+                        | (0, 0, "") => ""
+                        | _ => {
+                            editText.Substring(0, a) + s + editText.Substring(b)
+                        }
+                    };
 
-                res.append(editText);
+                // even though this is a silly toy example, it's still vulnerable
+                // to <script> attacks and the like.
+                def text = WebUtility.HtmlEncode(editText);
+                // TODO: caculate text deltas and send back to the client...
+                res.append(text);
                 res.Status = (200, "OK");
             });
 
