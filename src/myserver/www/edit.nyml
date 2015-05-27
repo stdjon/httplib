@@ -16,14 +16,19 @@ Content: |
   <div class="container">
     <h1>Text edit example</h1>
     <p>Type some stuff into the editor, check out the preview...</p>
-    <div class="col-md-6" style="background-color: #bdf; height: 250px;">
-      <textarea autofocus id="input" style="width: 350px;"></textarea>
+    <div class="col-md-6" style="background-color: hsl(240,80%,80%); height: 360px;">
+      <textarea autofocus id="input" style="width: 350px; height: 320px;"></textarea>
     </div>
-    <div class="col-md-6" style="background-color: #dfb; height: 50px;">
-      <pre><span id="transit"></span></pre>
+    <div class="col-md-6" style="background-color: hsl(60,80%,80%); height: 90px;">
+      <pre style="height: 70px;"><span id="transit-out"></span></pre>
     </div>
-    <div class="col-md-6" style="background-color: #fdb; height: 200px;">
-      <pre><span id="preview"></span></pre>
+    <div class="col-md-6" style="background-color: hsl(120,80%,80%); height: 90px;">
+      <pre style="height: 70px;"><span id="transit-in"></span></pre>
+    </div>
+    <div class="col-md-6" style="background-color: hsl(0,80%,80%); height: 180px;">
+      <div style="background-color: #eee; margin-top: 10px; padding: 4px; height: 160px;">
+        <span id="preview"></span>
+      </div>
     </div>
   </div>
   <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
@@ -72,12 +77,19 @@ Content: |
       }
       return { a: a, b: b, s: s };
     }
+    function parsePreview(data) {
+      var o = JSON.parse(data);
+      previewText = previewText.slice(0, o.a) + o.s + previewText.slice(o.b);
+      $("#transit-in").html(data);
+      $("#preview").html(previewText);
+    }
     var oldText = "";
+    var previewText = "";
     function postText(e) {
       var text = $(this).val();
       if(text != oldText) {
         var obj = diffText(oldText, text);
-        $("#transit").html(JSON.stringify(obj));
+        $("#transit-out").html(JSON.stringify(obj));
 
         $.ajax({
           type: 'POST',
@@ -85,9 +97,7 @@ Content: |
           global: false,
           url: '/edit-do',
           data: 'a=' + obj.a + '&b=' + obj.b + '&s='+encodeURIComponent(obj.s),
-          success: function(data) {
-            $("#preview").html(data);
-          }
+          success: parsePreview
         });
         oldText = text;
       }
@@ -99,9 +109,7 @@ Content: |
       global: false,
       url: '/edit-do',
       data: 'a=0&b=0&s=',
-      success: function(data) {
-        $("#preview").html(data);
-      }
+      success: parsePreview
     });
   </script>
 Partials:

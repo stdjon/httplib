@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 
 using Nemerle.Extensions;
 using Nemerle.Utility;
+
+using Newtonsoft.Json;
 
 using httplib;
 
@@ -206,6 +209,9 @@ public class MyTestModule: Module, IMyTestModule {
 
 class MyServer: Server {
 
+    [Accessor(flags = WantSetter)] mutable edit_text: string = "";
+    [Accessor(flags = WantSetter)] mutable encoded_text: string = "";
+
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
     }
@@ -241,7 +247,6 @@ class MyServer: Server {
         response.Status = (500, "Internal Server Error");
     }
 
-
     public pwResponse(
         context: Context, request: Request, response: Response): void {
 
@@ -274,6 +279,109 @@ class MyServer: Server {
             internalServerErrorResponse(context, request, response);
             Log.w("IPbkdf2Auth module was not found.");
         }
+    }
+
+    public editTextResponse(
+        context: Context, _request: Request, response: Response): void {
+
+        def a = Math.Max(0, Int32.Parse(context.Vars["a"]));
+        def b = Math.Min(Int32.Parse(context.Vars["b"]), EditText.Length);
+        def s = context.Vars["s"];
+
+        EditText =
+            match(a, b, s) {
+                | (0, 0, "") => ""
+                | _ => {
+                    EditText.Substring(0, a) + s + EditText.Substring(b)
+                }
+            };
+
+        // even though this is a silly toy example, it's still vulnerable
+        // to <script> attacks and the like.
+        def encoded = WebUtility.HtmlEncode(EditText);
+        def encode_json = diffText(EncodedText, encoded);
+        EncodedText = encoded;
+
+        response.append(encode_json);
+        response.Status = (200, "OK");
+    }
+
+    // returns the difference between o and n as a JSON string
+    // TODO: this is a naive port of the client side code, a more idiomatic
+    //   Nemerle implementation would be nice.
+    diffText(o: string, n: string): string {
+
+        def clamp(s: string, i: int): int {
+            def r = Math.Max(0, Math.Min(i, s.Length));
+            r;
+        }
+
+        def index(s: string, i: int): char {
+            mutable result = '\0';
+            try { result = s[clamp(s, i)] } catch { | _ => {} }
+            result;
+        }
+
+        def slice(s: string, a: int, b: int): string {
+            mutable result = "";
+            def start = clamp(s, a);
+            def len = clamp(s, b - a);
+            try { result = s.Substring(start, len); } catch { _ => {} }
+            result;
+        }
+
+        def ol = o.Length;
+        def nl = n.Length;
+        def ml = Math.Min(ol, nl);
+        mutable i = 0;
+        mutable a, b, s;
+        while(i < ml && index(o, i) == index(n, i)) {
+            i++;
+        }
+        a = i;
+        if(nl == ol) {
+            mutable j = i;
+            while(j < ml && index(o, j) != index(n, j)) {
+                j++;
+            }
+            b = j;
+            s = slice(n, i, j);
+        } else if(nl > ol) {
+            mutable j = (nl - 1), k = (ol - 1);
+            while(j > i && k > i && index(o, k) == index(n, j)) {
+                j--;
+                k--;
+            }
+            b = k+1;
+            s = slice(n, i, j+1);
+
+        } else { // nl < ol
+            mutable j = nl, k = ol;
+            while(j > i && k > i && index(o, k) == index(n,j)) {
+                j--;
+                k--;
+            }
+            b = k;
+            when(index(o, k) != index(n,j)) {
+                b++;
+            }
+            s = slice(n, i, (b-i));
+        }
+        //Log.t("diffText("
+        //    "\"{0}\", \"{1}\") -> a={2}, b={3}, s=\"{4}\"", o, n, a, b, s);
+        def sb = StringBuilder();
+        def sw = StringWriter(sb);
+        using(jw = JsonTextWriter(sw)) {
+            jw.WriteStartObject();
+            jw.WritePropertyName("a");
+            jw.WriteValue(a);
+            jw.WritePropertyName("b");
+            jw.WriteValue(b);
+            jw.WritePropertyName("s");
+            jw.WriteValue(s);
+            jw.WriteEndObject();
+        }
+        sb.ToString();
     }
 
     protected override internalServerError(ex: Exception): void {
@@ -329,31 +437,10 @@ module Test {
 
             my_server.route(HTTP.GET, "/pwtest", my_server.pwResponse);
 
-            mutable editText = "";
 
             // This kind of web API (sending tiny string deltas) would be a good
             // use for a WebSocket connection (in due course).
-            my_server.route(HTTP.POST, "/edit-do", (ctx, _req, res) => {
-
-                def a = Math.Max(0, Int32.Parse(ctx.Vars["a"]));
-                def b = Math.Min(Int32.Parse(ctx.Vars["b"]), editText.Length);
-                def s = ctx.Vars["s"];
-
-                editText =
-                    match(a, b, s) {
-                        | (0, 0, "") => ""
-                        | _ => {
-                            editText.Substring(0, a) + s + editText.Substring(b)
-                        }
-                    };
-
-                // even though this is a silly toy example, it's still vulnerable
-                // to <script> attacks and the like.
-                def text = WebUtility.HtmlEncode(editText);
-                // TODO: caculate text deltas and send back to the client...
-                res.append(text);
-                res.Status = (200, "OK");
-            });
+            my_server.route(HTTP.POST, "/edit-do", my_server.editTextResponse);
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 
