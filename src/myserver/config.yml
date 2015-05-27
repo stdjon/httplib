@@ -41,6 +41,8 @@ Modules:
     Data:
       IterationCount: 300
       HashLength: 25
+  - Assembly: httplib.mod.bbcode.dll
+    Typename: httplib.mod.BbCode
 MimeTypes:
   js: application/javascript
   json: application/json

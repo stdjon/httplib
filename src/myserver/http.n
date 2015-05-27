@@ -298,7 +298,11 @@ class MyServer: Server {
 
         // even though this is a silly toy example, it's still vulnerable
         // to <script> attacks and the like.
-        def encoded = WebUtility.HtmlEncode(EditText);
+        def bbcode = getModuleInterface.[mod.IBbCode]();
+        def encoded = bbcode ?
+            bbcode.transform(EditText) :
+            WebUtility.HtmlEncode(EditText);
+
         def encode_json = diffText(EncodedText, encoded);
         EncodedText = encoded;
 
