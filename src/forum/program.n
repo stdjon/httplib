@@ -16,12 +16,13 @@ module Program {
     public class Arguments {
         public this() {
             ShowHelp = false;
-            Config = "../../src/forum/default_config.yml";
+            Config = "default_config.yml";
             Verbose = 0;
         }
-        public ShowHelp: bool { get; set }
-        public Config: string { get; set }
-        public Verbose: uint { get; set }
+        public ShowHelp: bool { get; set; }
+        public Config: string { get; set; }
+        public Verbose: uint { get; set; }
+        public Root: string { get; set; }
     }
 
     public Main(args: array[string]): void {
@@ -49,7 +50,9 @@ module Program {
             Add("v|verbose", "More logging output.",
                 _ => { ++arguments.Verbose }).
             Add("c|config=", "Use configuration {FILE}.",
-                v => { arguments.Config = v });
+                v => { arguments.Config = v }).
+            Add("R|root=", "Use {PATH} as the root for all file access by relative path.",
+                v => { arguments.Root = v });
     }
 
     showHelp(options: OptionSet): void {
@@ -59,6 +62,10 @@ module Program {
     }
 
     runServer(arguments: Arguments): void {
+
+        when(!String.IsNullOrEmpty(arguments.Root)) {
+            Server.CanonicalRoot = arguments.Root;
+        }
 
         mutable mod_time = File.GetLastWriteTime(arguments.Config);
         mutable restarting = false;

@@ -397,10 +397,12 @@ class MyServer: Server {
 
 module Test {
 
-    Main(_args: array[string]): void {
+    Main(args: array[string]): void {
 
-        def config_path = "../../src/myserver/config.yml";
+        def root = (args.Length > 0) ? args[0] : "../../src/myserver/";
+        def config_path = (args.Length > 1) ? args[1] : "config.yml";
 
+        Server.CanonicalRoot = root;
         using(mutable my_server = MyServer(config_path)) {
 
             my_server.route([

@@ -12,7 +12,7 @@ Prefixes:
   Insecure:
     - http://localhost:8080/
 Roots:
-  - ../../src/forum/www
+  - www
   - ../../contrib/client
 FileServing:
   - /.*css

@@ -31,6 +31,9 @@ public abstract class Server: IDisposable {
     [Accessor]
     static deserializer: YamlDeserializer = YamlDeserializer();
 
+    [Accessor(flags = WantSetter)]
+    static mutable canonical_root: string = "";
+
     [System.Flags]
     public enum State {
         | Neutral = 0x00
@@ -80,9 +83,22 @@ public abstract class Server: IDisposable {
     [Accessor] public default_secure_prefix: string;
     [Accessor] public default_insecure_prefix: string;
 
-    static protected loadConfiguration[T](path: string): T {
+    public static canonicalPath(path: string): string {
+        def have_root = !String.IsNullOrEmpty(CanonicalRoot);
+        def relative = !Path.IsPathRooted(path);
+
+        def result = match(have_root, relative) {
+            | (true, true) => Path.Combine(CanonicalRoot, path)
+            | _ => path
+        }
+        //Log.t("canonicalPath(\"{0}\") -> \"{1}\"", path, result);
+        //Log.t("have_root = {0}, relative = {1}", have_root, relative);
+        result;
+    }
+
+    protected static loadConfiguration[T](path: string): T {
         // ** Logging is not possible here! **
-        using(reader = StreamReader(path)) {
+        using(reader = StreamReader(canonicalPath(path))) {
             Deserializer.Deserialize.[T](reader);
         }
     }
@@ -439,7 +455,7 @@ public abstract class Server: IDisposable {
         mutable result = null;
         exit: {
             foreach(root in Configuration.Roots) {
-                def p = Path.Combine(root, path);
+                def p = canonicalPath(Path.Combine(root, path));
                 def exists = File.Exists(p);
 
                 Log.d("File exists: \"{0}\"? {1}", p, exists);

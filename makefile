@@ -298,10 +298,10 @@ TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
 all: install_contrib $(EXE_TARGETS)
 
 run: $(BIN)/http.exe
-	$(call launch_assembly,http.exe) $D
+	$(call launch_assembly,http.exe) $(shell pwd)/src/myserver $D
 
 frun: $(BIN)/forum.exe
-	$(call launch_assembly,forum.exe) $D
+	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D
 
 fdata: $(BIN)/forum-testdata.exe
 	$(call launch_assembly,forum-testdata.exe) $D
