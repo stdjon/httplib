@@ -16,7 +16,7 @@ module Program {
     public class Arguments {
         public this() {
             ShowHelp = false;
-            Config = "../src/forum/default_config.yml";
+            Config = "../../src/forum/default_config.yml";
             Verbose = 0;
         }
         public ShowHelp: bool { get; set }

@@ -12,8 +12,8 @@ Prefixes:
   Insecure:
     - http://localhost:8080/
 Roots:
-  - ../src/forum/www
-  - ../contrib/client
+  - ../../src/forum/www
+  - ../../contrib/client
 FileServing:
   - /.*css
   - /.*html

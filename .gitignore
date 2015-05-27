@@ -1,7 +1,9 @@
 .gitignore
 userconf.mak
+bin/
 *.exe
 *.dll
 *.log
+*.pdb
 *.sw?
 *~

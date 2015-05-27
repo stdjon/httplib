@@ -15,7 +15,7 @@ public module Program {
     public class Arguments {
         public this() {
             ShowHelp = false;
-            Config = "../src/forum/default_config.yml";
+            Config = "../../src/forum/default_config.yml";
             Users = 15;
             Categories = 8;
             Threads = 6;

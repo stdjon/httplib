@@ -389,7 +389,8 @@ class MyServer: Server {
     }
 
     protected override internalServerError(ex: Exception): void {
-        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
+            ex.Message, ex.GetExtendedStackTrace());
     }
 }
 
@@ -398,7 +399,7 @@ module Test {
 
     Main(_args: array[string]): void {
 
-        def config_path = "../src/myserver/config.yml";
+        def config_path = "../../src/myserver/config.yml";
 
         using(mutable my_server = MyServer(config_path)) {
 

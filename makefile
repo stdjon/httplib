@@ -5,16 +5,57 @@
 
 
 # ------------------------------------------------------------------------------
+#  Normalize 'flag' values: <empty> or 0 -> off, anything else -> on
+
+_flag=$(if $(or $(findstring _[]_,_[$1]_), $(findstring _[0]_,_[$1]_)),,1)
+
+
+# ------------------------------------------------------------------------------
 # Common configuration
 
 BIN?=bin
 CONTRIB?=contrib/server
+NCCFLAGS?=-no-color
 
 # Initializing these as empty non-recursive variables. (Target rules will append
 # to these as they are evaluated.)
 EXE_TARGETS:=
 DLL_TARGETS:=
 
+
+# ------------------------------------------------------------------------------
+# Build Type
+
+# Default to a debug build, but allow RELEASE=1 on the commmandline to configure
+# a release build.
+ifneq ($(call _flag,$(RELEASE)),)
+DEBUG:=0
+else
+DEBUG?=1
+endif
+
+
+ifneq ($(call _flag,$(DEBUG)),)
+
+# ------------------------------------------------------------------------------
+# Debug
+
+override NCCFLAGS:=$(NCCFLAGS) -g -d:DEBUG
+override BIN:=$(BIN)/debug
+
+else
+
+# ------------------------------------------------------------------------------
+# Release
+
+override NCCFLAGS:=$(NCCFLAGS) -O -d:RELEASE
+override BIN:=$(BIN)/release
+
+endif
+
+
+# ------------------------------------------------------------------------------
+#  Platform
 
 ifeq ($(OS),Windows_NT)
 
@@ -84,7 +125,7 @@ $(BIN)/$2_DLLS:=$$(foreach d,$4,$(BIN)/$$d)
 
 $(BIN)/$2: $$($(BIN)/$2_SRC) $$($(BIN)/$2_DLLS)
 	@mkdir -p $$(dir $$@)
-	$$(NCC) -no-color -o $$@ $$($$@_SRC) $$(refs) $5
+	$$(NCC) -o $$@ $(NCCFLAGS) $5 $$($$@_SRC) $$(refs)
 endef
 
 
@@ -283,6 +324,17 @@ show\:%:
 	@echo $(@:show:%=%)="$($(@:show:%=%))"
 	@echo
 
+# %-full target to build any target % in Debug and Release
+%-full::
+	@echo
+	@echo Making \'$(@:%-full=%)\' in all configurations:
+	@echo
+	@$(MAKE) $(@:%-full=%) DEBUG=1
+	@echo
+	@$(MAKE) $(@:%-full=%) RELEASE=1
+	@echo
+	@echo Finished building '$@'!
+	@echo
 
 # ------------------------------------------------------------------------------
 # install_contrib
