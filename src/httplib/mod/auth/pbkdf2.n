@@ -35,10 +35,10 @@ public class Pbkdf2Auth: Module, IPbkdf2Auth {
         when(conf != null) {
             mutable probe;
             when(conf.TryGetValue("IterationCount", out probe)) {
-                IterationCount = Int32.Parse(probe);
+                IterationCount = Int32.Parse(probe :> string);
             }
             when(conf.TryGetValue("HashLength", out probe)) {
-                HashLength = Int32.Parse(probe);
+                HashLength = Int32.Parse(probe :> string);
             }
         }
     }

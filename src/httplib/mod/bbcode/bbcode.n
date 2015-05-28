@@ -29,22 +29,76 @@ public class BbCode: Module, IBbCode {
     public this(conf: ModuleData = null) {
         Log.i("Starting BBCode module... (conf: {0})", conf);
 
-        Parser = BBCodeParser(List() <- [
-            BBTag("b", "<b>", "</b>"),
-            BBTag("i", "<span style=\"font-style:italic;\">", "</span>"),
-            BBTag("u", "<span style=\"text-decoration:underline;\">", "</span>"),
-            BBTag("code", "<pre class=\"prettyprint\">", "</pre>"),
-            BBTag("img", "<img src=\"${content}\" />", "", false, true),
-            BBTag("quote", "<blockquote>", "</blockquote>"),
-            BBTag("list", "<ul>", "</ul>"),
-            BBTag("*", "<li>", "</li>", true, false),
-            BBTag("url", "<a href=\"${href}\">", "</a>",
-                BBAttribute("href", ""), BBAttribute("href", "href") ),
-        ]);
+        def bbtags = conf ? getTagsFromData(conf) : null;
+        when(bbtags != null) {
+            Parser = BBCodeParser(bbtags);
+        }
     }
 
     public transform(input: string): string {
-        Parser.ToHtml(input);
+        Parser ? Parser.ToHtml(input) : input;
+    }
+
+    getTagsFromData(data: ModuleData): List[BBTag] {
+
+        mutable result = List();
+        mutable tags, probe;
+
+        when(data.TryGetValue("Tags", out probe)) {
+            tags = probe :> List[object];
+        }
+
+        when(tags != null) {
+            foreach(t :> Dictionary[object, object] in tags) {
+                def tag = t["Tag"] :> string;
+                def open = t["Open"] :> string;
+                def close = t["Close"] :> string;
+
+                mutable auto_render = true;
+                mutable require_close = true;
+                mutable flags, attrs;
+
+                when(t.TryGetValue("Flags", out probe)) {
+                    flags = probe :> string;
+                }
+                when(t.TryGetValue("Attrs", out probe)) {
+                    attrs = probe :> List[object];
+                }
+
+                when(flags != null) {
+                    def arr = flags.Split(array['|']);
+
+                    foreach(f in arr) {
+                        match(f) {
+                            | "NoAutoRender" => auto_render = false
+                            | "NoClose" => require_close = false
+                            | _ => {}
+                        }
+                    }
+                }
+
+                def bbattrs = attrs ? getAttrsFromData(attrs) : null;
+                def bbtag = BBTag(
+                    tag, open, close, auto_render, require_close, bbattrs);
+
+                result.Add(bbtag);
+            }
+        }
+
+        result;
+    }
+
+    getAttrsFromData(data: List[object]): array[BBAttribute] {
+        def result = List();
+        foreach(a :> Dictionary[object, object] in data) {
+            def id = a["Id"] :> string;
+            def name = a["Name"] :> string;
+            Log.w(">>> {0} {1}", id, name);
+            def bbattr = BBAttribute(id, name);
+            result.Add(bbattr);
+        }
+
+        result ? result.ToArray() : null;
     }
 }
 

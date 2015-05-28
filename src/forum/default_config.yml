@@ -33,8 +33,34 @@ Renderers:
 Modules:
   - Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth
+    Data:
+      IterationCount: 25000
+      HashLength: 40
   - Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
+    Data:
+      Tags:
+        - { Tag: "b", Open: "<b>", Close: "</b>" }
+        - { Tag: "i", Open: "<i>", Close: "</i>" }
+        - { Tag: "u", Open: "<u>", Close: "</u>" }
+        - { Tag: "s", Open: "<s>", Close: "</s>" }
+        - { Tag: "tt", Open: "<tt>", Close: "</tt>" }
+        - { Tag: "h1", Open: "<h1>", Close: "</h1>" }
+        - { Tag: "h2", Open: "<h2>", Close: "</h2>" }
+        - { Tag: "h3", Open: "<h3>", Close: "</h3>" }
+        - { Tag: "h4", Open: "<h4>", Close: "</h4>" }
+        - { Tag: "h5", Open: "<h5>", Close: "</h5>" }
+        - { Tag: "h6", Open: "<h6>", Close: "</h6>" }
+        - { Tag: "code", Open: "<pre>", Close: "</pre>" }
+        - { Tag: "img", Open: "<img src='${content}'/>", Close: "", Flags: "NoAutoRender" }
+        - { Tag: "quote", Open: "<blockquote>", Close: "</blockquote>" }
+        - { Tag: "list", Open: "<ul>", Close: "</ul>" }
+        - { Tag: "ul", Open: "<ul>", Close: "</ul>" }
+        - { Tag: "ol", Open: "<ol>", Close: "</ol>" }
+        - { Tag: "li", Open: "<li>", Close: "</li>" }
+        - { Tag: "*", Open: "<li>", Close: "</li>", Flags: "NoClose" }
+        - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
+            Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
   - Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
   - Assembly: httplib.mod.oembed.dll

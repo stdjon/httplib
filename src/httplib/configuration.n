@@ -74,7 +74,7 @@ public class RendererConfiguration {
 }
 
 
-public type ModuleData = Dictionary[string, string];
+public type ModuleData = Dictionary[string, object];
 
 [YamlRecord]
 public class ModuleConfiguration {
