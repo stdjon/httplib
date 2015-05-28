@@ -12,30 +12,37 @@ Title: Edit
 Content: |
   <style>
     div pre, div textarea { margin-top: 10px; margin-bottom: 10px; }
+    div.box { margin: 0px; padding: 10px; }
+    div.boxout { margin: 0px; padding: 0px; }
+    button.selected { background-color: #798; }
   </style>
   <div class="container">
     <h1>Text edit example</h1>
     <p>Type some stuff into the editor, check out the preview...</p>
-    <div class="col-md-5" style="background-color: hsl(240,80%,80%); height: 360px;">
-      <textarea autofocus id="input" style="width: 350px; height: 320px;"></textarea>
-    </div>
-    <div class="col-md-1" style="background-color: hsl(240,80%,80%); height: 360px;">
-      <div style="padding: 10px;">
-        <button title="Sync" onclick="syncText()"><i class="fa fa-fw fa-refresh"></i></button>
-        <button title="BBCode" onclick="bbmode()"><i class="fa fa-fw fa-bold"></i></button>
-        <button title="Textile" onclick="txmode()"><i class="fa fa-fw fa-text-width"></i></button>
-        <!--button title="Settings"><i class="fa fa-fw fa-gears"></i></button-->
+    <div class="col-md-6 boxout">
+      <div class="box" style="background-color: hsl(240,80%,80%); height: 360px;">
+        <textarea autofocus id="input" style="width: 400px; height: 320px;"></textarea>
+      </div>
+      <div class="box" style="background-color: hsl(300,80%,80%); height: 60px;">
+        <div style="padding: 10px;">
+          <button id="syncb" title="Sync" onclick="syncText()"><i class="fa fa-fw fa-refresh"></i></button>
+          <button id="bbcodeb" title="BBCode" onclick="bbmode()" class="selected"><i class="fa fa-fw fa-bold"></i></button>
+          <button id="textb" title="Textile" onclick="txmode()"><i class="fa fa-fw fa-text-width"></i></button>
+          <!--button title="Settings"><i class="fa fa-fw fa-gears"></i></button-->
+        </div>
       </div>
     </div>
-    <div class="col-md-6" style="background-color: hsl(60,80%,80%); height: 90px;">
-      <pre style="height: 70px;"><span id="transit-out"></span></pre>
-    </div>
-    <div class="col-md-6" style="background-color: hsl(120,80%,80%); height: 90px;">
-      <pre style="height: 70px;"><span id="transit-in"></span></pre>
-    </div>
-    <div class="col-md-6" style="background-color: hsl(0,80%,80%); height: 180px;">
-      <div style="background-color: #eee; margin-top: 10px; padding: 4px; height: 160px;">
-        <span id="preview"></span>
+    <div class="col-md-6 boxout">
+      <div class="box" style="background-color: hsl(60,80%,80%); height: 100px;">
+        <pre style="height: 70px;"><span id="transit-out"></span></pre>
+      </div>
+      <div class="box" style="background-color: hsl(120,80%,80%); height: 100px;">
+        <pre style="height: 70px;"><span id="transit-in"></span></pre>
+      </div>
+      <div class="box" style="background-color: hsl(0,80%,80%); height: 220px;">
+        <div style="background-color: #eee; margin-top: 10px; padding: 4px; height: 160px;">
+          <span id="preview"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -126,8 +133,16 @@ Content: |
         success: parsePreview
       });
     }
-    function bbmode() { mode('bbcode'); }
-    function txmode() { mode('textile'); }
+    function bbmode() {
+      mode('bbcode');
+      $('#bbcodeb').addClass('selected');
+      $('#textb').removeClass('selected');
+    }
+    function txmode() {
+      mode('textile');
+      $('#bbcodeb').removeClass('selected');
+      $('#textb').addClass('selected');
+    }
     function mode(m) {
       $.ajax({
         type: 'POST',
