@@ -51,13 +51,13 @@ public enum COOKIE {
 }
 
 
-public class CookieFlagExtensions {
+public module CookieFlagExtensions {
 
-    public static isSecure(this cookie: COOKIE): bool {
+    public isSecure(this cookie: COOKIE): bool {
         (cookie & COOKIE.SECURE) != COOKIE.NONE;
     }
 
-    public static isHttpOnly(this cookie: COOKIE): bool {
+    public isHttpOnly(this cookie: COOKIE): bool {
         (cookie & COOKIE.HTTP_ONLY) != COOKIE.NONE;
     }
 }
@@ -243,7 +243,9 @@ public class CookieSetter {
     //   (For now, we can write out the Set-Cookie header in full, which works
     //   acceptably.)
     public add(name: string, value: string,
-        domain: string, expiry: DateTime?, flags = COOKIE.NONE): void {
+        domainp: string, expiry: DateTime?, flags = COOKIE.NONE): void {
+
+        def (domain, path) = splitPathFromDomain(domainp);
 
         def domain_spec =
             !String.IsNullOrEmpty(domain) ? $"; Domain=$domain" : "";
@@ -259,7 +261,7 @@ public class CookieSetter {
         // _only_ reliable way to set multiple cookies with different flags in
         // the same Response.
         response.Headers.Add($"Set-Cookie: $name=$value; "
-            $"Path=/$domain_spec$expiry_spec$secure$http_only");
+            $"Path=$path$domain_spec$expiry_spec$secure$http_only");
     }
 
     public expire(name: string, flags = COOKIE.NONE): void {
@@ -270,6 +272,22 @@ public class CookieSetter {
         domain: string, flags = COOKIE.NONE): void {
 
         add(name, null, domain, DateTime.Now.AddMinutes(-10), flags);
+    }
+
+    // Path value for cookies can be specified by appending to the end of the
+    // domain parameter e.g. "domain.com/path". If no / is present, the path
+    // value defaults to "/" (which seems to be the most common path value in
+    // actual real-word usage...)
+    static splitPathFromDomain(mutable domain: string): string * string {
+        mutable path = "/";
+        def slash_index =
+            !String.IsNullOrEmpty(domain) ? domain.IndexOf('/') : -1;
+
+        when(slash_index >= 0) {
+            path = domain.Substring(slash_index);
+            domain = domain.Substring(0, slash_index);
+        }
+        (domain, path)
     }
 }
 
