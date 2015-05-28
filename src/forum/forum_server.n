@@ -163,7 +163,7 @@ public class ForumServer: Server {
                         ];
                         _ = command5.executeNonQuery();
 
-                        def (ok, t, x) = registerSessionToken(id);
+                        def (ok, t, x) = registerSessionToken(id, true);
                         when(ok) {
                             token = t;
                             expiry = x;
@@ -558,7 +558,7 @@ public class ForumServer: Server {
             Log.d("Login attempt as {0}: {2}", user, ok, record);
             when(ok) {
 
-                def (_ok2, token, expiry) = registerSessionToken(id :> uint);
+                def (_ok2, token, expiry) = registerSessionToken(id :> uint, true);
                 response.Cookies.add(
                     "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
             }
@@ -664,18 +664,18 @@ public class ForumServer: Server {
         cmp == 0;
     }
 
-    public registerSessionToken(id: uint): (bool * string * DateTime) {
+    public registerSessionToken(id: uint, secure: bool): (bool * string * DateTime) {
         def token = getSessionToken();
         def expiry = DateTime.Now.
             AddMinutes(SessionTokenDuration).ToUniversalTime();
 
         mutable command = Database.createCommand(
-            "INSERT INTO Sessions(UserId, Token, ExpiryTime) "
-                "VALUES(@UserId, @Token, @ExpiryTime)") <- [
+            "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
+                "VALUES(@UserId, @Token, @ExpiryTime, @IsSecure)") <- [
             "@UserId" = id,
             "@Token" = token,
             "@ExpiryTime" = expiry,
-
+            "@IsSecure" = secure,
         ];
         def rows = command.executeNonQuery();
         (rows == 1, token, expiry);
