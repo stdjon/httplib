@@ -282,6 +282,39 @@ class MyServer: Server {
         }
     }
 
+    public testCorsGetResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        def origin = request["Origin"];
+        def data = PageData() <- [ "GetOrigin" = origin ];
+
+        Log.i("GetOrigin: {0}", origin);
+        response.append(renderPage("cors.nyml", data));
+        response.Cookies.add("CorsTestInsecureCookie", "OK");
+        response.Status = (200, "OK");
+    }
+
+    public testCorsPostResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        def origin = request["Origin"];
+
+        Log.i("PostOrigin: {0}", origin);
+        if(request.IsSecure) {
+            if(!String.IsNullOrEmpty(origin)) {
+                response.append($"<h3>Post Origin: $(origin)</h3>");
+                response["Access-Control-Allow-Origin"] = origin;
+                response["Access-Control-Allow-Credentials"] = "true";
+                response.Cookies.add("CorsTestSecureCookie", "OK", COOKIE.SECURE);
+                response.Status = (200, "OK");
+            } else {
+                response.Status = (500, "CORS Error");
+            }
+        } else {
+            response.Status = (403, "Forbidden");
+        }
+    }
+
     public editTextResponse(
         context: Context, _request: Request, response: Response): void {
 
@@ -482,10 +515,12 @@ module Test {
 
             my_server.route(HTTP.GET, "/pwtest", my_server.pwResponse);
 
-
             // This kind of web API (sending tiny string deltas) would be a good
             // use for a WebSocket connection (in due course).
             my_server.route(HTTP.POST, "/edit-do", my_server.editTextResponse);
+
+            my_server.route(HTTP.GET, "/cors", my_server.testCorsGetResponse);
+            my_server.route(HTTP.POST, "/cors", my_server.testCorsPostResponse);
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 
