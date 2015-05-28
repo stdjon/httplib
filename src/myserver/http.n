@@ -289,7 +289,7 @@ class MyServer: Server {
         def m = context.Vars["m"];
         if(m != null) {
             match(m) {
-                | "bbcode" | "textile" => edit_mode = m
+                | "bbcode" | "textile" | "htmlsan" => edit_mode = m
                 | _ => {}
             }
         } else {
@@ -316,10 +316,12 @@ class MyServer: Server {
 
         def bbcode = getModuleInterface.[mod.IBbCode]();
         def textile = getModuleInterface.[mod.ITextile]();
+        def htmlsan = getModuleInterface.[mod.IHtmlSanitizer]();
 
         def encoded = match(edit_mode) {
             | "bbcode" => bbcode.transform(EditText)
             | "textile" => textile.transform(EditText)
+            | "htmlsan" => htmlsan.transform(EditText)
             // even though this is a silly toy example, it's still vulnerable
             // to <script> attacks and the like.
             | _ => WebUtility.HtmlEncode(EditText)

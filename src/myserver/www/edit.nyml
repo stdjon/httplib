@@ -28,6 +28,7 @@ Content: |
           <button id="syncb" title="Sync" onclick="syncText()"><i class="fa fa-fw fa-refresh"></i></button>
           <button id="bbcodeb" title="BBCode" onclick="bbmode()" class="selected"><i class="fa fa-fw fa-bold"></i></button>
           <button id="textb" title="Textile" onclick="txmode()"><i class="fa fa-fw fa-text-width"></i></button>
+          <button id="hsb" title="HTML Sanitizer" onclick="hsmode()"><i class="fa fa-fw fa-header"></i></button>
           <!--button title="Settings"><i class="fa fa-fw fa-gears"></i></button-->
         </div>
       </div>
@@ -137,11 +138,19 @@ Content: |
       mode('bbcode');
       $('#bbcodeb').addClass('selected');
       $('#textb').removeClass('selected');
+      $('#hsb').removeClass('selected');
     }
     function txmode() {
       mode('textile');
       $('#bbcodeb').removeClass('selected');
       $('#textb').addClass('selected');
+      $('#hsb').removeClass('selected');
+    }
+    function hsmode() {
+      mode('htmlsan');
+      $('#bbcodeb').removeClass('selected');
+      $('#textb').removeClass('selected');
+      $('#hsb').addClass('selected');
     }
     function mode(m) {
       $.ajax({

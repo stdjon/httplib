@@ -1,0 +1,97 @@
+using System;
+using System.Collections.Generic;
+
+using Ganss.XSS;
+
+
+namespace httplib.mod {
+
+public interface IHtmlSanitizer: ITextTransform {
+}
+
+
+[HasLogging]
+public class HtmlSanitizer: Module, IHtmlSanitizer {
+
+    type Configuration = Dictionary[string, List[string]];
+
+    static config_keys =
+        array["Tags", "Schemes", "Attrs", "UriAttrs", "CssProps"];
+
+    public override InterfaceType: Type {
+        get { typeof(IHtmlSanitizer) }
+    }
+
+    Sanitizer: Ganss.XSS.HtmlSanitizer { get; private set; }
+
+    public this(conf: ModuleData = null) {
+        Log.i("Starting HtmlSanitizer module... (conf: {0})", conf);
+
+        def c = conf ? getConfiguration(conf) : null;
+
+        // Use Configuration if provided, otherwise launch with the Sanitizer's
+        // internal defaults.
+        if(c != null) {
+            Sanitizer = HtmlSanitizer(c["Tags"],
+                c["Schemes"], c["Attrs"], c["UriAttrs"], c["CssProps"]);
+        } else {
+            Sanitizer = HtmlSanitizer();
+        }
+
+        // First transform is expensive; easily 10-50x longer than subsequent
+        // calls (library initialization?). Let's get it out of the way during
+        // the module init where it shouldn't be too noticable...
+         _ = transform("<a>");
+    }
+
+    public transform(input: string): string {
+        if(Sanitizer != null) {
+            quickProfile(input, x => Sanitizer.Sanitize(x) )
+        } else {
+            input
+        }
+    }
+
+    getConfiguration(data: ModuleData): Configuration {
+        mutable result = Configuration();
+
+        foreach(k in config_keys) {
+            mutable probe;
+            if(data.TryGetValue(k, out probe)) {
+                result[k] = List();
+                def l = probe :> List[object];
+                foreach(o in l) {
+                    result[k].Add(o :> string);
+                }
+            } else {
+                // Configuration can omit keys, which will translate into passing
+                // null into the HtmlSanitizer ctor (use default values).
+                result[k] = null;
+            }
+        }
+
+        result;
+    }
+
+    // Keep tabs on Sanitizer's performance for the time being. (This code might
+    // get repurposed into something more general later...)
+    quickProfile(input: string, lambda: string -> string): string {
+#if DEBUG
+        def sw = Diagnostics.Stopwatch();
+        sw.Start();
+#endif // DEBUG
+
+        def result = lambda(input);
+
+#if DEBUG
+        sw.Stop();
+        def time = sw.ElapsedMilliseconds;
+        Log.d("Sanitize() -> {0}ms", time);
+#endif // DEBUG
+
+        result;
+    }
+}
+
+
+} // namespace httplib.mod
