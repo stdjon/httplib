@@ -40,7 +40,6 @@ public class BbCode: Module, IBbCode {
     }
 
     getTagsFromData(data: ModuleData): List[BBTag] {
-
         mutable result = List();
         mutable tags, probe;
 
@@ -78,10 +77,9 @@ public class BbCode: Module, IBbCode {
                 }
 
                 def bbattrs = attrs ? getAttrsFromData(attrs) : null;
-                def bbtag = BBTag(
-                    tag, open, close, auto_render, require_close, bbattrs);
 
-                result.Add(bbtag);
+                result.Add(BBTag(
+                    tag, open, close, auto_render, require_close, bbattrs));
             }
         }
 
@@ -90,12 +88,12 @@ public class BbCode: Module, IBbCode {
 
     getAttrsFromData(data: List[object]): array[BBAttribute] {
         def result = List();
+
         foreach(a :> Dictionary[object, object] in data) {
             def id = a["Id"] :> string;
             def name = a["Name"] :> string;
-            Log.w(">>> {0} {1}", id, name);
-            def bbattr = BBAttribute(id, name);
-            result.Add(bbattr);
+
+            result.Add(BBAttribute(id, name));
         }
 
         result ? result.ToArray() : null;
