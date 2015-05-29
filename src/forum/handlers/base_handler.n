@@ -36,6 +36,7 @@ public class BaseHandler: ComplexHandler {
             "DefaultSecurePrefix" = Server.DefaultSecurePrefix,
             "DefaultInsecurePrefix" = Server.DefaultInsecurePrefix,
             "DefaultPrefix" = Server.getDefaultPrefix(Request),
+            "CurrentUrl" = Uri.EscapeDataString(Request.Url.ToString()),
         ];
     }
 }

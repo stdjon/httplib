@@ -20,15 +20,18 @@ public class NavHandler: BaseHandler {
     }
 
     Method: HTTP { get; private set; }
+    CurrentUrl: string { get; private set; }
 
     public this(hd: HandlerData, method: HTTP) {
         base(hd, null);
 
         Method = method;
+        CurrentUrl = Request.QueryString["r"];
 
-        _ = PageData <- [
-            "IsNav" = true,
-        ];
+        PageData["IsNav"] = true;
+        when(CurrentUrl != null) {
+            PageData["CurrentUrl"] = CurrentUrl;
+        }
     }
 
     public override callback(): void {
@@ -128,7 +131,7 @@ public class NavHandler: BaseHandler {
                 Response.Cookies.add(
                     "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
             }
-            Response["Location"] = Server.DefaultInsecurePrefix + "/";
+            Response["Location"] = CurrentUrl;
             Response.Status = (303, "See Other");
 
 
@@ -154,7 +157,7 @@ public class NavHandler: BaseHandler {
             }
 
             Response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
-            Response["Location"] = Server.DefaultInsecurePrefix + "/?signout=1";
+            Response["Location"] = CurrentUrl + "?signout=1";
             Response.Status = (303, "See Other");
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");

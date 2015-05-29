@@ -26,8 +26,8 @@ Partials:
           <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
           <input name="password" type="password" placeholder="Password" class="form-control input-sm">
         </div>
-        <button type="submit" class="btn btn-success" formaction="{{DefaultSecurePrefix}}/nav-signin" formmethod="post" formtarget="_top">Sign in</button>
-        <button type="submit" class="btn btn-info" formaction="{{DefaultSecurePrefix}}/nav-signup" formmethod="post" formtarget="_top">Sign up</button>
+        <button type="submit" class="btn btn-success" formaction="{{DefaultSecurePrefix}}/nav-signin?r={{CurrentUrl}}" formmethod="post" formtarget="_top">Sign in</button>
+        <button type="submit" class="btn btn-info" formaction="{{DefaultSecurePrefix}}/nav-signup?r={{CurrentUrl}}" formmethod="post" formtarget="_top">Sign up</button>
       </form>
     </div><!--/.navbar-collapse -->
 

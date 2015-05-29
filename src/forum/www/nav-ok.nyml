@@ -24,7 +24,7 @@ Partials:
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <form class="navbar-form navbar-right">
-        <button type="submit" class="btn btn-danger" formaction="{{DefaultSecurePrefix}}/nav-signout" formmethod="post" formtarget="_top">Sign out</button>
+        <button type="submit" class="btn btn-danger" formaction="{{DefaultSecurePrefix}}/nav-signout?r={{CurrentUrl}}" formmethod="post" formtarget="_top">Sign out</button>
       </form>
     </div><!--/.navbar-collapse -->
 
