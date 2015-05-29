@@ -1,0 +1,78 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+public class PostHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        page_path: string;
+
+        public makeHandler(hd: HandlerData): Handler {
+            PostHandler(hd, page_path);
+        }
+    }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+
+    public override initialize(): void {
+
+        def pid = Int32.Parse(Context.Vars["num"]);
+        def command = Server.Database.createCommand(
+            "SELECT UserId, ThreadId, CreateDate, Points, Content FROM "
+                "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
+
+        mutable uid;
+        mutable thid;
+        mutable date;
+        mutable points;
+        mutable content;
+        mutable ok = false;
+
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                uid = reader.GetValue.[uint?]("UserId", 0);
+                thid = reader.GetValue.[uint?]("ThreadId", 0);
+                date = reader.GetValue.[DateTime?]("CreateDate");
+                points = reader.GetValue.[int?]("Points", 0);
+                content = reader.GetValue("Content");
+                ok = true;
+            }
+        }
+
+        when(ok) {
+            def command2 = Server.Database.createCommand(
+                "SELECT Name from Users WHERE Id = @Id") <- [ "@Id" = uid ];
+            def name = command2.executeScalar() :> string;
+
+            def command3 = Server.Database.createCommand(
+                "SELECT Title from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
+            def title = command3.executeScalar() :> string;
+
+            _ = PageData <- [
+                "PostId" = pid,
+                "User" = name,
+                "Thread" = title,
+                "ThreadId" = thid,
+                "CreateDate" = date ? date.ToString() : "never",
+                "Points" = points,
+                "Content" = content,
+            ];
+        }
+
+//        Response.append(renderPage("post.nyml", PageData));
+//        Response.Status = (200, "OK");
+    }
+}
+
+
+} // forum.hnd

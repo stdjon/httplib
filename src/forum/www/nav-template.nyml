@@ -39,7 +39,7 @@ Partials:
     {{>NavScriptsPre}}
     var mainWindow = null;
     function postMainWindowMessage(value) {
-      mainWindow.postMessage(value, '{{DefaultPrefix}}');
+      mainWindow.postMessage(value, '*');
     }
 
     addEventListener("message", function(msg) {

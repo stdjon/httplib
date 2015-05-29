@@ -1,0 +1,131 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+public class UsersHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        page_path: string;
+        plural: bool;
+
+        public makeHandler(hd: HandlerData): Handler {
+            UsersHandler(hd, page_path, plural);
+        }
+    }
+
+    public IsPlural: bool { get; }
+
+    public this(hd: HandlerData, path: string, plural: bool) {
+        base(hd, path);
+        IsPlural = plural;
+    }
+
+
+    public override initialize(): void {
+        if(IsPlural) {
+            initializeUsers();
+        } else {
+            initializeUser();
+        }
+
+    }
+
+    public initializeUsers(): void {
+
+        def from = Int32.Parse(Context.Vars["from"]);
+        def to = Int32.Parse(Context.Vars["to"]);
+        def dist = to + 1 - from;
+        mutable users: PageDataArray = array(dist);
+        mutable i = 0;
+
+        def command = Server.Database.createCommand(
+            "SELECT Name, Level, Points, Motto FROM Users "
+                "ORDER BY Name LIMIT @From, @To") <- [
+                "@From" = from,
+                "@To" = to,
+            ];
+
+        using(reader = command.executeReader()) {
+            while(reader.Read() && i < dist) {
+                def u = reader.GetValue.[string]("Name");
+                when(u != null) {
+                    def points = reader.GetValue.[int?]("Points", 0);
+                    def level = reader.GetValue.[uint?]("Level", 0);
+                    def motto = reader.GetValue("Motto", "");
+                    users[i] = PageData() <- [
+                        "Num" = (from + i).ToString(),
+                        "Name" = u,
+                        "Points" = points.ToString(),
+                        "Level" = level.ToString(),
+                        "Motto" = motto,
+                    ];
+                    i++;
+                }
+            }
+        }
+
+        when(i < dist) {
+            Array.Resize(ref users, i);
+        }
+
+        def prf = Server.getDefaultPrefix(Request);
+        mutable prev = null;
+        mutable next = null;
+
+        Log.d("from = {0} > 1 {1}", from, from > 1);
+        when(from > 1) {
+            def pf = Math.Max(1, from - dist);
+            def pt = pf + dist - 1;
+            prev = $"$prf/u/$pf-$pt";
+        }
+        Log.d("prev = {0}", prev);
+
+        def user_count = Server.getUserCount();
+        Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
+        when(to < user_count) {
+            def nf = from + dist;
+            def nt = nf + dist - 1;
+            next = $"$prf/u/$nf-$nt";
+        }
+        Log.d("next = {0}", next);
+
+        _ = PageData <- [
+            "Users" = users,
+            "Prev" = prev,
+            "Next" = next,
+        ];
+    }
+
+    public initializeUser(): void {
+
+        def user = Context.Vars["user"];
+
+        def command = Server.Database.createCommand(
+            "SELECT Motto, Location, JoinDate, Points, Level FROM Users WHERE "
+                "Name = @Name") <- [ "@Name" = user ];
+
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                def date = reader.GetValue.[DateTime?]("JoinDate");
+                _ = PageData <- [
+                    "User" = user,
+                    "Motto" = reader.GetValue("Motto", ""),
+                    "Location" = reader.GetValue("Location", ""),
+                    "JoinDate" = date ? date.ToString() : "never",
+                    "Points" = reader.GetValue.[int?]("Points", 0),
+                    "Level" = reader.GetValue.[uint?]("Level", 0),
+                ];
+            }
+        }
+    }
+}
+
+
+} // forum.hnd

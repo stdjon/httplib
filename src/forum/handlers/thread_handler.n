@@ -1,0 +1,117 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+public class ThreadHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        page_path: string;
+
+        public makeHandler(hd: HandlerData): Handler {
+            ThreadHandler(hd, page_path);
+        }
+    }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+
+    public override initialize(): void {
+
+        def thid = Int32.Parse(Context.Vars["id"]);
+        def fr_st = Context.Vars["from"];
+        def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
+        def to_st = Context.Vars["to"];
+        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 49);  //TODO: configurable?
+        def dist = to + 1 - from;
+
+        def command = Server.Database.createCommand(
+            "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
+                "WHERE Id = @Id") <- [ "@Id" = thid ];
+
+        mutable ok = false;
+        mutable uid;
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                uid = reader.GetValue.[uint?]("UserId", 0);
+                _ = PageData <- [
+                    "Title" = reader.GetValue("Title"),
+                    "UserId" = uid,
+                    "CategoryId" = reader.GetValue.[uint?]("CategoryId", 0),
+                    "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
+                    "Colour" = reader.GetValue("Colour"),
+                ];
+                ok = true;
+            }
+        }
+        when(uid != null) {
+            _ = PageData <- [ "UserName" = Server.getUserName(uid :> uint) ];
+        }
+
+        when(ok) {
+            mutable posts: PageDataArray = array(dist);
+            mutable i = 0;
+
+            def command2 = Server.Database.createCommand(
+                "SELECT Id, UserId, Points, CreateDate, Content FROM Posts WHERE "
+                    "ThreadId = @ThreadId ORDER BY CreateDate LIMIT @From, @To") <- [
+                "@ThreadId" = thid,
+                "@From" = from,
+                "@To" = to
+            ];
+
+            using(reader = command2.executeReader()) {
+                while(reader.Read() && i < dist) {
+                    def id = reader.GetValue.[uint?]("Id", 0);
+                    uid = reader.GetValue.[uint?]("UserId", 0);
+                    def points = reader.GetValue.[int?]("Points", 0);
+                    def date = reader.GetValue.[DateTime?]("CreateDate");
+                    def Content = reader.GetValue("Content");
+
+                    posts[i] = PageData() <- [
+                        "Number" = from + i,
+                        "PostId" = id,
+                        "UserId" = uid,
+                        "Points" = points,
+                        "CreateDate" = date,
+                        "Content" = Content,
+                    ];
+                    i++;
+                }
+            }
+            when(i < dist) {
+                Array.Resize(ref posts, i);
+            }
+            def limit = i;
+
+            for(i = 0; i < limit; i++) {
+                _ = posts[i] <- [
+                    "UserName" = Server.getUserName(posts[i]["UserId"] :> uint),
+                ];
+            }
+
+            // Add a marker for every fifth post (1, 6, 11...)
+            def marker_count = (limit + 4) / 5;
+            def markers: PageDataArray = array(marker_count);
+            for(i = 0; i < marker_count; i++) {
+                markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
+            }
+
+            _ = PageData <- [
+                "Posts" = posts,
+                "Markers" = markers,
+            ];
+        }
+    }
+}
+
+
+} // forum.hnd

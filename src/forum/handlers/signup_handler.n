@@ -1,0 +1,148 @@
+using System;
+
+using httplib;
+
+using Nemerle.Extensions;
+
+
+namespace forum {
+
+public class SignupHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        submit: bool;
+
+        public makeHandler(hd: HandlerData): Handler {
+            SignupHandler(hd, submit);
+        }
+    }
+
+    IsSubmit: bool;
+
+    public this(hd: HandlerData, submit: bool) {
+        base(hd, null);
+
+        IsSubmit = submit;
+
+        _ = PageData <- [
+            "IsSignup" = true,
+        ];
+    }
+
+    public override callback(): void {
+        def lambda = IsSubmit ?
+            signupSubmitResponse :
+            signupResponse;
+
+        lambda();
+    }
+
+    public signupResponse(): void {
+
+        if(Request.IsSecure) {
+            def cookies = Request.Cookies;
+            def u = cookies ? cookies["_u"] : null;
+            mutable user = !String.IsNullOrEmpty(u) ? u : null;
+
+            def data = PageData() <- [
+                "User" = user,
+            ];
+
+            Response.append(Server.renderPage("signup.nyml", data));
+            Response.Cookies.expire("_u", COOKIE.SECURE_HTTP_ONLY);
+            Response.Status = (200, "OK");
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public signupSubmitResponse(): void {
+
+        if(Request.IsSecure) {
+            def user = Context.Vars["user"];
+            def password = Context.Vars["password"];
+            def confirm = Context.Vars["confirm"];
+            def email = Context.Vars["email"];
+
+
+            mutable command1 = Server.Database.createCommand("SELECT Name FROM Users "
+                "WHERE Name = @Name") <- [ "@Name" = user ];
+
+            mutable command2 = Server.Database.createCommand("SELECT Email FROM Auth "
+                "WHERE Email = @Email") <- [ "@Email" =  email ];
+
+            def test1 = command1.executeScalar() :> string;
+            def test2 = command2.executeScalar() :> string;
+
+            if(test1 != null || test2 != null || password != confirm) {
+                // TODO: also repeat the validation checks from client side
+                //   user length (3-25), chars
+                //   password length (8-60), chars
+
+                // error with user data.
+                // (need a more considered Response though...)
+                Response.append("<html><body><h1>Bad Request!</h1></body></html>");
+                Response.Status = (400, "Bad Request");
+            } else {
+                def auth = Server.getModuleInterface.[mod.IPbkdf2Auth]();
+                mutable token = null;
+                mutable expiry;
+
+                if(auth != null) {
+                    def now = DateTime.Now.ToUniversalTime();
+
+                    Server.Database.withTransaction(_ => {
+                        mutable command3 = Server.Database.createCommand(
+                            "INSERT INTO Users(Name, Level, Points, JoinDate) "
+                                "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                            "@Name" = user,
+                            "@JoinDate" = now,
+                        ];
+                        _ = command3.executeNonQuery();
+
+                        mutable command4 = Server.Database.createCommand(
+                            "SELECT Id FROM Users WHERE "
+                                "Name = @Name") <- [ "@Name" = user ];
+
+                        def id = command4.executeScalar() :> uint;
+
+                        def record = auth.createPasswordRecord(password);
+
+                        mutable command5 = Server.Database.createCommand(
+                            "INSERT INTO Auth(UserId, PwRecord, Email) "
+                                "VALUES (@UserId, @PwRecord, @Email)") <- [
+                            "@UserId" = id,
+                            "@PwRecord" = record,
+                            "@Email" = email,
+                        ];
+                        _ = command5.executeNonQuery();
+
+                        def (ok, t, x) = Server.registerSessionToken(STOK.SECURE, id);
+                        when(ok) {
+                            token = t;
+                            expiry = x;
+                        }
+                    });
+
+                    Response.Cookies.add(
+                        "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
+                    Response["Location"] = Server.DefaultInsecurePrefix + "/";
+                    Response.Status = (303, "See Other");
+
+                } else {
+                   Server.internalServerErrorResponse(Context, Request, Response);
+                    Log.w("IPbkdf2Auth module was not found.");
+                }
+            }
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+}
+
+
+} // forum.hnd

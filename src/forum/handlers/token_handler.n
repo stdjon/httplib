@@ -1,0 +1,112 @@
+using System;
+
+using httplib;
+
+using Nemerle.Extensions;
+
+
+namespace forum {
+
+public class TokenHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        method: HTTP;
+
+        public makeHandler(hd: HandlerData): Handler {
+            TokenHandler(hd, method);
+        }
+    }
+
+    Method: HTTP { get; private set; }
+
+    public this(hd: HandlerData, method: HTTP) {
+        base(hd, null);
+
+        Method = method;
+
+        _ = PageData <- [
+            "IsToken" = true,
+        ];
+    }
+
+    public override callback(): void {
+
+        def action = Context.Vars["action"];
+        def not_allowed_response =
+            () => Server.methodNotAllowedResponse(Context, Request, Response);
+
+        def lambda = match(Method) {
+            | HTTP.GET => match(action) {
+                | _ => not_allowed_response
+            }
+            | HTTP.POST => match(action) {
+                | "set" => tokSetResponse
+                | "check" => tokCheckResponse
+                | _ => not_allowed_response
+            }
+            | _ => not_allowed_response
+        }
+
+        lambda();
+    }
+
+    public tokSetResponse(): void {
+
+        if(Request.IsSecure) {
+            def t = Context.Vars["t"];
+
+            def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
+            def chk = tmp ? (tmp :> uint == 0) : false;
+            def cookies = Request.Cookies;
+            def session = cookies ? cookies["_session"] : null;
+            def tmp2 = Server.getUserIdFromSessionToken(STOK.SECURE, session);
+            def id: uint = tmp2 ? (tmp2 :> uint) : 0;
+            mutable ok = false;
+
+            when(chk && id != 0) {
+                def (ok2, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, id);
+                when(ok2) {
+                    Response.append(t);
+                    ok = true;
+                }
+            }
+            if(ok) {
+                Response.Status = (200, "OK");
+            } else {
+                Server.internalServerErrorResponse(Context, Request, Response);
+            }
+        } else {
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public tokCheckResponse(): void {
+
+        def t = Context.Vars["t"];
+        def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
+        def id: uint = tmp ? (tmp :> uint) : 0;
+        mutable ok = false;
+
+        when(id > 0) {
+            def (ok2, t, x) = Server.registerSessionToken(STOK.INSECURE, id);
+
+            when(ok2) {
+                Response.Cookies.add(
+                    "_isession", t, x, COOKIE.HTTP_ONLY);
+                ok = true;
+            }
+        }
+
+        if(ok) {
+            Response.Status = (200, "OK");
+        } else {
+            Server.internalServerErrorResponse(Context, Request, Response);
+        }
+    }
+
+}
+
+
+} // forum.hnd
