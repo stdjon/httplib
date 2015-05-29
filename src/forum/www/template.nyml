@@ -89,6 +89,18 @@ Partials:
             }
             break;
           }
+          case 'tokUp': {
+            $.ajax({
+              type: 'POST',
+              dataType: 'text',
+              global: false,
+              url: '/tok-check',
+              data: 't=' + cmd[1],
+              success: function(data) {
+                location.reload(); // FIXME!!
+              }
+            });
+          }
         }
       }
     });
@@ -96,6 +108,9 @@ Partials:
     $(window).load(function() {
       postIframeMessage('ehlo');
       setHdrCols(cols[idx], light);
+      {{#TempToken}}
+      postIframeMessage('tokTmp/' + encodeURIComponent('{{TempToken}}'));
+      {{/TempToken}}
     });
 
 

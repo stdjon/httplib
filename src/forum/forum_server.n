@@ -9,10 +9,44 @@ using httplib;
 
 namespace forum {
 
+// Security Token types
+public enum STOK {
+    | SECURE
+    | INSECURE
+    | TEMPORARY
+}
+
+
+// TODO: make this configurable
+public module SecureTokenExtensions {
+
+    // Token Length (bytes)
+    public Length(this tok: STOK): int {
+        match(tok) {
+            | SECURE => 60
+            | INSECURE => 40
+            | TEMPORARY => 20
+        }
+    }
+
+    // Token duration (minutes)
+    public Duration(this tok: STOK): int {
+        match(tok) {
+            | SECURE => 30 * 24 * 60
+            | INSECURE => 30
+            | TEMPORARY => 1
+        }
+    }
+
+    public IsSecure(this tok: STOK): bool {
+        | SECURE => true
+        | _ => false
+    }
+}
+
+
 public class ForumServer: Server {
 
-    SessionTokenLength: int { get { 60 } } // TODO: Config
-    SessionTokenDuration: int { get { 30 } } // TODO: Config
     Rng: RNGCryptoServiceProvider { get; private set; }
 
     public this(path: string) {
@@ -24,6 +58,7 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/nav-{{action}}", navGetResponse);
         route(HTTP.POST, "/nav-{{action}}", navPostResponse);
+        route(HTTP.POST, "/tok-{{action}}", tokPostResponse);
         route(HTTP.GET, "/signup", signupResponse);
         route(HTTP.POST, "/signup-submit", signupSubmitResponse);
         route(HTTP.GET, "/is-user", isUserResponse);
@@ -44,11 +79,33 @@ public class ForumServer: Server {
     public indexResponse(
         _context: Context, request: Request, response: Response): void {
 
+        def signout = request.QueryString["signout"];
+
+        def cookies = request.Cookies;
+        def isession =
+            (signout == null && cookies != null) ? cookies["_isession"] : null;
+
+        when(signout != null) {
+            response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
+        }
+
         def data = PageData() <- [
             "DefaultSecurePrefix" = DefaultSecurePrefix,
             "DefaultInsecurePrefix" = DefaultInsecurePrefix,
             "DefaultPrefix" = getDefaultPrefix(request),
         ];
+        if(isession != null) {
+            def id = getUserIdFromSessionToken(STOK.INSECURE, isession);
+            def name = getUserName(id :> uint);
+            _ = data <- [
+                "User" = name,
+            ];
+        } else {
+            def (_ok, t, _x) = registerSessionToken(STOK.TEMPORARY, 0);
+            _ = data <- [
+                "TempToken" = t,
+            ];
+        }
         response.append(renderPage("index.nyml", data));
         response.Status = (200, "OK");
     }
@@ -73,6 +130,18 @@ public class ForumServer: Server {
             | "signin" => navSigninResponse
             | "signout" => navSignoutResponse
             | "signup" => navSignupResponse
+            | _ => methodNotAllowedResponse
+        }
+        lambda(context, request, response);
+    }
+
+    public tokPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def action = context.Vars["action"];
+        def lambda = match(action) {
+            | "set" => tokSetResponse
+            | "check" => tokCheckResponse
             | _ => methodNotAllowedResponse
         }
         lambda(context, request, response);
@@ -163,7 +232,7 @@ public class ForumServer: Server {
                         ];
                         _ = command5.executeNonQuery();
 
-                        def (ok, t, x) = registerSessionToken(id, true);
+                        def (ok, t, x) = registerSessionToken(STOK.SECURE, id);
                         when(ok) {
                             token = t;
                             expiry = x;
@@ -493,16 +562,18 @@ public class ForumServer: Server {
             mutable id: uint = 0;
 
             when(!String.IsNullOrEmpty(session)) {
-                expireSessionTokens();
 
-                def commmand = Database.createCommand(
-                    "SELECT (UserId) FROM Sessions WHERE (Token = @Token)") <- ["@Token" = session];
-                def v = commmand.executeScalar() :> uint?;
-                id = v ? (v :> uint) : 0;
+                def test =
+                    getUserIdFromSessionToken(STOK.SECURE, session);
+                id = test ? (test :> uint) : 0;
             }
 
             if(id > 0) {
-                _ = data <- [ "User" = getUserName(id) ];
+                _ = data <- [
+                    "Id" = id,
+                    "User" = getUserName(id),
+                    "Session" = session,
+                ];
 
                 response.append(renderPage("nav-ok.nyml", data));
                 response.Status = (200, "OK");
@@ -536,6 +607,7 @@ public class ForumServer: Server {
 
     public navSigninResponse(
         context: Context, request: Request, response: Response): void {
+
         if(request.IsSecure) {
             def user = context.Vars["user"];
             def password = context.Vars["password"];
@@ -555,10 +627,10 @@ public class ForumServer: Server {
 
             def ok = !String.IsNullOrEmpty(record) &&
                 auth.validatePassword(password, record);
-            Log.d("Login attempt as {0}: {2}", user, ok, record);
+            Log.d("Login attempt as {0}: {1}", user, ok);
             when(ok) {
 
-                def (_ok2, token, expiry) = registerSessionToken(id :> uint, true);
+                def (_ok2, token, expiry) = registerSessionToken(STOK.SECURE, id :> uint);
                 response.Cookies.add(
                     "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
             }
@@ -574,20 +646,22 @@ public class ForumServer: Server {
 
     public navSignoutResponse(
         _context: Context, request: Request, response: Response): void {
+
         if(request.IsSecure) {
             def cookies = request.Cookies;
             def session = cookies ? cookies["_session"] : null;
+            def id = getUserIdFromSessionToken(STOK.SECURE, session);
             when(!String.IsNullOrEmpty(session)) {
                 def command = Database.createCommand(
-                    "DELETE FROM Sessions WHERE (Token = @Token)") <- [
-                        "@Token" = session
+                    "DELETE FROM Sessions WHERE (Id = @Id)") <- [
+                        "@Id" = id
                     ];
                 def rows = command.executeNonQuery();
                 Log.i("Deleted {0} session tokens (user sign out)...", rows);
             }
 
             response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
-            response["Location"] = DefaultInsecurePrefix + "/";
+            response["Location"] = DefaultInsecurePrefix + "/?signout=1";
             response.Status = (303, "See Other");
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -597,6 +671,7 @@ public class ForumServer: Server {
 
     public navSignupResponse(
         context: Context, request: Request, response: Response): void {
+
         if(request.IsSecure) {
             def user = context.Vars["user"];
             def _password = context.Vars["password"];
@@ -607,6 +682,62 @@ public class ForumServer: Server {
         } else {
             response.append("<html><body><h1>Forbidden!</h1></body></html>");
             response.Status = (403, "Forbidden");
+        }
+    }
+
+    public tokSetResponse(
+        context: Context, request: Request, response: Response): void {
+
+        if(request.IsSecure) {
+            def t = context.Vars["t"];
+
+            def tmp = getUserIdFromSessionToken(STOK.TEMPORARY, t);
+            def chk = tmp ? (tmp :> uint == 0) : false;
+            def cookies = request.Cookies;
+            def session = cookies ? cookies["_session"] : null;
+            def tmp2 = getUserIdFromSessionToken(STOK.SECURE, session);
+            def id: uint = tmp2 ? (tmp2 :> uint) : 0;
+            mutable ok = false;
+
+            when(chk && id != 0) {
+                def (ok2, t, _x) = registerSessionToken(STOK.TEMPORARY, id);
+                when(ok2) {
+                    response.append(t);
+                    ok = true;
+                }
+            }
+            if(ok) {
+                response.Status = (200, "OK");
+            } else {
+                internalServerErrorResponse(context, request, response);
+            }
+        } else {
+            response.Status = (403, "Forbidden");
+        }
+    }
+
+    public tokCheckResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def t = context.Vars["t"];
+        def tmp = getUserIdFromSessionToken(STOK.TEMPORARY, t);
+        def id: uint = tmp ? (tmp :> uint) : 0;
+        mutable ok = false;
+
+        when(id > 0) {
+            def (ok2, t, x) = registerSessionToken(STOK.INSECURE, id);
+
+            when(ok2) {
+                response.Cookies.add(
+                    "_isession", t, x, COOKIE.HTTP_ONLY);
+                ok = true;
+            }
+        }
+
+        if(ok) {
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
         }
     }
 
@@ -644,19 +775,19 @@ public class ForumServer: Server {
         commmand.executeScalar() :> string;
     }
 
-    public getSessionToken(): string {
-        def bytes = array(SessionTokenLength);
+    public getSessionToken(tok: STOK): string {
+        def bytes = array(tok.Length());
         Rng.GetBytes(bytes);
         def result = Convert.ToBase64String(bytes);
         Log.t("result.Length = {0}", result.Length);
         result;
     }
 
-    public compareSessionTokens(a: string, b: string): bool {
+    public compareSessionTokens(tok: STOK, a: string, b: string): bool {
         def ba = Convert.FromBase64String(a);
         def bb = Convert.FromBase64String(b);
         mutable cmp = a.Length ^ b.Length;
-        for(mutable i = 0; i < SessionTokenLength; i++) {
+        for(mutable i = 0; i < tok.Length(); i++) {
             def ca = ba[i % a.Length];
             def cb = bb[i % b.Length];
             cmp |= ca ^ cb;
@@ -664,10 +795,10 @@ public class ForumServer: Server {
         cmp == 0;
     }
 
-    public registerSessionToken(id: uint, secure: bool): (bool * string * DateTime) {
-        def token = getSessionToken();
+    public registerSessionToken(tok: STOK, id: uint): bool * string * DateTime {
+        def token = getSessionToken(tok);
         def expiry = DateTime.Now.
-            AddMinutes(SessionTokenDuration).ToUniversalTime();
+            AddMinutes(tok.Duration()).ToUniversalTime();
 
         mutable command = Database.createCommand(
             "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
@@ -675,7 +806,7 @@ public class ForumServer: Server {
             "@UserId" = id,
             "@Token" = token,
             "@ExpiryTime" = expiry,
-            "@IsSecure" = secure,
+            "@IsSecure" = tok.IsSecure(),
         ];
         def rows = command.executeNonQuery();
         (rows == 1, token, expiry);
@@ -688,6 +819,17 @@ public class ForumServer: Server {
             "DELETE FROM Sessions WHERE (ExpiryTime < @Now)") <- [ "@Now" = now ];
         def rows = command.executeNonQuery();
         Log.i("Deleted {0} expired session tokens...", rows);
+    }
+
+    public getUserIdFromSessionToken(tok: STOK, token: string): uint? {
+        expireSessionTokens();
+        def commmand = Database.createCommand(
+            "SELECT (UserId) FROM Sessions WHERE "
+                "(Token = @Token AND IsSecure = @IsSecure)") <- [
+            "@Token" = token,
+            "@IsSecure" = tok.IsSecure(),
+        ];
+        commmand.executeScalar() :> uint?;
     }
 }
 

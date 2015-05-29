@@ -53,6 +53,17 @@ Partials:
             mainWindow = msg.source;
             break;
           }
+          case 'tokTmp': {
+            $.ajax({
+              type: 'POST',
+              url: '{{DefaultSecurePrefix}}/tok-set',
+              data: 'id={{Id}}&t=' + cmd[1], //cmd[1] already encoded...
+              contentType: 'text/plain',
+              success: function(data) {
+                mainWindow.postMessage('tokUp/' + encodeURIComponent(data), '*');
+              },
+            });
+          }
         }
       }
     });
