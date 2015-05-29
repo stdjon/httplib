@@ -1,0 +1,44 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasLogging]
+public class BaseHandler: ComplexHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        page_path: string;
+
+        public makeHandler(hd: HandlerData): Handler {
+            BaseHandler(hd, page_path);
+        }
+    }
+
+    public override ContentType: string { get { "text/html" } }
+    public override PagePath: string { get; private set; }
+    public override PageData: PageData { get; private set; }
+
+    public new Server: ForumServer {
+        get { base.Server :> ForumServer }
+    }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd);
+
+        PagePath = path;
+        PageData = PageData() <- [
+            "DefaultSecurePrefix" = Server.DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = Server.DefaultInsecurePrefix,
+            "DefaultPrefix" = Server.getDefaultPrefix(Request),
+        ];
+    }
+}
+
+
+} // forum.hnd

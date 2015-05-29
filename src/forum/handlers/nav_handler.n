@@ -1,0 +1,182 @@
+using System;
+
+using httplib;
+
+using Nemerle.Extensions;
+
+
+namespace forum {
+
+public class NavHandler: BaseHandler {
+
+    [Record]
+    public new class Factory: IHandlerFactory {
+
+        method: HTTP;
+
+        public makeHandler(hd: HandlerData): Handler {
+            NavHandler(hd, method);
+        }
+    }
+
+    Method: HTTP { get; private set; }
+
+    public this(hd: HandlerData, method: HTTP) {
+        base(hd, null);
+
+        Method = method;
+
+        _ = PageData <- [
+            "IsNav" = true,
+        ];
+    }
+
+    public override callback(): void {
+
+        def action = Context.Vars["action"];
+        def not_allowed_response =
+            () => Server.methodNotAllowedResponse(Context, Request, Response);
+
+        def lambda = match(Method) {
+            | HTTP.GET => match(action) {
+                | "login" => navLoginResponse
+                | "empty" => navEmptyResponse
+                | _ => not_allowed_response
+            }
+            | HTTP.POST => match(action) {
+                | "signin" => navSigninResponse
+                | "signout" => navSignoutResponse
+                | "signup" => navSignupResponse
+                | _ => not_allowed_response
+            }
+            | _ => not_allowed_response
+        }
+
+        lambda();
+    }
+
+    public navLoginResponse(): void {
+
+        if(Request.IsSecure) {
+            def cookies = Request.Cookies;
+            def session = cookies ? cookies["_session"] : null;
+            mutable id: uint = 0;
+
+            when(!String.IsNullOrEmpty(session)) {
+
+                def test =
+                    Server.getUserIdFromSessionToken(STOK.SECURE, session);
+                id = test ? (test :> uint) : 0;
+            }
+
+            if(id > 0) {
+                _ = PageData <- [
+                    "Id" = id,
+                    "User" = Server.getUserName(id),
+                    "Session" = session,
+                ];
+
+                Response.append(Server.renderPage("nav-ok.nyml", PageData));
+                Response.Status = (200, "OK");
+
+            } else {
+                Response.append(Server.renderPage("nav-login.nyml", PageData));
+                Response.Status = (200, "OK");
+            }
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navEmptyResponse(): void {
+
+        if(Request.IsSecure) {
+            Response.append(Server.renderPage("nav-empty.nyml", PageData));
+            Response.Status = (200, "OK");
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navSigninResponse(): void {
+
+        if(Request.IsSecure) {
+            def user = Context.Vars["user"];
+            def password = Context.Vars["password"];
+            def auth = Server.getModuleInterface.[mod.IPbkdf2Auth]();
+            def command1 = Server.Database.createCommand(
+                "SELECT Id FROM Users WHERE "
+                    "Name = @Name") <- [ "@Name" = user ];
+            def id = command1.executeScalar() :> uint?;
+            mutable record;
+            //mutable token;
+            when(id != null) {
+                def command2 = Server.Database.createCommand(
+                    "SELECT PwRecord FROM Auth WHERE "
+                        "UserId = @UserId") <- [ "@UserId" = id ];
+                record = command2.executeScalar() :> string;
+            }
+
+            def ok = !String.IsNullOrEmpty(record) &&
+                auth.validatePassword(password, record);
+            Log.d("Login attempt as {0}: {1}", user, ok);
+            when(ok) {
+
+                def (_ok2, token, expiry) = Server.registerSessionToken(STOK.SECURE, id :> uint);
+                Response.Cookies.add(
+                    "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
+            }
+            Response["Location"] = Server.DefaultInsecurePrefix + "/";
+            Response.Status = (303, "See Other");
+
+
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navSignoutResponse(): void {
+
+        if(Request.IsSecure) {
+            def cookies = Request.Cookies;
+            def session = cookies ? cookies["_session"] : null;
+            def id = Server.getUserIdFromSessionToken(STOK.SECURE, session);
+            when(!String.IsNullOrEmpty(session)) {
+                def command = Server.Database.createCommand(
+                    "DELETE FROM Sessions WHERE (Id = @Id)") <- [
+                        "@Id" = id
+                    ];
+                def rows = command.executeNonQuery();
+                Log.i("Deleted {0} session tokens (user sign out)...", rows);
+            }
+
+            Response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
+            Response["Location"] = Server.DefaultInsecurePrefix + "/?signout=1";
+            Response.Status = (303, "See Other");
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+
+    public navSignupResponse(): void {
+
+        if(Request.IsSecure) {
+            def user = Context.Vars["user"];
+            def _password = Context.Vars["password"];
+
+            Response.Cookies.add("_u", user, COOKIE.SECURE_HTTP_ONLY);
+            Response["Location"] = Server.DefaultSecurePrefix + "/signup";
+            Response.Status = (303, "See Other");
+        } else {
+            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
+            Response.Status = (403, "Forbidden");
+        }
+    }
+}
+
+
+} // forum.hnd

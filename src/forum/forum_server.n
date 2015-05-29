@@ -55,9 +55,11 @@ public class ForumServer: Server {
         Rng = RNGCryptoServiceProvider();
 
         route(HTTP.GET, "/", indexResponse);
+        route(HTTP.GET, "/index", BaseHandler.Factory("index.nyml"));
 
-        route(HTTP.GET, "/nav-{{action}}", navGetResponse);
-        route(HTTP.POST, "/nav-{{action}}", navPostResponse);
+        route(HTTP.GET, "/nav-{{action}}", NavHandler.Factory(HTTP.GET));
+        route(HTTP.POST, "/nav-{{action}}", NavHandler.Factory(HTTP.POST));
+
         route(HTTP.POST, "/tok-{{action}}", tokPostResponse);
         route(HTTP.GET, "/signup", signupResponse);
         route(HTTP.POST, "/signup-submit", signupSubmitResponse);
@@ -108,31 +110,6 @@ public class ForumServer: Server {
         }
         response.append(renderPage("index.nyml", data));
         response.Status = (200, "OK");
-    }
-
-    public navGetResponse(
-        context: Context, request: Request, response: Response): void {
-
-        def action = context.Vars["action"];
-        def lambda = match(action) {
-            | "login" => navLoginResponse
-            | "empty" => navEmptyResponse
-            | _ => methodNotAllowedResponse
-        };
-        lambda(context, request, response);
-    }
-
-    public navPostResponse(
-        context: Context, request: Request, response: Response): void {
-
-        def action = context.Vars["action"];
-        def lambda = match(action) {
-            | "signin" => navSigninResponse
-            | "signout" => navSignoutResponse
-            | "signup" => navSignupResponse
-            | _ => methodNotAllowedResponse
-        }
-        lambda(context, request, response);
     }
 
     public tokPostResponse(
@@ -548,143 +525,6 @@ public class ForumServer: Server {
         response.Status = (200, "OK");
     }
 
-    public navLoginResponse(
-        _context: Context, request: Request, response: Response): void {
-
-        if(request.IsSecure) {
-            def cookies = request.Cookies;
-            def session = cookies ? cookies["_session"] : null;
-            def data = PageData() <- [
-                "DefaultSecurePrefix" = DefaultSecurePrefix,
-                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
-                "DefaultPrefix" = getDefaultPrefix(request),
-            ];
-            mutable id: uint = 0;
-
-            when(!String.IsNullOrEmpty(session)) {
-
-                def test =
-                    getUserIdFromSessionToken(STOK.SECURE, session);
-                id = test ? (test :> uint) : 0;
-            }
-
-            if(id > 0) {
-                _ = data <- [
-                    "Id" = id,
-                    "User" = getUserName(id),
-                    "Session" = session,
-                ];
-
-                response.append(renderPage("nav-ok.nyml", data));
-                response.Status = (200, "OK");
-
-            } else {
-                response.append(renderPage("nav-login.nyml", data));
-                response.Status = (200, "OK");
-            }
-        } else {
-            response.append("<html><body><h1>Forbidden!</h1></body></html>");
-            response.Status = (403, "Forbidden");
-        }
-    }
-
-    public navEmptyResponse(
-        _context: Context, request: Request, response: Response): void {
-
-        if(request.IsSecure) {
-            def data = PageData() <- [
-                "DefaultSecurePrefix" = DefaultSecurePrefix,
-                "DefaultInsecurePrefix" = DefaultInsecurePrefix,
-                "DefaultPrefix" = getDefaultPrefix(request),
-            ];
-            response.append(renderPage("nav-empty.nyml", data));
-            response.Status = (200, "OK");
-        } else {
-            response.append("<html><body><h1>Forbidden!</h1></body></html>");
-            response.Status = (403, "Forbidden");
-        }
-    }
-
-    public navSigninResponse(
-        context: Context, request: Request, response: Response): void {
-
-        if(request.IsSecure) {
-            def user = context.Vars["user"];
-            def password = context.Vars["password"];
-            def auth = getModuleInterface.[mod.IPbkdf2Auth]();
-            def command1 = Database.createCommand(
-                "SELECT Id FROM Users WHERE "
-                    "Name = @Name") <- [ "@Name" = user ];
-            def id = command1.executeScalar() :> uint?;
-            mutable record;
-            //mutable token;
-            when(id != null) {
-                def command2 = Database.createCommand(
-                    "SELECT PwRecord FROM Auth WHERE "
-                        "UserId = @UserId") <- [ "@UserId" = id ];
-                record = command2.executeScalar() :> string;
-            }
-
-            def ok = !String.IsNullOrEmpty(record) &&
-                auth.validatePassword(password, record);
-            Log.d("Login attempt as {0}: {1}", user, ok);
-            when(ok) {
-
-                def (_ok2, token, expiry) = registerSessionToken(STOK.SECURE, id :> uint);
-                response.Cookies.add(
-                    "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
-            }
-            response["Location"] = DefaultInsecurePrefix + "/";
-            response.Status = (303, "See Other");
-
-
-        } else {
-            response.append("<html><body><h1>Forbidden!</h1></body></html>");
-            response.Status = (403, "Forbidden");
-        }
-    }
-
-    public navSignoutResponse(
-        _context: Context, request: Request, response: Response): void {
-
-        if(request.IsSecure) {
-            def cookies = request.Cookies;
-            def session = cookies ? cookies["_session"] : null;
-            def id = getUserIdFromSessionToken(STOK.SECURE, session);
-            when(!String.IsNullOrEmpty(session)) {
-                def command = Database.createCommand(
-                    "DELETE FROM Sessions WHERE (Id = @Id)") <- [
-                        "@Id" = id
-                    ];
-                def rows = command.executeNonQuery();
-                Log.i("Deleted {0} session tokens (user sign out)...", rows);
-            }
-
-            response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
-            response["Location"] = DefaultInsecurePrefix + "/?signout=1";
-            response.Status = (303, "See Other");
-        } else {
-            response.append("<html><body><h1>Forbidden!</h1></body></html>");
-            response.Status = (403, "Forbidden");
-        }
-    }
-
-    public navSignupResponse(
-        context: Context, request: Request, response: Response): void {
-
-        if(request.IsSecure) {
-            def user = context.Vars["user"];
-            def _password = context.Vars["password"];
-
-            response.Cookies.add("_u", user, COOKIE.SECURE_HTTP_ONLY);
-            response["Location"] = DefaultSecurePrefix + "/signup";
-            response.Status = (303, "See Other");
-        } else {
-            response.append("<html><body><h1>Forbidden!</h1></body></html>");
-            response.Status = (403, "Forbidden");
-        }
-    }
-
     public tokSetResponse(
         context: Context, request: Request, response: Response): void {
 
@@ -746,7 +586,7 @@ public class ForumServer: Server {
             ex.Message, ex.GetExtendedStackTrace());
     }
 
-    getDefaultPrefix(request: Request): string {
+    public getDefaultPrefix(request: Request): string {
         if(request.IsSecure) {
             DefaultSecurePrefix
         } else {
@@ -754,13 +594,13 @@ public class ForumServer: Server {
         }
     }
 
-    getUserCount(): int {
+    public getUserCount(): int {
         def commmand = Database.createCommand("SELECT COUNT(Name) FROM Users");
         def ex = commmand.executeScalar() :> long;
         unchecked ex :> int;
     }
 
-    getPostCount(thread_id: uint): int {
+    public getPostCount(thread_id: uint): int {
         def commmand = Database.createCommand(
             "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [
                 "@ThreadId" = thread_id,
@@ -769,7 +609,7 @@ public class ForumServer: Server {
         unchecked ex :> int;
     }
 
-    getUserName(user_id: uint): string {
+    public getUserName(user_id: uint): string {
         def commmand = Database.createCommand(
             "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
         commmand.executeScalar() :> string;

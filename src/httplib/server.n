@@ -239,14 +239,20 @@ public abstract class Server: IDisposable {
         }
     }
 
+    public route(method: Method, path: string, factory: IHandlerFactory): void {
+        route(method, path, factory.makeHandler);
+    }
+
+    public route(routes: list[(Method * string)], factory: IHandlerFactory): void {
+        route(routes, factory.makeHandler);
+    }
+
     public route(method: Method, path: string, fn: Callback): void {
-        route(method, path, CallbackHandler.Wrapper(fn).unwrap);
+        route(method, path, CallbackHandler.Factory(fn));
     }
 
     public route(routes: list[(Method * string)], fn: Callback): void {
-        foreach((method, path) in routes) {
-            route(method, path, fn);
-        }
+        route(routes, CallbackHandler.Factory(fn));
     }
 
     public context(

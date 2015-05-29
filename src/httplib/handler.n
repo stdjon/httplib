@@ -5,6 +5,15 @@ using System.IO;
 namespace httplib {
 
 //------------------------------------------------------------------------------
+//
+
+public interface IHandlerFactory {
+
+    makeHandler(hd: HandlerData): Handler;
+}
+
+
+//------------------------------------------------------------------------------
 // HandlerData
 
 /** This exists basically to make the Handler ctor (and subclasses) simpler and
@@ -46,6 +55,16 @@ public abstract class Handler {
 
 public class CallbackHandler: Handler {
 
+    [Record]
+    public class Factory: IHandlerFactory {
+
+        lambda: Server.Callback;
+
+        public makeHandler(hd: HandlerData): Handler {
+            CallbackHandler(hd, lambda);
+        }
+    }
+
     lambda: Server.Callback;
 
     public this(hd: HandlerData, cb: Server.Callback) {
@@ -55,16 +74,6 @@ public class CallbackHandler: Handler {
 
     public override callback(): void {
         lambda(Context, Request, Response);
-    }
-
-    [Record]
-    public class Wrapper {
-
-        lambda: Server.Callback;
-
-        public unwrap(hd: HandlerData): Handler {
-            CallbackHandler(hd, lambda);
-        }
     }
 }
 

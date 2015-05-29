@@ -120,7 +120,7 @@ refs=$(contrib_refs) $(local_refs)
 # $5 = additional args to ncc (can be empty, usually set by derived emits)
 define emit_rule
 $1_TARGETS+=$(BIN)/$2
-$(BIN)/$2_SRC:=$$(wildcard $3/*.n)
+$(BIN)/$2_SRC:=$$(foreach d,$3,$$(wildcard $$d/*.n))
 $(BIN)/$2_DLLS:=$$(foreach d,$4,$(BIN)/$$d)
 
 $(BIN)/$2: $$($(BIN)/$2_SRC) $$($(BIN)/$2_DLLS)
@@ -161,7 +161,7 @@ all:
 # forum.exe
 
 $(eval $(call emit_exe_rule,forum.exe, \
-	src/forum, \
+	src/forum src/forum/*, \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
 	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
@@ -351,3 +351,5 @@ endef
 $(foreach l,$(CONTRIB_LIBS),$(eval $(call cp_contrib_lib,$(BIN)/$(notdir $l),$l)))
 
 install_contrib: $(foreach l,$(CONTRIB_LIBS),$(BIN)/$(notdir $l))
+
+
