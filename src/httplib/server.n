@@ -179,12 +179,11 @@ public abstract class Server: IDisposable {
 
         default_secure_prefix = Regex(@"(https://.*)/").Replace(
             Configuration.Prefixes.Secure[0], "$1");
+        Log.d("Default prefix (secure):=  {0}", DefaultSecurePrefix);
 
         default_insecure_prefix = Regex(@"(http://.*)/").Replace(
             Configuration.Prefixes.Insecure[0], "$1");
-
-        Log.d("Default prefixes:\n  - {0}\n  - {1}",
-            DefaultInsecurePrefix, DefaultSecurePrefix);
+        Log.d("Default prefix (insecure):=  {0}", DefaultInsecurePrefix);
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
