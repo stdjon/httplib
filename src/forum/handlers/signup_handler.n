@@ -67,12 +67,15 @@ public class SignupHandler: BaseHandler {
             def confirm = Context.Vars["confirm"];
             def email = Context.Vars["email"];
 
+            mutable command1 = Server.Database.createCommand(
+                "SELECT Name FROM Users WHERE Name = @Name") <- [
+                    "@Name" = user
+                ];
 
-            mutable command1 = Server.Database.createCommand("SELECT Name FROM Users "
-                "WHERE Name = @Name") <- [ "@Name" = user ];
-
-            mutable command2 = Server.Database.createCommand("SELECT Email FROM Auth "
-                "WHERE Email = @Email") <- [ "@Email" =  email ];
+            mutable command2 = Server.Database.createCommand(
+                "SELECT Email FROM Auth WHERE Email = @Email") <- [
+                    "@Email" =  email
+                ];
 
             def test1 = command1.executeScalar() :> string;
             def test2 = command2.executeScalar() :> string;
@@ -120,7 +123,9 @@ public class SignupHandler: BaseHandler {
                         ];
                         _ = command5.executeNonQuery();
 
-                        def (ok, t, x) = Server.registerSessionToken(STOK.SECURE, id);
+                        def (ok, t, x) =
+                            Server.registerSessionToken(STOK.SECURE, id);
+
                         when(ok) {
                             token = t;
                             expiry = x;
@@ -145,4 +150,4 @@ public class SignupHandler: BaseHandler {
 }
 
 
-} // forum.hnd
+} // forum

@@ -37,15 +37,9 @@ public class TokenHandler: BaseHandler {
         def not_allowed_response =
             () => Server.methodNotAllowedResponse(Context, Request, Response);
 
-        def lambda = match(Method) {
-            | HTTP.GET => match(action) {
-                | _ => not_allowed_response
-            }
-            | HTTP.POST => match(action) {
-                | "set" => tokSetResponse
-                | "check" => tokCheckResponse
-                | _ => not_allowed_response
-            }
+        def lambda = match(Method, action) {
+            | (HTTP.POST, "set") => tokSetResponse
+            | (HTTP.POST, "check") => tokCheckResponse
             | _ => not_allowed_response
         }
 
@@ -66,7 +60,9 @@ public class TokenHandler: BaseHandler {
             mutable ok = false;
 
             when(chk && id != 0) {
-                def (ok2, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, id);
+                def (ok2, t, _x) =
+                    Server.registerSessionToken(STOK.TEMPORARY, id);
+
                 when(ok2) {
                     Response.append(t);
                     ok = true;
@@ -93,8 +89,7 @@ public class TokenHandler: BaseHandler {
             def (ok2, t, x) = Server.registerSessionToken(STOK.INSECURE, id);
 
             when(ok2) {
-                Response.Cookies.add(
-                    "_isession", t, x, COOKIE.HTTP_ONLY);
+                Response.Cookies.add("_isession", t, x, COOKIE.HTTP_ONLY);
                 ok = true;
             }
         }
@@ -109,4 +104,4 @@ public class TokenHandler: BaseHandler {
 }
 
 
-} // forum.hnd
+} // forum

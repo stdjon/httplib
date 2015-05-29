@@ -40,18 +40,12 @@ public class NavHandler: BaseHandler {
         def not_allowed_response =
             () => Server.methodNotAllowedResponse(Context, Request, Response);
 
-        def lambda = match(Method) {
-            | HTTP.GET => match(action) {
-                | "login" => navLoginResponse
-                | "empty" => navEmptyResponse
-                | _ => not_allowed_response
-            }
-            | HTTP.POST => match(action) {
-                | "signin" => navSigninResponse
-                | "signout" => navSignoutResponse
-                | "signup" => navSignupResponse
-                | _ => not_allowed_response
-            }
+        def lambda = match(Method, action) {
+            | (HTTP.GET, "login") => navLoginResponse
+            | (HTTP.GET, "empty") => navEmptyResponse
+            | (HTTP.POST, "signin") => navSigninResponse
+            | (HTTP.POST, "signout") => navSignoutResponse
+            | (HTTP.POST, "signup") => navSignupResponse
             | _ => not_allowed_response
         }
 
@@ -127,7 +121,8 @@ public class NavHandler: BaseHandler {
             Log.d("Login attempt as {0}: {1}", user, ok);
             when(ok) {
 
-                def (_ok2, token, expiry) = Server.registerSessionToken(STOK.SECURE, id :> uint);
+                def (_ok2, token, expiry) =
+                    Server.registerSessionToken(STOK.SECURE, id :> uint);
                 Response.Cookies.add(
                     "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
             }
@@ -182,4 +177,4 @@ public class NavHandler: BaseHandler {
 }
 
 
-} // forum.hnd
+} // forum

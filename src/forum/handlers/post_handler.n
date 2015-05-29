@@ -68,11 +68,8 @@ public class PostHandler: BaseHandler {
                 "Content" = content,
             ];
         }
-
-//        Response.append(renderPage("post.nyml", PageData));
-//        Response.Status = (200, "OK");
     }
 }
 
 
-} // forum.hnd
+} // forum
