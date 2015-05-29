@@ -75,7 +75,7 @@ Partials:
     function postIframeMessage(value) {
       var f = document.getElementById('navbar-frame');
       var w = f.contentWindow;
-      w.postMessage(value, "*");
+      w.postMessage(value, "{{DefaultSecurePrefix}}");
     }
     addEventListener("message", function(msg) {
       if('{{DefaultSecurePrefix}}' === msg.origin) {

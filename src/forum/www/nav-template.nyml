@@ -38,6 +38,9 @@ Partials:
   NavScripts: |
     {{>NavScriptsPre}}
     var mainWindow = null;
+    function postMainWindowMessage(value) {
+      mainWindow.postMessage(value, '{{DefaultPrefix}}');
+    }
 
     addEventListener("message", function(msg) {
       if( ('{{DefaultSecurePrefix}}' === msg.origin) ||
@@ -60,7 +63,7 @@ Partials:
               data: 'id={{Id}}&t=' + cmd[1], //cmd[1] already encoded...
               contentType: 'text/plain',
               success: function(data) {
-                mainWindow.postMessage('tokUp/' + encodeURIComponent(data), '*');
+                postMainWindowMessage('tokUp/' + encodeURIComponent(data));
               },
             });
           }
@@ -70,8 +73,8 @@ Partials:
 
     // tell main window about navbar collapses so it can resize the iframe...
     $('#navbar').on('show.bs.collapse', function () {
-       mainWindow.postMessage('nav/show/' + navCollapseHeight, '*');
+       postMainWindowMessage('nav/show/' + navCollapseHeight);
     });
     $('#navbar').on('hidden.bs.collapse', function () {
-       mainWindow.postMessage('nav/hide', '*');
+       postMainWindowMessage('nav/hide');
     });
