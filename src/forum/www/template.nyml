@@ -83,10 +83,11 @@ Partials:
         });
     });
     // iframe communication
-    function postIframeMessage(value) {
+    function postIframeMessage() {
+      var msg = Array.prototype.join.call(arguments, '/');
       var f = document.getElementById('navbar-frame');
       var w = f.contentWindow;
-      w.postMessage(value, "{{DefaultSecurePrefix}}");
+      w.postMessage(msg, "{{DefaultSecurePrefix}}");
     }
     addEventListener("message", function(msg) {
       if('{{DefaultSecurePrefix}}' === msg.origin) {
@@ -133,7 +134,7 @@ Partials:
     $(window).load(function() {
       pageInit();
       {{#TempToken}}
-      postIframeMessage('tokTmp/' + encodeURIComponent('{{TempToken}}'));
+      postIframeMessage('tokTmp', encodeURIComponent('{{TempToken}}'));
       {{/TempToken}}
     });
 
