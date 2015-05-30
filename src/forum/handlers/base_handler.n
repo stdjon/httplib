@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 using Nemerle.Extensions;
 
@@ -23,6 +24,7 @@ public class BaseHandler: ComplexHandler {
     public override ContentType: string { get { "text/html" } }
     public override PagePath: string { get; private set; }
     public override PageData: PageData { get; private set; }
+    public RenderContent: bool { get; private set; }
 
     public new Server: ForumServer {
         get { base.Server :> ForumServer }
@@ -37,7 +39,58 @@ public class BaseHandler: ComplexHandler {
             "DefaultInsecurePrefix" = Server.DefaultInsecurePrefix,
             "DefaultPrefix" = Server.getDefaultPrefix(Request),
             "CurrentUrl" = Uri.EscapeDataString(Request.Url.ToString()),
+            "CurrentUrlUnescaped" = Request.Url.ToString(), // hmm...
         ];
+
+        RenderContent =
+            Context.Vars["_$content"] != null ||
+            Request.QueryString["_$content"] != null;
+
+        if(RenderContent) {
+            PageData["RenderContent"] = true;
+        } else {
+            PageData["RenderFullPage"] = true;
+        }
+    }
+
+    public override initialize(): void {
+        temporaryLoginHandling(); //
+    }
+
+    public override renderPage(renderer: Renderer, fs: Stream): string {
+        def page = renderer.loadPage(fs);
+
+        if(RenderContent) {
+            page.renderContent(PageData);
+        } else {
+            page.render(PageData);
+        }
+    }
+
+    // TODO: this lives here in the interim, handles the final stages of login
+    //  negotiation with the nav. 
+    temporaryLoginHandling(): void {
+        def signout = Request.QueryString["signout"];
+        def cookies = Request.Cookies;
+        def isession =
+            (signout == null && cookies != null) ? cookies["_isession"] : null;
+
+        when(signout != null) {
+            Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
+        }
+
+        if(isession != null) {
+            def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
+            def name = Server.getUserName(id :> uint);
+            _ = PageData <- [
+                "User" = name,
+            ];
+        } else {
+            def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
+            _ = PageData <- [
+                "TempToken" = t,
+            ];
+        }
     }
 }
 

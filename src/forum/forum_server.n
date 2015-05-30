@@ -55,8 +55,8 @@ public class ForumServer: Server {
 
         Rng = RNGCryptoServiceProvider();
 
-        route(HTTP.GET, "/", indexResponse);
-        route(HTTP.GET, "/index", BaseHandler.Factory("index.nyml"));
+        route([ (HTTP.GET, "/"),
+            (HTTP.GET, "/index") ], BaseHandler.Factory("index.nyml"));
 
         route(HTTP.GET, "/nav-{{action}}", NavHandler.Factory(HTTP.GET));
         route(HTTP.POST, "/nav-{{action}}", NavHandler.Factory(HTTP.POST));
@@ -68,7 +68,7 @@ public class ForumServer: Server {
         route(HTTP.GET, "/is-user", isUserResponse);
 
         route([ (HTTP.GET, "/u"),
-                (HTTP.GET, "/u/{{num:[0-9]+}}")], usersRedirectPageResponse);
+            (HTTP.GET, "/u/{{num:[0-9]+}}") ], usersRedirectPageResponse);
         route(HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}",
             UsersHandler.Factory("users.nyml", true));
         route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}",
@@ -79,40 +79,6 @@ public class ForumServer: Server {
         route([ (HTTP.GET, "/th/{{id:[0-9]+}}"),
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
-    }
-
-    public indexResponse(
-        _context: Context, request: Request, response: Response): void {
-
-        def signout = request.QueryString["signout"];
-
-        def cookies = request.Cookies;
-        def isession =
-            (signout == null && cookies != null) ? cookies["_isession"] : null;
-
-        when(signout != null) {
-            response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
-        }
-
-        def data = PageData() <- [
-            "DefaultSecurePrefix" = DefaultSecurePrefix,
-            "DefaultInsecurePrefix" = DefaultInsecurePrefix,
-            "DefaultPrefix" = getDefaultPrefix(request),
-        ];
-        if(isession != null) {
-            def id = getUserIdFromSessionToken(STOK.INSECURE, isession);
-            def name = getUserName(id :> uint);
-            _ = data <- [
-                "User" = name,
-            ];
-        } else {
-            def (_ok, t, _x) = registerSessionToken(STOK.TEMPORARY, 0);
-            _ = data <- [
-                "TempToken" = t,
-            ];
-        }
-        response.append(renderPage("index.nyml", data));
-        response.Status = (200, "OK");
     }
 
     public isUserResponse(

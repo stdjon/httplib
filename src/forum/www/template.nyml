@@ -17,8 +17,21 @@ Content: |
   {{>PageLayout}}
 Partials:
   PageLayout: |
+    {{#RenderContent}}
+    {{>PageLayoutContent}}
+    {{/RenderContent}}
+    {{#RenderFullPage}}
+    {{>PageLayoutFullPage}}
+    {{/RenderFullPage}}
+  PageLayoutContent: |
+    {{>MainSpace}}
+  PageLayoutFullPage: |
     {{>Nav}}
-    <div class="outside container hyphenate">
+    <div id="mainspace" class="outside container hyphenate">
+      {{>MainSpace}}
+    </div>
+    {{>Scripts}}
+  MainSpace: |
       <div class="banner">
         {{>Banner}}
         <div class="col-xs-10 body">
@@ -28,8 +41,6 @@ Partials:
           {{>Guide}}
         </div>
       </div>
-    </div>
-    {{>Scripts}}
   Scripts: |
     {{>LoadScripts}}
     <script>
@@ -97,17 +108,30 @@ Partials:
               url: '/tok-check',
               data: 't=' + cmd[1],
               success: function(data) {
-                location.reload(); // FIXME!!
+                $.ajax({
+                  type: 'GET',
+                  dataType: 'text',
+                  url: '{{CurrentUrlUnescaped}}?_$content=1',
+                  success: function(data) {
+                    $('#mainspace').html(data);
+                    Hyphenator.run();
+                    pageInit();
+                  }
+
+                });
               }
             });
           }
         }
       }
     });
-    // init!
-    $(window).load(function() {
+    function pageInit() {
       postIframeMessage('ehlo');
       setHdrCols(cols[idx], light);
+    }
+    // init!
+    $(window).load(function() {
+      pageInit();
       {{#TempToken}}
       postIframeMessage('tokTmp/' + encodeURIComponent('{{TempToken}}'));
       {{/TempToken}}
