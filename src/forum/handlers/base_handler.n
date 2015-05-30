@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Specialized;
 using System.IO;
+using System.Web;
 
 using Nemerle.Extensions;
 
@@ -33,13 +35,16 @@ public class BaseHandler: ComplexHandler {
     public this(hd: HandlerData, path: string) {
         base(hd);
 
+        // remove QS components starting with _$
+        def parsed_url = parseUrl(Request.Url);
+
         PagePath = path;
         PageData = PageData() <- [
             "DefaultSecurePrefix" = Server.DefaultSecurePrefix,
             "DefaultInsecurePrefix" = Server.DefaultInsecurePrefix,
             "DefaultPrefix" = Server.getDefaultPrefix(Request),
-            "CurrentUrl" = Uri.EscapeDataString(Request.Url.ToString()),
-            "CurrentUrlUnescaped" = Request.Url.ToString(), // hmm...
+            "CurrentUrl" = Uri.EscapeDataString(parsed_url),
+            "CurrentUrlUnescaped" = parsed_url,
         ];
 
         RenderContent =
@@ -65,6 +70,22 @@ public class BaseHandler: ComplexHandler {
         } else {
             page.render(PageData);
         }
+    }
+
+    parseUrl(url: Uri): string {
+        def coll = HttpUtility.ParseQueryString(url.Query);
+        mutable qs = "";
+        foreach(x in coll.AllKeys) {
+            when(x.Length < 2 || x.Substring(0, 2) != "_$") {
+                def sep = String.IsNullOrEmpty(qs) ? "?" : "&";
+                qs += $"$sep$x=$(coll[x])";
+            }
+        }
+        def port_spec = url.IsDefaultPort ? "" : $":$(url.Port)";
+        def result = url.Scheme + "://" +
+            url.Host + port_spec + url.AbsolutePath + qs + url.Fragment;
+        Log.d("parseUrl: {0} -> {1}", url, result);
+        result;
     }
 
     // TODO: this lives here in the interim, handles the final stages of login
