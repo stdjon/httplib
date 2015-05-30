@@ -25,7 +25,6 @@ public abstract class Server: IDisposable {
     type ContextMap = Dictionary[string, Route * PageData];
     type FileServingMap = Dictionary[string, Route];
 
-    type Method = HTTP;
     public static MethodCount = HTTP.COUNT_ :> int;
 
     [Accessor]
@@ -34,7 +33,7 @@ public abstract class Server: IDisposable {
     [Accessor(flags = WantSetter)]
     static mutable canonical_root: string = "";
 
-    [System.Flags]
+    [Flags]
     public enum State {
         | Neutral = 0x00
         | Running = 0x01
@@ -228,7 +227,7 @@ public abstract class Server: IDisposable {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        Log.i("route: {0} '{1}' added {2}", methodName(method), path, handler);
+        Log.i("route: {0} '{1}' added {2}", method.methodName(), path, handler);
         Routes[method].Add(pattern, (route, handler));
     }
 
@@ -259,7 +258,7 @@ public abstract class Server: IDisposable {
 
         def route = Route(path);
         def pattern = route.Pattern;
-        Log.i("context: {0} '{1}' added {2}", methodName(method), path, data);
+        Log.i("context: {0} '{1}' added {2}", method.methodName(), path, data);
         Contexts[method].Add(pattern, (route, data));
     }
 
@@ -297,12 +296,11 @@ public abstract class Server: IDisposable {
         ModuleCache.getModuleInterface(type);
     }
 
-    findHandler(method_name: string,
-        path: string, vars_out: ref HashTable): MakeHandler {
+    findHandler(
+        method: Method, path: string, vars_out: ref HashTable): MakeHandler {
 
         mutable result;
         exit: {
-            def method = methodType(method_name);
             foreach(r in Routes[method]) {
                 def (route, handler) = r.Value;
 
@@ -315,10 +313,9 @@ public abstract class Server: IDisposable {
         result;
     }
 
-    findContext(method_name: string, path: string): PageData {
+    findContext(method: Method, path: string): PageData {
         mutable result;
         exit: {
-            def method = methodType(method_name);
             foreach(r in Contexts[method]) {
                 def (route, data) = r.Value;
                 mutable vars = null;
@@ -335,13 +332,26 @@ public abstract class Server: IDisposable {
     public virtual renderPage(
         path: string, data: PageData = null, pd: PartialData = null): string {
 
+        doPageRender(path, data, pd, _.render(_, _));
+    }
+
+    public virtual renderPageContent(
+        path: string, data: PageData = null, pd: PartialData = null): string {
+
+        doPageRender(path, data, pd, _.renderContent(_, _));
+    }
+
+    doPageRender(
+        path: string, data: PageData, pd: PartialData,
+        m: Page * PageData * PartialData -> string): string {
+
         def ext = Path.GetExtension(path).Substring(1);
 
         using(stream = openLocalFile(path)) {
             def renderer = Renderers[ext];
             def page = renderer.loadPage(stream);
 
-            page.render(data, pd);
+            m(page, data, pd);
         }
     }
 
@@ -402,7 +412,7 @@ public abstract class Server: IDisposable {
             context.Vars = vars;
 
             // populate vars from body of POST...
-            when(HTTP.POST == methodType(request.HttpMethod)) {
+            when(HTTP.POST == request.HttpMethod) {
                 processPostInputStream(http_ctx.Request, ref vars);
             }
 
@@ -517,34 +527,6 @@ public abstract class Server: IDisposable {
                     }
                 }
             }
-        }
-    }
-
-    static methodType(name: string): Method {
-        match(name.ToUpper()) {
-            | "OPTIONS" => OPTIONS
-            | "GET" => GET
-            | "HEAD" => HEAD
-            | "POST" => POST
-            | "PUT" => PUT
-            | "DELETE" => DELETE
-            | "TRACE" => TRACE
-            | "CONNECT" => CONNECT
-            | _ => INVALID_
-        }
-    }
-
-    static methodName(mth: Method): string {
-        match(mth) {
-            | OPTIONS => "OPTIONS"
-            | GET => "GET"
-            | HEAD => "HEAD"
-            | POST => "POST"
-            | PUT => "PUT"
-            | DELETE => "DELETE"
-            | TRACE => "TRACE"
-            | CONNECT => "CONNECT"
-            | _ => "?"
         }
     }
 

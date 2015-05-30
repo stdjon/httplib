@@ -22,6 +22,7 @@ public type PartialData = Dictionary[string, string];
 // HTTP (method)
 
 // Defined in order used in http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+type Method = HTTP;
 public enum HTTP {
     | INVALID_
 
@@ -38,9 +39,41 @@ public enum HTTP {
 }
 
 
+public module MethodExtensions {
+    public methodType(this name: string): Method {
+        match(name.ToUpper()) {
+            | "OPTIONS" => OPTIONS
+            | "GET" => GET
+            | "HEAD" => HEAD
+            | "POST" => POST
+            | "PUT" => PUT
+            | "DELETE" => DELETE
+            | "TRACE" => TRACE
+            | "CONNECT" => CONNECT
+            | _ => INVALID_
+        }
+    }
+
+    public methodName(this mth: Method): string {
+        match(mth) {
+            | OPTIONS => "OPTIONS"
+            | GET => "GET"
+            | HEAD => "HEAD"
+            | POST => "POST"
+            | PUT => "PUT"
+            | DELETE => "DELETE"
+            | TRACE => "TRACE"
+            | CONNECT => "CONNECT"
+            | _ => "?"
+        }
+    }
+}
+
+
 //------------------------------------------------------------------------------
 // Cookie Flags
 
+type CookieFlags = COOKIE;
 [Flags]
 public enum COOKIE {
     | NONE = 0x00
@@ -53,11 +86,11 @@ public enum COOKIE {
 
 public module CookieFlagExtensions {
 
-    public isSecure(this cookie: COOKIE): bool {
+    public isSecure(this cookie: CookieFlags): bool {
         (cookie & COOKIE.SECURE) != COOKIE.NONE;
     }
 
-    public isHttpOnly(this cookie: COOKIE): bool {
+    public isHttpOnly(this cookie: CookieFlags): bool {
         (cookie & COOKIE.HTTP_ONLY) != COOKIE.NONE;
     }
 }
@@ -321,7 +354,7 @@ public class Context {
 
 public class Request {
 
-    [Accessor] http_method: string;
+    [Accessor] http_method: Method;
     [Accessor] url: Uri;
     [Accessor] raw_url: string;
     [Accessor] query_string: HashTable;
@@ -345,7 +378,7 @@ public class Request {
 
     public this(req: HttpListenerRequest) {
 
-        http_method = req.HttpMethod;
+        http_method = req.HttpMethod.methodType();
         url = req.Url;
         raw_url = req.RawUrl;
         query_string = HashTable(req.QueryString);

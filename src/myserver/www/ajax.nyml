@@ -1,0 +1,54 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Ajax Test
+Content: |
+  {{#MainCall}}
+  <style>
+    div pre, div textarea { margin-top: 10px; margin-bottom: 10px; }
+    div.box { margin: 0px; padding: 10px; }
+    div.boxout { margin: 0px; padding: 0px; }
+    button.selected { background-color: #798; }
+  </style>
+  <div class="container">
+    <h1>Ajax post</h1>
+    <div class="col-md-12" id="content">
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam eu sem tempor, varius quam at, luctus dui. Mauris magna metus, dapibus nec turpis vel, semper malesuada ante. Vestibulum id metus ac nisl bibendum scelerisque non non purus. Suspendisse varius nibh non aliquet sagittis. In tincidunt orci sit amet elementum vestibulum. Vivamus fermentum in arcu in aliquam. Quisque aliquam porta odio in fringilla. Vivamus nisl leo, blandit at bibendum eu, tristique eget risus. Integer aliquet quam ut elit suscipit, id interdum neque porttitor. Integer faucibus ligula.</p>
+    </div>
+    <button onclick="getData(true, 'fdb')">Red</button>
+    <button onclick="getData(false, 'fdb')">Red</button>
+    <button onclick="getData(true, 'bfd')">Green</button>
+    <button onclick="getData(false, 'bfd')">Green</button>
+    <button onclick="getData(true, 'dbf')">Blue</button>
+    <button onclick="getData(false, 'dbf')">Blue</button>
+  </div>
+  <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
+  <script src="/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+  <script>
+    function getData(showme, bgcol) {
+      $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        url: '/ajax?bg=' + bgcol,
+        success: function(data) {
+          if(showme) {
+            alert(data);
+          }
+          $('#content').html(data);
+        }
+      });
+    }
+  </script>
+  {{/MainCall}}
+  {{#AjaxCall}}
+    <p style="background-color: #{{BgCol}};">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam eu sem tempor, varius quam at, luctus dui. Mauris magna metus, dapibus nec turpis vel, semper malesuada ante. Vestibulum id metus ac nisl bibendum scelerisque non non purus. Suspendisse varius nibh non aliquet sagittis. In tincidunt orci sit amet elementum vestibulum. Vivamus fermentum in arcu in aliquam. Quisque aliquam porta odio in fringilla. Vivamus nisl leo, blandit at bibendum eu, tristique eget risus. Integer aliquet quam ut elit suscipit, id interdum neque porttitor. Integer faucibus ligula.</p>
+  {{/AjaxCall}}
+Partials:
+Objects:
