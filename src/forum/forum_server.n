@@ -10,6 +10,7 @@ using httplib;
 namespace forum {
 
 // Security Token types
+type SecurityToken = STOK;
 public enum STOK {
     | SECURE
     | INSECURE
@@ -21,7 +22,7 @@ public enum STOK {
 public module SecureTokenExtensions {
 
     // Token Length (bytes)
-    public Length(this tok: STOK): int {
+    public Length(this tok: SecurityToken): int {
         match(tok) {
             | SECURE => 60
             | INSECURE => 40
@@ -30,7 +31,7 @@ public module SecureTokenExtensions {
     }
 
     // Token duration (minutes)
-    public Duration(this tok: STOK): int {
+    public Duration(this tok: SecurityToken): int {
         match(tok) {
             | SECURE => 30 * 24 * 60
             | INSECURE => 30
@@ -38,7 +39,7 @@ public module SecureTokenExtensions {
         }
     }
 
-    public IsSecure(this tok: STOK): bool {
+    public IsSecure(this tok: SecurityToken): bool {
         | SECURE => true
         | _ => false
     }
@@ -182,7 +183,7 @@ public class ForumServer: Server {
         commmand.executeScalar() :> string;
     }
 
-    public getSessionToken(tok: STOK): string {
+    public getSessionToken(tok: SecurityToken): string {
         def bytes = array(tok.Length());
         Rng.GetBytes(bytes);
         def result = Convert.ToBase64String(bytes);
@@ -190,7 +191,7 @@ public class ForumServer: Server {
         result;
     }
 
-    public compareSessionTokens(tok: STOK, a: string, b: string): bool {
+    public compareSessionTokens(tok: SecurityToken, a: string, b: string): bool {
         def ba = Convert.FromBase64String(a);
         def bb = Convert.FromBase64String(b);
         mutable cmp = a.Length ^ b.Length;
@@ -202,7 +203,7 @@ public class ForumServer: Server {
         cmp == 0;
     }
 
-    public registerSessionToken(tok: STOK, id: uint): bool * string * DateTime {
+    public registerSessionToken(tok: SecurityToken, id: uint): bool * string * DateTime {
         def token = getSessionToken(tok);
         def expiry = DateTime.Now.
             AddMinutes(tok.Duration()).ToUniversalTime();
@@ -228,7 +229,7 @@ public class ForumServer: Server {
         Log.i("Deleted {0} expired session tokens...", rows);
     }
 
-    public getUserIdFromSessionToken(tok: STOK, token: string): uint? {
+    public getUserIdFromSessionToken(tok: SecurityToken, token: string): uint? {
         expireSessionTokens();
         def commmand = Database.createCommand(
             "SELECT (UserId) FROM Sessions WHERE "
