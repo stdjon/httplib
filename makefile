@@ -349,14 +349,13 @@ show\:%:
 # %-full target to build any target % in Debug and Release
 %-full::
 	@echo
-	@echo Making \'$(@:%-full=%)\' in all configurations:
+	@echo "Making '$(@:%-full=%)' in all configurations:"
 	@echo
 	@$(MAKE) $(@:%-full=%) DEBUG=1
 	@echo
 	@$(MAKE) $(@:%-full=%) RELEASE=1
 	@echo
-	@echo Finished building '$@'!
-	@echo
+	@echo "*** Finished building '$@'!"
 
 # ------------------------------------------------------------------------------
 # install_contrib
