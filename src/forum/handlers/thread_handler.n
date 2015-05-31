@@ -25,6 +25,7 @@ public class ThreadHandler: BaseHandler {
 
 
     public override initialize(): void {
+        base.initialize();
 
         def thid = Int32.Parse(Context.Vars["id"]);
         def fr_st = Context.Vars["from"];
@@ -53,7 +54,7 @@ public class ThreadHandler: BaseHandler {
             }
         }
         when(uid != null) {
-            _ = PageData <- [ "UserName" = Server.getUserName(uid :> uint) ];
+            PageData["UserName"] = Server.getUserName(uid :> uint);
         }
 
         when(ok) {
@@ -93,9 +94,8 @@ public class ThreadHandler: BaseHandler {
             def limit = i;
 
             for(i = 0; i < limit; i++) {
-                _ = posts[i] <- [
-                    "UserName" = Server.getUserName(posts[i]["UserId"] :> uint),
-                ];
+                posts[i]["UserName"] =
+                    Server.getUserName(posts[i]["UserId"] :> uint);
             }
 
             // Add a marker for every fifth post (1, 6, 11...)

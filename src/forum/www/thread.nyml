@@ -51,6 +51,9 @@ Partials:
         <span class="swatch" id="y337_5" onmouseover="setHdrCols(337.5, false)">&nbsp; &nbsp; &nbsp;</span>
       </p>
     </div>
+    {{#SignedInUser}}
+      <p>You are <a href="{{DefaultPrefix}}/u/{{SignedInUser}}">{{SignedInUser}}</a>.</p>
+    {{/SignedInUser}}
     {{#Title}}
       <p>Thread started by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
     {{/Title}}

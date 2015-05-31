@@ -25,6 +25,7 @@ public class PostHandler: BaseHandler {
 
 
     public override initialize(): void {
+        base.initialize();
 
         def pid = Int32.Parse(Context.Vars["num"]);
         def command = Server.Database.createCommand(

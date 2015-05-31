@@ -29,6 +29,7 @@ public class UsersHandler: BaseHandler {
 
 
     public override initialize(): void {
+        base.initialize();
         if(IsPlural) {
             initializeUsers();
         } else {

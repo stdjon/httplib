@@ -108,7 +108,7 @@ public class NavHandler: BaseHandler {
                     "Name = @Name") <- [ "@Name" = user ];
             def id = command1.executeScalar() :> uint?;
             mutable record;
-            //mutable token;
+
             when(id != null) {
                 def command2 = Server.Database.createCommand(
                     "SELECT PwRecord FROM Auth WHERE "
@@ -128,7 +128,6 @@ public class NavHandler: BaseHandler {
             }
             Response["Location"] = CurrentUrl;
             Response.Status = (303, "See Other");
-
 
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");

@@ -103,14 +103,10 @@ public class BaseHandler: ComplexHandler {
         if(isession != null) {
             def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
             def name = Server.getUserName(id :> uint);
-            _ = PageData <- [
-                "User" = name,
-            ];
+            PageData["SignedInUser"] = name;
         } else {
             def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
-            _ = PageData <- [
-                "TempToken" = t,
-            ];
+            PageData["TempToken"] = t;
         }
     }
 }

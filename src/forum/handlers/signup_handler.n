@@ -25,10 +25,11 @@ public class SignupHandler: BaseHandler {
         base(hd, null);
 
         IsSubmit = submit;
+        PageData["IsSignup"] = true;
+    }
 
-        _ = PageData <- [
-            "IsSignup" = true,
-        ];
+    public override initialize(): void {
+        base.initialize();
     }
 
     public override callback(): void {
@@ -46,11 +47,9 @@ public class SignupHandler: BaseHandler {
             def u = cookies ? cookies["_u"] : null;
             mutable user = !String.IsNullOrEmpty(u) ? u : null;
 
-            def data = PageData() <- [
-                "User" = user,
-            ];
+            PageData["User"] = user;
 
-            Response.append(Server.renderPage("signup.nyml", data));
+            Response.append(Server.renderPage("signup.nyml", PageData));
             Response.Cookies.expire("_u", COOKIE.SECURE_HTTP_ONLY);
             Response.Status = (200, "OK");
         } else {
@@ -138,7 +137,7 @@ public class SignupHandler: BaseHandler {
                     Response.Status = (303, "See Other");
 
                 } else {
-                   Server.internalServerErrorResponse(Context, Request, Response);
+                    Server.internalServerErrorResponse(Context, Request, Response);
                     Log.w("IPbkdf2Auth module was not found.");
                 }
             }

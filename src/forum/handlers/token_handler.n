@@ -25,10 +25,7 @@ public class TokenHandler: BaseHandler {
         base(hd, null);
 
         Method = method;
-
-        _ = PageData <- [
-            "IsToken" = true,
-        ];
+        PageData["IsToken"] = true;
     }
 
     public override callback(): void {
