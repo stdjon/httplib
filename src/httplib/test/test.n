@@ -8,8 +8,15 @@ namespace httplib.test {
 [TestFixture]
 public class ExampleTest {
 
-    [Test] public Test1(): void {
+    [Test] public test1(): void {
         Assert.AreEqual(1, 1);
+    }
+
+    [Test] public basicServerConstruction(): void {
+        def sc = ServerConfiguration();
+        Assert.IsNotNull(sc);
+        def s = Server(sc);
+        Assert.IsNotNull(s);
     }
 }
 

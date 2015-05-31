@@ -139,29 +139,46 @@ public class Server: IDisposable {
             }
         }
 
-        foreach(p in Configuration.Prefixes.Secure) {
-            Log.d("Adding prefix \"{0}\"...", p);
-            when(!Regex(@"^https://").IsMatch(p)) {
-                throw Exception("Secure prefix must start 'https://...'");
-            }
-            Listener.Prefixes.Add(p);
-        }
+        when(Configuration.Prefixes != null) {
+            when(Configuration.Prefixes.Secure != null) {
+                foreach(p in Configuration.Prefixes.Secure) {
+                    Log.d("Adding prefix \"{0}\"...", p);
+                    when(!Regex(@"^https://").IsMatch(p)) {
+                        throw Exception(
+                            "Secure prefix must start 'https://...'");
+                    }
+                    Listener.Prefixes.Add(p);
+                }
+                default_secure_prefix = Regex(@"(https://.*)/").Replace(
+                    Configuration.Prefixes.Secure[0], "$1");
+                Log.d("Default prefix (secure):=  {0}", DefaultSecurePrefix);
 
-        foreach(p in Configuration.Prefixes.Insecure) {
-            Log.d("Adding prefix \"{0}\"...", p);
-            when(!Regex(@"^http://").IsMatch(p)) {
-                throw Exception("Insecure prefix must start 'http://...'");
             }
-            Listener.Prefixes.Add(p);
+
+            when(Configuration.Prefixes.Insecure != null) {
+                foreach(p in Configuration.Prefixes.Insecure) {
+                    Log.d("Adding prefix \"{0}\"...", p);
+                    when(!Regex(@"^http://").IsMatch(p)) {
+                        throw Exception(
+                            "Insecure prefix must start 'http://...'");
+                    }
+                    Listener.Prefixes.Add(p);
+                }
+                default_insecure_prefix = Regex(@"(http://.*)/").Replace(
+                    Configuration.Prefixes.Insecure[0], "$1");
+                Log.d("Default prefix (insecure):=  {0}", DefaultInsecurePrefix);
+            }
         }
 
         fileServing(Configuration.FileServing);
 
-        foreach(x in Configuration.Renderers) {
-            def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
-            when(r != null) {
-                Log.d("Registering {0} for {1} files...", r, x.Key);
-                Renderers[x.Key] = r;
+        when(Configuration.Renderers != null) {
+            foreach(x in Configuration.Renderers) {
+                def r = Renderer.load(x.Value.Assembly, x.Value.Typename, this);
+                when(r != null) {
+                    Log.d("Registering {0} for {1} files...", r, x.Key);
+                    Renderers[x.Key] = r;
+                }
             }
         }
 
@@ -175,14 +192,6 @@ public class Server: IDisposable {
             routes[i] = Dictionary();
             contexts[i] = Dictionary();
         }
-
-        default_secure_prefix = Regex(@"(https://.*)/").Replace(
-            Configuration.Prefixes.Secure[0], "$1");
-        Log.d("Default prefix (secure):=  {0}", DefaultSecurePrefix);
-
-        default_insecure_prefix = Regex(@"(http://.*)/").Replace(
-            Configuration.Prefixes.Insecure[0], "$1");
-        Log.d("Default prefix (insecure):=  {0}", DefaultInsecurePrefix);
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
