@@ -16,6 +16,7 @@ _flag=$(if $(or $(findstring _[]_,_[$1]_), $(findstring _[0]_,_[$1]_)),,1)
 BIN?=bin
 CONTRIB?=contrib/server
 NCCFLAGS?=-no-color
+NUNIT?=$(CONTRIB)/NUnit-2.6.4
 
 # Initializing these as empty non-recursive variables. (Target rules will append
 # to these as they are evaluated.)
@@ -64,6 +65,8 @@ ifeq ($(OS),Windows_NT)
 
 NCC?=ncc
 launch_assembly=cd $(BIN)/ && ./$1
+launch_nunit=$(NUNIT)/bin/nunit.exe --run $1 &
+launch_nunit_console=$(NUNIT)/bin/nunit-console.exe --nologo $1
 
 else
 
@@ -76,6 +79,8 @@ endif
 
 NCC?=mono $(NCC_PATH)/ncc.exe
 launch_assembly=export MONO_PATH=$(NCC_PATH) && cd $(BIN)/ && mono $1
+launch_nunit=$(NUNIT)/bin/nunit.exe --run $1 > /dev/null 2>&1 &
+launch_nunit_console=mono $(NUNIT)/bin/nunit-console.exe --nologo $1
 
 endif
 
@@ -90,6 +95,7 @@ CONTRIB_LIBS:= \
 	MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
 	NDesk.Options-0.2.1.0/NDesk.Options.dll \
 	NLog-3.2.1/net45/NLog.dll \
+	NUnit-2.6.4/bin/nunit.framework.dll \
 	Nustache-1.14.0.4/Nustache.Core.dll \
 	OEmbed.net-master/bin/Debug/Newtonsoft.Json.Net35.dll \
 	OEmbed.net-master/bin/Debug/OEmbed.Net.dll \
@@ -286,6 +292,14 @@ $(eval $(call emit_dll_rule,httplib.mod.textile.dll, \
 
 
 # ------------------------------------------------------------------------------
+# TESTS
+
+$(eval $(call emit_dll_rule,httplib.test.dll, \
+	src/httplib/test, \
+	httplib.dll httplib.macros.dll))
+
+
+# ------------------------------------------------------------------------------
 
 # EXE_TARGETS and DLL_TARGETS should be filled out at this point
 TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
@@ -296,10 +310,17 @@ TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
 
 .PHONY: all clean install_contrib run frun fdata finit
 
-all: install_contrib $(EXE_TARGETS)
+all: install_contrib $(TARGETS)
 
 run: $(BIN)/http.exe
 	$(call launch_assembly,http.exe) $(shell pwd)/src/myserver $D
+
+test: $(BIN)/httplib.test.dll
+	$(call launch_nunit_console,$<)
+	@echo "*** All tests passed!"
+
+test-gui: $(BIN)/httplib.test.dll
+	$(call launch_nunit,$<)
 
 frun: $(BIN)/forum.exe
 	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D

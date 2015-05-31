@@ -1,0 +1,17 @@
+using System;
+
+using NUnit.Framework;
+
+
+namespace httplib.test {
+
+[TestFixture]
+public class ExampleTest {
+
+    [Test] public Test1(): void {
+        Assert.AreEqual(1, 1);
+    }
+}
+
+
+} // namespace httplib.test
