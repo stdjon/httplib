@@ -17,7 +17,7 @@ namespace httplib {
 // Server
 
 [HasLogging]
-public abstract class Server: IDisposable {
+public class Server: IDisposable {
 
     public type Callback = Context * Request * Response -> void;
     type MakeHandler = HandlerData -> Handler;
