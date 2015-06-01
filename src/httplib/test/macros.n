@@ -1,0 +1,90 @@
+
+using System;
+
+using NUnit.Framework;
+
+
+namespace httplib.test {
+
+[TestFixture]
+public class Ternary {
+
+    public Value: Object { get { Object() } }
+    public Null: Object { get { null } }
+
+    // Basic test of ternary operator
+    [Test] public basicBoolean(): void {
+
+        def t = true ? 1 : 2;
+        def f = false ? 1 : 2;
+
+        Assert.AreEqual(1, t);
+        Assert.AreEqual(2, f);
+    }
+
+    [Test] public basicObject(): void {
+
+        def t = Value ? 1 : 2;
+        def f = Null ? 1 : 2;
+
+        Assert.AreEqual(1, t);
+        Assert.AreEqual(2, f);
+    }
+
+    // Test that the 'false' condition is not evaluated: it would cause a divide
+    // by 0 exception. (A local function is used to prevent the compiler from
+    // detecting the divide at compile time.)
+    [Test] public noEvalElseBoolean(): void {
+
+        def defeatCompileTime(divisor) {
+            def t = true ? 1 : 2 / divisor;
+            def f = false ? (1 / divisor) : 2;
+
+            Assert.AreEqual(1, t);
+            Assert.AreEqual(2, f);
+        }
+        defeatCompileTime(0);
+    }
+
+    [Test] public noEvalElseObject(): void {
+
+        def defeatCompileTime(divisor) {
+            def t = Value ? 1 : 2 / divisor;
+            def f = Null ? (1 / divisor) : 2;
+
+            Assert.AreEqual(1, t);
+            Assert.AreEqual(2, f);
+        }
+        defeatCompileTime(0);
+    }
+
+    // Test that the operator works in a situation where the compiler hasn't
+    // fully evaluated the type of the condition (flag): the macro expansion is
+    // delayed until the type of the flag is evaluated.
+    [Test] public delayedTypingBoolean(): void {
+
+        def delayedBoolean(flag) {
+            flag ? 1 : 2;
+        }
+        def t = delayedBoolean(true);
+        def f = delayedBoolean(false);
+
+        Assert.AreEqual(1, t);
+        Assert.AreEqual(2, f);
+    }
+
+    [Test] public delayedTypingObject(): void {
+
+        def delayedObject(flag) {
+            flag ? 1 : 2;
+        }
+        def t = delayedObject(Value);
+        def f = delayedObject(Null);
+
+        Assert.AreEqual(1, t);
+        Assert.AreEqual(2, f);
+    }
+}
+
+
+} // namespace httplib.test
