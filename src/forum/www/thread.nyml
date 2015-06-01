@@ -61,9 +61,9 @@ Partials:
       <div class="anchor" id="{{Number}}">
         <div class="post">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          <small><a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>:</small>
           {{Content}}<br>
-          <div class="rhs"><small> &mdash;<a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
           &nbsp;<i class="fa fa-reply" onclick="alert('reply!')"></i>

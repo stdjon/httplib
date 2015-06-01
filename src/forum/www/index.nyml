@@ -14,6 +14,15 @@ Partials:
       <h1>Supercalifragilisticexpialidocious</h1>
     </div>
   Body: |
+    <style>
+      p:first-letter {
+        font-size: 2.8em;
+        line-height: 1em;
+        margin-right: 2px;
+        display: block;
+        float: left;
+      }
+    </style>
     <div class="swatches">
       <p>
         <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
