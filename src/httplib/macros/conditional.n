@@ -21,29 +21,51 @@ namespace httplib {
 macro @?(condition, predicate) {
 
     def typer = Macros.ImplicitCTX();
-    def texpr = typer.TypeExpr(condition);
 
-    def cond = match(texpr.Type.Hint) {
-        | Some(expr) when expr.TypeInfo != null => {
-            if(expr.TypeInfo.FullName == "System.Boolean") {
-                condition;
-            } else {
-                <[ $condition != null ]>
+    def expansion(condition, predicate, last_try) {
+
+        def texpr = typer.TypeExpr(condition);
+
+        def cond = match(texpr.Type.Hint) {
+            | Some(expr) when expr.TypeInfo != null => {
+                Some(if(expr.TypeInfo.FullName == "System.Boolean") {
+                    condition;
+                } else {
+                    <[ $condition != null ]>
+                })
+            }
+            | _ => {
+                when(last_try) {
+                    Message.Error("Invalid condition type for '?' operator.");
+                }
+                None();
             }
         }
-        | _ => {
-            Message.Error("Invalid condition type for '?' operator.");
-            <[ () ]>
+
+        match(cond) {
+            | Some(c) => match(predicate) {
+                | <[ $pass : $fail ]> => {
+                    Some(<[ if($c) { $pass } else { $fail }; ]>)
+                }
+                | _ => {
+                    when(last_try) {
+                        Message.Error("Invalid syntax for '?' operator...");
+                    }
+                    None();
+                }
+            }
+            | _ => None()
         }
     }
 
-    match(predicate) {
-        | <[ $pass : $fail ]> => {
-            <[ if($cond) { $pass } else { $fail }; ]>
-        }
-        | _ => {
-            Message.Error("Invalid syntax for '?' operator...");
-            <[ () ]>;
+    def result = expansion(condition, predicate, false);
+
+    match(result) {
+        | Some(r) => r
+        | None() => {
+            typer.DelayMacro( last_try => {
+                expansion(condition, predicate, last_try)
+            })
         }
     }
 }
