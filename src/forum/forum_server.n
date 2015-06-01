@@ -79,6 +79,8 @@ public class ForumServer: Server {
         route([ (HTTP.GET, "/th/{{id:[0-9]+}}"),
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
+
+        route(HTTP.GET, "/filter", filterTestResponse);
     }
 
     public isUserResponse(
@@ -113,6 +115,25 @@ public class ForumServer: Server {
 
         response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
         response.Status = (303, "See Other");
+    }
+
+    public filterTestResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def filter = getModuleInterface.[mod.IFilter]();
+        if(filter != null) {
+            def i = request.QueryString["input"];
+            def input = i ? i : ("Use ?input=xyz on "
+                "the query string to test a different phrase!");
+            def output = input ? filter.transform(input) : "";
+
+            response.append("<html><body><h1>Filter Test</h1>"
+                $"<p>Input: $input</p><p>Output: $output</p>"
+                "</body></html>");
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
     }
 
     protected override internalServerError(ex: Exception): void {

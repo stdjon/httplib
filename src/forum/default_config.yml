@@ -31,6 +31,14 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
+  - Assembly: forum.mod.filter.dll
+    Typename: forum.mod.Filter
+    Data:
+      Filters:
+        - { Search: "first post", Replace: "lame", Flags: "Boundary" }
+        - { Search: "frist post", Replace: "lamer", Flags: "IgnoreCase|Boundary" }
+        - { Search: "cock", Replace: "rooster", Flags: "IgnoreCase" }
+        - { Search: "string", Replace: "chord", Flags: "IgnoreCase" }
   - Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth
     Data:

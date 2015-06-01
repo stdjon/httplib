@@ -1,0 +1,133 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+
+using httplib;
+
+
+namespace forum.mod {
+
+public interface IFilter: ITextTransform {
+}
+
+
+[Record]
+public class FilterAction {
+
+    public Search: Regex { get; set; }
+    public Replace: string { get; set; }
+}
+
+
+/** This module implements a simple word filter ('profanity filter'), which
+ *  allows a set of word transformations to be applied to input text. This can
+ *  be used to 'censor' swearing, to discourage use of particular terms, or
+ *  simply for the amusement value... */
+[HasLogging]
+public class Filter: Module, IFilter {
+
+    public override InterfaceType: Type {
+        get { typeof(IFilter) }
+    }
+
+    public Filters: List[FilterAction] { get; private set; }
+
+    public this(conf: ModuleData = null) {
+        Log.i("Starting Filter module... (conf: {0})", conf);
+
+        Filters = List();
+
+        mutable filters, probe;
+
+        when(conf.TryGetValue("Filters", out probe)) {
+            filters = probe :> List[object];
+        }
+
+        when(filters != null) {
+            foreach(t :> Dictionary[object, object] in filters) {
+                def search = t["Search"] :> string;
+                def replace = t["Replace"] :> string;
+                mutable flags;
+                mutable case = true;
+                mutable start_b = false, end_b = false;
+
+                when(t.TryGetValue("Flags", out probe)) {
+                    flags = probe :> string;
+                }
+
+                when(flags != null) {
+                    def arr = flags.Split(array['|']);
+
+                    foreach(f in arr) {
+                        match(f) {
+                            | "IgnoreCase" => case = false
+                            | "BoundaryStart" => start_b = true
+                            | "BoundaryEnd" => end_b = true
+                            | "Boundary" => {
+                                start_b = true;
+                                end_b = true;
+                            }
+                            | _ => {}
+                        }
+                    }
+                }
+
+                def _b(flag) { (flag ? "\\b" : "") }
+                def regex = _b(start_b) + search + _b(end_b);
+                def opts = case ? RegexOptions.None : RegexOptions.IgnoreCase;
+
+                Filters.Add(FilterAction(Regex(regex, opts), replace));
+            }
+        }
+    }
+
+    public transform(input: string): string {
+
+        mutable result = input;
+        foreach(f in Filters) {
+            result = f.Search.Replace(result, m => {
+
+                def matched = m.Groups[0].ToString();
+                def replace = f.Replace;
+
+                if((f.Search.Options & RegexOptions.IgnoreCase) != RegexOptions.None) {
+                    fixCase(replace, matched);
+                } else {
+                    replace;
+                }
+            });
+        }
+        result;
+    }
+
+    // Return a string with the letters of 'input' and a capitalization pattern
+    // matching 'template'. (May only work for English words though...)
+    fixCase(input: string, template: string): string {
+        mutable output = StringBuilder();
+
+        def correspondingChar(j) {
+            def k = j * template.Length / input.Length;
+            template[k];
+        }
+
+        for(mutable i = 0; i < input.Length; i++) {
+            mutable j = input[i];
+            def k = correspondingChar(i);
+
+            when(Char.IsLetter(j)) {
+                when(Char.IsLower(k)) {
+                    j = Char.ToLower(j);
+                }
+                when(Char.IsUpper(k)) {
+                    j = Char.ToUpper(j);
+                }
+            }
+            _ = output.Append(j);
+        }
+        output.ToString();
+    }
+}
+
+
+} // namespace forum.mod
