@@ -18,6 +18,18 @@ public class ExampleTest {
         def s = Server(sc);
         Assert.IsNotNull(s);
     }
+
+    [Test] public defaultPrefixes(): void {
+        def sc = ServerConfiguration();
+        Assert.IsNotNull(sc);
+        sc.Prefixes = Prefixes();
+        sc.Prefixes.Secure = array["https://test/"];
+        sc.Prefixes.Insecure = array["http://test/"];
+        def s = Server(sc);
+        Assert.IsNotNull(s);
+        Assert.AreEqual("https://test", s.DefaultSecurePrefix);
+        Assert.AreEqual("http://test", s.DefaultInsecurePrefix);
+    }
 }
 
 
