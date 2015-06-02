@@ -6,11 +6,30 @@ using NUnit.Framework;
 namespace httplib.test {
 
 [TestFixture]
-public class ExampleTest {
+public class ServerTypes {
 
-    [Test] public test1(): void {
-        Assert.AreEqual(1, 1);
+    [Test] public methodToString(): void {
+
+        Assert.AreEqual(HTTP.GET.methodName(), "GET");
+        Assert.AreEqual("GET".methodType(), HTTP.GET);
+        Assert.AreEqual(HTTP.POST.methodName(), "POST");
+        Assert.AreEqual("POST".methodType(), HTTP.POST);
     }
+
+    [Test] public cookieFlags(): void {
+
+        Assert.IsFalse(COOKIE.NONE.isHttpOnly());
+        Assert.IsFalse(COOKIE.NONE.isSecure());
+        Assert.IsTrue(COOKIE.HTTP_ONLY.isHttpOnly());
+        Assert.IsTrue(COOKIE.SECURE.isSecure());
+        Assert.IsTrue(COOKIE.SECURE_HTTP_ONLY.isHttpOnly());
+        Assert.IsTrue(COOKIE.SECURE_HTTP_ONLY.isSecure());
+    }
+}
+
+
+[TestFixture]
+public class Server {
 
     [Test] public basicServerConstruction(): void {
         def sc = ServerConfiguration();
