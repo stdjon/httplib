@@ -384,7 +384,7 @@ class MyServer: Server {
         };
 
         def encode_json = sync ?
-            syncText(EncodedText) :
+            syncText(encoded) :
             diffText(EncodedText, encoded);
         EncodedText = encoded;
 

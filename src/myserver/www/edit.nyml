@@ -29,6 +29,7 @@ Content: |
           <button id="bbcodeb" title="BBCode" onclick="bbmode()" class="selected"><i class="fa fa-fw fa-bold"></i></button>
           <button id="textb" title="Textile" onclick="txmode()"><i class="fa fa-fw fa-text-width"></i></button>
           <button id="hsb" title="HTML Sanitizer" onclick="hsmode()"><i class="fa fa-fw fa-header"></i></button>
+          <input type="checkbox" id="updatecb" title="Live update" onclick="postText()">Live update</input>
           <!--button title="Settings"><i class="fa fa-fw fa-gears"></i></button-->
         </div>
       </div>
@@ -106,7 +107,10 @@ Content: |
     var oldText = "";
     var previewText = "";
     function postText(e) {
-      var text = $(this).val();
+      if(!isLiveUpdate()) {
+        return;
+      }
+      var text = $('#input').val();
       if(text != oldText) {
         var obj = diffText(oldText, text);
         $("#transit-out").text(JSON.stringify(obj));
@@ -133,6 +137,9 @@ Content: |
         data: 'v=' + text,
         success: parsePreview
       });
+    }
+    function isLiveUpdate() {
+      return $('#updatecb').prop('checked');
     }
     function bbmode() {
       mode('bbcode');
