@@ -15,7 +15,7 @@ _flag=$(if $(or $(findstring _[]_,_[$1]_), $(findstring _[0]_,_[$1]_)),,1)
 
 BIN?=bin
 CONTRIB?=contrib/server
-NCCFLAGS?=-no-color
+override NCCFLAGS:=$(NCCFLAGS) -no-color -warnaserror+
 NUNIT?=$(CONTRIB)/NUnit-2.6.4
 
 # Initializing these as empty non-recursive variables. (Target rules will append
