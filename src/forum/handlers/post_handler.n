@@ -29,7 +29,7 @@ public class PostHandler: BaseHandler {
 
         def pid = Int32.Parse(Context.Vars["num"]);
         def command = Server.Database.createCommand(
-            "SELECT UserId, ThreadId, CreateDate, Points, Content FROM "
+            "SELECT UserId, ThreadId, CreateDate, Points, OutputContent FROM "
                 "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
 
         mutable uid;
@@ -45,7 +45,7 @@ public class PostHandler: BaseHandler {
                 thid = reader.GetValue.[uint?]("ThreadId", 0);
                 date = reader.GetValue.[DateTime?]("CreateDate");
                 points = reader.GetValue.[int?]("Points", 0);
-                content = reader.GetValue("Content");
+                content = reader.GetValue("OutputContent");
                 ok = true;
             }
         }

@@ -170,9 +170,9 @@ public class TestData {
         def tid = Random.Next(ThreadCount) + 1;
         def create_date = DateTime.Now;
         def command2 = Db.createCommand(
-            "INSERT INTO Posts(Content, UserId, ThreadId, Points, CreateDate) VALUES "
-                "(@Content, @UserId, @ThreadId, 0, @CreateDate)") <- [
-            "@Content" = content,
+            "INSERT INTO Posts(OutputContent, UserId, ThreadId, Points, CreateDate) VALUES "
+                "(@OutputContent, @UserId, @ThreadId, 0, @CreateDate)") <- [
+            "@OutputContent" = content,
             "@UserId" = uid,
             "@ThreadId" = tid,
             "@CreateDate" = create_date,
@@ -180,7 +180,7 @@ public class TestData {
         _ = command2.executeNonQuery();
 
         def command3 = Db.createCommand(
-            "SELECT Id FROM Posts WHERE Content=@Content") <- [ "@Content" = content ];
+            "SELECT Id FROM Posts WHERE OutputContent=@OutputContent") <- [ "@OutputContent" = content ];
         def pid = command3.executeScalar() :> uint?;
 
         if(pid != null) {
@@ -253,7 +253,7 @@ public class TestData {
             name[i] = PostChars[x];
         }
         result = string(name);
-        //Log.d("Content: '{0}'", result);
+        //Log.d("OutputContent: '{0}'", result);
         result;
     }
 
