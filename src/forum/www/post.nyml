@@ -60,31 +60,6 @@ Partials:
       <p>Points: <em>{{Points}}</em></p>
     {{/PostId}}
     </div>
-  PageScripts: |
-    //swatches/jumbotron colour
-    function liActiveA(css) {
-      css = css || '';
-      return 'ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {' + css + '}'
-    }
-    $('head').append(
-      '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
-
-    var cols = [
-        0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
-        202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
-    function setHdrCols(c, b) {
-      var fg = b ? "#444" : "#ccc";
-      var sl = b ? '55%, 55%' : '88%, 25%';
-      var col = 'hsl(' + c + ', ' + sl + ')';
-
-      $('.container .jumbotron').css('background-color', col);
-      $('.container .jumbotron').css('color', fg);
-      //$('nav.navbar').css('border-left-color', col);
-      $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
-      $('div.outside').css('border-left-color', col);
-      postIframeMessage('hdrCol/' + col);
-    }
-    var idx = Math.floor(Math.random() * cols.length);
-    var light = !!Math.floor(Math.random() * 2);
-
+  PageLoadScripts: |
+    <script src="/swatches.js"></script>
 
