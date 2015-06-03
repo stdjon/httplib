@@ -62,7 +62,7 @@ public class ThreadHandler: BaseHandler {
             mutable i = 0;
 
             def command2 = Server.Database.createCommand(
-                "SELECT Id, UserId, Points, CreateDate, Content FROM Posts WHERE "
+                "SELECT Id, UserId, Points, CreateDate, OutputContent FROM Posts WHERE "
                     "ThreadId = @ThreadId ORDER BY CreateDate LIMIT @From, @To") <- [
                 "@ThreadId" = thid,
                 "@From" = from,
@@ -75,7 +75,7 @@ public class ThreadHandler: BaseHandler {
                     uid = reader.GetValue.[uint?]("UserId", 0);
                     def points = reader.GetValue.[int?]("Points", 0);
                     def date = reader.GetValue.[DateTime?]("CreateDate");
-                    def Content = reader.GetValue("Content");
+                    def content = reader.GetValue("OutputContent");
 
                     posts[i] = PageData() <- [
                         "Number" = from + i,
@@ -83,7 +83,7 @@ public class ThreadHandler: BaseHandler {
                         "UserId" = uid,
                         "Points" = points,
                         "CreateDate" = date,
-                        "Content" = Content,
+                        "Content" = content,
                     ];
                     i++;
                 }

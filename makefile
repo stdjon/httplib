@@ -15,7 +15,7 @@ _flag=$(if $(or $(findstring _[]_,_[$1]_), $(findstring _[0]_,_[$1]_)),,1)
 
 BIN?=bin
 CONTRIB?=contrib/server
-NCCFLAGS?=-no-color
+override NCCFLAGS:=$(NCCFLAGS) -no-color -warnaserror+
 NUNIT?=$(CONTRIB)/NUnit-2.6.4
 
 # Initializing these as empty non-recursive variables. (Target rules will append
@@ -114,6 +114,14 @@ make_local_ref=$(foreach l,$1,-r $l)
 local_refs=$(call make_local_ref,$($@_DLLS))
 
 refs=$(contrib_refs) $(local_refs)
+
+
+# ------------------------------------------------------------------------------
+# Forum specfic config
+
+FORUM_USER?=forum
+FORUM_PASSWORD?=$(PW)
+FORUM_DATABASE?=forum
 
 
 # ------------------------------------------------------------------------------
@@ -335,10 +343,10 @@ frun: $(BIN)/forum.exe
 	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D
 
 fdata: $(BIN)/forum-testdata.exe
-	$(call launch_assembly,forum-testdata.exe) $D
+	$(call launch_assembly,forum-testdata.exe) -R $(shell pwd)/src/forum $D
 
 finit:
-	mysql -D forum -u forum -p$(PW) < src/forum/init-dbs.mysql
+	mysql -D $(FORUM_DATABASE) -u $(FORUM_USER) -p$(FORUM_PASSWORD) < src/forum/init-dbs.mysql
 
 clean:
 	rm -rf $(BIN)/

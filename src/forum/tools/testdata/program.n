@@ -15,7 +15,8 @@ public module Program {
     public class Arguments {
         public this() {
             ShowHelp = false;
-            Config = "../../src/forum/default_config.yml";
+            Config = "default_config.yml";
+            Root = null;
             Users = 15;
             Categories = 8;
             Threads = 6;
@@ -23,6 +24,7 @@ public module Program {
         }
         public ShowHelp: bool { get; set; }
         public Config: string { get; set; }
+        public Root: string { get; set; }
         public Users: int { get; set; }
         public Categories: int { get; set; }
         public Threads: int { get; set; }
@@ -53,6 +55,8 @@ public module Program {
                 _ => { arguments.ShowHelp = true }).
             Add("c|config=", "Use configuration {FILE}.",
                 v => { arguments.Config = v }).
+            Add("R|root=", "Use {PATH} as the root for all file access by relative path.",
+                v => { arguments.Root = v }).
             Add("u|users=", "Number of users.",
                 v => { arguments.Users = v }).
             Add("C|categories=", "Number of categories.",
@@ -70,6 +74,11 @@ public module Program {
     }
 
     run(arguments: Arguments): void {
+
+        when(!String.IsNullOrEmpty(arguments.Root)) {
+            Server.CanonicalRoot = arguments.Root;
+        }
+
         // We don't technically need a ForumServer here, but it's an expedient
         // way to open the database connection and load the modules we want...
         using(server = ForumServer(arguments.Config)) {
