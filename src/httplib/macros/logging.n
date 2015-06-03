@@ -6,11 +6,11 @@ namespace httplib {
 
 /** [HasLogging] */
 [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
-macro HasLogging(typeBuilder : TypeBuilder) {
+macro HasLogging(type_builder : TypeBuilder) {
 
-    typeBuilder.Define( <[ decl: static mutable log: ILog; ]> );
+    type_builder.Define( <[ decl: static mutable log: ILog; ]> );
 
-    typeBuilder.Define( <[ decl:
+    type_builder.Define( <[ decl:
         public static Log: ILog {
             get {
                 when(log == null) {

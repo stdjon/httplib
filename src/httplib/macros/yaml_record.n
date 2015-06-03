@@ -8,10 +8,10 @@ namespace httplib {
  *  defines a default public constructor on the type.
  */
 [MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
-macro YamlRecord(typeBuilder : TypeBuilder) {
+macro YamlRecord(type_builder : TypeBuilder) {
 
-    typeBuilder.AddMacroAttribute(<[ Record ]>);
-    typeBuilder.Define(<[ decl: public this() {} ]>);
+    type_builder.AddMacroAttribute(<[ Record ]>);
+    type_builder.Define(<[ decl: public this() {} ]>);
 }
 
 
