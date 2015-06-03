@@ -21,7 +21,7 @@ public class TestData {
 
     [Accessor] server: ForumServer;
     [Accessor] db: Database;
-    [Accessor] auth: IAuth;
+    [Accessor] auth: mod.IPbkdf2Auth;
     [Accessor] random: Random = Random();
 
     [Accessor] mutable user_count: int = 0;
@@ -32,7 +32,7 @@ public class TestData {
         Log.i("Generating test data...");
         server = fs;
         db = server.Database;
-        auth = server.getModuleInterface.[IAuth]();
+        auth = server.getModuleInterface.[mod.IPbkdf2Auth]();
     }
 
     public make(args: Program.Arguments): void {
