@@ -56,6 +56,10 @@ Partials:
     {{/SignedInUser}}
     {{#Title}}
       <p>Thread started by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
+      <p>
+        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
+        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
+      </p>
     {{/Title}}
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
@@ -78,6 +82,12 @@ Partials:
     {{^Posts}}
       <p>Something seems to have gone awry here...</p>
     {{/Posts}}
+    {{#Title}}
+      <p>
+        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
+        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
+      </p>
+    {{/Title}}
   Guide: |
     {{#Title}}
     <div id="scrollspy">

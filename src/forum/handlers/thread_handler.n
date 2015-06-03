@@ -23,11 +23,10 @@ public class ThreadHandler: BaseHandler {
         base(hd, path);
     }
 
-
     public override initialize(): void {
         base.initialize();
 
-        def thid = Int32.Parse(Context.Vars["id"]);
+        def thid = UInt32.Parse(Context.Vars["id"]);
         def fr_st = Context.Vars["from"];
         def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
         def to_st = Context.Vars["to"];
@@ -53,6 +52,7 @@ public class ThreadHandler: BaseHandler {
                 ok = true;
             }
         }
+
         when(uid != null) {
             PageData["UserName"] = Server.getUserName(uid :> uint);
         }
@@ -108,6 +108,33 @@ public class ThreadHandler: BaseHandler {
             _ = PageData <- [
                 "Posts" = posts,
                 "Markers" = markers,
+            ];
+
+            // prev/next
+            def prf = Server.getDefaultPrefix(Request);
+            mutable prev = null;
+            mutable next = null;
+
+            Log.d("from = {0} > 1 {1}", from, from > 1);
+            when(from > 1) {
+                def pf = Math.Max(1, from - dist);
+                def pt = pf + dist - 1;
+                prev = $"$prf/th/$thid/$pf-$pt";
+            }
+            Log.d("prev = {0}", prev);
+
+            def user_count = Server.getPostCount(thid);
+            Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
+            when(to < user_count) {
+                def nf = from + dist;
+                def nt = nf + dist - 1;
+                next = $"$prf/th/$thid/$nf-$nt";
+            }
+            Log.d("next = {0}", next);
+
+            _ = PageData <- [
+                "Prev" = prev,
+                "Next" = next,
             ];
         }
     }
