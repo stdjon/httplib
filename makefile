@@ -117,6 +117,14 @@ refs=$(contrib_refs) $(local_refs)
 
 
 # ------------------------------------------------------------------------------
+# Forum specfic config
+
+FORUM_USER?=forum
+FORUM_PASSWORD?=$(PW)
+FORUM_DATABASE?=forum
+
+
+# ------------------------------------------------------------------------------
 # Rules Template
 
 # $1 = target type (EXE, DLL)
@@ -335,10 +343,10 @@ frun: $(BIN)/forum.exe
 	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D
 
 fdata: $(BIN)/forum-testdata.exe
-	$(call launch_assembly,forum-testdata.exe) $D
+	$(call launch_assembly,forum-testdata.exe) -R $(shell pwd)/src/forum $D
 
 finit:
-	mysql -D forum -u forum -p$(PW) < src/forum/init-dbs.mysql
+	mysql -D $(FORUM_DATABASE) -u $(FORUM_USER) -p$(FORUM_PASSWORD) < src/forum/init-dbs.mysql
 
 clean:
 	rm -rf $(BIN)/
