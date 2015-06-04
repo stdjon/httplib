@@ -1,0 +1,77 @@
+using Nemerle;
+using Nemerle.Compiler;
+using Nemerle.Compiler.Parsetree;
+
+
+namespace httplib {
+
+/** HasHandlerFactory macro adds a type Factory to the attributed type, which
+ *  implements IHandlerFactory. The type's constructor params are used as the
+ *  factory arguments. */
+[MacroUsage(MacroPhase.BeforeInheritance, MacroTargets.Class)]
+macro HasHandlerFactory(type_builder : TypeBuilder) {
+    type_builder.DisableImplicitConstructor();
+}
+
+
+[MacroUsage(MacroPhase.WithTypedMembers, MacroTargets.Class)]
+macro HasHandlerFactory(type_builder : TypeBuilder) {
+
+    mutable mems = [];
+    mutable prms = [];
+    mutable ctor;
+    def ctors = type_builder.GetConstructors();
+    foreach(c: IMethod in ctors) {
+
+        def ctor_params = c.GetParameters();
+        mutable i = 0;
+        when(!c.IsPrivate && ctor_params.Length > 1) {
+            foreach(p in ctor_params) {
+                when(i == 0 && p.Type.ToString() == "httplib.HandlerData") {
+                    if(ctor != null) {
+                        Message.Error("Too many ctors on handler type.");
+                    } else {
+                        ctor = c;
+                    }
+                }
+                def pt = p.Type;
+                def pn = p.Name;
+                def ss = Macros.UseSiteSymbol(pn);
+
+                when(p.Type.ToString() != "httplib.HandlerData") {
+                    def new_field = <[ decl: $(ss: name): $(pt: typed) ]>;
+                    mems = new_field :: mems;
+                    def new_param = <[ $(ss: name) ]>;
+                    prms = new_param :: prms;
+                }
+                i++;
+            }
+        }
+    }
+
+    mems = mems.Reverse();
+    prms = prms.Reverse();
+
+    if(ctor != null) {
+        def factory_type = type_builder.DefineNestedType( <[ decl:
+            [Record]
+            public new class Factory: IHandlerFactory {
+                ..$mems;
+            }
+        ]> );
+
+        factory_type.Define( <[ decl:
+            public makeHandler(hd: HandlerData): Handler {
+                $(type_builder.Name: dyn)(hd, ..$prms);
+            }
+        ]> );
+
+        factory_type.Compile();
+    } else {
+        Message.Error("Handler type must define "
+            "a single ctor with HandlerData as first parameter");
+    }
+}
+
+
+} // namespace httplib

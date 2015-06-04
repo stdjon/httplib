@@ -7,17 +7,8 @@ using httplib;
 
 namespace forum {
 
+[HasHandlerFactory]
 public class ThreadHandler: BaseHandler {
-
-    [Record]
-    public new class Factory: IHandlerFactory {
-
-        page_path: string;
-
-        public makeHandler(hd: HandlerData): Handler {
-            ThreadHandler(hd, page_path);
-        }
-    }
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);

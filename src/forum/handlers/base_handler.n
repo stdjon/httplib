@@ -10,18 +10,9 @@ using httplib;
 
 namespace forum {
 
+[HasHandlerFactory]
 [HasLogging]
 public class BaseHandler: ComplexHandler {
-
-    [Record]
-    public new class Factory: IHandlerFactory {
-
-        page_path: string;
-
-        public makeHandler(hd: HandlerData): Handler {
-            BaseHandler(hd, page_path);
-        }
-    }
 
     public override ContentType: string { get { "text/html" } }
     public override PagePath: string { get; private set; }

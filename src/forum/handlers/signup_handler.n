@@ -7,17 +7,8 @@ using Nemerle.Extensions;
 
 namespace forum {
 
+[HasHandlerFactory]
 public class SignupHandler: BaseHandler {
-
-    [Record]
-    public new class Factory: IHandlerFactory {
-
-        submit: bool;
-
-        public makeHandler(hd: HandlerData): Handler {
-            SignupHandler(hd, submit);
-        }
-    }
 
     IsSubmit: bool;
 

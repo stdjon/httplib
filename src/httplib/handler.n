@@ -53,17 +53,8 @@ public abstract class Handler {
 //------------------------------------------------------------------------------
 // CallbackHandler
 
+[HasHandlerFactory]
 public class CallbackHandler: Handler {
-
-    [Record]
-    public class Factory: IHandlerFactory {
-
-        lambda: Server.Callback;
-
-        public makeHandler(hd: HandlerData): Handler {
-            CallbackHandler(hd, lambda);
-        }
-    }
 
     lambda: Server.Callback;
 

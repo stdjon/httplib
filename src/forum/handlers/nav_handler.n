@@ -7,17 +7,8 @@ using Nemerle.Extensions;
 
 namespace forum {
 
+[HasHandlerFactory]
 public class NavHandler: BaseHandler {
-
-    [Record]
-    public new class Factory: IHandlerFactory {
-
-        method: HTTP;
-
-        public makeHandler(hd: HandlerData): Handler {
-            NavHandler(hd, method);
-        }
-    }
 
     Method: HTTP { get; private set; }
     CurrentUrl: string { get; private set; }

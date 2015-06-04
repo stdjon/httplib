@@ -7,18 +7,8 @@ using httplib;
 
 namespace forum {
 
+[HasHandlerFactory]
 public class UsersHandler: BaseHandler {
-
-    [Record]
-    public new class Factory: IHandlerFactory {
-
-        page_path: string;
-        plural: bool;
-
-        public makeHandler(hd: HandlerData): Handler {
-            UsersHandler(hd, page_path, plural);
-        }
-    }
 
     public IsPlural: bool { get; }
 
