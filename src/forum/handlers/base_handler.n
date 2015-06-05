@@ -93,7 +93,7 @@ public class BaseHandler: ComplexHandler {
 
         if(isession != null) {
             def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
-            def name = Server.getUserName(id :> uint);
+            def name = id ? Server.getUserName(id :> uint) : null;
             PageData["SignedInUser"] = name;
         } else {
             def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
