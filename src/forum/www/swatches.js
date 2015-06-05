@@ -8,7 +8,7 @@ function liActiveA(css) {
 
 function divAnchorTrg(css) {
     css = css || '';
-    return 'div.anchor.trg p, div.anchor.trg:nth-child(odd) p {' + css + '}'
+    return 'div.anchor.trg div.post, div.anchor.trg:nth-child(odd) div.post {' + css + '}'
 }
 
 
