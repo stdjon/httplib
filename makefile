@@ -329,17 +329,17 @@ TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
 
 all: install_contrib $(TARGETS)
 
-run: $(BIN)/http.exe
+run: install_contrib $(BIN)/http.exe
 	$(call launch_assembly,http.exe) $(shell pwd)/src/myserver $D
 
-test: $(BIN)/httplib.test.dll
-	$(call launch_nunit_console,$<)
+test: install_contrib $(BIN)/httplib.test.dll
+	$(call launch_nunit_console,$(BIN)/httplib.test.dll)
 	@echo "*** All tests passed!"
 
-test-gui: $(BIN)/httplib.test.dll
-	$(call launch_nunit,$<)
+test-gui: install_contrib $(BIN)/httplib.test.dll
+	$(call launch_nunit,$(BIN)/httplib.test.dll)
 
-frun: $(BIN)/forum.exe
+frun: install_contrib $(BIN)/forum.exe
 	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D
 
 fdata: $(BIN)/forum-testdata.exe
