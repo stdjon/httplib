@@ -77,10 +77,11 @@ ifeq ($(NCC_PATH),)
 $(error "Please set NCC_PATH to point to the Nemerle compiler (ncc.exe)")
 endif
 
+mono_path:=export MONO_PATH=$(NCC_PATH)
 NCC?=mono $(NCC_PATH)/ncc.exe
-launch_assembly=export MONO_PATH=$(NCC_PATH) && cd $(BIN)/ && mono $1
-launch_nunit=$(NUNIT)/bin/nunit.exe --run $1 > /dev/null 2>&1 &
-launch_nunit_console=mono $(NUNIT)/bin/nunit-console.exe --nologo $1
+launch_assembly=$(mono_path) && cd $(BIN)/ && mono $1
+launch_nunit=$(mono_path) && $(NUNIT)/bin/nunit.exe --run $1 > /dev/null 2>&1 &
+launch_nunit_console=$(mono_path) && mono $(NUNIT)/bin/nunit-console.exe --nologo $1
 
 endif
 
