@@ -8,7 +8,7 @@ using httplib;
 namespace forum {
 
 [HasHandlerFactory]
-public class ThreadHandler: BaseHandler {
+public class CategoryHandler: BaseHandler {
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
@@ -17,36 +17,30 @@ public class ThreadHandler: BaseHandler {
     public override initialize(): void {
         base.initialize();
 
-        def thid = UInt32.Parse(Context.Vars["id"]);
+        def catid = UInt32.Parse(Context.Vars["id"]);
         def fr_st = Context.Vars["from"];
         def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
         def to_st = Context.Vars["to"];
-        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 49);  //TODO: configurable?
+        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 24);  //TODO: configurable?
         def dist = to + 1 - from;
 
         def command = Server.Database.createCommand(
-            "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
-                "WHERE Id = @Id") <- [ "@Id" = thid ];
+            "SELECT Name, UserId, CreateDate, Colour FROM Categories "
+                "WHERE Id = @Id") <- [ "@Id" = catid ];
 
         mutable ok = false;
         mutable uid;
-        mutable catid;
         using(reader = command.executeReader()) {
             when(reader.Read()) {
                 uid = reader.GetValue.[uint?]("UserId", 0);
-                catid = reader.GetValue.[uint?]("CategoryId", 0);
                 _ = PageData <- [
-                    "Title" = reader.GetValue("Title"),
+                    "Name" = reader.GetValue("Name"),
                     "UserId" = uid,
-                    "CategoryId" = catid,
                     "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
                     "Colour" = reader.GetValue("Colour"),
                 ];
                 ok = true;
             }
-        }
-        when(catid != null) {
-            PageData["Category"] = Server.getCategoryName(catid :> uint);
         }
 
         when(uid != null) {
@@ -54,13 +48,13 @@ public class ThreadHandler: BaseHandler {
         }
 
         when(ok) {
-            mutable posts: PageDataArray = array(dist);
+            mutable threads: PageDataArray = array(dist);
             mutable i = 0;
 
             def command2 = Server.Database.createCommand(
-                "SELECT Id, UserId, Points, CreateDate, OutputContent FROM Posts WHERE "
-                    "ThreadId = @ThreadId ORDER BY CreateDate LIMIT @From, @To") <- [
-                "@ThreadId" = thid,
+                "SELECT Id, UserId, Title, CreateDate FROM Threads WHERE "
+                    "CategoryId = @CategoryId ORDER BY CreateDate LIMIT @From, @To") <- [
+                "@CategoryId" = catid,
                 "@From" = from - 1,
                 "@To" = to - 1,
             ];
@@ -69,32 +63,33 @@ public class ThreadHandler: BaseHandler {
                 while(reader.Read() && i < dist) {
                     def id = reader.GetValue.[uint?]("Id", 0);
                     uid = reader.GetValue.[uint?]("UserId", 0);
-                    def points = reader.GetValue.[int?]("Points", 0);
+                    //def _points = reader.GetValue.[int?]("Points", 0);
                     def date = reader.GetValue.[DateTime?]("CreateDate");
-                    def content = reader.GetValue("OutputContent");
+                    def title = reader.GetValue.[string]("Title");
 
-                    posts[i] = PageData() <- [
+                    threads[i] = PageData() <- [
                         "Number" = from + i,
-                        "PostId" = id,
                         "UserId" = uid,
-                        "Points" = points,
                         "CreateDate" = date,
-                        "Content" = content,
+                        "Title" = title,
+                        "Id" = id,
                     ];
                     i++;
                 }
             }
             when(i < dist) {
-                Array.Resize(ref posts, i);
+                Array.Resize(ref threads, i);
             }
             def limit = i;
 
             for(i = 0; i < limit; i++) {
-                posts[i]["UserName"] =
-                    Server.getUserName(posts[i]["UserId"] :> uint);
+                threads[i]["UserName"] =
+                    Server.getUserName(threads[i]["UserId"] :> uint);
+                threads[i]["PostCount"] =
+                    Server.getPostCount(threads[i]["Id"] :> uint);
             }
 
-            // Add a marker for every fifth post (1, 6, 11...)
+            // Add a marker for every fifth thread (1, 6, 11...)
             def marker_count = (limit + 4) / 5;
             def markers: PageDataArray = array(marker_count);
             for(i = 0; i < marker_count; i++) {
@@ -102,8 +97,10 @@ public class ThreadHandler: BaseHandler {
             }
 
             _ = PageData <- [
-                "Posts" = posts,
+                "Threads" = threads,
                 "Markers" = markers,
+                "From" = from,
+                "To" = to,
             ];
 
             // prev/next
@@ -115,16 +112,16 @@ public class ThreadHandler: BaseHandler {
             when(from > 1) {
                 def pf = Math.Max(1, from - dist);
                 def pt = pf + dist - 1;
-                prev = $"$prf/th/$thid/$pf-$pt";
+                prev = $"$prf/th/$catid/$pf-$pt";
             }
             Log.d("prev = {0}", prev);
 
-            def user_count = Server.getPostCount(thid);
+            def user_count = Server.getThreadCount(catid);
             Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
             when(to < user_count) {
                 def nf = from + dist;
                 def nt = nf + dist - 1;
-                next = $"$prf/th/$thid/$nf-$nt";
+                next = $"$prf/th/$catid/$nf-$nt";
             }
             Log.d("next = {0}", next);
 

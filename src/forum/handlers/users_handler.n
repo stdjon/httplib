@@ -39,8 +39,8 @@ public class UsersHandler: BaseHandler {
         def command = Server.Database.createCommand(
             "SELECT Name, Level, Points, Motto FROM Users "
                 "ORDER BY Name LIMIT @From, @To") <- [
-                "@From" = from,
-                "@To" = to,
+                "@From" = from - 1,
+                "@To" = to - 1,
             ];
 
         using(reader = command.executeReader()) {

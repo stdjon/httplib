@@ -80,6 +80,8 @@ public class ForumServer: Server {
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
 
+        route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
+
         route(HTTP.GET, "/filter", filterTestResponse);
     }
 
@@ -164,9 +166,24 @@ public class ForumServer: Server {
         unchecked ex :> int;
     }
 
+    public getThreadCount(cat_id: uint): int {
+        def commmand = Database.createCommand(
+            "SELECT COUNT(Id) FROM Threads WHERE CategoryId = @CategoryId") <- [
+                "@CategoryId" = cat_id,
+            ];
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
     public getUserName(user_id: uint): string {
         def commmand = Database.createCommand(
             "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
+        commmand.executeScalar() :> string;
+    }
+
+    public getCategoryName(cat_id: uint): string {
+        def commmand = Database.createCommand(
+            "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];
         commmand.executeScalar() :> string;
     }
 

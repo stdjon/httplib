@@ -2,7 +2,7 @@
 Template: template.nyml
 Stylesheets:
   - /local-styles.css
-Title: "{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}"
+Title: "{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}"
 Partials:
   Nav: |
     <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}'
@@ -10,7 +10,7 @@ Partials:
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
     <div class="jumbotron anchor">
-      <h1>{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}</h1>
+      <h1>{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}</h1>
     </div>
   Body: |
     <div class="swatches">
@@ -54,43 +54,31 @@ Partials:
     {{#SignedInUser}}
       <p>You are <a href="{{DefaultPrefix}}/u/{{SignedInUser}}">{{SignedInUser}}</a>.</p>
     {{/SignedInUser}}
-    {{#Title}}
-      <p>Thread started in <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>
-      by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
+    {{#Name}}
+      <p>Category created by
+      <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
       <p>
         {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
-    {{/Title}}
-    {{#Posts}}
-      <div class="anchor" id="{{Number}}">
-        <div class="post">
-          <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          {{Content}}<br>
-          <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
-          [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
-          {{CreateDate}}</small>
-          <span style="word-spacing: 15px;">
-          &nbsp;<i class="fa fa-reply" onclick="alert('reply!')"></i>
-          <i class="fa fa-edit" onclick="alert('edit!')"></i>
-          <i class="fa fa-quote-left" onclick="alert('quote!')"></i>
-          <i class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></i>
-          <i class="fa fa-star-o" onclick="alert('star!')"></i></div>
-          </span>
-        </div>
-      </div>
-    {{/Posts}}
-    {{^Posts}}
+    {{/Name}}
+    <ol start='{{From}}' class="list-group">
+    {{#Threads}}
+      <li class="list-group-item">#{{Number}}. <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
+      by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> on {{CreateDate}} ({{PostCount}})</li>
+    {{/Threads}}
+    </ol>
+    {{^Threads}}
       <p>Something seems to have gone awry here...</p>
-    {{/Posts}}
-    {{#Title}}
+    {{/Threads}}
+    {{#Name}}
       <p>
         {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
-    {{/Title}}
+    {{/Name}}
   Guide: |
-    {{#Title}}
+    {{#Name}}
     <div id="scrollspy">
       <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
       {{#Markers}}
@@ -98,7 +86,7 @@ Partials:
       {{/Markers}}
       </ul>
     </div>
-    {{/Title}}
+    {{/Name}}
   PageLoadScripts: |
     <script src="/swatches.js"></script>
 
