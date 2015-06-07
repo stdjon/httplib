@@ -15,7 +15,7 @@ Content: |
     img {  padding: 10px; border: 1px #000 dotted; }
     #showme, #i40, #i64, #i80, #i120 { padding: 10px;}
     #dataurl { margin-top: 10px; }
-    .hover { background-color: #bfb; border: 1px #0f0 dotted; }
+    .hover, #showme:active { background-color: #bfb; border: 1px #0f0 dotted; }
     .body * { padding: 0px 4px; }
   </style>
   <div class="container">
