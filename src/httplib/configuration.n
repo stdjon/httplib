@@ -12,13 +12,13 @@ public type LogColours = Dictionary[string, string];
 [YamlRecord]
 public class LogTarget {
     /** Log target type */
-    public Type: string { get; set; };
+    public Type: string { get; set; }
     /** Log target layout */
-    public Layout: string { get; set; };
+    public Layout: string { get; set; }
     /** Log target path */
-    public Path: string { get; set; };
+    public Path: string { get; set; }
     /** Colours */
-    public Colours: LogColours { get; set; };
+    public Colours: LogColours { get; set; }
 }
 
 
@@ -27,50 +27,53 @@ public type LogTargets = Dictionary[string, LogTarget];
 [YamlRecord]
 public class LogRule {
     /** Log source */
-    public Source: string { get; set; };
+    public Source: string { get; set; }
     /** Log level */
-    public Level: string { get; set; };
+    public Level: string { get; set; }
     /** Log target */
-    public Target: string { get; set; };
+    public Target: string { get; set; }
 }
+
 
 [YamlRecord]
 public class LogConfiguration {
     /** Logging assembly */
-    public Assembly: string { get; set; };
+    public Assembly: string { get; set; }
     /** Logging typename */
-    public Typename: string { get; set; };
+    public Typename: string { get; set; }
     /** Targets */
-    public Targets: LogTargets { get; set; };
+    public Targets: LogTargets { get; set; }
     /** Targets */
-    public Rules: array[LogRule] { get; set; };
+    public Rules: array[LogRule] { get; set; }
 }
+
 
 [YamlRecord]
 public class DatabaseConfiguration {
     /** Database assembly */
-    public Assembly: string { get; set; };
+    public Assembly: string { get; set; }
     /** Database typename */
-    public Typename: string { get; set; };
+    public Typename: string { get; set; }
     /** Database connection */
-    public Connection: string { get; set; };
+    public Connection: string { get; set; }
 }
 
 
 [YamlRecord]
 public class Prefixes {
     /** Secure (https://) prefixes */
-    public Secure: array[string] { get; set; };
+    public Secure: array[string] { get; set; }
     /** Insecure (http://) prefixes */
-    public Insecure: array[string] { get; set; };
+    public Insecure: array[string] { get; set; }
 }
+
 
 [YamlRecord]
 public class RendererConfiguration {
     /** Renderer assembly */
-    public Assembly: string { get; set; };
+    public Assembly: string { get; set; }
     /** Renderer typename */
-    public Typename: string { get; set; };
+    public Typename: string { get; set; }
 }
 
 
@@ -79,11 +82,11 @@ public type ModuleData = Dictionary[string, object];
 [YamlRecord]
 public class ModuleConfiguration {
     /** Module assembly */
-    public Assembly: string { get; set; };
+    public Assembly: string { get; set; }
     /** Module typename */
-    public Typename: string { get; set; };
+    public Typename: string { get; set; }
     /** Module initialization data */
-    public Data: ModuleData { get; set; };
+    public Data: ModuleData { get; set; }
 }
 
 
@@ -99,25 +102,25 @@ public type MimeTypes = Dictionary[string, string];
 [YamlRecord]
 public class ServerConfiguration {
     /** Logging configuration */
-    public Logging: LogConfiguration { get; set; };
+    public Logging: LogConfiguration { get; set; }
     /** Database configuration */
-    public Databases: Databases { get; set; };
+    public Databases: Databases { get; set; }
     /** Listener prefixes */
-    public Prefixes: Prefixes { get; set; };
+    public Prefixes: Prefixes { get; set; }
     /** Filesystem roots for file serving */
-    public Roots: array[string] { get; set; };
+    public Roots: array[string] { get; set; }
     /** Patterns to test when deciding if a file can be served */
-    public FileServing: array[string] { get; set; };
+    public FileServing: array[string] { get; set; }
     /** Renderers to try (in order) when no extension given in request URI */
-    public Renderers: Renderers { get; set; };
+    public Renderers: Renderers { get; set; }
     /** Additional Modules to load */
-    public Modules: Modules { get; set; };
+    public Modules: Modules { get; set; }
     /** (Mapping extensions to) MIME Types */
-    public MimeTypes: MimeTypes { get; set; };
+    public MimeTypes: MimeTypes { get; set; }
     /** Minimum length reserved for response body */
-    public OutputLength: int { get; set; };
+    public OutputLength: int { get; set; }
     /** File chunk (read) length */
-    public FileChunkLength: int { get; set; };
+    public FileChunkLength: int { get; set; }
 }
 
 
