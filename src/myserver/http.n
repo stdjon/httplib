@@ -490,7 +490,7 @@ class MyServer: Server {
             def iimage = getModuleInterface.[mod.IImageProcessor]();
             _ = iimage.load(memstr);
             _ = iimage.transform(xform);
-            //_ = iimage.save("./tmp.png");
+            //_ = iimage.save($"./tmp-$xform.png");
             def outstr = MemoryStream(4096);
             _ = iimage.save(outstr);
             def outbuf = outstr.GetBuffer();

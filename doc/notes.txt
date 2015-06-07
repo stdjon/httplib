@@ -105,6 +105,14 @@ Linux:
   that it is not possible to add _both_ as prefixes to the same server: this
   will cause an 'Address already in use' error.
 
+  For System.Drawing functionality (i.e. httplib.mod.imageprocessor), it was
+  necessary to install libgdiplus:
+
+    > sudo apt-get install libgdiplus
+
+  It was also necessary to make the following symlink on Unbuntu:
+
+    > sudo ln -s /usr/lib/libgdiplus.so /usr/local/lib/libgdiplus.so
 
 Databases:
 ==========
