@@ -1,0 +1,195 @@
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+
+using ImageProcessor;
+using ImageProcessor.Imaging;
+
+
+namespace httplib.mod {
+
+type Config = Dictionary[object, object];
+type Transform = List[Operation];
+
+type Operations = Dictionary[string, Operation];
+type Transforms = Dictionary[string, Transform];
+
+
+variant Operation {
+    | Alpha { percent: int; }
+    | AutoRotate;
+    | BackgroundColour { r: byte; g: byte; b: byte; a: byte; }
+    | Brightness { percent: int; }
+    | Constrain { x: int; y: int; }
+    | Contrast { percent: int; }
+    | EntropyCrop { threshold: int; }
+    | Gaussian { sigma: float; size: int; threshold: int; }
+    | Hue { degrees: int; }
+    | Pixelate { size: int; }
+    | Resize { x: int; y: int; }
+    | Saturation { percent: int; }
+    | Tint { r: byte; g: byte; b: byte; a: byte; }
+
+    public static make(conf: Config): Operation {
+
+        def b(x: string): byte {
+            Int32.Parse(conf[x] :> string) :> byte
+        }
+
+        def i(x: string): int {
+            Int32.Parse(conf[x] :> string)
+        }
+
+        def f(x: string): float {
+            Single.Parse(conf[x] :> string)
+        }
+
+        if(conf != null) {
+            match(conf["op"] :> string) {
+                | "Alpha" => Alpha(i("percent"))
+                | "AutoRotate" => AutoRotate()
+                | "BackgroundColour" =>
+                    BackgroundColour(b("r"), b("g"), b("b"), b("a"))
+                | "Brightness" => Brightness(i("percent"))
+                | "Constrain" => Constrain(i("x"), i("y"))
+                | "Contrast" => Contrast(i("percent"))
+                | "EntropyCrop" => EntropyCrop(i("threshold"))
+                | "Gaussian" => Gaussian(f("sigma"), i("size"), i("threshold"))
+                | "Hue" => Hue(i("degrees"))
+                | "Pixelate" => Pixelate(i("size"))
+                | "Resize" => Resize(i("x"), i("y"))
+                | "Saturation" => Saturation(i("percent"))
+                | "Tint" => Tint(b("r"), b("g"), b("b"), b("a"))
+                | _ => null
+            }
+        } else {
+            null
+        }
+    }
+
+    public run(factory: ImageFactory): void {
+        match(this) {
+            | Alpha(pct) => { _ = factory.Alpha(pct); }
+            | AutoRotate => { _ = factory.AutoRotate(); }
+            | BackgroundColour(r, g, b, a) => {
+                def colour = Color.FromArgb(a, r, g, b);
+                _ = factory.BackgroundColor(colour);
+            }
+            | Brightness(pct) => { _ = factory.Brightness(pct); }
+            | Constrain(x, y) => { _ = factory.Constrain(Size(x, y)); }
+            | Contrast(pct) => { _ = factory.Contrast(pct); }
+            | EntropyCrop(thr) => { _ = factory.EntropyCrop(thr :> byte); }
+            | Gaussian(sig, size, thr) => {
+                def layer = GaussianLayer(size, sig, thr);
+                _ = factory.GaussianBlur(layer);
+            }
+            | Hue(deg) => { _ = factory.Hue(deg, true); }
+            | Pixelate(size) => { _ = factory.Pixelate(size); }
+            | Resize(x, y) => {
+                def layer = ResizeLayer(Size(x, y), ResizeMode.Crop);
+                _ = factory.Resize(layer);
+            }
+            | Saturation(pct) => { _ = factory.Saturation(pct); }
+            | Tint(r, g, b, a) => {
+                def colour = Color.FromArgb(a, r, g, b);
+                _ = factory.Tint(colour);
+            }
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+
+public interface IImageProcessor: IImageTransform {
+}
+
+
+[HasLogging]
+public class ImageProcessor: Module, IImageProcessor {
+
+    public override InterfaceType: Type {
+        get { typeof(IImageProcessor) }
+    }
+
+    ImageFactory: ImageFactory { get; set; }
+
+    Operations: Operations { get; set; }
+    Transforms: Transforms { get; set; }
+
+    public this(conf: ModuleData = null) {
+        Log.i("Starting ImageProcessor module... (conf: {0})", conf);
+
+        ImageFactory = ImageFactory();
+        Operations = Operations();
+        Transforms = Transforms();
+
+        when(conf != null) {
+            mutable operations, transforms, probe;
+            when(conf.TryGetValue("Operations", out probe)) {
+                operations = probe :> Config;
+            }
+            when(conf.TryGetValue("Transforms", out probe)) {
+                transforms = probe :> Config;
+            }
+            when(operations != null) {
+                addOperations(operations);
+            }
+            when(transforms != null) {
+                addTransforms(transforms);
+            }
+        }
+    }
+
+    public load(path: string): bool {
+        _ = ImageFactory.Load(path);
+        true;
+    }
+
+    public load(stream: Stream): bool {
+        _ = ImageFactory.Load(stream);
+        true;
+    }
+
+    public save(path: string): bool {
+        _ = ImageFactory.Save(path);
+        true;
+    }
+
+    public save(stream: Stream): bool {
+        _ = ImageFactory.Save(stream);
+        true;
+    }
+
+    public transform(transform: string): Image {
+        mutable t, probe;
+        when(Transforms.TryGetValue(transform, out probe)) {
+            t = probe;
+        }
+        when(t != null) {
+            foreach(o in t) {
+                o.run(ImageFactory);
+            }
+        }
+        ImageFactory.Image;
+    }
+
+    addOperations(operations: Config): void {
+        foreach(o in operations) {
+            Operations[o.Key :> string] = Operation.make(o.Value :> Config);
+        }
+    }
+
+    addTransforms(transforms: Config): void {
+        foreach(t in transforms) {
+            Transforms[t.Key :> string] = List();
+            foreach(n in t.Value :> List[object]) {
+                Transforms[t.Key :> string].Add(Operations[n :> string]);
+            }
+        }
+    }
+}
+
+
+} // httplib.mod

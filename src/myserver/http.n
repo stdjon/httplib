@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 using Nemerle.Extensions;
@@ -482,6 +483,47 @@ class MyServer: Server {
         sb.ToString();
     }
 
+    public uploadImageResponse(
+        context: Context, _request: Request, response: Response): void {
+
+        def transformImage(memstr, xform) {
+            def iimage = getModuleInterface.[mod.IImageProcessor]();
+            _ = iimage.load(memstr);
+            _ = iimage.transform(xform);
+            //_ = iimage.save("./tmp.png");
+            def outstr = MemoryStream(4096);
+            _ = iimage.save(outstr);
+            def outbuf = outstr.GetBuffer();
+            def outb64 = Convert.ToBase64String(outbuf);
+            $"data:image/png;base64,$outb64";
+        }
+
+        def f = context.Vars["f"];
+        mutable datastr = "";
+        when(!String.IsNullOrEmpty(f)) {
+            def b64 = Regex.Match(f, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+            def data = Convert.FromBase64String(b64);
+            def memstr = MemoryStream(data);
+            def out40 = transformImage(memstr, "avatar40");
+            def out80 = transformImage(memstr, "avatar64");
+            def out64 = transformImage(memstr, "avatar80");
+            def out120 = transformImage(memstr, "avatar120");
+            def sb = StringBuilder();
+            def sw = StringWriter(sb);
+            using(jw = JsonTextWriter(sw)) {
+                jw.WriteStartObject();
+                jw.WritePropertyName("i40"); jw.WriteValue(out40);
+                jw.WritePropertyName("i64"); jw.WriteValue(out64);
+                jw.WritePropertyName("i80"); jw.WriteValue(out80);
+                jw.WritePropertyName("i120"); jw.WriteValue(out120);
+                jw.WriteEndObject();
+            }
+            datastr = sb.ToString();
+        }
+        response.append(datastr);
+        response.Status = (200, "OK");
+    }
+
     protected override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
@@ -541,6 +583,8 @@ module Test {
             // This kind of web API (sending tiny string deltas) would be a good
             // use for a WebSocket connection (in due course).
             my_server.route(HTTP.POST, "/edit-do", my_server.editTextResponse);
+
+            my_server.route(HTTP.POST, "/upload-do", my_server.uploadImageResponse);
 
             my_server.route(HTTP.GET, "/cors", my_server.testCorsGetResponse);
             my_server.route(HTTP.POST, "/cors", my_server.testCorsPostResponse);

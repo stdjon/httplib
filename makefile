@@ -93,6 +93,7 @@ CONTRIB_LIBS:= \
 	CodeKicker.BBCode-Parser-5.0/CodeKicker.BBCode.dll \
 	CsQuery-1.3.4/lib/net40/CsQuery.dll \
 	HtmlSanitizer.2.0.5595.30325/lib/net40/HtmlSanitizer.dll \
+	ImageProcessor-2.2.5/lib/net45/ImageProcessor.dll \
 	MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
 	NDesk.Options-0.2.1.0/NDesk.Options.dll \
 	NLog-3.2.1/net45/NLog.dll \
@@ -181,7 +182,7 @@ $(eval $(call emit_exe_rule,forum.exe, \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
 	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
-	httplib.mod.oembed.dll httplib.mod.textile.dll))
+	httplib.mod.imageprocessor.dll httplib.mod.oembed.dll httplib.mod.textile.dll))
 
 
 # ------------------------------------------------------------------------------
@@ -212,7 +213,8 @@ $(eval $(call emit_exe_rule,http.exe, \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
 	httplib.mod.auth.dll httplib.mod.bbcode.dll \
-	httplib.mod.htmlsanitize.dll httplib.mod.textile.dll))
+	httplib.mod.htmlsanitize.dll httplib.mod.imageprocessor.dll \
+	httplib.mod.textile.dll))
 
 
 # ------------------------------------------------------------------------------
@@ -290,6 +292,14 @@ $(eval $(call emit_dll_rule,httplib.mod.bbcode.dll, \
 
 $(eval $(call emit_dll_rule,httplib.mod.htmlsanitize.dll, \
 	src/httplib/mod/htmlsanitize, \
+	httplib.dll httplib.macros.dll))
+
+
+# ------------------------------------------------------------------------------
+# httplib.mod.imageprocessor.dll
+
+$(eval $(call emit_dll_rule,httplib.mod.imageprocessor.dll, \
+	src/httplib/mod/image, \
 	httplib.dll httplib.macros.dll))
 
 
