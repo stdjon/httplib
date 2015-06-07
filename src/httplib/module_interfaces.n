@@ -1,4 +1,6 @@
 using System;
+using Image = System.Drawing.Image;
+using Stream = System.IO.Stream;
 
 
 namespace httplib {
@@ -31,6 +33,17 @@ public interface IAuth: IModuleInterface {
     /** Compare password hashes in constant time. Attempts to avoid 'leaking'
      *  timing information. */
     compareHashes(a: array[byte], b: array[byte]): bool;
+}
+
+
+/** Interface for image transformations */
+public interface IImageTransform: IModuleInterface {
+
+    load(path: string): bool;
+    load(stream: Stream): bool;
+    save(path: string): bool;
+    save(stream: Stream): bool;
+    transform(transform: string): Image;
 }
 
 

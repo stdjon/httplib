@@ -1,0 +1,128 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Upload
+Content: |
+  <style>
+    .jumbotron h1 { font-weight: 900; }
+    img {  padding: 10px; border: 1px #000 dotted; }
+    #showme, #i40, #i64, #i80, #i120 { padding: 10px;}
+    #dataurl { margin-top: 10px; }
+    .hover, #showme:active { background-color: #bfb; border: 1px #0f0 dotted; }
+    .body * { padding: 0px 4px; }
+  </style>
+  <div class="container">
+    <div class="jumbotron">
+      <h1>Uploader</h1>
+    </div>
+    <div class="body">
+      <p>Click or drag an image into the box below...<p>
+      <input type="file" accept="image/*" id="dropme" style="display:none">
+      </input>
+      <div>
+        <img id="showme" width="120" height="120"/>
+        <span id="work"></span>
+        <!--pre id="dataurl"/-->
+      </div>
+      <div>
+        <img id="i40" width="40" height="40"/>
+        <img id="i64" width="64" height="64"/>
+        <img id="i80" width="80" height="80"/>
+        <img id="i120" width="120" height="120"/>
+      </div>
+    </div>
+  </div>
+  <script src="/jquery-1.11.2/jquery-1.11.2.js"></script>
+  <script src="/bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+  <script>
+    window.onload = function() {
+      var dropzone = document.querySelector("#dropme");
+      var preview = document.querySelector("#showme");
+
+      dropzone.addEventListener("change", function(e) {
+        acceptFile(e.target.files[0]);
+      });
+
+      preview.addEventListener("click", function (e) {
+        if (dropzone) {
+          dropzone.click();
+        }
+        e.preventDefault(); // prevent navigation to "#"
+      }, false);
+
+      function setDragDrop(element) {
+        element.addEventListener("dragover", function(e) {
+          if(e.preventDefault) { e.preventDefault(); }
+          if(e.stopPropagation) { e.stopPropagation(); }
+          e.dataTransfer.dropEffect = "copy";
+        });
+        element.addEventListener("dragenter", function(e) {
+          this.className = "hover";
+        });
+        element.addEventListener("dragleave", function(e) {
+          this.className = "";
+        });
+        element.addEventListener("drop", function(e) {
+          if(e.preventDefault) { e.preventDefault(); }
+          if(e.stopPropagation) { e.stopPropagation(); }
+          this.className = "";
+          var f = e.dataTransfer.files;
+          if (f.length > 0) {
+            acceptFile(f[0]);
+          }
+        });
+      }
+
+      setDragDrop(dropzone);
+      setDragDrop(preview);
+
+      function acceptFile(f) {
+
+        document.querySelector('#work').innerHTML = 'Working...<i class="fa fa-spinner fa-pulse"></i>'
+
+        var reader = new FileReader();
+
+        reader.onloadend = function(e) {
+          if (e.target.readyState == FileReader.DONE) {
+            var content = reader.result;
+            preview.src = content;
+            //document.querySelector('#dataurl').innerHTML = content;
+            $.ajax({
+              type: 'POST',
+              dataType: 'text',
+              global: false,
+              url: '/upload-do',
+              data: 'f=' + encodeURIComponent(content),
+              success: uploaded,
+              error: failed
+            });
+
+          }
+        }
+
+        reader.readAsDataURL(f);
+      }
+
+      function uploaded(data) {
+        //alert("ok!" + data);
+        document.querySelector('#work').innerHTML = 'Done!'
+        var obj = JSON.parse(data);
+        document.querySelector('#i40').src = obj.i40;
+        document.querySelector('#i80').src = obj.i80;
+        document.querySelector('#i64').src = obj.i64;
+        document.querySelector('#i120').src = obj.i120;
+      }
+      function failed() {
+        document.querySelector('#work').innerHTML = "Sorry, that image didn't work :( ";
+      }
+    }
+  </script>
+Partials:
+Objects:

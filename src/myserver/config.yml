@@ -26,6 +26,7 @@ FileServing:
   - /magic
   - /script
   - /test[0-9]+
+  - /upload
 Renderers:
   yml:
     Assembly: httplib.dll
@@ -68,6 +69,21 @@ Modules:
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
   - Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
+  - Assembly: httplib.mod.imageprocessor.dll
+    Typename: httplib.mod.ImageProcessor
+    Data:
+      Operations:
+        white-bg: { op: BackgroundColour, r: 255, g: 255, b: 255, a: 255 }
+        entropycrop: { op: EntropyCrop, threshold: 128 }
+        resize40: { op: Resize, x: 40, y: 40 }
+        resize64: { op: Resize, x: 64, y: 64 }
+        resize80: { op: Resize, x: 80, y: 80 }
+        resize120: { op: Resize, x: 120, y: 120 }
+      Transforms:
+        avatar40: [ white-bg, entropycrop, resize40 ]
+        avatar64: [ white-bg, entropycrop, resize64 ]
+        avatar80: [ white-bg, entropycrop, resize80 ]
+        avatar120: [ white-bg, entropycrop, resize120 ]
   - Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile
 MimeTypes:
