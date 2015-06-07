@@ -1,0 +1,23 @@
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information
+[assembly: AssemblyTitle("httplib.mod.imageprocessor.dll")]
+[assembly: AssemblyDescription("HTTP Server module - ImageProcessor")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("httplib.mod.imageprocessor")]
+[assembly: AssemblyCopyright("(c) Jon Head 2015")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// ComVisible
+[assembly: ComVisible(false)]
+
+// Guid
+[assembly: Guid("92CC6524-8EEA-497B-B68C-4443BC794DEA")]
+
+// Version information
+[assembly: AssemblyVersion("0.0.0.1")]
+[assembly: AssemblyFileVersion("0.0.0.1")]
