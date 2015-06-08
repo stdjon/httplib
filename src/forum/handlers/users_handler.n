@@ -23,9 +23,33 @@ public class UsersHandler: BaseHandler {
         if(IsPlural) {
             initializeUsers();
         } else {
-            initializeUser();
+            initializeSingle();
         }
+    }
 
+    public initializeSingle(): void {
+
+        def cookies = Request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def session_userid = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
+        def user = Context.Vars["user"];
+
+        def command = Server.Database.createCommand(
+            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
+        def page_userid = command.executeScalar() :> uint?;
+
+        def is_prefs =
+            (session_userid != null) && (page_userid != null) &&
+            (session_userid == page_userid);
+
+        Log.f("session_userid={0} page_userid={1} is_prefs={2}",
+            session_userid, page_userid, is_prefs);
+
+        if(is_prefs) {
+            initializePrefs(session_userid :> uint, user);
+        } else {
+            initializeUser(user);
+        }
     }
 
     public initializeUsers(): void {
@@ -94,9 +118,7 @@ public class UsersHandler: BaseHandler {
         ];
     }
 
-    public initializeUser(): void {
-
-        def user = Context.Vars["user"];
+    public initializeUser(user: string): void {
 
         def command = Server.Database.createCommand(
             "SELECT Name, Motto, Location, JoinDate, Points, Level FROM "
@@ -115,6 +137,16 @@ public class UsersHandler: BaseHandler {
                 ];
             }
         }
+    }
+
+    public initializePrefs(userid :uint, user: string): void {
+
+        initializeUser(user);
+
+        _ = PageData <- [
+            "IsPrefs" = true,
+            "Id" = userid,
+        ];
     }
 }
 

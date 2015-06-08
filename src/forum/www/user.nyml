@@ -52,15 +52,32 @@ Partials:
       </p>
     </div>
     <div>
-    {{#User}}
-      <p>Motto: <em>{{Motto}}</em></p>
-      <p>Location: <em>{{Location}}</em></p>
-      <p>User since: <em>{{JoinDate}}</em></p>
-      <p>Points: <em>{{Points}}</em></p>
-      <p>Level: <em>{{Level}}</em></p>
-    {{/User}}
+    {{^IsPrefs}}
+      {{#User}}
+        <p>Motto: <em>{{Motto}}</em></p>
+        <p>Location: <em>{{Location}}</em></p>
+        <p>User since: <em>{{JoinDate}}</em></p>
+        <p>Points: <em>{{Points}}</em></p>
+        <p>Level: <em>{{Level}}</em></p>
+      {{/User}}
+    {{/IsPrefs}}
+    {{#IsPrefs}}
+        <p>Motto: <input id='motto' value='{{Motto}}' placeholder='Motto'
+          onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
+        <p>Location: <input id='_loc' value='{{Location}}' placeholder='Location'
+          onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
+        <p>User since: <em>{{JoinDate}}</em></p>
+        <p>Points: <em>{{Points}}</em></p>
+        <p>Level: <em>{{Level}}</em></p>
+        <button id='update' type="submit" disabled="disabled" class="btn btn-success"
+          onclick="update()">Update</button>
+        <span id='notify'></span>
+    {{/IsPrefs}}
     </div>
   PageLoadScripts: |
     <script src="/swatches.js"></script>
+    <script src="/prefs.js"></script>
+  PageScripts: |
+    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}');
 
 

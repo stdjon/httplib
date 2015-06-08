@@ -74,6 +74,8 @@ public class ForumServer: Server {
         route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}",
             UsersHandler.Factory("user.nyml", false));
 
+        route(HTTP.POST, "/prefs", updatePrefsResponse);
+
         route(HTTP.GET, "/p/{{num:[0-9]+}}", PostHandler.Factory("post.nyml"));
 
         route([ (HTTP.GET, "/th/{{id:[0-9]+}}"),
@@ -132,6 +134,30 @@ public class ForumServer: Server {
             response.append("<html><body><h1>Filter Test</h1>"
                 $"<p>Input: $input</p><p>Output: $output</p>"
                 "</body></html>");
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public updatePrefsResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def m = context.Vars["m"];
+        def l = context.Vars["l"];
+        def i = Int32.Parse(context.Vars["i"]);
+
+        Log.e("i={0}, m={1}, l={2}", i, m, l);
+        def command = Database.createCommand(
+            "UPDATE Users "
+                "SET Location=@Location, Motto=@Motto WHERE Id=@Id") <- [
+            "@Location" = l,
+            "@Motto" = m,
+            "@Id" = i,
+        ];
+        def x = command.executeNonQuery();
+
+        if(1 == x) {
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);
