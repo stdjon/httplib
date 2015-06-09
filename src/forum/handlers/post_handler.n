@@ -46,8 +46,15 @@ public class PostHandler: BaseHandler {
             def name = command2.executeScalar() :> string;
 
             def command3 = Server.Database.createCommand(
-                "SELECT Title from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
-            def title = command3.executeScalar() :> string;
+                "SELECT Title, Colour from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
+
+            mutable title, colour;
+            using(reader = command3.executeReader()) {
+                when(reader.Read()) {
+                    title = reader.GetValue("Title");
+                    colour = reader.GetValue("Colour");
+                }
+            }
 
             _ = PageData <- [
                 "PostId" = pid,
@@ -57,6 +64,7 @@ public class PostHandler: BaseHandler {
                 "CreateDate" = date ? date.ToString() : "never",
                 "Points" = points,
                 "Content" = content,
+                "ColourId" = colour,
             ];
         }
     }

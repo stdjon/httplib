@@ -70,14 +70,17 @@ public class TestData {
         def joindate = DateTime.Now;
         def motto = generateMotto();
         def location = generateMotto();
+        def colour = generateColour();
 
         def command1 = Db.createCommand(
-            "INSERT INTO Users(Name, Points, Level, JoinDate, Motto, Location) VALUES "
-                "(@Name, 0, 0, @JoinDate, @Motto, @Location)") <- [
+            "INSERT INTO Users("
+                "Name, Points, Level, JoinDate, Motto, Location, Colour) VALUES "
+                "(@Name, 0, 0, @JoinDate, @Motto, @Location, @Colour)") <- [
             "@Name" = name,
             "@JoinDate" = joindate,
             "@Motto" = motto,
             "@Location" = location,
+            "@Colour" = colour,
         ];
         _ = command1.executeNonQuery();
 
@@ -259,14 +262,11 @@ public class TestData {
 
     generateColour(): string {
         mutable result = "";
-        def length = 6;
-        mutable col: array[char] = array(length);
-        for(mutable i = 0; i < length; i++) {
-            def x = Random.Next(HexChars.Length);
-            col[i] = HexChars[x];
-        }
-        result = string(col);
-        //Log.d("Colour: '{0}'", result);
+        def select = Random.Next(32);
+        def xy = (0 == (select & 16)) ? "x" : "y";
+        def c = ((select % 16) * 24).ToString();
+        result = $"$xy$c";
+        Log.d("Colour: '{0}'", result);
         result;
     }
 

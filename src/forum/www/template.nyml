@@ -59,6 +59,7 @@ Partials:
       DefaultPrefix: '{{DefaultPrefix}}',
       CurrentUrl: '{{CurrentUrl}}',
       CurrentUrlUnescaped: '{{CurrentUrlUnescaped}}',
+      ColourId: '{{ColourId}}',
     };
     Hyphenator.run();
     {{>PageScripts}}

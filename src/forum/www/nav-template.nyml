@@ -44,5 +44,6 @@ Partials:
       DefaultPrefix: '{{DefaultPrefix}}',
       CurrentUrl: '{{CurrentUrl}}',
       CurrentUrlUnescaped: '{{CurrentUrlUnescaped}}',
+      ColourId: '{{ColourId}}',
     };
 

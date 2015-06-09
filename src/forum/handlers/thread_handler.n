@@ -40,7 +40,7 @@ public class ThreadHandler: BaseHandler {
                     "UserId" = uid,
                     "CategoryId" = catid,
                     "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
-                    "Colour" = reader.GetValue("Colour"),
+                    "ColourId" = reader.GetValue("Colour"),
                 ];
                 ok = true;
             }

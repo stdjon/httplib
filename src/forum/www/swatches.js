@@ -20,10 +20,27 @@ $('head').append(
     '<style id="trg-colour" type="text/css">' + divAnchorTrg() + '</style>');
 
 
-function setHdrCols(c, b) {
-    var fg = b ? "#444" : "#ccc";
-    var sl = b ? '55%, 55%' : '88%, 25%';
-    var col = 'hsl(' + c + ', ' + sl + ')';
+function colFromId(cx) {
+    var col;
+    var b = ('x' === cx[0]);
+    var c = cx.slice(1);
+    if(360 == c) {
+        var sl = b ? '0%, 55%' : '0%, 25%';
+        col = 'hsl(0, ' + sl + ')';
+    } else {
+        var sl = b ? '55%, 55%' : '88%, 25%';
+        col = 'hsl(' + c + ', ' + sl + ')';
+    }
+    return col;
+}
+
+function setHdrCols(cx) {
+    var fg, sl, col;
+
+    col = colFromId(cx);
+    var b = ('x' === cx[0]);
+
+    fg = b ? "#444" : "#ccc";
 
     $('.container .jumbotron').css('background-color', col);
     $('.container .jumbotron').css('color', fg);
@@ -35,11 +52,9 @@ function setHdrCols(c, b) {
 
 
 function initHdrCols() {
-    var cols = [
-        0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
-        202.5, 225, 247.5, 270, 292.5, 315, 337.5 ];
-    var idx = Math.floor(Math.random() * cols.length);
-    var light = !!Math.floor(Math.random() * 2);
-
-    setHdrCols(cols[idx], light);
+    //default to x360 (light gray)...
+    if(''==_g.ColourId) {
+        _g.ColourId = 'x360';
+    }
+    setHdrCols(_g.ColourId);
 }

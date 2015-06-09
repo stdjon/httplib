@@ -13,46 +13,15 @@ Partials:
       <h1>{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}</h1>
     </div>
   Body: |
-    <div class="swatches">
-      <p>
-        <span class="swatch" id="x0" onmouseover="setHdrCols(0, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x22_5" onmouseover="setHdrCols(22.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x45" onmouseover="setHdrCols(45, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x67_5" onmouseover="setHdrCols(67.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x90" onmouseover="setHdrCols(90, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x112_5" onmouseover="setHdrCols(112.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x135" onmouseover="setHdrCols(135, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x157_5" onmouseover="setHdrCols(157.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x180" onmouseover="setHdrCols(180, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x202_5" onmouseover="setHdrCols(202.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x225" onmouseover="setHdrCols(225, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x247_5" onmouseover="setHdrCols(247.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x270" onmouseover="setHdrCols(270, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x292_5" onmouseover="setHdrCols(292.5, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x315" onmouseover="setHdrCols(315, true)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="x337_5" onmouseover="setHdrCols(337.5, true)">&nbsp; &nbsp; &nbsp;</span>
-      </p>
-      <p>
-        <span class="swatch" id="y0" onmouseover="setHdrCols(0, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y22_5" onmouseover="setHdrCols(22.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y45" onmouseover="setHdrCols(45, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y67_5" onmouseover="setHdrCols(67.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y90" onmouseover="setHdrCols(90, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y112_5" onmouseover="setHdrCols(112.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y135" onmouseover="setHdrCols(135, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y157_5" onmouseover="setHdrCols(157.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y180" onmouseover="setHdrCols(180, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y202_5" onmouseover="setHdrCols(202.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y225" onmouseover="setHdrCols(225, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y247_5" onmouseover="setHdrCols(247.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y270" onmouseover="setHdrCols(270, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y292_5" onmouseover="setHdrCols(292.5, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y315" onmouseover="setHdrCols(315, false)">&nbsp; &nbsp; &nbsp;</span>
-        <span class="swatch" id="y337_5" onmouseover="setHdrCols(337.5, false)">&nbsp; &nbsp; &nbsp;</span>
-      </p>
-    </div>
+    <style>
+      div.swatches { cursor: default; }
+      div.swatches span { cursor: pointer; }
+      div.swatches span.selected { border: 1px dotted #000; }
+    </style>
     <div>
     {{^IsPrefs}}
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
       {{#User}}
         <p>Motto: <em>{{Motto}}</em></p>
         <p>Location: <em>{{Location}}</em></p>
@@ -60,24 +29,66 @@ Partials:
         <p>Points: <em>{{Points}}</em></p>
         <p>Level: <em>{{Level}}</em></p>
       {{/User}}
+      {{^User}}
+        <p> No user with this name exists.</p>
+      {{/User}}
     {{/IsPrefs}}
     {{#IsPrefs}}
-        <p>Motto: <input id='motto' value='{{Motto}}' placeholder='Motto'
-          onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
-        <p>Location: <input id='_loc' value='{{Location}}' placeholder='Location'
-          onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
-        <p>User since: <em>{{JoinDate}}</em></p>
-        <p>Points: <em>{{Points}}</em></p>
-        <p>Level: <em>{{Level}}</em></p>
-        <button id='update' type="submit" disabled="disabled" class="btn btn-success"
-          onclick="update()">Update</button>
-        <span id='notify'></span>
+      <p>&nbsp;</p>
+      <div class="swatches">
+        <p>
+          <span class="swatch" id="x360" onclick="selectSwatch('x360')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x0" onclick="selectSwatch('x0')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x24" onclick="selectSwatch('x24')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x48" onclick="selectSwatch('x48')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x72" onclick="selectSwatch('x72')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x96" onclick="selectSwatch('x96')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x120" onclick="selectSwatch('x120')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x144" onclick="selectSwatch('x144')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x168" onclick="selectSwatch('x168')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x192" onclick="selectSwatch('x192')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x216" onclick="selectSwatch('x216')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x240" onclick="selectSwatch('x240')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x264" onclick="selectSwatch('x264')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x288" onclick="selectSwatch('x288')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x312" onclick="selectSwatch('x312')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="x336" onclick="selectSwatch('x336')">&nbsp; &nbsp; &nbsp;</span>
+        </p>
+        <p>
+          <span class="swatch" id="y360" onclick="selectSwatch('y360')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y0" onclick="selectSwatch('y0')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y24" onclick="selectSwatch('y24')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y48" onclick="selectSwatch('y48')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y72" onclick="selectSwatch('y72')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y96" onclick="selectSwatch('y96')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y120" onclick="selectSwatch('y120')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y144" onclick="selectSwatch('y144')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y168" onclick="selectSwatch('y168')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y192" onclick="selectSwatch('y192')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y216" onclick="selectSwatch('y216')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y240" onclick="selectSwatch('y240')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y264" onclick="selectSwatch('y264')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y288" onclick="selectSwatch('y288')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y312" onclick="selectSwatch('y312')">&nbsp; &nbsp; &nbsp;</span>
+          <span class="swatch" id="y336" onclick="selectSwatch('y336')">&nbsp; &nbsp; &nbsp;</span>
+        </p>
+      </div>
+      <p>Motto: <input id='motto' value='{{Motto}}' placeholder='Motto'
+        onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
+      <p>Location: <input id='_loc' value='{{Location}}' placeholder='Location'
+        onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
+      <p>User since: <em>{{JoinDate}}</em></p>
+      <p>Points: <em>{{Points}}</em></p>
+      <p>Level: <em>{{Level}}</em></p>
+      <button id='update' type="submit" disabled="disabled" class="btn btn-success"
+        onclick="update()">Update</button>
+      <span id='notify'></span>
     {{/IsPrefs}}
     </div>
   PageLoadScripts: |
     <script src="/swatches.js"></script>
     <script src="/prefs.js"></script>
   PageScripts: |
-    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}');
+    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}', '{{ColourId}}');
 
 
