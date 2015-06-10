@@ -35,44 +35,8 @@ Partials:
     {{/IsPrefs}}
     {{#IsPrefs}}
       <p>&nbsp;</p>
-      <div class="swatches">
-        <p>
-          <span class="swatch" id="x360" onclick="selectSwatch('x360')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x0" onclick="selectSwatch('x0')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x24" onclick="selectSwatch('x24')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x48" onclick="selectSwatch('x48')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x72" onclick="selectSwatch('x72')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x96" onclick="selectSwatch('x96')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x120" onclick="selectSwatch('x120')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x144" onclick="selectSwatch('x144')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x168" onclick="selectSwatch('x168')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x192" onclick="selectSwatch('x192')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x216" onclick="selectSwatch('x216')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x240" onclick="selectSwatch('x240')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x264" onclick="selectSwatch('x264')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x288" onclick="selectSwatch('x288')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x312" onclick="selectSwatch('x312')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="x336" onclick="selectSwatch('x336')">&nbsp; &nbsp; &nbsp;</span>
-        </p>
-        <p>
-          <span class="swatch" id="y360" onclick="selectSwatch('y360')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y0" onclick="selectSwatch('y0')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y24" onclick="selectSwatch('y24')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y48" onclick="selectSwatch('y48')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y72" onclick="selectSwatch('y72')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y96" onclick="selectSwatch('y96')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y120" onclick="selectSwatch('y120')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y144" onclick="selectSwatch('y144')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y168" onclick="selectSwatch('y168')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y192" onclick="selectSwatch('y192')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y216" onclick="selectSwatch('y216')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y240" onclick="selectSwatch('y240')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y264" onclick="selectSwatch('y264')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y288" onclick="selectSwatch('y288')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y312" onclick="selectSwatch('y312')">&nbsp; &nbsp; &nbsp;</span>
-          <span class="swatch" id="y336" onclick="selectSwatch('y336')">&nbsp; &nbsp; &nbsp;</span>
-        </p>
-      </div>
+      {{>Swatches}}
+      <p>&nbsp;</p>
       <p>Motto: <input id='motto' value='{{Motto}}' placeholder='Motto'
         onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
       <p>Location: <input id='_loc' value='{{Location}}' placeholder='Location'
