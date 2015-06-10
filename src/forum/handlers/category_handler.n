@@ -37,7 +37,7 @@ public class CategoryHandler: BaseHandler {
                     "Name" = reader.GetValue("Name"),
                     "UserId" = uid,
                     "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
-                    "Colour" = reader.GetValue("Colour"),
+                    "ColourId" = reader.GetValue("Colour"),
                 ];
                 ok = true;
             }
