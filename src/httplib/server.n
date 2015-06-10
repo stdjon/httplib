@@ -398,6 +398,7 @@ public class Server: IDisposable {
             context = Context();
             request = Request(http_ctx.Request);
             response = Response(http_ctx.Response, Configuration.OutputLength);
+            setResponseHeaders(response);
 
             Log.i("Requesting: \"/{0}\"...", request.RawPath);
 
@@ -549,6 +550,13 @@ public class Server: IDisposable {
                 result = probe;
         }
         result;
+    }
+
+    public setResponseHeaders(response: Response): void {
+        // NB: On a Windows machine, it is not possible to prevent the string
+        // "Microsoft-HTTPAPI/2.0" from being appended to a non-empty Server:
+        // header.
+        response["Server"] = Configuration.ServerHeader;
     }
 
     // stock request handlers (can be overridden by clients).

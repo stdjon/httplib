@@ -76,6 +76,23 @@ Windows:
 
     URL reservation successfully deleted
 
+  Server: Response Header
+  -----------------------
+
+  To remove the default "Server: Microsoft-HTTPAPI/2.0" from response headers,
+  the following registry setting must be applied [As Administrator]:
+
+    > reg add HKLM\SYSTEM\CurrentControlSet\Services\HTTP\Parameters /v DisableServerHeader /t REG_DWORD /d 1
+
+  Then restart the http service (or simply restart the machine):
+
+    > net stop http
+    > net start http
+
+  It doesn't seem to be possible to prevent this string from being appended to
+  a custom server header -- the registry key merely prevents
+  "Microsoft-HTTPAPI/2.0" being appended to an otherwise empty server header.
+
 
 Linux:
 ------

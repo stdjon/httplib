@@ -121,6 +121,8 @@ public class ServerConfiguration {
     public OutputLength: int { get; set; }
     /** File chunk (read) length */
     public FileChunkLength: int { get; set; }
+    /** Content of Server: header in HTTP Response */
+    public ServerHeader: string { get; set; }
 }
 
 
