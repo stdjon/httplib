@@ -20,11 +20,11 @@ namespace httplib {
  */
 macro @?(condition, predicate) {
 
-    def typer = Macros.ImplicitCTX();
+    def type_builder = Macros.ImplicitCTX();
 
     def expansion(condition, predicate, last_try) {
 
-        def texpr = typer.TypeExpr(condition);
+        def texpr = type_builder.TypeExpr(condition);
 
         def cond = match(texpr.Type.Hint) {
             | Some(expr) when expr.TypeInfo != null => {
@@ -63,7 +63,7 @@ macro @?(condition, predicate) {
     match(result) {
         | Some(r) => r
         | None() => {
-            typer.DelayMacro( last_try => {
+            type_builder.DelayMacro( last_try => {
                 expansion(condition, predicate, last_try)
             })
         }
