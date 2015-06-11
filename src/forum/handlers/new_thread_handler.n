@@ -1,0 +1,31 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class NewThreadHandler: BaseHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def catid = UInt32.Parse(Context.Vars["category"]);
+        PageData["CategoryId"] = catid;
+
+        def command = Server.Database.createCommand(
+            "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = catid ];
+        def catname = command.executeScalar() :> string;
+        PageData["Category"] = catname;
+    }
+}
+
+
+} // forum.hnd

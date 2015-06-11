@@ -1,0 +1,77 @@
+---
+Template: template.nyml
+Stylesheets:
+  - /local-styles.css
+  - /expanding-area.css
+Title: "New Thread"
+Partials:
+  Nav: |
+    <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}'
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  Banner: |
+    <form>
+    <div class="jumbotron anchor">
+      <div class="expanding-area expanding-h1-area">
+        <pre><span></span><br></pre>
+        <textarea maxlength="80" placeholder="[New Thread]" name="title"></textarea>
+      </div>
+    </div>
+  Body: |
+    <style>
+      .concealed { display: none; }
+      div.swatches { cursor: default; }
+      div.swatches span { cursor: pointer; }
+      div.swatches span.selected { border: 1px dotted #000; }
+    </style>
+    <p>&nbsp;</p>
+    {{>Swatches}}
+    <p>&nbsp;</p>
+    <p>A new thread in the category
+      <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>.</p>
+    <div class="checkbox">
+      <label><input id="fp-cbx" name="fp" type="checkbox" checked="checked" onclick="firstPost()">
+        Author the first post in the thread.</label>
+    </div>
+    <div id="fp-controls">
+      <div id="fp-area" class="expanding-area expanding-p-area">
+        <pre><span></span><br></pre>
+        <textarea placeholder="[First post]" name="content"></textarea>
+      </div>
+      <br>
+        Renderer:
+      <div id="fp-render" class="btn-group" data-toggle="buttons">
+        <label class="btn btn-default">
+          <input type="radio" id="bb-rb" name="renderer" value="bbcode" checked="checked"/> BBCode
+        </label>
+        <label class="btn btn-default">
+          <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
+        </label>
+        <label class="btn btn-default">
+          <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
+        </label>
+      </div>
+    </div>
+    <input id="colour" name="colour" type="hidden" value="x360"/>
+    <input id="category" name="category" type="hidden" value="{{CategoryId}}"/>
+    <p>&nbsp;</p>
+    <button type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
+      formmethod="post" formtarget="_top">Create thread</button>
+    <button type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
+      formmethod="get" formtarget="_top">Abandon thread</button>
+    </form>
+  Guide: |
+    {{#Title}}
+    <div id="scrollspy">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
+      {{#Markers}}
+        <li><a href="#{{Mark}}">{{Mark}}</a></li>
+      {{/Markers}}
+      </ul>
+    </div>
+    {{/Title}}
+  PageLoadScripts: |
+    <script src="/swatches.js"></script>
+    <script src="/newthread.js"></script>
+
+

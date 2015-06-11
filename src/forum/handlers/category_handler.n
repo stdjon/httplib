@@ -28,6 +28,8 @@ public class CategoryHandler: BaseHandler {
             "SELECT Name, UserId, CreateDate, Colour FROM Categories "
                 "WHERE Id = @Id") <- [ "@Id" = catid ];
 
+        PageData["Id"] = catid;
+
         mutable ok = false;
         mutable uid;
         using(reader = command.executeReader()) {

@@ -1,0 +1,66 @@
+.expanding-area textarea, .expanding-area pre {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    border: 0;
+}
+.expanding-area {
+    position: relative;
+}
+.expanding-area textarea, .expanding-area pre {
+    padding: 5px;
+    background: transparent;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.expanding-area textarea {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+    height: 100px;
+    width: 100%;
+}
+.expanding-area.active textarea {
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    resize: none;
+}
+.expanding-area pre {
+    display: none;
+}
+.expanding-area.active pre {
+    display: block;
+    visibility: hidden;
+}
+/* <h1>-style */
+.expanding-h1-area textarea, .expanding-h1-area pre {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 70px;
+    font-weight: 900;
+    background: #666;
+    border: 1px dotted #707070;
+}
+.expanding-h1-area textarea:focus, .expanding-h1-area pre:focus {
+    border: 1px dotted #fff;
+}
+.expanding-h1-area textarea {
+    height: 100px;
+}
+/* <p>-style */
+.expanding-p-area textarea, .expanding-p-area pre {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    background: #ffe;
+    border: 1px dotted #eee;
+}
+.expanding-p-area textarea:focus, .expanding-p-area pre:focus {
+    border: 1px dotted #888;
+}
+.expanding-p-area textarea {
+    height: 25px;
+}
+

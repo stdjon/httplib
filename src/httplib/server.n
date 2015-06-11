@@ -518,6 +518,17 @@ public class Server: IDisposable {
     processPostInputStream(
         request: HttpListenerRequest, vars_out: ref HashTable): void {
 
+        // When handling POST form-encoded data we need to convert '+'s to ' 's
+        // before unescaping.
+        def decode_spaces =
+            "application/x-www-form-urlencoded" == request.ContentType;
+
+        def decode(str) {
+            def a = str.ToString();
+            def b = decode_spaces ? a.Replace('+', ' ') : a;
+            Uri.UnescapeDataString(b);
+        }
+
         when(request.InputStream != null) {
             using(mutable reader = StreamReader(
                 request.InputStream, request.ContentEncoding)) {
@@ -530,8 +541,9 @@ public class Server: IDisposable {
                         def s = v.Split(array['='], StringSplitOptions.None);
 
                         when(s.Length > 1) {
-                            def k = Uri.UnescapeDataString(s[0].ToString());
-                            def v = Uri.UnescapeDataString(s[1].ToString());
+                            def k = decode(s[0]);
+                            def v = decode(s[1]);
+
                             vars_out[k] = v;
                         }
                     }

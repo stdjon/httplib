@@ -49,16 +49,22 @@ public abstract class Database: IDisposable  {
         Connection.Close();
     }
 
-    public withTransaction(lambda: Database -> void): void {
+    public withTransaction(
+        lambda: Database -> void,
+        handle: Exception -> void = null): void {
+
         mutable transaction = null;
         try {
             transaction = Connection.BeginTransaction();
             _ = lambda(this);
             transaction.Commit();
         } catch {
-            | _ => {
+            | ex => {
                 Log.w("Rolling back...");
                 transaction.Rollback();
+                when(handle != null) {
+                    handle(ex);
+                }
             }
         }
     }

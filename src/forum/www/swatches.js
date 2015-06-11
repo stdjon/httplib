@@ -12,12 +12,22 @@ function divAnchorTrg(css) {
 }
 
 
+function divExpandingH1Area(css) {
+    css = css || '';
+    return 'div.expanding-h1-area textarea, div.expanding-h1-area pre {' + css + '}'
+}
+
+
 $('head').append(
     '<style id="active-colour" type="text/css">' + liActiveA() + '</style>');
 
 
 $('head').append(
     '<style id="trg-colour" type="text/css">' + divAnchorTrg() + '</style>');
+
+
+$('head').append(
+    '<style id="expand-colour" type="text/css">' + divExpandingH1Area() + '</style>');
 
 
 function colFromId(cx) {
@@ -47,6 +57,7 @@ function setHdrCols(cx) {
     $('div.outside').css('border-left-color', col);
     $('#active-colour').text(liActiveA('border-left-color: ' + col + ';'));
     $('#trg-colour').text(divAnchorTrg('border-left-color: ' + col + ';'));
+    $('#expand-colour').text(divExpandingH1Area('background-color: ' + col + '; color: ' + fg + ';'));
     postIframeMessage('hdrCol/' + col);
 }
 
@@ -58,3 +69,5 @@ function initHdrCols() {
     }
     setHdrCols(_g.ColourId);
 }
+
+

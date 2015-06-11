@@ -29,16 +29,27 @@ Partials:
       <li class="list-group-item">#{{Number}}. <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
       by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> on {{CreateDate}} ({{PostCount}})</li>
     {{/Threads}}
-    </ol>
     {{^Threads}}
-      <p>Something seems to have gone awry here...</p>
+      <li class="list-group-item">(empty category)</li>
     {{/Threads}}
+    </ol>
+    {{^Name}}
+      <p>Something seems to have gone awry here...</p>
+    {{/Name}}
     {{#Name}}
       <p>
         {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
     {{/Name}}
+    {{#SignedInUser}}
+    <form>
+    <p><button type="submit" class="btn btn-info"
+      formaction="{{DefaultPrefix}}/th/new" formmethod="post">
+      Create a new thread</button> in this category.</p>
+      <input type="hidden" name="category" value="{{Id}}"/>
+    </form>
+    {{/SignedInUser}}
   Guide: |
     {{#Name}}
     <div id="scrollspy">

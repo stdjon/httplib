@@ -43,7 +43,10 @@ Partials:
       </div>
     {{/Posts}}
     {{^Posts}}
-      <p>Something seems to have gone awry here...</p>
+      <p>This thread has no posts at present.</p>
+      {{#SignedInUser}}
+      <p><input type="button" class="btn btn-warning" value="Be the first"></input> to post here!</p>
+      {{/SignedInUser}}
     {{/Posts}}
     {{#Title}}
       <p>
