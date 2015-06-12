@@ -11,6 +11,7 @@ namespace forum {
 public class UsersHandler: BaseHandler {
 
     public IsPlural: bool { get; }
+    public Transform: string { get; private set; }
 
     public this(hd: HandlerData, path: string, plural: bool) {
         base(hd, path);
@@ -118,12 +119,14 @@ public class UsersHandler: BaseHandler {
     public initializeUser(user: string): void {
 
         def command = Server.Database.createCommand(
-            "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour FROM "
-                "Users WHERE Name = @Name") <- [ "@Name" = user ];
+            "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
+                "Transform FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
 
         using(reader = command.executeReader()) {
             when(reader.Read()) {
                 def date = reader.GetValue.[DateTime?]("JoinDate");
+                Transform = reader.GetValue("Transform", "bbcode");
+
                 _ = PageData <- [
                     "User" = reader.GetValue("Name", user),
                     "Motto" = reader.GetValue("Motto", ""),
@@ -141,7 +144,15 @@ public class UsersHandler: BaseHandler {
 
         initializeUser(user);
 
+        match(Transform) {
+            | "bbcode" => PageData["BbCodeActive"] = "active"
+            | "textile" => PageData["TextileActive"] = "active"
+            | "htmlsan" => PageData["HtmlSanActive"] = "active"
+            | _ => {}
+        }
+
         _ = PageData <- [
+            "Transform" = Transform,
             "IsPrefs" = true,
             "Id" = userid,
         ];

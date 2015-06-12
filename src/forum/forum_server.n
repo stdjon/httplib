@@ -184,14 +184,16 @@ public class ForumServer: Server {
         def m = context.Vars["m"];
         def l = context.Vars["l"];
         def c = context.Vars["c"];
+        def r = context.Vars["r"];
         def i = Int32.Parse(context.Vars["i"]);
 
         def command = Database.createCommand(
-            "UPDATE Users SET Location=@Location, "
-                "Motto=@Motto, Colour=@Colour WHERE Id=@Id") <- [
+            "UPDATE Users SET Location=@Location, Motto=@Motto, "
+                "Colour=@Colour, Transform=@Transform WHERE Id=@Id") <- [
             "@Location" = l,
             "@Motto" = m,
             "@Colour" = c,
+            "@Transform" = r,
             "@Id" = i,
         ];
         def x = command.executeNonQuery();

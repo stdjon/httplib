@@ -45,15 +45,15 @@ Partials:
         <textarea placeholder="[First post]" name="content"></textarea>
       </div>
       <br>
-        Renderer:
+      Post format:
       <div id="fp-render" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default btn-info active">
-          <input type="radio" id="bb-rb" name="renderer" value="bbcode" checked="checked"/> BBCode
+        <label class="btn btn-default btn-info {{BbCodeActive}}">
+          <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
         </label>
-        <label class="btn btn-default btn-info">
+        <label class="btn btn-default btn-info {{TextileActive}}">
           <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
         </label>
-        <label class="btn btn-default btn-info">
+        <label class="btn btn-default btn-info {{HtmlSanActive}}">
           <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
         </label>
       </div>

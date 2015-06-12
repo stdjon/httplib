@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS Users(
     Avatar BLOB,
     Motto VARCHAR(40),
     Location VARCHAR(40),
-    Colour VARCHAR(30)
+    Colour VARCHAR(30),
+    Transform VARCHAR(10)
 )
     ENGINE=INNODB
     CHARACTER SET utf8;

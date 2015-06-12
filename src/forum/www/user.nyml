@@ -44,6 +44,19 @@ Partials:
       <p>User since: <em>{{JoinDate}}</em></p>
       <p>Points: <em>{{Points}}</em></p>
       <p>Level: <em>{{Level}}</em></p>
+      Default post format:
+      <div id="transform" class="btn-group" data-toggle="buttons">
+        <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio()">
+          <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
+        </label>
+        <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio()">
+          <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
+        </label>
+        <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio()">
+          <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
+        </label>
+      </div>
+      <br>
       <button id='update' type="submit" disabled="disabled" class="btn btn-success"
         onclick="update()">Update</button>
       <span id='notify'></span>
@@ -53,6 +66,6 @@ Partials:
     <script src="/swatches.js"></script>
     <script src="/prefs.js"></script>
   PageScripts: |
-    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}', '{{ColourId}}');
+    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}');
 
 

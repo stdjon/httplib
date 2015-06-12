@@ -24,6 +24,17 @@ public class NewThreadHandler: BaseHandler {
             "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = catid ];
         def catname = command.executeScalar() :> string;
         PageData["Category"] = catname;
+
+        def command2 = Server.Database.createCommand(
+            "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
+        def transform = command2.executeScalar() :> string;
+
+        match(transform) {
+            | "bbcode" => PageData["BbCodeActive"] = "active"
+            | "textile" => PageData["TextileActive"] = "active"
+            | "htmlsan" => PageData["HtmlSanActive"] = "active"
+            | _ => {}
+        }
     }
 }
 
