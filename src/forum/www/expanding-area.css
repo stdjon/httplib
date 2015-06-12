@@ -55,7 +55,7 @@
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     background: #ffe;
-    border: 1px dotted #eee;
+    border: 1px dotted #ccc;
 }
 .expanding-p-area textarea:focus, .expanding-p-area pre:focus {
     border: 1px dotted #888;

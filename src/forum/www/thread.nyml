@@ -13,6 +13,12 @@ Partials:
       <h1>{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}</h1>
     </div>
   Body: |
+    <style>
+      div.body div.own-post {
+        font-size: 115%;
+        color: #666;
+      }
+    </style>
     {{#SignedInUser}}
       <p>You are <a href="{{DefaultPrefix}}/u/{{SignedInUser}}">{{SignedInUser}}</a>.</p>
     {{/SignedInUser}}
@@ -26,27 +32,36 @@ Partials:
     {{/Title}}
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
-        <div class="post">
+        <div class="post {{OwnPostClass}}">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          {{Content}}<br>
+          {{{Content}}}<br>
           <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
           &nbsp;<i class="fa fa-reply" onclick="alert('reply!')"></i>
+          {{#IsOwnPost}}
           <i class="fa fa-edit" onclick="alert('edit!')"></i>
+          {{/IsOwnPost}}
           <i class="fa fa-quote-left" onclick="alert('quote!')"></i>
+          {{^IsOwnPost}}
           <i class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></i>
+          {{/IsOwnPost}}
           <i class="fa fa-star-o" onclick="alert('star!')"></i></div>
           </span>
         </div>
       </div>
     {{/Posts}}
     {{^Posts}}
-      <p>This thread has no posts at present.</p>
-      {{#SignedInUser}}
-      <p><input type="button" class="btn btn-warning" value="Be the first"></input> to post here!</p>
-      {{/SignedInUser}}
+      {{#Title}}
+        <p>This thread has no posts at present.</p>
+        {{#SignedInUser}}
+          <p><input type="button" class="btn btn-info" value="Be the first"></input> to post here!</p>
+        {{/SignedInUser}}
+      {{/Title}}
+      {{^Title}}
+        <p>Something seems to have gone awry here...</p>
+      {{/Title}}
     {{/Posts}}
     {{#Title}}
       <p>

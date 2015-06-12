@@ -15,7 +15,8 @@ Partials:
   Body: |
     <div>
     {{#PostId}}
-      <p>Content: <em>{{Content}}</em></p>
+      <em><div id="1"><div class="post">{{{Content}}}</div></div></em>
+      <br>
       <p>Thread: <em><a href="{{DefaultPrefix}}/th/{{ThreadId}}">{{Thread}}</a></em></p>
       <p>User: <em><a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a></em></p>
       <p>Posted on: <em>{{CreateDate}}</em></p>

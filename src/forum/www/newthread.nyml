@@ -23,6 +23,12 @@ Partials:
       div.swatches { cursor: default; }
       div.swatches span { cursor: pointer; }
       div.swatches span.selected { border: 1px dotted #000; }
+      div.preview-window {
+        margin: 4px;
+        padding: 4px;
+        width: 100%;
+        border: 1px dotted #ccc;
+      }
     </style>
     <p>&nbsp;</p>
     {{>Swatches}}
@@ -41,15 +47,20 @@ Partials:
       <br>
         Renderer:
       <div id="fp-render" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default">
+        <label class="btn btn-default btn-info active">
           <input type="radio" id="bb-rb" name="renderer" value="bbcode" checked="checked"/> BBCode
         </label>
-        <label class="btn btn-default">
+        <label class="btn btn-default btn-info">
           <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
         </label>
-        <label class="btn btn-default">
+        <label class="btn btn-default btn-info">
           <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
         </label>
+      </div>
+      <button class="btn btn-warning" value="Preview" onclick="showPreview(); return false;">Preview</button>
+      <br>
+      <div class="preview-window">
+        <span id="preview"><br></span>
       </div>
     </div>
     <input id="colour" name="colour" type="hidden" value="x360"/>

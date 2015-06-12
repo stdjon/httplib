@@ -35,12 +35,15 @@ public class ThreadHandler: BaseHandler {
             when(reader.Read()) {
                 uid = reader.GetValue.[uint?]("UserId", 0);
                 catid = reader.GetValue.[uint?]("CategoryId", 0);
+                def is_own_thread = (uid == SignedInUserId);
                 _ = PageData <- [
                     "Title" = reader.GetValue("Title"),
                     "UserId" = uid,
                     "CategoryId" = catid,
                     "CreateDate" = reader.GetValue.[DateTime?]("CreateDate"),
                     "ColourId" = reader.GetValue("Colour"),
+                    "IsOwnThread" = is_own_thread,
+                    "OwnThreadClass" = is_own_thread ? "own-thread" : "",
                 ];
                 ok = true;
             }
@@ -72,6 +75,7 @@ public class ThreadHandler: BaseHandler {
                     def points = reader.GetValue.[int?]("Points", 0);
                     def date = reader.GetValue.[DateTime?]("CreateDate");
                     def content = reader.GetValue("OutputContent");
+                    def is_own_post = (uid == SignedInUserId);
 
                     posts[i] = PageData() <- [
                         "Number" = from + i,
@@ -80,6 +84,9 @@ public class ThreadHandler: BaseHandler {
                         "Points" = points,
                         "CreateDate" = date,
                         "Content" = content,
+                        "IsOwnPost" = is_own_post,
+                        "OwnPostClass" = is_own_post ? "own-post" : "",
+
                     ];
                     i++;
                 }

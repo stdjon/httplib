@@ -88,6 +88,8 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
 
+        route(HTTP.POST, "/preview-post", previewPostResponse);
+
         route(HTTP.GET, "/filter", filterTestResponse);
     }
 
@@ -123,6 +125,38 @@ public class ForumServer: Server {
 
         response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
         response.Status = (303, "See Other");
+    }
+
+    public previewPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def r = context.Vars["r"];
+        def t = context.Vars["t"];
+        def (ok, result) = renderPost(r, t);
+
+        if(ok) {
+            response.append(result);
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public renderPost(method: string, text: string): bool * string {
+        def bbc = getModuleInterface.[mod.IBbCode]();
+        def txt = getModuleInterface.[mod.ITextile]();
+        def htm = getModuleInterface.[mod.IHtmlSanitizer]();
+        mutable ok = true;
+
+        def pre =
+            match(method) {
+                | "bbcode" => bbc.transform(text);
+                | "textile" => txt.transform(text);
+                | "htmlsan" => text;
+                | _ => { ok = false; ""; }
+            };
+
+        (ok, htm.transform(pre));
     }
 
     public filterTestResponse(
@@ -185,6 +219,8 @@ public class ForumServer: Server {
             getUserIdFromSessionToken(STOK.INSECURE, isession) : 0;
         mutable thid: uint = 0;
         mutable ok = false;
+        def (render_ok, output) = renderPost(renderer, content);
+        ok = render_ok;
 
         Log.d("createThreadResponse(): category={0}, userid={1}, renderer={2}, "
             "utc_now={3}, fp={4}", category, userid, renderer, utc_now, fp);
@@ -220,13 +256,14 @@ public class ForumServer: Server {
                 Log.d("createThreadResponse: thid={0}", thid);
                 when(thid > 0) {
                     if(fp == "on") {
+
                         def commmand3 = db.createCommand(
                             "INSERT INTO Posts(InputContent, OutputContent, "
                                 "Transform, UserId, ThreadId, CreateDate) VALUES("
                                 "@InputContent, @OutputContent, "
                                 "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
                             "@InputContent" = content,
-                            "@OutputContent" = content, //TODO
+                            "@OutputContent" = output,
                             "@Transform" = renderer,
                             "@UserId" = userid,
                             "@ThreadId" = thid,

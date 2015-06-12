@@ -19,12 +19,16 @@ public class BaseHandler: ComplexHandler {
     public override PageData: PageData { get; private set; }
     public RenderContent: bool { get; private set; }
 
+    public SignedInUserId: uint { get; private set; }
+
     public new Server: ForumServer {
         get { base.Server :> ForumServer }
     }
 
     public this(hd: HandlerData, path: string) {
         base(hd);
+
+        SignedInUserId = 0;
 
         // remove QS components starting with _$
         def parsed_url = parseUrl(Request.Url);
@@ -93,12 +97,15 @@ public class BaseHandler: ComplexHandler {
 
         if(isession != null) {
             def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
+            SignedInUserId = id ? (id :> uint) : 0;
+
             def name = id ? Server.getUserName(id :> uint) : null;
             PageData["SignedInUser"] = name;
         } else {
             def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
             PageData["TempToken"] = t;
         }
+        Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
     }
 }
 
