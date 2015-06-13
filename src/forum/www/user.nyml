@@ -66,6 +66,6 @@ Partials:
     <script src="/swatches.js"></script>
     <script src="/prefs.js"></script>
   PageScripts: |
-    setPrefs('{{Id}}', '{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}');
+    setPrefs('{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}');
 
 

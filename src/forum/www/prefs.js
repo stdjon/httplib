@@ -1,14 +1,12 @@
 var prf = {
     motto: '',
     _loc: '',
-    id: '',
     col_id: '',
     trans: '',
 };
 
 
-function setPrefs(i, m, l, c, t) {
-    prf.id = i;
+function setPrefs(m, l, c, t) {
     _g.Motto = prf.motto = m;
     _g.Location = prf._loc = l;
     _g.ColourId = prf.col_id = c;
@@ -43,14 +41,14 @@ function update() {
         dataType: 'text',
         global: false,
         url: '/prefs',
-        data: 'i=' + prf.id +
-            '&m=' + encodeURIComponent(prf.motto) +
-            '&l=' + encodeURIComponent(prf._loc) + 
+        data: 'm=' + encodeURIComponent(prf.motto) +
+            '&l=' + encodeURIComponent(prf._loc) +
             '&c=' + prf.col_id +
             '&r=' + prf.trans,
         success: function() {
             $('#update').attr('disabled', 'disabled');
             $('#notify').html('Preferences updated!');
+            setPrefs(prf.motto, prf._loc, prf.col_id, prf.trans);
         },
         error: function() {
             $('#notify').html('Unable to update the prefences!');
@@ -59,11 +57,12 @@ function update() {
 }
 
 
-function selectSwatch(id, col, light) {
+function selectSwatch(col_id) {
     $('span.swatch').removeClass('selected');
-    $('span#' + id).addClass('selected');
-    setHdrCols(id);
-    prf.col_id = id;
+    $('span#' + col_id).addClass('selected');
+    setHdrCols(col_id);
+    prf.col_id = col_id;
     onKeypress();
 }
+
 
