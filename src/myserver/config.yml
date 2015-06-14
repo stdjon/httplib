@@ -15,18 +15,18 @@ Roots:
   - www
   - ../../contrib/client
 FileServing:
-  - /.*css
-  - /.*html
-  - /.*js
-  - /.*ttf
-  - /.*woff
-  - /.*woff2
-  - /.*png
-  - /edit
-  - /magic
-  - /script
-  - /test[0-9]+
-  - /upload
+  /.*css: { Cache-Control: "public, max-age=86400" }
+  /.*html: { Cache-Control: "no-cache" }
+  /.*js: { Cache-Control: "private, max-age=86400" }
+  /.*ttf: { Cache-Control: "public, max-age=31536000" }
+  /.*woff: { Cache-Control: "public, max-age=31536000" }
+  /.*woff2: { Cache-Control: "public, max-age=31536000" }
+  /.*png: { Cache-Control: "public, max-age=86400" }
+  /edit: { Cache-Control: "no-cache" }
+  /magic: { Cache-Control: "no-cache" }
+  /script: { Cache-Control: "no-cache" }
+  /test[0-9]+: { Cache-Control: "no-cache" }
+  /upload: { Cache-Control: "no-cache" }
 Renderers:
   yml:
     Assembly: httplib.dll

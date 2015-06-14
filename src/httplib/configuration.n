@@ -68,6 +68,9 @@ public class Prefixes {
 }
 
 
+
+public type Headers = Dictionary[string, string];
+
 [YamlRecord]
 public class RendererConfiguration {
     /** Renderer assembly */
@@ -91,6 +94,7 @@ public class ModuleConfiguration {
 
 
 public type Databases = Dictionary[string, DatabaseConfiguration];
+public type FileServing = Dictionary[string, Headers];
 public type Renderers = Dictionary[string, RendererConfiguration];
 public type Modules = List[ModuleConfiguration];
 public type MimeTypes = Dictionary[string, string];
@@ -110,7 +114,7 @@ public class ServerConfiguration {
     /** Filesystem roots for file serving */
     public Roots: array[string] { get; set; }
     /** Patterns to test when deciding if a file can be served */
-    public FileServing: array[string] { get; set; }
+    public FileServing: FileServing { get; set; }
     /** Renderers to try (in order) when no extension given in request URI */
     public Renderers: Renderers { get; set; }
     /** Additional Modules to load */

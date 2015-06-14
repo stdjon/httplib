@@ -23,7 +23,7 @@ public class Server: IDisposable {
     type MakeHandler = HandlerData -> Handler;
     type RouteMap = Dictionary[string, Route * MakeHandler];
     type ContextMap = Dictionary[string, Route * PageData];
-    type FileServingMap = Dictionary[string, Route];
+    type FileServingMap = Dictionary[string, Route * Headers];
 
     public static MethodCount = HTTP.COUNT_ :> int;
 
@@ -277,12 +277,13 @@ public class Server: IDisposable {
         }
     }
 
-    public fileServing(params paths: array[string]): void {
+    public fileServing(paths: FileServing): void {
         when(paths != null) {
             foreach(p in paths) {
-                def route = Route(p);
+                def route = Route(p.Key);
                 def pattern = route.Pattern;
-                FileServing.Add(pattern, route);
+
+                FileServing.Add(pattern, (route, p.Value));
             }
         }
     }
@@ -403,12 +404,15 @@ public class Server: IDisposable {
             Log.i("Requesting: \"/{0}\"...", request.RawPath);
 
             // check for existing file under roots...
-            def (fs, ext) = findLocalFileForRequest(request);
+            def (fs, ext, hdrs) = findLocalFileForRequest(request);
             context.FileStream = fs;
 
             when(!String.IsNullOrEmpty(ext)) {
                 context.SearchedForFileStream = true;
                 request.Extension = ext;
+            }
+            when(hdrs != null) {
+                context.Headers = hdrs;
             }
 
             // find callback (and populate vars from route vars if any)
@@ -459,15 +463,15 @@ public class Server: IDisposable {
         }
     }
 
-    public fileServingAllowed(path: string): bool {
-        mutable result;
+    public fileServingAllowed(path: string): bool * Headers {
+        mutable result = (false, null);
         exit: {
             foreach(f in FileServing) {
-                def route = f.Value;
+                def (route, headers) = f.Value;
                 mutable vars = null;
 
                 when(route.doMatch("/" + path, ref vars)) {
-                    result = true;
+                    result = (true, headers);
                     exit();
                 }
             }
@@ -493,10 +497,11 @@ public class Server: IDisposable {
         result;
     }
 
-    findLocalFileForRequest(request: Request): FileStream * string {
+    findLocalFileForRequest(request: Request): FileStream * string * Headers {
         mutable result = null, ext = null;
+        def (allowed, headers) = fileServingAllowed(request.RawPath);
 
-        when(fileServingAllowed(request.RawPath)) {
+        when(allowed) {
             if(!String.IsNullOrEmpty(request.Extension)) {
                 result = openLocalFile(request.RawPath);
 
@@ -512,7 +517,7 @@ public class Server: IDisposable {
                 }
             }
         }
-        (result, ext);
+        (result, ext, headers);
     }
 
     processPostInputStream(
@@ -609,6 +614,14 @@ public class Server: IDisposable {
                 continue = (data.Length == Configuration.FileChunkLength);
             }
         }
+
+        // TODO: Compute ETag header for response?
+        when(context.Headers != null) {
+            foreach(h in context.Headers) {
+                response[h.Key] = h.Value;
+            }
+        }
+
         response.ContentType = extensionToMimeType(request.Extension);
         response.Status = (200, "OK");
     }

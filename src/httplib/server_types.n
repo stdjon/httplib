@@ -333,6 +333,7 @@ public class Context {
     [Accessor(flags = WantSetter)] mutable searched_for_file_stream: bool;
     [Accessor(flags = WantSetter)] mutable page_data: PageData;
     [Accessor(flags = WantSetter)] mutable vars: HashTable;
+    [Accessor(flags = WantSetter)] mutable headers: Headers;
 
     public this() {
         file_stream = null;
