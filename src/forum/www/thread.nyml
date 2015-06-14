@@ -39,15 +39,15 @@ Partials:
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
-          &nbsp;<i class="fa fa-reply" onclick="alert('reply!')"></i>
+          &nbsp;<span class="fa fa-reply" onclick="alert('reply!')"></span>
           {{#IsOwnPost}}
-          <i class="fa fa-edit" onclick="alert('edit!')"></i>
+          <span class="fa fa-edit" onclick="alert('edit!')"></span>
           {{/IsOwnPost}}
-          <i class="fa fa-quote-left" onclick="alert('quote!')"></i>
+          <span class="fa fa-quote-left" onclick="alert('quote!')"></span>
           {{^IsOwnPost}}
-          <i class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></i>
+          <span class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></span>
           {{/IsOwnPost}}
-          <i class="fa fa-star-o" onclick="alert('star!')"></i></div>
+          <span class="fa fa-star-o" onclick="alert('star!')"></span></div>
           </span>
         </div>
       </div>
