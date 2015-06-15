@@ -40,7 +40,7 @@ public class ThreadHandler: BaseHandler {
                     "Title" = reader.GetValue("Title"),
                     "UserId" = uid,
                     "CategoryId" = catid,
-                    "CreateDate" = DateTime(reader.GetValue.[long]("CreateDate", 0), DateTimeKind.Utc),
+                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
                     "ColourId" = reader.GetValue("Colour"),
                     "IsOwnThread" = is_own_thread,
                     "OwnThreadClass" = is_own_thread ? "own-thread" : "",
@@ -73,7 +73,7 @@ public class ThreadHandler: BaseHandler {
                     def id = reader.GetValue.[uint?]("Id", 0);
                     uid = reader.GetValue.[uint?]("UserId", 0);
                     def points = reader.GetValue.[int?]("Points", 0);
-                    def date = DateTime(reader.GetValue.[long]("CreateDate", 0), DateTimeKind.Utc);
+                    def date = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0));
                     def content = reader.GetValue("OutputContent");
                     def is_own_post = (uid == SignedInUserId);
 

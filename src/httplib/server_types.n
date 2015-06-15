@@ -304,7 +304,7 @@ public class CookieSetter {
     public expire(name: string,
         domain: string, flags = COOKIE.NONE): void {
 
-        add(name, null, domain, DateTime.Now.AddMinutes(-10), flags);
+        add(name, null, domain, Date.Now.AddMinutes(-10), flags);
     }
 
     // Path value for cookies can be specified by appending to the end of the
@@ -585,6 +585,29 @@ public class Route {
         });
     }
 }
+
+
+//------------------------------------------------------------------------------
+//
+
+public module Date {
+
+    public FromTicks(ticks: long): DateTime {
+        DateTime(ticks, DateTimeKind.Utc);
+    }
+
+    public ToTicks(dt: DateTime): long {
+        dt.ToUniversalTime().Ticks;
+    }
+
+    public Now: DateTime {
+        get { DateTime.UtcNow; }
+    }
+
+    public NowTicks: long {
+        get { DateTime.UtcNow.Ticks; }
+    }
+};
 
 
 //------------------------------------------------------------------------------

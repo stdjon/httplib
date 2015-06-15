@@ -38,7 +38,7 @@ public class CategoryHandler: BaseHandler {
                 _ = PageData <- [
                     "Name" = reader.GetValue("Name"),
                     "UserId" = uid,
-                    "CreateDate" = DateTime(reader.GetValue.[long]("CreateDate", 0), DateTimeKind.Utc),
+                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
                     "ColourId" = reader.GetValue("Colour"),
                 ];
                 ok = true;
@@ -66,7 +66,7 @@ public class CategoryHandler: BaseHandler {
                     def id = reader.GetValue.[uint?]("Id", 0);
                     uid = reader.GetValue.[uint?]("UserId", 0);
                     //def _points = reader.GetValue.[int?]("Points", 0);
-                    def date = DateTime(reader.GetValue.[long]("CreateDate", 0), DateTimeKind.Utc);
+                    def date = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0));
                     def title = reader.GetValue.[string]("Title");
 
                     threads[i] = PageData() <- [
