@@ -67,15 +67,15 @@ public class TestData {
     generateUser(): void {
         mutable ok = false;
         def name = generateUserName();
-        def joindate = DateTime.Now;
+        def joindate = DateTime.UtcNow.Ticks;
         def motto = generateMotto();
         def location = generateMotto();
         def colour = generateColour();
 
         def command1 = Db.createCommand(
             "INSERT INTO Users("
-                "Name, Points, Level, JoinDate, Motto, Location, Colour) VALUES "
-                "(@Name, 0, 0, @JoinDate, @Motto, @Location, @Colour)") <- [
+                "Name, Points, Level, JoinDate, Motto, Location, Colour, Transform, Font) VALUES "
+                "(@Name, 0, 0, @JoinDate, @Motto, @Location, @Colour, 'bbcode', 'serif1')") <- [
             "@Name" = name,
             "@JoinDate" = joindate,
             "@Motto" = motto,
@@ -116,7 +116,7 @@ public class TestData {
     generateCategory(): void {
         def name = generateCategoryName();
         def id = Random.Next(UserCount) + 1;
-        def create_date = DateTime.Now;
+        def create_date = DateTime.UtcNow.Ticks;
         def colour = generateColour();
         def command2 = Db.createCommand(
             "INSERT INTO Categories(Name, UserId, CreateDate, Colour) VALUES "
@@ -143,7 +143,7 @@ public class TestData {
         def title = generateThreadTitle();
         def uid = Random.Next(UserCount) + 1;
         def cid = Random.Next(CategoryCount) + 1;
-        def create_date = DateTime.Now;
+        def create_date = DateTime.UtcNow.Ticks;
         def colour = generateColour();
         def command2 = Db.createCommand(
             "INSERT INTO Threads(Title, UserId, CategoryId, CreateDate, Colour) VALUES "
@@ -171,7 +171,7 @@ public class TestData {
         def content = generatePostContent();
         def uid = Random.Next(UserCount) + 1;
         def tid = Random.Next(ThreadCount) + 1;
-        def create_date = DateTime.Now;
+        def create_date = DateTime.UtcNow.Ticks;
         def command2 = Db.createCommand(
             "INSERT INTO Posts(OutputContent, UserId, ThreadId, Points, CreateDate) VALUES "
                 "(@OutputContent, @UserId, @ThreadId, 0, @CreateDate)") <- [

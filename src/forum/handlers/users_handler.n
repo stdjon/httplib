@@ -127,7 +127,7 @@ public class UsersHandler: BaseHandler {
 
         using(reader = command.executeReader()) {
             when(reader.Read()) {
-                def date = reader.GetValue.[DateTime?]("JoinDate");
+                def date = reader.GetValue.[long]("JoinDate", 0);
                 Transform = reader.GetValue("Transform", "bbcode");
                 Font = reader.GetValue("Font", "serif1");
 
@@ -135,7 +135,7 @@ public class UsersHandler: BaseHandler {
                     "User" = reader.GetValue("Name", user),
                     "Motto" = reader.GetValue("Motto", ""),
                     "Location" = reader.GetValue("Location", ""),
-                    "JoinDate" = date ? date.ToString() : "never",
+                    "JoinDate" = (date > 0) ? DateTime(date).ToString() : "never",
                     "Points" = reader.GetValue.[int?]("Points", 0),
                     "Level" = reader.GetValue.[uint?]("Level", 0),
                     "ColourId" = reader.GetValue("Colour", "x360"),

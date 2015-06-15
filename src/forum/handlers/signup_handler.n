@@ -85,7 +85,7 @@ public class SignupHandler: BaseHandler {
                 mutable expiry;
 
                 if(auth != null) {
-                    def now = DateTime.Now.ToUniversalTime();
+                    def now = DateTime.UtcNow.Ticks;
 
                     Server.Database.withTransaction(_ => {
                         mutable command3 = Server.Database.createCommand(

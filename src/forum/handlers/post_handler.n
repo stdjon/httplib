@@ -33,7 +33,7 @@ public class PostHandler: BaseHandler {
             when(reader.Read()) {
                 uid = reader.GetValue.[uint?]("UserId", 0);
                 thid = reader.GetValue.[uint?]("ThreadId", 0);
-                date = reader.GetValue.[DateTime?]("CreateDate");
+                date = reader.GetValue.[long]("CreateDate", 0);
                 points = reader.GetValue.[int?]("Points", 0);
                 content = reader.GetValue("OutputContent");
                 ok = true;
@@ -61,7 +61,7 @@ public class PostHandler: BaseHandler {
                 "User" = name,
                 "Thread" = title,
                 "ThreadId" = thid,
-                "CreateDate" = date ? date.ToString() : "never",
+                "CreateDate" = (date > 0) ? DateTime(date).ToString() : "never",
                 "Points" = points,
                 "Content" = content,
                 "ColourId" = colour,

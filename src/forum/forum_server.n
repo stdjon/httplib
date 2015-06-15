@@ -224,7 +224,7 @@ public class ForumServer: Server {
         def content = context.Vars["content"];
         def renderer = context.Vars["renderer"];
         def category = UInt32.Parse(context.Vars["category"]);
-        def utc_now = DateTime.UtcNow.ToString();
+        def utc_now = DateTime.UtcNow.Ticks;
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
@@ -375,10 +375,11 @@ public class ForumServer: Server {
         cmp == 0;
     }
 
-    public registerSessionToken(tok: SecurityToken, id: uint): bool * string * DateTime {
+    public registerSessionToken(
+        tok: SecurityToken, id: uint): bool * string * DateTime {
+
         def token = getSessionToken(tok);
-        def expiry = DateTime.Now.
-            AddMinutes(tok.Duration()).ToUniversalTime();
+        def expiry = DateTime.UtcNow.AddMinutes(tok.Duration()).Ticks;
 
         mutable command = Database.createCommand(
             "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
@@ -389,11 +390,11 @@ public class ForumServer: Server {
             "@IsSecure" = tok.IsSecure(),
         ];
         def rows = command.executeNonQuery();
-        (rows == 1, token, expiry);
+        (rows == 1, token, DateTime(expiry));
     }
 
     public expireSessionTokens(): void {
-        def now = DateTime.Now.ToUniversalTime();
+        def now = DateTime.UtcNow.Ticks;
 
         def command = Database.createCommand(
             "DELETE FROM Sessions WHERE (ExpiryTime < @Now)") <- [ "@Now" = now ];
