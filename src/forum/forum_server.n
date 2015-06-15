@@ -390,7 +390,7 @@ public class ForumServer: Server {
             "@IsSecure" = tok.IsSecure(),
         ];
         def rows = command.executeNonQuery();
-        (rows == 1, token, DateTime(expiry));
+        (rows == 1, token, DateTime(expiry, DateTimeKind.Utc));
     }
 
     public expireSessionTokens(): void {

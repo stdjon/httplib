@@ -61,7 +61,7 @@ public class PostHandler: BaseHandler {
                 "User" = name,
                 "Thread" = title,
                 "ThreadId" = thid,
-                "CreateDate" = (date > 0) ? DateTime(date).ToString() : "never",
+                "CreateDate" = (date > 0) ? DateTime(date, DateTimeKind.Utc).ToString() : "never",
                 "Points" = points,
                 "Content" = content,
                 "ColourId" = colour,
