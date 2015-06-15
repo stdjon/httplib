@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS Users(
     Motto VARCHAR(40),
     Location VARCHAR(40),
     Colour VARCHAR(30),
-    Transform VARCHAR(10)
+    Transform VARCHAR(10),
+    Front VARCHAR(10),
 )
     ENGINE=INNODB
     CHARACTER SET utf8;

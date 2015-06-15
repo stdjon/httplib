@@ -185,6 +185,7 @@ public class ForumServer: Server {
         def l = context.Vars["l"];
         def c = context.Vars["c"];
         def r = context.Vars["r"];
+        def f = context.Vars["f"];
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
@@ -194,11 +195,13 @@ public class ForumServer: Server {
         when(userid != null) {
             def command = Database.createCommand(
                 "UPDATE Users SET Location=@Location, Motto=@Motto, "
-                    "Colour=@Colour, Transform=@Transform WHERE Id=@Id") <- [
+                    "Colour=@Colour, Transform=@Transform, Font=@Font WHERE "
+                    "Id=@Id") <- [
                 "@Location" = l,
                 "@Motto" = m,
                 "@Colour" = c,
                 "@Transform" = r,
+                "@Font" = f,
                 "@Id" = userid,
             ];
             def x = command.executeNonQuery();

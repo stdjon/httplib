@@ -1,0 +1,10 @@
+/* Just import all the fonts at once for now, let caching take care of the
+ * download... */
+@import url(amaranth/amaranth.css);
+@import url(amble/amble.css);
+@import url(andada/andada.css);
+@import url(blogger-sans/blogger-sans.css);
+@import url(mplus/mplus-1m.css);
+@import url(office-code-pro-d/office-code-pro-d.css);
+@import url(playfair-display/playfair-display.css);
+@import url(simonetta/simonetta.css);

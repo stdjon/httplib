@@ -85,6 +85,7 @@ addEventListener("message", function(msg) {
 function pageInit() {
     postIframeMessage('ehlo');
     initHdrCols();
+    initFonts();
 }
 
 

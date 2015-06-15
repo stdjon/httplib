@@ -38,7 +38,6 @@
 }
 /* <h1>-style */
 .expanding-h1-area textarea, .expanding-h1-area pre {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 70px;
     font-weight: 900;
     background: #666;
@@ -52,7 +51,6 @@
 }
 /* <p>-style */
 .expanding-p-area textarea, .expanding-p-area pre {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     font-size: 14px;
     background: #ffe;
     border: 1px dotted #ccc;

@@ -46,14 +46,30 @@ Partials:
       <p>Level: <em>{{Level}}</em></p>
       Default post format:
       <div id="transform" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio()">
+        <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio(false)">
           <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
         </label>
-        <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio()">
+        <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio(false)">
           <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
         </label>
-        <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio()">
+        <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio(false)">
           <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
+        </label>
+      </div>
+      <br>
+      Font:
+      <div id="font" class="btn-group" data-toggle="buttons">
+        <label class="btn btn-default btn-warning {{Serif1Active}}" onclick="onRadio(true)">
+          <input type="radio" id="sf1-rb" name="renderer" value="serif1"/> Serif 1
+        </label>
+        <label class="btn btn-default btn-warning {{Serif2Active}}" onclick="onRadio(true)">
+          <input type="radio" id="sf2-rb" name="renderer" value="serif2" /> Serif 2
+        </label>
+        <label class="btn btn-default btn-warning {{Sans1Active}}" onclick="onRadio(true)">
+          <input type="radio" id="ss1-rb" name="renderer" value="sans1" /> Sans 1
+        </label>
+        <label class="btn btn-default btn-warning {{Sans2Active}}" onclick="onRadio(true)">
+          <input type="radio" id="ss2-rb" name="renderer" value="sans2" /> Sans 2
         </label>
       </div>
       <br>
@@ -66,6 +82,6 @@ Partials:
     <script src="/swatches.js"></script>
     <script src="/prefs.js"></script>
   PageScripts: |
-    setPrefs('{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}');
+    setPrefs('{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}', '{{Font}}');
 
 

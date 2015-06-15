@@ -10,7 +10,6 @@ Partials:
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
     <div class="jumbotron anchor">
-      <!--<h1>Title Title Title Title Title Title Title Title Title</h1>-->
       <h1>Supercalifragilisticexpialidocious</h1>
     </div>
   Body: |

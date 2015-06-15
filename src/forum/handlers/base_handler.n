@@ -55,6 +55,7 @@ public class BaseHandler: ComplexHandler {
 
     public override initialize(): void {
         temporaryLoginHandling(); //
+        initializeUserClasses();
     }
 
     public override renderPage(renderer: Renderer, fs: Stream): string {
@@ -106,6 +107,19 @@ public class BaseHandler: ComplexHandler {
             PageData["TempToken"] = t;
         }
         Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
+    }
+
+    initializeUserClasses(): void {
+        def command = Server.Database.createCommand(
+            "SELECT Colour, Font From Users WHERE Id=@Id") <- [
+                "@Id" = SignedInUserId,
+            ];
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                PageData["FontClass"] = reader.GetValue("Font", "serif1");
+                PageData["ColourClass"] = reader.GetValue("Colour", "x360");
+            }
+        }
     }
 }
 

@@ -17,6 +17,9 @@ addEventListener("message", function(msg) {
                 z.style.borderLeftColor = cmd[1];
                 break;
             }
+            case 'font': {
+                setFonts(cmd[1], true);
+            }
             case 'ehlo': {
                 mainWindow = msg.source;
                 break;

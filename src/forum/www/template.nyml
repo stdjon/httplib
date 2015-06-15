@@ -9,6 +9,7 @@ Metas:
 Stylesheets:
   - /bootstrap-3.3.4-dist/css/bootstrap.css
   - /font-awesome-4.3.0/css/font-awesome.css
+  - /custom-fonts.css
 Title: Template Test Page
 BodyAttributes:
   - data-spy="scroll"
@@ -32,7 +33,7 @@ Partials:
     </div>
     {{>Scripts}}
   MainSpace: |
-      <div class="banner">
+      <div class="banner user-font">
         {{>Banner}}
         <div class="col-xs-10 body">
           {{>Body}}
@@ -51,6 +52,8 @@ Partials:
     <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
     <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
     <script src="/template.js"></script>
+    <script src="/font_data.js"></script>
+    <script src="/fonts.js"></script>
     {{>PageLoadScripts}}
   SharedScripts: |
     var _g = {
@@ -60,6 +63,7 @@ Partials:
       CurrentUrl: '{{CurrentUrl}}',
       CurrentUrlUnescaped: '{{CurrentUrlUnescaped}}',
       ColourId: '{{ColourId}}',
+      FontClass: '{{FontClass}}',
     };
     Hyphenator.run();
     {{>PageScripts}}
