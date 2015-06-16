@@ -83,6 +83,7 @@ Partials:
     {{/Title}}
   PageLoadScripts: |
     <script src="/swatches.js"></script>
+    <script src="/expanding-area.js"></script>
     <script src="/newthread.js"></script>
 
 

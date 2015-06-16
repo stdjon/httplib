@@ -2,6 +2,7 @@
 Template: template.nyml
 Stylesheets:
   - /local-styles.css
+  - /expanding-area.css
 Title: "{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}"
 Partials:
   Nav: |
@@ -39,15 +40,15 @@ Partials:
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
-          &nbsp;<span class="fa fa-reply" onclick="alert('reply!')"></span>
+          &nbsp;<span class="fa fa-fw fa-reply" onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
           {{#IsOwnPost}}
-          <span class="fa fa-edit" onclick="alert('edit!')"></span>
+          <span class="fa fa-fw fa-edit" onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span class="fa fa-quote-left" onclick="alert('quote!')"></span>
+          <span class="fa fa-fw fa-quote-left" onclick="quote(this, '#{{Number}}', {{PostId}})"></span>
           {{^IsOwnPost}}
-          <span class="fa fa-thumbs-up" onclick="alert('thumbs up!')"></span>
+          <span class="fa fa-fw fa-thumbs-o-up" onclick="thumbsup(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span class="fa fa-star-o" onclick="alert('star!')"></span></div>
+          <span class="fa fa-fw fa-star-o" onclick="star(this, '#{{Number}}', {{PostId}})"></span></div>
           </span>
         </div>
       </div>
@@ -81,5 +82,7 @@ Partials:
     {{/Title}}
   PageLoadScripts: |
     <script src="/swatches.js"></script>
+    <script src="/expanding-area.js"></script>
+    <script src="/thread.js"></script>
 
 
