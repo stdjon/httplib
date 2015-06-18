@@ -25,9 +25,6 @@ Partials:
       .navbar .navbar-form div.input-group {
         width: 200px;
       }
-      .navopacity {
-        opacity: 0.975;
-      }
     </style>
     <div class="container user-font">
       <nav class="navbar navbar-inverse navbar-fixed-top" id="navbar-outside">
