@@ -41,7 +41,7 @@ public class Page {
         when(Metas != null) {
             foreach(m in Metas) {
                 when(!String.IsNullOrEmpty(m)) {
-                    meta += $"\n<meta $m>"
+                    meta += $"\n<meta $(renderString(m, data))>"
                 }
             }
         }
@@ -50,7 +50,7 @@ public class Page {
         when(Stylesheets != null) {
             foreach(s in Stylesheets) {
                 when(!String.IsNullOrEmpty(s)) {
-                    stylesheet += $"\n<link href='$s' rel='stylesheet'>"
+                    stylesheet += $"\n<link href='$(renderString(s, data))' rel='stylesheet'>"
                 }
             }
         }

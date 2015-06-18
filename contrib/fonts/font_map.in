@@ -1,0 +1,15 @@
+# Font map for forum.exe
+# File format is as follows:
+#
+# fontclass -> paragraph_font [header_font]
+
+serif1 -> andada simonetta
+serif2 -> playfair_display simonetta
+
+sans1 -> amble amaranth
+sans2 -> blogger_sans amaranth
+
+mono1 -> office_code_pro_dmedium
+mono2 -> m_1mmedium
+
+

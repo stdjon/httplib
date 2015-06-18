@@ -1,7 +1,5 @@
 ---
 Template: template.nyml
-Stylesheets:
-  - /local-styles.css
 Title: "{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}"
 Partials:
   Nav: |

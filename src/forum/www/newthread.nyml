@@ -1,7 +1,6 @@
 ---
 Template: template.nyml
 Stylesheets:
-  - /local-styles.css
   - /expanding-area.css
 Title: "New Thread"
 Partials:

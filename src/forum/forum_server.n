@@ -91,6 +91,9 @@ public class ForumServer: Server {
         route(HTTP.POST, "/preview-post", previewPostResponse);
 
         route(HTTP.GET, "/filter", filterTestResponse);
+
+        route(HTTP.GET, "/custom-styles.css",
+            CssHandler.Factory("custom-styles.nyml", "font_data.yml"));
     }
 
     public isUserResponse(

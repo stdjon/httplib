@@ -1,56 +1,8 @@
-var _fonts = {
-    serif1: {
-        h: "simonetta",
-        p: "andada",
-    },
-    serif2: {
-        h: "simonetta",
-        p: "playfair_display",
-    },
-    sans1: {
-        h: "amaranth",
-        p: "amble",
-    },
-    sans2: {
-        h: "amaranth",
-        p: "blogger_sans",
-    },
-};
-
-var _fonts_mono = [
-    "office_code_pro_dmedium",
-    "m_1mmedium",
-];
-
-
-$('head').append(
-    '<style id="active-font" type="text/css"></style>');
-
-
-
-function fontClasses(p) {
-
-    var pr = _font_data[p].regular;
-    var pb = _font_data[p].bold;
-    var pi = _font_data[p].italic;
-    var pbi = _font_data[p].bolditalic;
-
-    return '' +
-        'div.user-font { font-family: "' + pr + '"; }\n' +
-        'div.user-font b, div.user-font strong { font-family: "' + pb + '"; }\n' +
-        'div.user-font i, div.user-font em { font-family: "' + pi + '"; }\n' +
-        'div.user-font b i, div.user-font b i, ' +
-        'div.user-font strong em, div.user-font em strong { font-family: "' + pbi + '"; }\n' +
-        'div.user-font pre, div.user-font textarea { font-family: "' + pr + '"; }\n' +
-        '';
-}
-
-
 function setFonts(c, is_nav) {
-    var f = _fonts[c];
+    var f = _font_map[c];
     var h = _font_data[f.h].bold;
 
-    $('#active-font').text(fontClasses(f.p));
+    setCommonFonts(f.p)
 
     if(is_nav) {
         var p = _font_data[f.p].regular;
@@ -58,6 +10,21 @@ function setFonts(c, is_nav) {
     } else {
         setMainFonts(h, c);
     }
+}
+
+
+function setCommonFonts(p) {
+    var pr = _font_data[p].regular;
+    var pb = _font_data[p].bold;
+    var pi = _font_data[p].italic;
+    var pbi = _font_data[p].bolditalic;
+
+    $('div.user-font').css('font-family', pr);
+    $('div.user-font b, div.user-font strong').css('font-family', pb);
+    $('div.user-font i, div.user-font em').css('font-family', pi);
+    $('div.user-font b i, div.user-font b i, ' +
+        'div.user-font strong em, div.user-font em strong').css('font-family', pbi);
+    $('div.user-font .expanding-area pre, div.user-font .expanding-area textarea').css('font-family', pr);
 }
 
 

@@ -1,7 +1,5 @@
 ---
 Template: nav-template.nyml
-Stylesheets:
-  - local-styles.css
 Partials:
   NavScriptsPre: |
     var navCollapseHeight = '120px';

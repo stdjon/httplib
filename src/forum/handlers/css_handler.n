@@ -1,0 +1,142 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Web;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
+
+using httplib;
+
+
+namespace forum {
+
+[YamlRecord]
+public class FontMap {
+    public p: string { get; set; }
+    public h: string { get; set; }
+}
+
+
+[YamlRecord]
+public class FontData {
+    public regular: string { get; set; }
+    public bold: string { get; set; }
+    public italic: string { get; set; }
+    public bolditalic: string { get; set; }
+}
+
+
+[YamlRecord]
+public class Fonts {
+    public Map: Dictionary[string, FontMap] { get; set; }
+    public Fonts: Dictionary[string, FontData] { get; set; }
+}
+
+
+[HasHandlerFactory]
+[HasLogging]
+public class CssHandler: ComplexHandler {
+
+    [Accessor]
+    static deserializer: YamlDeserializer = YamlDeserializer();
+
+    public override ContentType: string { get { "text/css" } }
+    public override PagePath: string { get; private set; }
+    public override PageData: PageData { get; private set; }
+
+    public Font: string { get; private set; }
+    public Colour: string { get; private set; }
+
+    public new Server: ForumServer {
+        get { base.Server :> ForumServer }
+    }
+
+    public this(hd: HandlerData, path: string, data: string) {
+        base(hd);
+
+        def c = Request.QueryString["c"];
+        def cookies = Request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def session = cookies ? cookies["_session"] : null;
+        def userid = isession ?
+            Server.getUserIdFromSessionToken(STOK.INSECURE, isession) :
+            (session ?
+                Server.getUserIdFromSessionToken(STOK.SECURE, session) : null);
+
+
+        Font = "serif1";
+        Colour = !String.IsNullOrEmpty(c) ? c : "x360";
+
+        def command = Server.Database.createCommand(
+            "SELECT Font FROM Users WHERE Id = @Id") <- [
+                "@Id" = userid,
+            ];
+
+        using(reader = command.executeReader()) {
+            when(reader.Read()) {
+                Font = reader.GetValue("Font", "serif1");
+            }
+        }
+
+        PagePath = path;
+        PageData = PageData();
+
+        def data_file = Server.openLocalFile(data);
+        using(reader = StreamReader(data_file)) {
+            def data = Deserializer.Deserialize.[Fonts](reader);
+
+            def map = data.Map;
+            def fonts = data.Fonts;
+
+            PageData["UserFontRegular"] = fonts[map[Font].p].regular;
+            PageData["UserFontBold"] = fonts[map[Font].p].bold;
+            PageData["UserFontItalic"] = fonts[map[Font].p].italic;
+            PageData["UserFontBoldItalic"] = fonts[map[Font].p].bolditalic;
+            PageData["HeaderFontRegular"] = fonts[map[Font].h].regular;
+            PageData["HeaderFontBold"] = fonts[map[Font].h].bold;
+            PageData["HeaderFontItalic"] = fonts[map[Font].h].italic;
+            PageData["HeaderFontBoldItalic"] = fonts[map[Font].h].bolditalic;
+            PageData["CodeFontRegular"] = fonts["office_code_pro_dmedium"].regular;
+            PageData["BackgroundColour"] = bgFromColourId(Colour);
+            PageData["HighlightColour"] = fgFromColourId(Colour);
+
+        }
+    }
+
+    public override initialize(): void {
+    }
+
+    public override renderPage(renderer: Renderer, fs: Stream): string {
+        def page = renderer.loadPage(fs);
+
+        page.renderContent(PageData);
+    }
+
+    bgFromColourId(id: string): string {
+        def x = id[0];
+        def v = Int32.Parse(id.Substring(1));
+        def (h, s, l) = match(x, v) {
+            | ('x', 360) => (0, 0, 55)
+            | ('y', 360) => (0, 0, 25)
+            | ('x', _) => (v, 55, 55)
+            | ('y', _) => (v, 88, 25)
+            | _ => (0, 0, 0)
+        }
+
+        $"hsl($h, $s%, $l%)"
+    }
+
+    fgFromColourId(id: string): string {
+        match(id[0]) {
+            | 'x' => "hsl(0, 0%, 27%)"
+            | 'y' => "hsl(0, 0%, 80%)"
+            | _ => "hsl(0, 100%, 100%)"
+        }
+    }
+}
+
+
+} // forum

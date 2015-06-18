@@ -1,7 +1,5 @@
 ---
 Template: template.nyml
-Stylesheets:
-  - /local-styles.css
 Title: Users
 Partials:
   Nav: |

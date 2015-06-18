@@ -1,0 +1,42 @@
+Content: |
+  div.user-font,
+  div.user-font pre, div.user-font textarea {
+    font-family: "{{UserFontRegular}}"; 
+  }
+  div.user-font b, div.user-font strong {
+    font-family: "{{UserFontBold}}"; 
+  }
+  div.user-font i, div.user-font em {
+    font-family: "{{UserFontItalic}}"; 
+  }
+  div.user-font b i, div.user-font i b,
+  div.user-font strong em, div.user-font em strong {
+    font-family: "{{UserFontBoldItalic}}"; 
+  }
+  div.user-font h1, div.user-font h2, div.user-font h3, 
+  div.user-font h4, div.user-font h5, div.user-font h6 {
+    font-family: "{{HeaderFontBold}}";
+  }
+  div.user-font code, div.user-font pre, div.user-font tt {
+    font-family: "{{CodeFontRegular}}";
+  }
+  div.jumbotron {
+    color: {{HighlightColour}};
+    background-color: {{BackgroundColour}};
+  }
+  div.outside {
+    border-left-color: {{BackgroundColour}};
+  }
+  ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover {
+    border-left-color: {{BackgroundColour}};
+  }
+  div.anchor.trg div.post, div.anchor.trg:nth-child(odd) div.post {
+    border-left-color: {{BackgroundColour}};
+  }
+  div.expanding-h1-area textarea, div.expanding-h1-area pre {
+    background-color: {{BackgroundColour}};
+  }
+  nav.navbar {
+    border-left-color: {{BackgroundColour}};
+  }
+

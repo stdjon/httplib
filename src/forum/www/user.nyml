@@ -1,7 +1,5 @@
 ---
 Template: template.nyml
-Stylesheets:
-  - /local-styles.css
 Title: "{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}"
 Partials:
   Nav: |
@@ -37,10 +35,10 @@ Partials:
       <p>&nbsp;</p>
       {{>Swatches}}
       <p>&nbsp;</p>
-      <p>Motto: <input id='motto' value='{{Motto}}' placeholder='Motto'
-        onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
-      <p>Location: <input id='_loc' value='{{Location}}' placeholder='Location'
-        onkeypress="onKeypress()" onkeyup="onKeypress()"></input></p>
+      <p>Motto: <input id='motto' value='{{Motto}}' placeholder='[Motto]'
+        onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
+      <p>Location: <input id='_loc' value='{{Location}}' placeholder='[Location]'
+        onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
       <p>User since: <em>{{JoinDate}}</em></p>
       <p>Points: <em>{{Points}}</em></p>
       <p>Level: <em>{{Level}}</em></p>
