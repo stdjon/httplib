@@ -18,9 +18,9 @@ public module Program {
             Config = "default_config.yml";
             Root = null;
             Users = 15;
-            Categories = 8;
-            Threads = 6;
-            Posts = 100;
+            Categories = 30;
+            Threads = 120;
+            Posts = 1000;
         }
         public ShowHelp: bool { get; set; }
         public Config: string { get; set; }
