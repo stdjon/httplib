@@ -13,7 +13,7 @@ Partials:
     <div class="jumbotron anchor">
       <div class="expanding-area expanding-h1-area">
         <pre><span></span><br></pre>
-        <textarea maxlength="80" placeholder="[New Thread]" name="title"></textarea>
+        <textarea id="title" maxlength="80" placeholder="[New Thread]" name="title"></textarea>
       </div>
     </div>
   Body: |
@@ -84,5 +84,9 @@ Partials:
     <script src="/swatches.js"></script>
     <script src="/expanding-area.js"></script>
     <script src="/newthread.js"></script>
+  PageScripts: |
+    $(window).load(function() {
+      $('#title').focus();
+    });
 
 

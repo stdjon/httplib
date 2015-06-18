@@ -225,7 +225,7 @@ public class ForumServer: Server {
         def colour = context.Vars["colour"];
         def fp = context.Vars["fp"];
         def content = context.Vars["content"];
-        def renderer = context.Vars["renderer"];
+        mutable renderer = context.Vars["renderer"];
         def category = UInt32.Parse(context.Vars["category"]);
         def utc_now = Date.NowTicks;
         def cookies = request.Cookies;
@@ -234,6 +234,14 @@ public class ForumServer: Server {
             getUserIdFromSessionToken(STOK.INSECURE, isession) : 0;
         mutable thid: uint = 0;
         mutable ok = false;
+
+        when(String.IsNullOrEmpty(renderer)) {
+            def command = Database.createCommand(
+                "SELECT Transform FROM Users WHERE Id=@Id") <- [ "@Id" = userid ];
+            renderer = command.executeScalar() :> string;
+            Log.d("renderer was not set; user's DB default is '{0}'...", renderer);
+        }
+
         def (render_ok, output) = renderPost(renderer, content);
         ok = render_ok;
 
