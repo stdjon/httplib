@@ -75,6 +75,27 @@ Partials:
         onclick="update()">Update</button>
       <span id='notify'></span>
     {{/IsPrefs}}
+    <p>&nbsp;</p>
+    {{#User}}
+    <h4>Recent Threads:</h4>
+    <ul class="list-group">
+    {{#Threads}}
+      <li class="list-group-item">
+        <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>:
+        <em>{{Title}}</em> &mdash;` {{CreateDate}}</li>
+    {{/Threads}}
+    </ul>
+    {{/User}}
+    {{#User}}
+    <h4>Recent Posts:</h4>
+    <ul class="list-group">
+    {{#Posts}}
+      <li class="list-group-item">
+        <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>:
+        <em>{{Content}}</em> &mdash; {{CreateDate}}</li>
+    {{/Posts}}
+    </ul>
+    {{/User}}
     </div>
   PageLoadScripts: |
     <script src="/swatches.js"></script>

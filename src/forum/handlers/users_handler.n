@@ -117,7 +117,7 @@ public class UsersHandler: BaseHandler {
         ];
     }
 
-    public initializeUser(user: string): void {
+    public initializeUserCommon(user: string): void {
 
         def command = Server.Database.createCommand(
             "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
@@ -143,6 +143,63 @@ public class UsersHandler: BaseHandler {
                 ];
             }
         }
+    }
+
+    public initializeUser(user: string): void {
+
+        Log.f("initializeUser({0}) [SignedInUserId = {1}]", user, SignedInUserId);
+        initializeUserCommon(user);
+
+        mutable threads = array(10);
+        mutable posts = array(10);
+        mutable i = 0;
+
+        def command = Server.Database.createCommand(
+            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
+        def userid_ = command.executeScalar() :> uint?;
+        def userid = userid_ ? (userid_ :> uint) : 0;
+
+        def command2 = Server.Database.createCommand(
+            "SELECT Id, Title, CreateDate FROM Threads WHERE "
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+            "@UserId" = userid,
+        ];
+        using(reader = command2.executeReader()) {
+            while(reader.Read()) {
+                threads[i] = PageData() <- [
+                    "Id" = reader.GetValue.[uint?]("Id", 0),
+                    "Title" = reader.GetValue("Title"),
+                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
+                ];
+                i++;
+            }
+        }
+        Array.Resize(ref threads, i);
+
+        i = 0;
+        def command3 = Server.Database.createCommand(
+            "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+            "@UserId" = userid,
+        ];
+        using(reader = command3.executeReader()) {
+            while(reader.Read()) {
+                mutable content = reader.GetValue("OutputContent");
+                when(content.Length > 50) {
+                    content = content.Substring(0, 47) + "...";
+                }
+                posts[i] = PageData() <- [
+                    "Id" = reader.GetValue.[uint?]("Id", 0),
+                    "Content" = content,
+                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
+                ];
+                i++;
+            }
+        }
+        Array.Resize(ref posts, i);
+
+        PageData["Threads"] = threads;
+        PageData["Posts"] = posts;
     }
 
     public initializePrefs(userid :uint, user: string): void {
