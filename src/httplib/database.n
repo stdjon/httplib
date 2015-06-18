@@ -140,8 +140,8 @@ public class Command {
         Command.ExecuteNonQuery();
     }
 
-    public virtual executeReader(): IDataReader {
-        Command.ExecuteReader();
+    public virtual executeReader(): DataReader {
+        DataReader(Command.ExecuteReader(), this);
     }
 
     public virtual executeScalar(): object {
@@ -171,48 +171,66 @@ public class Parameter {
 }
 
 
-/** Extensions to IDataRecord to allow the use of the following syntaxes:
- *
- *    def s = idr.GetValue("s", ""); // reference type
- *    def i = idr.GetValue.[int?]("i", 0); // nullable value type
- *
- *  Or, if a default of 'null' or a default value type is acceptable:
- *
- *    def s = idr.GetValue.[string]("s"); // reference type
- *    def i = idr.GetValue.[int]("i"); // non-nullable value type
- *
- *  None of these methods will throw exceptions in the (unexceptional) event of
- *  hitting a null data value in the DB.
- */
-public module IDataRecordExtensions {
+[HasLogging]
+public class DataReader: IDisposable {
 
-    public GetValue[T](
-        this r: IDataRecord, field: string, default: T): T {
+    [Accessor]
+    protected mutable reader: IDataReader = null;
+    protected mutable command: Command = null;
 
-        def ordinal = r.GetOrdinal(field);
-        r.GetValue.[T](ordinal, default);
+    public this(r: IDataReader, c: Command) {
+        reader = r;
+        command = c;
     }
 
-    public GetValue[T](
-        this r: IDataRecord, field: int, default: T): T {
+    public Dispose(): void {
+        reader.Dispose();
+    }
 
-        if(r.IsDBNull(field)) {
-            default;
-        } else {
-            unchecked r.GetValue(field) :> T;
+    public enumerate(lambda: void -> void): void {
+        lock(command) {
+            while(reader.Read()) {
+                lambda();
+            }
+            reader.Close();
         }
     }
 
-    public GetValue[T](this r: IDataRecord, field: string): T {
-        def ordinal = r.GetOrdinal(field);
-        r.GetValue.[T](ordinal);
+    public enumerate(lambda: int -> void): int {
+        mutable i = 0;
+        lock(command) {
+            while(reader.Read()) {
+                lambda(i);
+                i++;
+            }
+            reader.Close();
+        }
+        i;
     }
 
-    public GetValue[T](this r: IDataRecord, field: int): T {
-        if(r.IsDBNull(field)) {
+    public getValue[T](field: string, default: T): T {
+        def ordinal = reader.GetOrdinal(field);
+        getValue.[T](ordinal, default);
+    }
+
+    public getValue[T](field: int, default: T): T {
+        if(reader.IsDBNull(field)) {
+            default;
+        } else {
+            unchecked reader.GetValue(field) :> T;
+        }
+    }
+
+    public getValue[T](field: string): T {
+        def ordinal = reader.GetOrdinal(field);
+        getValue.[T](ordinal);
+    }
+
+    public getValue[T](field: int): T {
+        if(reader.IsDBNull(field)) {
             default(T);
         } else {
-            unchecked r.GetValue(field) :> T;
+            unchecked reader.GetValue(field) :> T;
         }
     }
 }

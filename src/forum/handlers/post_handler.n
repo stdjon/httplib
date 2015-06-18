@@ -30,14 +30,14 @@ public class PostHandler: BaseHandler {
         mutable ok = false;
 
         using(reader = command.executeReader()) {
-            when(reader.Read()) {
-                uid = reader.GetValue.[uint?]("UserId", 0);
-                thid = reader.GetValue.[uint?]("ThreadId", 0);
-                date = reader.GetValue.[long]("CreateDate", 0);
-                points = reader.GetValue.[int?]("Points", 0);
-                content = reader.GetValue("OutputContent");
+            reader.enumerate(() => {
+                uid = reader.getValue.[uint?]("UserId", 0);
+                thid = reader.getValue.[uint?]("ThreadId", 0);
+                date = reader.getValue.[long]("CreateDate", 0);
+                points = reader.getValue.[int?]("Points", 0);
+                content = reader.getValue("OutputContent");
                 ok = true;
-            }
+            });
         }
 
         when(ok) {
@@ -50,10 +50,10 @@ public class PostHandler: BaseHandler {
 
             mutable title, colour;
             using(reader = command3.executeReader()) {
-                when(reader.Read()) {
-                    title = reader.GetValue("Title");
-                    colour = reader.GetValue("Colour");
-                }
+                reader.enumerate(() => {
+                    title = reader.getValue("Title");
+                    colour = reader.getValue("Colour");
+                });
             }
 
             _ = PageData <- [

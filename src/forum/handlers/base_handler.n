@@ -115,10 +115,10 @@ public class BaseHandler: ComplexHandler {
                 "@Id" = SignedInUserId,
             ];
         using(reader = command.executeReader()) {
-            when(reader.Read()) {
-                PageData["FontClass"] = reader.GetValue("Font", "serif1");
-                PageData["ColourClass"] = reader.GetValue("Colour", "x360");
-            }
+            reader.enumerate(() => {
+                PageData["FontClass"] = reader.getValue("Font", "serif1");
+                PageData["ColourClass"] = reader.getValue("Colour", "x360");
+            });
         }
     }
 }

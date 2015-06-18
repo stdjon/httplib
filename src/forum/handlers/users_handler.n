@@ -67,22 +67,23 @@ public class UsersHandler: BaseHandler {
             ];
 
         using(reader = command.executeReader()) {
-            while(reader.Read() && i < dist) {
-                def u = reader.GetValue.[string]("Name");
-                when(u != null) {
-                    def points = reader.GetValue.[int?]("Points", 0);
-                    def level = reader.GetValue.[uint?]("Level", 0);
-                    def motto = reader.GetValue("Motto", "");
-                    users[i] = PageData() <- [
-                        "Num" = (from + i).ToString(),
-                        "Name" = u,
-                        "Points" = points.ToString(),
-                        "Level" = level.ToString(),
-                        "Motto" = motto,
-                    ];
-                    i++;
+            i = reader.enumerate(j => {
+                when(j < dist) {
+                    def u = reader.getValue.[string]("Name");
+                    when(u != null) {
+                        def points = reader.getValue.[int?]("Points", 0);
+                        def level = reader.getValue.[uint?]("Level", 0);
+                        def motto = reader.getValue("Motto", "");
+                        users[j] = PageData() <- [
+                            "Num" = (from + j).ToString(),
+                            "Name" = u,
+                            "Points" = points.ToString(),
+                            "Level" = level.ToString(),
+                            "Motto" = motto,
+                        ];
+                    }
                 }
-            }
+            });
         }
 
         when(i < dist) {
@@ -126,22 +127,22 @@ public class UsersHandler: BaseHandler {
         ];
 
         using(reader = command.executeReader()) {
-            when(reader.Read()) {
-                def date = reader.GetValue.[long]("JoinDate", 0);
-                Transform = reader.GetValue("Transform", "bbcode");
-                Font = reader.GetValue("Font", "serif1");
+            reader.enumerate(() => {
+                def date = reader.getValue.[long]("JoinDate", 0);
+                Transform = reader.getValue("Transform", "bbcode");
+                Font = reader.getValue("Font", "serif1");
 
                 _ = PageData <- [
-                    "User" = reader.GetValue("Name", user),
-                    "Motto" = reader.GetValue("Motto", ""),
-                    "Location" = reader.GetValue("Location", ""),
+                    "User" = reader.getValue("Name", user),
+                    "Motto" = reader.getValue("Motto", ""),
+                    "Location" = reader.getValue("Location", ""),
                     "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
-                    "Points" = reader.GetValue.[int?]("Points", 0),
-                    "Level" = reader.GetValue.[uint?]("Level", 0),
-                    "ColourId" = reader.GetValue("Colour", "x360"),
+                    "Points" = reader.getValue.[int?]("Points", 0),
+                    "Level" = reader.getValue.[uint?]("Level", 0),
+                    "ColourId" = reader.getValue("Colour", "x360"),
                     "Font" = Font,
                 ];
-            }
+            });
         }
     }
 
@@ -151,7 +152,7 @@ public class UsersHandler: BaseHandler {
 
         mutable threads = array(10);
         mutable posts = array(10);
-        mutable i = 0;
+        mutable i;
 
         def command = Server.Database.createCommand(
             "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
@@ -164,36 +165,33 @@ public class UsersHandler: BaseHandler {
             "@UserId" = userid,
         ];
         using(reader = command2.executeReader()) {
-            while(reader.Read()) {
-                threads[i] = PageData() <- [
-                    "Id" = reader.GetValue.[uint?]("Id", 0),
-                    "Title" = reader.GetValue("Title"),
-                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
+            i = reader.enumerate(j => {
+                threads[j] = PageData() <- [
+                    "Id" = reader.getValue.[uint?]("Id", 0),
+                    "Title" = reader.getValue("Title"),
+                    "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
                 ];
-                i++;
-            }
+            });
         }
         Array.Resize(ref threads, i);
 
-        i = 0;
         def command3 = Server.Database.createCommand(
             "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
                 "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
             "@UserId" = userid,
         ];
         using(reader = command3.executeReader()) {
-            while(reader.Read()) {
-                mutable content = reader.GetValue("OutputContent");
+            i = reader.enumerate(j => {
+                mutable content = reader.getValue("OutputContent");
                 when(content.Length > 50) {
                     content = content.Substring(0, 47) + "...";
                 }
-                posts[i] = PageData() <- [
-                    "Id" = reader.GetValue.[uint?]("Id", 0),
+                posts[j] = PageData() <- [
+                    "Id" = reader.getValue.[uint?]("Id", 0),
                     "Content" = content,
-                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
+                    "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
                 ];
-                i++;
-            }
+            });
         }
         Array.Resize(ref posts, i);
 

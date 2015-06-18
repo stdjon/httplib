@@ -76,9 +76,9 @@ public class CssHandler: ComplexHandler {
             ];
 
         using(reader = command.executeReader()) {
-            when(reader.Read()) {
-                Font = reader.GetValue("Font", "serif1");
-            }
+            reader.enumerate(() => {
+                Font = reader.getValue("Font", "serif1");
+            });
         }
 
         PagePath = path;

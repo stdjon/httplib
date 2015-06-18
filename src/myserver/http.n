@@ -160,14 +160,10 @@ class MyDatabaseHandler: ComplexHandler {
         };
         def command = Server.Database.createCommand($"SELECT $c FROM $t");
         using(reader = command.executeReader()) {
-            mutable i = 0;
-            while(reader.Read()) {
-                def a = reader.GetString(0);
-                def j = i;
-                i++;
-                Array.Resize(ref result, i);
-                result[j] = a;
-            }
+            _ = reader.enumerate(j => {
+                Array.Resize(ref result, j + 1);
+                result[j] = reader.getValue(c);
+            });
         }
         result;
     }

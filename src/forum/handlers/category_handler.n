@@ -33,16 +33,16 @@ public class CategoryHandler: BaseHandler {
         mutable ok = false;
         mutable uid;
         using(reader = command.executeReader()) {
-            when(reader.Read()) {
-                uid = reader.GetValue.[uint?]("UserId", 0);
+            reader.enumerate(() => {
+                uid = reader.getValue.[uint?]("UserId", 0);
                 _ = PageData <- [
-                    "Name" = reader.GetValue("Name"),
+                    "Name" = reader.getValue("Name"),
                     "UserId" = uid,
-                    "CreateDate" = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0)),
-                    "ColourId" = reader.GetValue("Colour"),
+                    "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                    "ColourId" = reader.getValue("Colour"),
                 ];
                 ok = true;
-            }
+            });
         }
 
         when(uid != null) {
@@ -62,22 +62,23 @@ public class CategoryHandler: BaseHandler {
             ];
 
             using(reader = command2.executeReader()) {
-                while(reader.Read() && i < dist) {
-                    def id = reader.GetValue.[uint?]("Id", 0);
-                    uid = reader.GetValue.[uint?]("UserId", 0);
-                    //def _points = reader.GetValue.[int?]("Points", 0);
-                    def date = Date.FromTicks(reader.GetValue.[long]("CreateDate", 0));
-                    def title = reader.GetValue.[string]("Title");
+                i = reader.enumerate(j => {
+                    when(j < dist) {
+                        def id = reader.getValue.[uint?]("Id", 0);
+                        uid = reader.getValue.[uint?]("UserId", 0);
+                        //def _points = reader.getValue.[int?]("Points", 0);
+                        def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
+                        def title = reader.getValue.[string]("Title");
 
-                    threads[i] = PageData() <- [
-                        "Number" = from + i,
-                        "UserId" = uid,
-                        "CreateDate" = date,
-                        "Title" = title,
-                        "Id" = id,
-                    ];
-                    i++;
-                }
+                        threads[j] = PageData() <- [
+                            "Number" = from + i,
+                            "UserId" = uid,
+                            "CreateDate" = date,
+                            "Title" = title,
+                            "Id" = id,
+                        ];
+                    }
+                });
             }
             when(i < dist) {
                 Array.Resize(ref threads, i);
