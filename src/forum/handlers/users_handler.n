@@ -147,7 +147,6 @@ public class UsersHandler: BaseHandler {
 
     public initializeUser(user: string): void {
 
-        Log.f("initializeUser({0}) [SignedInUserId = {1}]", user, SignedInUserId);
         initializeUserCommon(user);
 
         mutable threads = array(10);
