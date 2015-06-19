@@ -5,10 +5,6 @@
 BEGIN {
     if("-j" == ARGV[1]) { js = 1; ARGV[1] = ""; }
     if("-y" == ARGV[1]) { yaml = 1; ARGV[1] = ""; }
-
-    for(i = 1; i < ARGC; i++) {
-        imports[ARGV[i]] = 1;
-    }
 }
 
 
@@ -59,6 +55,7 @@ BEGIN {
 
     fonts[class] = 1
     output[class "-" style] = font
+    import[class] = FILENAME;
 }
 
 
@@ -81,7 +78,8 @@ function print_js() {
     print "var _font_data = {"
     for(class in fonts) {
 
-        print "  "class ": {";
+        print "  " class ": {";
+        print "    import: '" import[class] "',";
 
         for(style in styles) {
 
@@ -116,7 +114,8 @@ function print_yaml() {
     print "Fonts:"
     for(class in fonts) {
 
-        print "  "class ":";
+        print "  " class ":";
+        print "    import: " import[class];
 
         for(style in styles) {
 

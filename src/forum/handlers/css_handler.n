@@ -22,6 +22,7 @@ public class FontMap {
 
 [YamlRecord]
 public class FontData {
+    public import: string { get; set; }
     public regular: string { get; set; }
     public bold: string { get; set; }
     public italic: string { get; set; }
@@ -89,14 +90,17 @@ public class CssHandler: ComplexHandler {
             def map = data.Map;
             def fonts = data.Fonts;
 
+            PageData["UserImport"] = fonts[map[Font].p].import;
             PageData["UserFontRegular"] = fonts[map[Font].p].regular;
             PageData["UserFontBold"] = fonts[map[Font].p].bold;
             PageData["UserFontItalic"] = fonts[map[Font].p].italic;
             PageData["UserFontBoldItalic"] = fonts[map[Font].p].bolditalic;
+            PageData["HeaderImport"] = fonts[map[Font].h].import;
             PageData["HeaderFontRegular"] = fonts[map[Font].h].regular;
             PageData["HeaderFontBold"] = fonts[map[Font].h].bold;
             PageData["HeaderFontItalic"] = fonts[map[Font].h].italic;
             PageData["HeaderFontBoldItalic"] = fonts[map[Font].h].bolditalic;
+            PageData["CodeImport"] = fonts["office_code_pro_dmedium"].import;
             PageData["CodeFontRegular"] = fonts["office_code_pro_dmedium"].regular;
             PageData["BackgroundColour"] = bgFromColourId(Colour);
             PageData["HighlightColour"] = fgFromColourId(Colour);

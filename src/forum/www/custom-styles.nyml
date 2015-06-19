@@ -1,4 +1,8 @@
 Content: |
+  @import url({{UserImport}});
+  @import url({{HeaderImport}});
+  @import url({{CodeImport}});
+
   div.user-font,
   div.user-font pre, div.user-font textarea {
     font-family: "{{UserFontRegular}}"; 

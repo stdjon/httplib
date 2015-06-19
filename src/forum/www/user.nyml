@@ -102,5 +102,7 @@ Partials:
     <script src="/prefs.js"></script>
   PageScripts: |
     setPrefs('{{Motto}}', '{{Location}}', '{{ColourId}}', '{{Transform}}', '{{Font}}');
+    $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');
+    loadAllFonts = true;
 
 

@@ -19,9 +19,15 @@ addEventListener("message", function(msg) {
             }
             case 'font': {
                 setFonts(cmd[1], true);
+                break;
             }
             case 'ehlo': {
                 mainWindow = msg.source;
+                break;
+            }
+            case 'fonts': {
+                $('head').append(
+                    '<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');
                 break;
             }
             case 'tokTmp': {

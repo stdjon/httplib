@@ -1,3 +1,5 @@
+loadAllFonts = false;
+
 function setFonts(c, is_nav) {
     var f = _font_map[c];
     var h = _font_data[f.h].bold;
@@ -49,6 +51,9 @@ function initFonts() {
         _g.FontClass = 'serif1';
     }
     setFonts(_g.FontClass);
+    if(loadAllFonts) {
+        postIframeMessage('fonts');
+    }
 }
 
 
