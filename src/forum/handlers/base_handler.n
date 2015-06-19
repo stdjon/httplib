@@ -114,12 +114,10 @@ public class BaseHandler: ComplexHandler {
             "SELECT Colour, Font From Users WHERE Id=@Id") <- [
                 "@Id" = SignedInUserId,
             ];
-        using(reader = command.executeReader()) {
-            reader.enumerate(() => {
-                PageData["FontClass"] = reader.getValue("Font", "serif1");
-                PageData["ColourClass"] = reader.getValue("Colour", "x360");
-            });
-        }
+        command.execute(reader => {
+            PageData["FontClass"] = reader.getValue("Font", "serif1");
+            PageData["ColourClass"] = reader.getValue("Colour", "x360");
+        });
     }
 }
 

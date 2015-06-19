@@ -29,16 +29,14 @@ public class PostHandler: BaseHandler {
         mutable content;
         mutable ok = false;
 
-        using(reader = command.executeReader()) {
-            reader.enumerate(() => {
-                uid = reader.getValue.[uint?]("UserId", 0);
-                thid = reader.getValue.[uint?]("ThreadId", 0);
-                date = reader.getValue.[long]("CreateDate", 0);
-                points = reader.getValue.[int?]("Points", 0);
-                content = reader.getValue("OutputContent");
-                ok = true;
-            });
-        }
+        command.execute(reader: DataReader => {
+            uid = reader.getValue.[uint]("UserId", 0);
+            thid = reader.getValue.[uint]("ThreadId", 0);
+            date = reader.getValue.[long]("CreateDate", 0);
+            points = reader.getValue.[int]("Points", 0);
+            content = reader.getValue("OutputContent");
+            ok = true;
+        });
 
         when(ok) {
             def command2 = Server.Database.createCommand(
@@ -49,12 +47,10 @@ public class PostHandler: BaseHandler {
                 "SELECT Title, Colour from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
 
             mutable title, colour;
-            using(reader = command3.executeReader()) {
-                reader.enumerate(() => {
-                    title = reader.getValue("Title");
-                    colour = reader.getValue("Colour");
-                });
-            }
+            command3.execute(reader => {
+                title = reader.getValue("Title");
+                colour = reader.getValue("Colour");
+            });
 
             _ = PageData <- [
                 "PostId" = pid,

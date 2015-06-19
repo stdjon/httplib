@@ -75,11 +75,9 @@ public class CssHandler: ComplexHandler {
                 "@Id" = userid,
             ];
 
-        using(reader = command.executeReader()) {
-            reader.enumerate(() => {
-                Font = reader.getValue("Font", "serif1");
-            });
-        }
+        command.execute(reader => {
+            Font = reader.getValue("Font", "serif1");
+        });
 
         PagePath = path;
         PageData = PageData();

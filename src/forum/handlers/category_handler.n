@@ -32,22 +32,18 @@ public class CategoryHandler: BaseHandler {
 
         mutable ok = false;
         mutable uid;
-        using(reader = command.executeReader()) {
-            reader.enumerate(() => {
-                uid = reader.getValue.[uint?]("UserId", 0);
-                _ = PageData <- [
-                    "Name" = reader.getValue("Name"),
-                    "UserId" = uid,
-                    "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
-                    "ColourId" = reader.getValue("Colour"),
-                ];
-                ok = true;
-            });
-        }
+        command.execute(reader: DataReader => {
+            uid = reader.getValue.[uint]("UserId", 0);
+            _ = PageData <- [
+                "Name" = reader.getValue("Name"),
+                "UserId" = uid,
+                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                "ColourId" = reader.getValue("Colour"),
+            ];
+            ok = true;
+        });
 
-        when(uid != null) {
-            PageData["UserName"] = Server.getUserName(uid :> uint);
-        }
+        PageData["UserName"] = Server.getUserName(uid);
 
         when(ok) {
             mutable threads: PageDataArray = array(dist);
@@ -61,13 +57,12 @@ public class CategoryHandler: BaseHandler {
                 "@To" = to - 1,
             ];
 
-            using(reader = command2.executeReader()) {
-                i = reader.enumerate(j => {
+            i = command2.execute((j, reader: DataReader) => {
                     when(j < dist) {
-                        def id = reader.getValue.[uint?]("Id", 0);
-                        uid = reader.getValue.[uint?]("UserId", 0);
-                        //def _points = reader.getValue.[int?]("Points", 0);
-                        def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
+                        def id = reader.getValue.[uint]("Id", 0);
+                        uid = reader.getValue.[uint]("UserId", 0);
+                        //def _points = reader.getValue.[int]("Points", 0);
+                        def date= Date.FromTicks(reader.getValue.[long]("CreateDate", 0): long);
                         def title = reader.getValue.[string]("Title");
 
                         threads[j] = PageData() <- [
@@ -79,7 +74,7 @@ public class CategoryHandler: BaseHandler {
                         ];
                     }
                 });
-            }
+            //}
             when(i < dist) {
                 Array.Resize(ref threads, i);
             }

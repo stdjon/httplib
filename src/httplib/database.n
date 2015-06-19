@@ -144,6 +144,24 @@ public class Command {
         DataReader(Command.ExecuteReader(), this);
     }
 
+    public virtual execute(lambda: DataReader -> void): void {
+        using(reader = executeReader()) {
+            reader.enumerate(() => {
+                lambda(reader);
+            })
+        }
+    }
+
+    public virtual execute(lambda: int * DataReader -> void): int {
+        mutable result;
+        using(reader = executeReader()) {
+            result = reader.enumerate(i => {
+                lambda(i, reader);
+            })
+        }
+        result;
+    }
+
     public virtual executeScalar(): object {
         Command.ExecuteScalar();
     }

@@ -31,31 +31,25 @@ public class ThreadHandler: BaseHandler {
         mutable ok = false;
         mutable uid;
         mutable catid;
-        using(reader = command.executeReader()) {
-            reader.enumerate(() => {
-                uid = reader.getValue.[uint?]("UserId", 0);
-                catid = reader.getValue.[uint?]("CategoryId", 0);
-                def is_own_thread = (uid == SignedInUserId);
-                _ = PageData <- [
-                    "Title" = reader.getValue("Title"),
-                    "UserId" = uid,
-                    "CategoryId" = catid,
-                    "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
-                    //"CreateDate" = reader.getValue.[DateTime?]("CreateDate"),
-                    "ColourId" = reader.getValue("Colour"),
-                    "IsOwnThread" = is_own_thread,
-                    "OwnThreadClass" = is_own_thread ? "own-thread" : "",
-                ];
-                ok = true;
-            });
-        }
-        when(catid != null) {
-            PageData["Category"] = Server.getCategoryName(catid :> uint);
-        }
+        command.execute(reader: DataReader => {
+            uid = reader.getValue.[uint]("UserId", 0);
+            catid = reader.getValue.[uint]("CategoryId", 0);
+            def is_own_thread = (uid == SignedInUserId);
+            _ = PageData <- [
+                "Title" = reader.getValue("Title"),
+                "UserId" = uid,
+                "CategoryId" = catid,
+                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                //"CreateDate" = reader.getValue.[DateTime]("CreateDate"),
+                "ColourId" = reader.getValue("Colour"),
+                "IsOwnThread" = is_own_thread,
+                "OwnThreadClass" = is_own_thread ? "own-thread" : "",
+            ];
+            ok = true;
+        });
 
-        when(uid != null) {
-            PageData["UserName"] = Server.getUserName(uid :> uint);
-        }
+        PageData["Category"] = Server.getCategoryName(catid);
+        PageData["UserName"] = Server.getUserName(uid);
 
         when(ok) {
             mutable posts: PageDataArray = array(dist);
@@ -69,31 +63,29 @@ public class ThreadHandler: BaseHandler {
                 "@To" = to - 1,
             ];
 
-            using(reader = command2.executeReader()) {
-                i = reader.enumerate(j => {
-                    when(j < dist) {
-                        def id = reader.getValue.[uint?]("Id", 0);
-                        uid = reader.getValue.[uint?]("UserId", 0);
-                        def points = reader.getValue.[int?]("Points", 0);
-                        //def date = reader.getValue.[DateTime?]("CreateDate");
-                        def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
-                        def content = reader.getValue("OutputContent");
-                        def is_own_post = (uid == SignedInUserId);
+            i = command2.execute((j, reader: DataReader) => {
+                when(j < dist) {
+                    def id = reader.getValue.[uint]("Id", 0);
+                    uid = reader.getValue.[uint]("UserId", 0);
+                    def points = reader.getValue.[int]("Points", 0);
+                    //def date = reader.getValue.[DateTime]("CreateDate");
+                    def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
+                    def content = reader.getValue("OutputContent");
+                    def is_own_post = (uid == SignedInUserId);
 
-                        posts[j] = PageData() <- [
-                            "Number" = from + j,
-                            "PostId" = id,
-                            "UserId" = uid,
-                            "Points" = points,
-                            "CreateDate" = date,
-                            "Content" = content,
-                            "IsOwnPost" = is_own_post,
-                            "OwnPostClass" = is_own_post ? "own-post" : "",
+                    posts[j] = PageData() <- [
+                        "Number" = from + j,
+                        "PostId" = id,
+                        "UserId" = uid,
+                        "Points" = points,
+                        "CreateDate" = date,
+                        "Content" = content,
+                        "IsOwnPost" = is_own_post,
+                        "OwnPostClass" = is_own_post ? "own-post" : "",
 
-                        ];
-                    }
-                });
-            }
+                    ];
+                }
+            });
             when(i < dist) {
                 Array.Resize(ref posts, i);
             }
