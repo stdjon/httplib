@@ -81,8 +81,8 @@ Partials:
     <ul class="list-group">
     {{#Threads}}
       <li class="list-group-item">
-        <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>:
-        <em>{{Title}}</em> &mdash;` {{CreateDate}}</li>
+        <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+        <em>{{Title}}</em></li>
     {{/Threads}}
     </ul>
     {{/User}}
@@ -91,8 +91,8 @@ Partials:
     <ul class="list-group">
     {{#Posts}}
       <li class="list-group-item">
-        <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>:
-        <em>{{Content}}</em> &mdash; {{CreateDate}}</li>
+        <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+        <em>{{{Content}}}</em></li>
     {{/Posts}}
     </ul>
     {{/User}}

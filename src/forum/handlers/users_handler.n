@@ -179,9 +179,13 @@ public class UsersHandler: BasePageHandler {
             when(content.Length > 50) {
                 content = content.Substring(0, 47) + "...";
             }
+            // Use HtmlSanitizer to close any tags lost by the truncation of content.
+            // TODO: strip some additional tags: <p>, <h*> ...
+            def htmlsan = Server.getModuleInterface.[mod.IHtmlSanitizer]();
+
             posts[j] = PageData() <- [
                 "Id" = reader.getValue.[uint]("Id", 0),
-                "Content" = content,
+                "Content" = htmlsan.transform(content),
                 "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
             ];
         });
