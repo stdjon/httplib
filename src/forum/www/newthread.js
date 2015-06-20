@@ -37,3 +37,9 @@ function showPreview() {
 }
 
 
+$('#fp-text').keydown(function (e) {
+
+    if(e.ctrlKey && e.keyCode === 13) {
+        $('#fp-submit').click();
+    }
+});

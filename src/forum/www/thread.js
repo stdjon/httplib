@@ -156,7 +156,8 @@ function populateEditData(pid) {
             $('#prv-' + wnd_id).html(data.o);
             $('#te-' + wnd_id).trigger('input');
             $('#rnd-' + wnd_id + ' label').removeClass('active');
-            $('#rnd-' + wnd_id + '-' + data.t).addClass('active');
+            var t = data.t || _g.Transform;
+            $('#rnd-' + wnd_id + '-' + t).addClass('active');
         }
     });
 }

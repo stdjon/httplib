@@ -4,24 +4,26 @@ Content: |
       <pre><span></span><br></pre>
       <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"></textarea>
     </div>
-    <button class="btn btn-xs btn-warning" value="Preview"
-      onclick="showPreview('{{id}}'); return false;">Preview</button>
-    <button id="btn-{{id}}-submit" class="btn btn-xs btn-success" value="{{text}}"
-      onclick="{{submit}}('{{id}}'); return false;">{{text}}</button>
-    &nbsp;
-    <button id="btn-{{id}}-cancel" class="btn btn-xs btn-danger" value="Cancel"
-      onclick="{{cancel}}('{{id}}'); return false;">Cancel</button>
-    &nbsp;
-    <div id="rnd-{{id}}" class="btn-group" data-toggle="buttons">
-      <label id="rnd-{{id}}-bbcode" class="btn btn-xs btn-default btn-info">
-        <input type="radio" name="renderer" value="bbcode"/> BBCode
-      </label>
-      <label id="rnd-{{id}}-textile" class="btn btn-xs btn-default btn-info">
-        <input type="radio" name="renderer" value="textile" /> Textile
-      </label>
-      <label id="rnd-{{id}}-htmlsan" class="btn btn-xs btn-default btn-info">
-        <input type="radio" name="renderer" value="htmlsan" /> HTML
-      </label>
+    <div>
+      <button class="btn btn-xs btn-warning" value="Preview"
+        onclick="showPreview('{{id}}'); return false;">Preview</button>
+      <button id="btn-{{id}}-submit" class="btn btn-xs btn-success" value="{{text}}"
+        onclick="{{submit}}('{{id}}'); return false;">{{text}}</button>
+      &nbsp;
+      <button id="btn-{{id}}-cancel" class="btn btn-xs btn-danger" value="Cancel"
+        onclick="{{cancel}}('{{id}}'); return false;">Cancel</button>
+      &nbsp;
+      <div id="rnd-{{id}}" class="btn-group" data-toggle="buttons">
+        <label id="rnd-{{id}}-bbcode" class="btn btn-xs btn-default btn-info">
+          <input type="radio" name="renderer" value="bbcode"/> BBCode
+        </label>
+        <label id="rnd-{{id}}-textile" class="btn btn-xs btn-default btn-info">
+          <input type="radio" name="renderer" value="textile" /> Textile
+        </label>
+        <label id="rnd-{{id}}-htmlsan" class="btn btn-xs btn-default btn-info">
+          <input type="radio" name="renderer" value="htmlsan" /> HTML
+        </label>
+      </div>
     </div>
     <div class="preview-window">
       <span id="prv-{{id}}"><br></span>

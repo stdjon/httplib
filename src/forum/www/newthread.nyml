@@ -35,10 +35,10 @@ Partials:
     <div id="fp-controls">
       <div id="fp-area" class="expanding-area expanding-p-area">
         <pre><span></span><br></pre>
-        <textarea placeholder="[First post]" name="content"></textarea>
+        <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
       </div>
       <br>
-      Post format:
+      <button class="btn btn-warning" value="Preview" onclick="showPreview(); return false;">Preview</button>
       <div id="fp-render" class="btn-group" data-toggle="buttons">
         <label class="btn btn-default btn-info {{BbCodeActive}}">
           <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
@@ -50,7 +50,6 @@ Partials:
           <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
         </label>
       </div>
-      <button class="btn btn-warning" value="Preview" onclick="showPreview(); return false;">Preview</button>
       <br>
       <div class="preview-window">
         <span id="preview"><br></span>
@@ -59,9 +58,9 @@ Partials:
     <input id="colour" name="colour" type="hidden" value="x360"/>
     <input id="category" name="category" type="hidden" value="{{CategoryId}}"/>
     <p>&nbsp;</p>
-    <button type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
+    <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
       formmethod="post" formtarget="_top">Create thread</button>
-    <button type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
+    <button id="fp-cancel" type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
       formmethod="get" formtarget="_top">Abandon thread</button>
     </form>
   Guide: |
