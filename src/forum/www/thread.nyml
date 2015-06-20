@@ -86,6 +86,6 @@ Partials:
     <script src="/expanding-area.js"></script>
     <script src="/thread.js"></script>
   PageScripts: |
-    initThreadPage('{{Transform}}');
+    initThreadPage({{ThreadId}}, '{{Transform}}', {{From}}, {{To}});
 
 

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Cryptography;
+using System.Text;
 
 using Nemerle.Extensions;
+
+using Newtonsoft.Json;
 
 using httplib;
 
@@ -89,6 +93,7 @@ public class ForumServer: Server {
         route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
 
         route(HTTP.POST, "/preview-post", previewPostResponse);
+        route(HTTP.POST, "/createpost", createPostResponse);
 
         route(HTTP.GET, "/filter", filterTestResponse);
 
@@ -139,6 +144,80 @@ public class ForumServer: Server {
 
         if(ok) {
             response.append(result);
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public createPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        mutable ok = false;
+        mutable output = "";
+        mutable post_id, thid;
+        def utc_now = Date.NowTicks;
+        def cookies = request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def userid = isession ?
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+
+        when(userid != null) {
+            thid = UInt32.Parse(context.Vars["th"]);
+            def transform = context.Vars["r"];
+            def content = context.Vars["t"];
+            (ok, output) = renderPost(transform, content);
+
+            when(ok) {
+                def commmand = Database.createCommand(
+                    "INSERT INTO Posts(InputContent, OutputContent, "
+                        "Transform, UserId, ThreadId, CreateDate) VALUES("
+                        "@InputContent, @OutputContent, "
+                        "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
+                    "@InputContent" = content,
+                    "@OutputContent" = output,
+                    "@Transform" = transform,
+                    "@UserId" = userid,
+                    "@ThreadId" = thid,
+                    "@CreateDate" = utc_now,
+                ];
+
+                def result2 = commmand.executeNonQuery();
+                when(result2 <= 0) {
+                    ok = false;
+                }
+            }
+
+        }
+
+        when(ok) {
+            def commmand = Database.createCommand(
+                "SELECT Id FROM Posts WHERE "
+                    "UserId=@UserId AND CreateDate=@CreateDate") <- [
+                "@UserId" = userid,
+                "@CreateDate" = utc_now,
+            ];
+            post_id = commmand.executeScalar() :> uint?;
+
+            when(post_id == null) {
+                ok = false;
+            }
+        }
+        if(ok) {
+            def sb = StringBuilder();
+            def sw = StringWriter(sb);
+            using(jw = JsonTextWriter(sw)) {
+                jw.WriteStartObject();
+                jw.WritePropertyName("p");
+                jw.WriteValue(post_id :> uint);
+                jw.WritePropertyName("o");
+                jw.WriteValue(output);
+                jw.WritePropertyName("t");
+                jw.WriteValue(Date.FromTicks(utc_now));
+                jw.WriteEndObject();
+            }
+            response.append(sb.ToString());
+            //response.append(result);
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);

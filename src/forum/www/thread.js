@@ -25,9 +25,9 @@ function openExpandingArea(id, label, mode, btn_id) {
         '<button class="btn btn-xs btn-warning" value="Preview" ' +
             'onclick="showPreview(\'' + label + '\'); return false;">Preview</button>' +
         '<button class="btn btn-xs btn-success" value="Reply" ' +
-            'onclick="submit(\'' + label + '\'); return false;">Reply</button>' +
+            'onclick="submit' + mode + '(\'' + label + '\'); return false;">Reply</button>' +
         '<button class="btn btn-xs btn-danger" value="Cancel" ' +
-            'onclick="cancel' + mode + '(\'' + btn_id +'\', \'' + id +'\', \'#' + label + '\'); return false;">Cancel</button>' +
+            'onclick="close' + mode + '(\'' + btn_id +'\', \'' + id +'\', \'#' + label + '\'); return false;">Cancel</button>' +
         '<div class="preview-window">' +
             '<span id="prv-' + label + '"><br></span>' +
         '</div>' +
@@ -54,7 +54,7 @@ function showPreview(label) {
 }
 
 
-function cancel(data, btn_id, id, label) {
+function close(data, btn_id, id, label) {
     $(label).remove();
     $(id).data(data, false);
     $(btn_id).css('color', $(id).data('old-color'));
@@ -65,7 +65,7 @@ function reply(btn, id, pid) {
     var btn_id = '#' + $(btn).attr('id');
 
     if($(id).data('reply-open')) {
-        cancelReply(btn_id, id, '#r' + pid);
+        closeReply(btn_id, id, '#r' + pid);
 
     } else {
         openExpandingArea(id, 'r' + pid, 'Reply', btn_id);
@@ -77,8 +77,24 @@ function reply(btn, id, pid) {
 }
 
 
-function cancelReply(btn_id, id, label) {
-    cancel('reply-open', btn_id, id, label);
+function closeReply(btn_id, id, label) {
+    close('reply-open', btn_id, id, label);
+}
+
+
+function submitReply(label) {
+    var txt = $('#' + label + ' textarea').val();
+    var sel = $('#rnd-' + label + ' label.active input').val();
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/createpost',
+        data: 'r=' + sel + '&t=' + encodeURIComponent(txt) + '&th=' + _g.ThreadId,
+        success: function(data) {
+            location.reload(); //urgh...
+        }
+    });
 }
 
 
@@ -86,7 +102,7 @@ function edit(btn, id, pid) {
     var btn_id = '#' + $(btn).attr('id');
 
     if($(id).data('edit-open')) {
-        cancelEdit(btn_id, id, '#e' + pid);
+        closeEdit(btn_id, id, '#e' + pid);
 
     } else {
         openExpandingArea(id, 'e' + pid, 'Edit', btn_id);
@@ -98,8 +114,12 @@ function edit(btn, id, pid) {
 }
 
 
-function cancelEdit(btn_id, id, label) {
-    cancel('edit-open', btn_id, id, label);
+function closeEdit(btn_id, id, label) {
+    close('edit-open', btn_id, id, label);
+}
+
+
+function submitEdit() {
 }
 
 
@@ -143,8 +163,11 @@ function star(btn, id, pid) {
 }
 
 
-function initThreadPage(transform) {
+function initThreadPage(thid, transform, from, to) {
+    _g.ThreadId = thid;
     _g.Transform = transform;
+    _g.From = from;
+    _g.To = to;
 
     switch(transform) {
         case 'bbcode': {

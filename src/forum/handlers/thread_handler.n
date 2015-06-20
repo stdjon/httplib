@@ -104,6 +104,9 @@ public class ThreadHandler: BaseHandler {
             }
 
             _ = PageData <- [
+                "ThreadId" = thid,
+                "From" = from,
+                "To" = to,
                 "Posts" = posts,
                 "Markers" = markers,
             ];
