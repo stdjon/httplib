@@ -6,43 +6,47 @@ var _d = {
 };
 
 
-// FIXME: template this!
-function openExpandingArea(id, label, mode, btn_id) {
-    $('<div id="'+ label +'" class="reply post">' +
-        '<div class="expanding-area expanding-p-area">' +
-            '<pre><span></span><br></pre>' +
-            '<textarea id="te-' + label + '" placeholder="['+ mode + ']" name="content"></textarea>' +
-        '</div>' +
-        '<button class="btn btn-xs btn-warning" value="Preview" ' +
-            'onclick="showPreview(\'' + label + '\'); return false;">Preview</button>' +
-        '<button class="btn btn-xs btn-success" value="' + mode + '" ' +
-            'onclick="submit' + mode + '(\'' + label + '\'); return false;">' + mode + '</button>' +
-        '&nbsp;<button class="btn btn-xs btn-danger" value="Cancel" ' +
-            'onclick="close' + mode + '(' + label + '\'); return false;">Cancel</button>' +
-        '&nbsp;<div id="rnd-' + label + '" class="btn-group" data-toggle="buttons">' +
-            '<label id="rnd-' + label + '-bbcode" class="btn btn-xs btn-default btn-info ' + _d.bb_active + '">' +
-                '<input type="radio" name="renderer" value="bbcode"/> BBCode' +
-            '</label>' +
-            '<label id="rnd-' + label + '-textile" class="btn btn-xs btn-default btn-info ' + _d.tx_active + '">' +
-                '<input type="radio" name="renderer" value="textile" /> Textile' +
-            '</label>' +
-            '<label id="rnd-' + label + '-htmlsan" class="btn btn-xs btn-default btn-info ' + _d.hs_active + '">' +
-                '<input type="radio" name="renderer" value="htmlsan" /> HTML' +
-            '</label>' +
-        '</div>' +
-        '<div class="preview-window">' +
-            '<span id="prv-' + label + '"><br></span>' +
-        '</div>' +
-    '</div>').insertAfter(id);
-    $('#te-' + label).focus();
+var _w = {
+    edit: { text: 'Edit', submit: 'submitEdit', cancel: 'closeEdit' },
+    reply: { text: 'Reply', submit: 'submitReply', cancel: 'closeReply' },
+};
 
-    initalizeExpandingAreas();
+
+function openWindow(num, wnd_id, text, btn_id, next) {
+    var w = _w[text];
+
+    $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/window',
+        data: 'id=' + wnd_id + 
+            '&submit=' + w.submit + '&cancel=' + w.cancel + '&text=' + w.text,
+        success: function(data) {
+            $(data).insertAfter(num);
+            $('#te-' + wnd_id).focus();
+
+            initalizeExpandingAreas();
+
+            $('#te-' + wnd_id).keydown(function (e) {
+
+                if(e.ctrlKey && e.keyCode === 13) {
+                    $('#btn-' + wnd_id + '-submit').click();
+                }
+                if(e.keyCode === 27) {
+                    $('#btn-' + wnd_id + '-cancel').click();
+                }
+            });
+
+            next();
+        }
+    });
 }
 
 
-function showPreview(label) {
-    var txt = $('#' + label + ' textarea').val();
-    var sel = $('#rnd-' + label + ' label.active input').val();
+function showPreview(wnd_id) {
+    var txt = $('#' + wnd_id + ' textarea').val();
+    var sel = $('#rnd-' + wnd_id + ' label.active input').val();
     $.ajax({
         type: 'POST',
         dataType: 'text',
@@ -50,51 +54,53 @@ function showPreview(label) {
         url: '/preview-post',
         data: 'r=' + sel + '&t=' + encodeURIComponent(txt),
         success: function(data) {
-            $('#prv-' + label).html(data);
+            $('#prv-' + wnd_id).html(data);
         }
     });
 }
 
 
-function close(data, label) {
-    var d = _d.windows[label];
-    $('#' + label).remove();
-    $(d.id).data(data, false);
-    $(d.btn_id).css('color', $(d.id).data('old-color'));
+function close(data, wnd_id) {
+    var d = _d.windows[wnd_id];
+    $('#' + wnd_id).remove();
+    $(d.num).data(data, false);
+    $(d.btn_id).css('color', $(d.num).data('old-color'));
 }
 
 
-function reply(btn, id, pid) {
+function reply(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
-    var label = 'r' + pid;
+    var wnd_id = 'r' + pid;
 
-    if($(id).data('reply-open')) {
-        closeReply(label);
+    if($(num).data('reply-open')) {
+        closeReply(wnd_id);
 
     } else {
-        openExpandingArea(id, label, 'Reply', btn_id);
-        _d.windows[label] = {
-            btn_id: btn_id,
-            id: id,
-            pid: pid,
-        }
-
-        $(id).data('reply-open', true).
+        openWindow(num, wnd_id, 'reply', btn_id, function() {
+            $('#rnd-' + wnd_id + ' label').removeClass('active');
+            $('#rnd-' + wnd_id + '-' + _g.Transform).addClass('active');
+            _d.windows[wnd_id] = {
+                btn_id: btn_id,
+                num: num,
+                pid: pid,
+            }
+        });
+        $(num).data('reply-open', true).
             data('old-color', $(btn).css('color'));
         $(btn).css('color', colFromId(_g.ColourId));
     }
 }
 
 
-function closeReply(label) {
-    close('reply-open', label);
+function closeReply(wnd_id) {
+    close('reply-open', wnd_id);
 }
 
 
-function submitReply(label) {
+function submitReply(wnd_id) {
 
-    var txt = $('#' + label + ' textarea').val();
-    var sel = $('#rnd-' + label + ' label.active input').val();
+    var txt = $('#' + wnd_id + ' textarea').val();
+    var sel = $('#rnd-' + wnd_id + ' label.active input').val();
     $.ajax({
         type: 'POST',
         dataType: 'json',
@@ -108,36 +114,37 @@ function submitReply(label) {
 }
 
 
-function edit(btn, id, pid) {
+function edit(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
-    var label = 'e' + pid;
+    var wnd_id = 'e' + pid;
 
-    if($(id).data('edit-open')) {
-        closeEdit(label);
+    if($(num).data('edit-open')) {
+        closeEdit(wnd_id);
 
     } else {
-        openExpandingArea(id, label, 'Edit', btn_id);
-        populateEditData(pid);
-        _d.windows[label] = {
-            btn_id: btn_id,
-            id: id,
-            pid: pid,
-        }
+        openWindow(num, wnd_id, 'edit', btn_id, function() {
+            populateEditData(pid);
+            _d.windows[wnd_id] = {
+                btn_id: btn_id,
+                num: num,
+                pid: pid,
+            }
+        });
 
-        $(id).data('edit-open', true).
+        $(num).data('edit-open', true).
             data('old-color', $(btn).css('color'));
         $(btn).css('color', colFromId(_g.ColourId));
     }
 }
 
 
-function closeEdit(label) {
-    close('edit-open', label);
+function closeEdit(wnd_id) {
+    close('edit-open', wnd_id);
 }
 
 
 function populateEditData(pid) {
-    var label = 'e' + pid;
+    var wnd_id = 'e' + pid;
     $.ajax({
         type: 'POST',
         dataType: 'json',
@@ -145,20 +152,20 @@ function populateEditData(pid) {
         url: '/get-post',
         data: 'p=' + pid,
         success: function(data) {
-            $('#te-' + label).html(data.i);
-            $('#prv-' + label).html(data.o);
-            $('#te-' + label).trigger('input');
-            $('#rnd-' + label + ' label').removeClass('active');
-            $('#rnd-' + label + '-' + data.t).addClass('active');
+            $('#te-' + wnd_id).html(data.i);
+            $('#prv-' + wnd_id).html(data.o);
+            $('#te-' + wnd_id).trigger('input');
+            $('#rnd-' + wnd_id + ' label').removeClass('active');
+            $('#rnd-' + wnd_id + '-' + data.t).addClass('active');
         }
     });
 }
 
 
-function submitEdit(label) {
-    var txt = $('#' + label + ' textarea').val();
-    var sel = $('#rnd-' + label + ' label.active input').val();
-    var pid = _d.windows[label].pid;
+function submitEdit(wnd_id) {
+    var txt = $('#' + wnd_id + ' textarea').val();
+    var sel = $('#rnd-' + wnd_id + ' label.active input').val();
+    var pid = _d.windows[wnd_id].pid;
     $.ajax({
         type: 'POST',
         dataType: 'json',
@@ -166,34 +173,34 @@ function submitEdit(label) {
         url: '/update-post',
         data: 'p=' + pid + '&r=' + sel + '&t=' + encodeURIComponent(txt) + '&th',
         success: function(data) {
-            var d = _d.windows[label];
+            var d = _d.windows[wnd_id];
 
-            closeEdit(label);
+            closeEdit(wnd_id);
             $('#c-' + pid).html(data.o);
         }
     });
 }
 
 
-function quote(btn, id, pid) {
-    if($(id).data('quote-open')) {
-        $(id).data('quote-open', false);
-        $(btn).css('color', $(id).data('old-color'));
+function quote(btn, num, pid) {
+    if($(num).data('quote-open')) {
+        $(num).data('quote-open', false);
+        $(btn).css('color', $(num).data('old-color'));
     } else {
-        $(id).data('quote-open', true).
+        $(num).data('quote-open', true).
             data('old-color', $(btn).css('color'));
         $(btn).css('color', colFromId(_g.ColourId));
     }
 }
 
 
-function thumbsup(btn, id, pid) {
-    if($(id).data('thumbed')) {
-        $(id).data('thumbed', false);
-        $(btn).css('color', $(id).data('old-color')).
+function thumbsup(btn, num, pid) {
+    if($(num).data('thumbed')) {
+        $(num).data('thumbed', false);
+        $(btn).css('color', $(num).data('old-color')).
             attr('class', 'fa fa-fw fa-thumbs-o-up');
     } else {
-        $(id).data('thumbed', true).
+        $(num).data('thumbed', true).
             data('old-color', $(btn).css('color'));
         $(btn).css('color', colFromId(_g.ColourId)).
             attr('class', 'fa fa-fw fa-thumbs-up');
@@ -201,13 +208,13 @@ function thumbsup(btn, id, pid) {
 }
 
 
-function star(btn, id, pid) {
-    if($(id).data('starred')) {
-        $(id).data('starred', false);
-        $(btn).css('color', $(id).data('old-color')).
+function star(btn, num, pid) {
+    if($(num).data('starred')) {
+        $(num).data('starred', false);
+        $(btn).css('color', $(num).data('old-color')).
             attr('class', 'fa fa-fw fa-star-o');
     } else {
-        $(id).data('starred', true).
+        $(num).data('starred', true).
             data('old-color', $(btn).css('color'));
         $(btn).css('color', colFromId(_g.ColourId)).
             attr('class', 'fa fa-fw fa-star');

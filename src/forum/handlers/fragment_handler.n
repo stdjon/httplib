@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Web;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class FragmentHandler: BaseHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        foreach(k in Request.QueryString.Keys) {
+            PageData[k] = Request.QueryString[k];
+        }
+
+        foreach(k in Context.Vars.Keys) {
+            PageData[k] = Context.Vars[k];
+        }
+    }
+
+    public override renderPage(renderer: Renderer, fs: Stream): string {
+        def page = renderer.loadPage(fs);
+
+        page.renderContent(PageData);
+    }
+}
+
+
+} // forum
+

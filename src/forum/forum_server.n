@@ -97,6 +97,10 @@ public class ForumServer: Server {
         route(HTTP.POST, "/update-post", updatePostResponse);
         route(HTTP.POST, "/get-post", getPostDataResponse);
 
+        route([(HTTP.POST, "/window"),
+            (HTTP.GET, "/window")], // for testing only?
+            FragmentHandler.Factory("editwindow.nyml"));
+
         route(HTTP.GET, "/filter", filterTestResponse);
 
         route(HTTP.GET, "/custom-styles.css",
