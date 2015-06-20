@@ -48,13 +48,11 @@ public class NavHandler: BasePageHandler {
         if(Request.IsSecure) {
             def cookies = Request.Cookies;
             def session = cookies ? cookies["_session"] : null;
-            mutable id: uint = 0;
+            mutable id = 0U;
 
             when(!String.IsNullOrEmpty(session)) {
 
-                def test =
-                    Server.getUserIdFromSessionToken(STOK.SECURE, session);
-                id = test ? (test :> uint) : 0;
+                id = Server.getUserIdFromSessionToken(STOK.SECURE, session);
             }
 
             if(id > 0) {

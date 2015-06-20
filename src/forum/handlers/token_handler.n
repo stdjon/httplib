@@ -40,11 +40,10 @@ public class TokenHandler: BasePageHandler {
             def t = Context.Vars["t"];
 
             def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
-            def chk = tmp ? (tmp :> uint == 0) : false;
+            def chk = (tmp == 0);
             def cookies = Request.Cookies;
             def session = cookies ? cookies["_session"] : null;
-            def tmp2 = Server.getUserIdFromSessionToken(STOK.SECURE, session);
-            def id: uint = tmp2 ? (tmp2 :> uint) : 0;
+            def id = Server.getUserIdFromSessionToken(STOK.SECURE, session);
             mutable ok = false;
 
             when(chk && id != 0) {
@@ -69,8 +68,7 @@ public class TokenHandler: BasePageHandler {
     public tokCheckResponse(): void {
 
         def t = Context.Vars["t"];
-        def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
-        def id: uint = tmp ? (tmp :> uint) : 0;
+        def id = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
         mutable ok = false;
 
         when(id > 0) {

@@ -58,7 +58,7 @@ public class CssHandler: BaseHandler {
         def userid = isession ?
             Server.getUserIdFromSessionToken(STOK.INSECURE, isession) :
             (session ?
-                Server.getUserIdFromSessionToken(STOK.SECURE, session) : null);
+                Server.getUserIdFromSessionToken(STOK.SECURE, session) : 0);
 
 
         Font = "serif1";

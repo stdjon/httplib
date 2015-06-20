@@ -41,11 +41,11 @@ public class UsersHandler: BasePageHandler {
         def page_userid = command.executeScalar() :> uint?;
 
         def is_prefs =
-            (session_userid != null) && (page_userid != null) &&
+            (session_userid != 0) && (page_userid != null) &&
             (session_userid == page_userid);
 
         if(is_prefs) {
-            initializePrefs(session_userid :> uint, user);
+            initializePrefs(session_userid, user);
         } else {
             initializeUser(user);
         }

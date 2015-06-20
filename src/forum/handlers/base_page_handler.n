@@ -89,9 +89,9 @@ public class BasePageHandler: BaseHandler {
 
         if(isession != null) {
             def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
-            SignedInUserId = id ? (id :> uint) : 0;
+            SignedInUserId = id;
 
-            def name = id ? Server.getUserName(id :> uint) : null;
+            def name = (id != 0) ? Server.getUserName(id) : null;
             PageData["SignedInUser"] = name;
         } else {
             def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);

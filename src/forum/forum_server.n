@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Cryptography;
 using System.Text;
 
 using Nemerle.Extensions;
@@ -13,51 +12,14 @@ using httplib;
 
 namespace forum {
 
-// Security Token types
-type SecurityToken = STOK;
-public enum STOK {
-    | SECURE
-    | INSECURE
-    | TEMPORARY
-}
-
-
-// TODO: make this configurable
-public module SecureTokenExtensions {
-
-    // Token Length (bytes)
-    public Length(this tok: SecurityToken): int {
-        match(tok) {
-            | SECURE => 60
-            | INSECURE => 40
-            | TEMPORARY => 20
-        }
-    }
-
-    // Token duration (minutes)
-    public Duration(this tok: SecurityToken): int {
-        match(tok) {
-            | SECURE => 30 * 24 * 60
-            | INSECURE => 30
-            | TEMPORARY => 1
-        }
-    }
-
-    public IsSecure(this tok: SecurityToken): bool {
-        | SECURE => true
-        | _ => false
-    }
-}
-
-
 public class ForumServer: Server {
 
-    Rng: RNGCryptoServiceProvider { get; private set; }
+    SessionToken: SessionToken { get; private set; }
 
     public this(path: string) {
         base(path);
 
-        Rng = RNGCryptoServiceProvider();
+        SessionToken = SessionToken(this);
 
         route([ (HTTP.GET, "/"),
             (HTTP.GET, "/index") ], BasePageHandler.Factory("index.nyml"));
@@ -166,9 +128,9 @@ public class ForumServer: Server {
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
 
-        when(userid != null) {
+        when(userid != 0) {
             thid = UInt32.Parse(context.Vars["th"]);
             def transform = context.Vars["r"];
             def content = context.Vars["t"];
@@ -239,9 +201,9 @@ public class ForumServer: Server {
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
 
-        when(userid != null) {
+        when(userid != 0) {
             post_id = UInt32.Parse(context.Vars["p"]);
             def transform = context.Vars["r"];
             def content = context.Vars["t"];
@@ -292,9 +254,9 @@ public class ForumServer: Server {
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
 
-        when(userid != null) {
+        when(userid != 0) {
             post_id = UInt32.Parse(context.Vars["p"]);
             def commmand = Database.createCommand(
                 "SELECT InputContent, OutputContent, Transform FROM Posts WHERE "
@@ -380,10 +342,10 @@ public class ForumServer: Server {
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
         mutable ok = false;
 
-        when(userid != null) {
+        when(userid != 0) {
             def command = Database.createCommand(
                 "UPDATE Users SET Location=@Location, Motto=@Motto, "
                     "Colour=@Colour, Transform=@Transform, Font=@Font WHERE "
@@ -554,62 +516,16 @@ public class ForumServer: Server {
         commmand.executeScalar() :> string;
     }
 
-    public getSessionToken(tok: SecurityToken): string {
-        def bytes = array(tok.Length());
-        Rng.GetBytes(bytes);
-        def result = Convert.ToBase64String(bytes);
-        Log.t("result.Length = {0}", result.Length);
-        result;
-    }
-
-    public compareSessionTokens(tok: SecurityToken, a: string, b: string): bool {
-        def ba = Convert.FromBase64String(a);
-        def bb = Convert.FromBase64String(b);
-        mutable cmp = a.Length ^ b.Length;
-        for(mutable i = 0; i < tok.Length(); i++) {
-            def ca = ba[i % a.Length];
-            def cb = bb[i % b.Length];
-            cmp |= ca ^ cb;
-        }
-        cmp == 0;
-    }
-
     public registerSessionToken(
-        tok: SecurityToken, id: uint): bool * string * DateTime {
+        tok: SessionTokenType, id: uint): bool * string * DateTime {
 
-        def token = getSessionToken(tok);
-        def expiry = Date.Now.AddMinutes(tok.Duration()).Ticks;
-
-        mutable command = Database.createCommand(
-            "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
-                "VALUES(@UserId, @Token, @ExpiryTime, @IsSecure)") <- [
-            "@UserId" = id,
-            "@Token" = token,
-            "@ExpiryTime" = expiry,
-            "@IsSecure" = tok.IsSecure(),
-        ];
-        def rows = command.executeNonQuery();
-        (rows == 1, token, Date.FromTicks(expiry));
+        SessionToken.register(tok, id);
     }
 
-    public expireSessionTokens(): void {
-        def now = Date.NowTicks;
+    public getUserIdFromSessionToken(
+        tok: SessionTokenType, token: string): uint {
 
-        def command = Database.createCommand(
-            "DELETE FROM Sessions WHERE (ExpiryTime < @Now)") <- [ "@Now" = now ];
-        def rows = command.executeNonQuery();
-        Log.i("Deleted {0} expired session tokens...", rows);
-    }
-
-    public getUserIdFromSessionToken(tok: SecurityToken, token: string): uint? {
-        expireSessionTokens();
-        def commmand = Database.createCommand(
-            "SELECT (UserId) FROM Sessions WHERE "
-                "(Token = @Token AND IsSecure = @IsSecure)") <- [
-            "@Token" = token,
-            "@IsSecure" = tok.IsSecure(),
-        ];
-        commmand.executeScalar() :> uint?;
+        SessionToken.getUserId(tok, token);
     }
 }
 

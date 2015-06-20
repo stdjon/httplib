@@ -1,0 +1,123 @@
+using System;
+using System.Security.Cryptography;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+// Security Token types
+type SessionTokenType = STOK;
+public enum STOK {
+    | SECURE
+    | INSECURE
+    | TEMPORARY
+}
+
+
+// TODO: make this configurable
+public module SecureTokenExtensions {
+
+    // Token Length (bytes)
+    public Length(this tok: SessionTokenType): int {
+        match(tok) {
+            | SECURE => 60
+            | INSECURE => 40
+            | TEMPORARY => 20
+        }
+    }
+
+    // Token duration (minutes)
+    public Duration(this tok: SessionTokenType): int {
+        match(tok) {
+            | SECURE => 30 * 24 * 60
+            | INSECURE => 30
+            | TEMPORARY => 1
+        }
+    }
+
+    public IsSecure(this tok: SessionTokenType): bool {
+        | SECURE => true
+        | _ => false
+    }
+}
+
+
+[HasLogging]
+public class SessionToken {
+
+    rng: RNGCryptoServiceProvider = null;
+    server: ForumServer = null;
+    database: Database = null;
+
+    public this(s: ForumServer) {
+        server = s;
+        database = s.Database;
+        rng = RNGCryptoServiceProvider();
+    }
+
+    public create(tok: SessionTokenType): string {
+        def bytes = array(tok.Length());
+        rng.GetBytes(bytes);
+        def result = Convert.ToBase64String(bytes);
+        Log.t("result.Length = {0}", result.Length);
+        result;
+    }
+
+    public compare(tok: SessionTokenType, a: string, b: string): bool {
+        def ba = Convert.FromBase64String(a);
+        def bb = Convert.FromBase64String(b);
+        mutable cmp = a.Length ^ b.Length;
+        for(mutable i = 0; i < tok.Length(); i++) {
+            def ca = ba[i % a.Length];
+            def cb = bb[i % b.Length];
+            cmp |= ca ^ cb;
+        }
+        cmp == 0;
+    }
+
+    public register(
+        tok: SessionTokenType, id: uint): bool * string * DateTime {
+
+        def token = create(tok);
+        def expiry = Date.Now.AddMinutes(tok.Duration()).Ticks;
+
+        mutable command = database.createCommand(
+            "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
+                "VALUES(@UserId, @Token, @ExpiryTime, @IsSecure)") <- [
+            "@UserId" = id,
+            "@Token" = token,
+            "@ExpiryTime" = expiry,
+            "@IsSecure" = tok.IsSecure(),
+        ];
+        def rows = command.executeNonQuery();
+        (rows == 1, token, Date.FromTicks(expiry));
+    }
+
+    public expire(): void {
+        def now = Date.NowTicks;
+
+        def command = database.createCommand("DELETE FROM Sessions WHERE "
+            "(ExpiryTime < @Now)") <- [ "@Now" = now ];
+        def rows = command.executeNonQuery();
+        Log.i("Deleted {0} expired session tokens...", rows);
+    }
+
+    public getUserId(tok: SessionTokenType, token: string): uint {
+        expire();
+        def commmand = database.createCommand(
+            "SELECT (UserId) FROM Sessions WHERE "
+                "(Token = @Token AND IsSecure = @IsSecure)") <- [
+            "@Token" = token,
+            "@IsSecure" = tok.IsSecure(),
+        ];
+        def result = commmand.executeScalar() :> uint?;
+        result ? (result :> uint) : 0U;
+    }
+}
+
+
+} // namespace forum
+
