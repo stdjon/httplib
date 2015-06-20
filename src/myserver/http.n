@@ -520,7 +520,7 @@ class MyServer: Server {
         response.Status = (200, "OK");
     }
 
-    protected override internalServerError(ex: Exception): void {
+    public override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
     }

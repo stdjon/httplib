@@ -83,12 +83,14 @@ public class ComplexHandler: Handler {
 
         def path = PagePath;
         mutable fs = null;
+        mutable renderer = null;
+
         when(!String.IsNullOrEmpty(path)) {
             fs = openFile(path);
+            def ext = Path.GetExtension(path).Substring(1);
+            renderer = getRenderer(ext);
         }
 
-        def ext = Path.GetExtension(path).Substring(1);
-        mutable renderer = getRenderer(ext);
         when(renderer != null) {
             def text = renderPage(renderer, fs);
             Response.append(text);

@@ -1,5 +1,6 @@
 using Nemerle;
 using Nemerle.Compiler;
+using Nemerle.Compiler.NemerleModifiers;
 using Nemerle.Compiler.Parsetree;
 
 
@@ -19,19 +20,20 @@ macro HasHandlerFactory(type_builder : TypeBuilder) {
 
     mutable mems = [];
     mutable prms = [];
-    mutable ctor;
+    mutable ctor, param_length;
     def ctors = type_builder.GetConstructors();
     foreach(c: IMethod in ctors) {
 
         def ctor_params = c.GetParameters();
         mutable i = 0;
-        when(!c.IsPrivate && ctor_params.Length > 1) {
+        when(!c.IsPrivate && ctor_params.Length >= 1) {
             foreach(p in ctor_params) {
                 when(i == 0 && p.Type.ToString() == "httplib.HandlerData") {
                     if(ctor != null) {
                         Message.Error("Too many ctors on handler type.");
                     } else {
                         ctor = c;
+                        param_length = ctor_params.Length;
                     }
                 }
                 def pt = p.Type;
@@ -53,8 +55,17 @@ macro HasHandlerFactory(type_builder : TypeBuilder) {
     prms = prms.Reverse();
 
     if(ctor != null) {
+
+        // If the factory has members, we tag it with the [Record] attribute,
+        // which builds a constructor to initialize each member automatically.
+        // If it doesn't, [Record] causes a compile error by duplicating the
+        // implicit this() ctor.
+        def attrs = if(param_length > 1) { [ <[ Record ]> ] } else { [] };
+
+        def attrs_mods = AttributesAndModifiers(Public | New, attrs);
+
         def factory_type = type_builder.DefineNestedType( <[ decl:
-            [Record]
+            ..$attrs_mods
             public new class Factory: IHandlerFactory {
                 ..$mems;
             }

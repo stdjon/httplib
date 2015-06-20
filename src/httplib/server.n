@@ -366,7 +366,7 @@ public class Server: IDisposable {
     }
 
     /** Overridden by child classes */
-    protected virtual internalServerError(_: Exception): void {
+    public virtual internalServerError(_: Exception): void {
         //...
     }
 

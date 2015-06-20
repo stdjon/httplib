@@ -1,0 +1,118 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class CreateThreadHandler: BaseHandler {
+
+    public this(hd: HandlerData) {
+        base(hd, null);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def title = Context.Vars["title"];
+        def colour = Context.Vars["colour"];
+        def fp = Context.Vars["fp"];
+        def content = Context.Vars["content"];
+        mutable renderer = Context.Vars["renderer"];
+        def category = UInt32.Parse(Context.Vars["category"]);
+        def utc_now = Date.NowTicks;
+        def cookies = Request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def userid = isession ?
+            Server.getUserIdFromSessionToken(STOK.INSECURE, isession) : 0;
+        mutable thid: uint = 0;
+        mutable ok = false;
+
+        when(String.IsNullOrEmpty(renderer)) {
+            def command = Server.Database.createCommand(
+                "SELECT Transform FROM Users WHERE Id=@Id") <- [ "@Id" = userid ];
+            renderer = command.executeScalar() :> string;
+            Log.d("renderer was not set; user's DB default is '{0}'...", renderer);
+        }
+
+        def (render_ok, output) = Server.renderPost(renderer, content);
+        ok = render_ok;
+
+        Log.d("createThreadResponse(): category={0}, userid={1}, renderer={2}, "
+            "utc_now={3}, fp={4}", category, userid, renderer, utc_now, fp);
+
+        Server.Database.withTransaction(db => {
+            def commmand = db.createCommand(
+                "INSERT INTO Threads("
+                    "Title, UserId, CategoryId, CreateDate, Colour) VALUES("
+                    "@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
+                "@Title" = title,
+                "@UserId" = userid,
+                "@CategoryId" = category,
+                "@CreateDate" = utc_now,
+                "@Colour" = colour
+            ];
+            def result = commmand.executeNonQuery();
+            Log.t("result={0}", result);
+
+            when(result > 0) {
+                def commmand2 = db.createCommand(
+                    "SELECT Id From Threads WHERE Title=@Title AND "
+                        "UserId=@UserId AND CreateDate=@CreateDate") <- [
+                    "@Title" = title,
+                    "@UserId" = userid,
+                    "@CreateDate" = utc_now,
+                ];
+                def thid_ = commmand2.executeScalar() :> uint?;
+
+                when(thid_ != null) {
+                    thid = thid_ :> uint;
+                }
+
+                Log.d("createThreadResponse: thid={0}", thid);
+                when(thid > 0) {
+                    if(fp == "on") {
+
+                        def commmand3 = db.createCommand(
+                            "INSERT INTO Posts(InputContent, OutputContent, "
+                                "Transform, UserId, ThreadId, CreateDate) VALUES("
+                                "@InputContent, @OutputContent, "
+                                "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
+                            "@InputContent" = content,
+                            "@OutputContent" = output,
+                            "@Transform" = renderer,
+                            "@UserId" = userid,
+                            "@ThreadId" = thid,
+                            "@CreateDate" = utc_now,
+                        ];
+
+                        def result2 = commmand3.executeNonQuery();
+                        Log.t("result2={0}", result2);
+                        when(result2 > 0) {
+                            ok = true;
+                        }
+                    } else {
+                        ok = true;
+                    }
+                }
+            }
+        }, ex => {
+            Server.internalServerError(ex);
+        });
+
+        if(ok) {
+            // redirect to newly-created thread page...
+            Response["Location"] = $"$(Server.getDefaultPrefix(Request))/th/$thid";
+            Response.Status = (303, "See Other");
+        } else {
+            // TODO: return to /createthread page?
+            Server.internalServerErrorResponse(Context, Request, Response);
+        }
+    }
+}
+
+
+} // forum.hnd
