@@ -34,7 +34,7 @@ Partials:
       <div class="anchor" id="{{Number}}">
         <div class="post {{OwnPostClass}}">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          {{{Content}}}<br>
+          <span id="c-{{PostId}}">{{{Content}}}</span><br>
           <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>

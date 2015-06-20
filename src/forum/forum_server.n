@@ -94,6 +94,8 @@ public class ForumServer: Server {
 
         route(HTTP.POST, "/preview-post", previewPostResponse);
         route(HTTP.POST, "/createpost", createPostResponse);
+        route(HTTP.POST, "/update-post", updatePostResponse);
+        route(HTTP.POST, "/get-post", getPostDataResponse);
 
         route(HTTP.GET, "/filter", filterTestResponse);
 
@@ -218,6 +220,105 @@ public class ForumServer: Server {
             }
             response.append(sb.ToString());
             //response.append(result);
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public updatePostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        mutable ok = false;
+        mutable output = "";
+        mutable post_id;
+        def cookies = request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def userid = isession ?
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+
+        when(userid != null) {
+            post_id = UInt32.Parse(context.Vars["p"]);
+            def transform = context.Vars["r"];
+            def content = context.Vars["t"];
+            (ok, output) = renderPost(transform, content);
+
+            when(ok) {
+                def commmand = Database.createCommand(
+                    "UPDATE Posts SET InputContent=@InputContent, "
+                        "OutputContent=@OutputContent WHERE "
+                        "Id=@Id") <- [
+                    "@InputContent" = content,
+                    "@OutputContent" = output,
+                    "@Id" = post_id,
+                ];
+
+                def result2 = commmand.executeNonQuery();
+                when(result2 <= 0) {
+                    ok = false;
+                }
+            }
+        }
+
+        if(ok) {
+            def sb = StringBuilder();
+            def sw = StringWriter(sb);
+            using(jw = JsonTextWriter(sw)) {
+                jw.WriteStartObject();
+                jw.WritePropertyName("p");
+                jw.WriteValue(post_id);
+                jw.WritePropertyName("o");
+                jw.WriteValue(output);
+                jw.WriteEndObject();
+            }
+            response.append(sb.ToString());
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public getPostDataResponse(
+        context: Context, request: Request, response: Response): void {
+
+        mutable ok = false;
+        mutable input = "", output = "";
+        mutable post_id;
+        def cookies = request.Cookies;
+        def isession = cookies ? cookies["_isession"] : null;
+        def userid = isession ?
+            getUserIdFromSessionToken(STOK.INSECURE, isession) : null;
+
+        when(userid != null) {
+            post_id = UInt32.Parse(context.Vars["p"]);
+            def commmand = Database.createCommand(
+                "SELECT InputContent, OutputContent FROM Posts WHERE "
+                    "Id=@Id") <- [
+                "@Id" = post_id,
+            ];
+
+            commmand.execute(reader => {
+                input = reader.getValue("InputContent");
+                output = reader.getValue("OutputContent");
+            });
+
+            ok = true;
+        }
+
+        if(ok) {
+            def sb = StringBuilder();
+            def sw = StringWriter(sb);
+            using(jw = JsonTextWriter(sw)) {
+                jw.WriteStartObject();
+                jw.WritePropertyName("p");
+                jw.WriteValue(post_id);
+                jw.WritePropertyName("o");
+                jw.WriteValue(output);
+                jw.WritePropertyName("i");
+                jw.WriteValue(input);
+                jw.WriteEndObject();
+            }
+            response.append(sb.ToString());
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);

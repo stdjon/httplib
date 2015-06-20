@@ -1,33 +1,35 @@
-var data = {
+var _d = {
     bb_active: '',
     tx_active: '',
     hs_active: '',
+    windows: {},
 };
 
 
+// FIXME: template this!
 function openExpandingArea(id, label, mode, btn_id) {
     $('<div id="'+ label +'" class="reply post">' +
         '<div class="expanding-area expanding-p-area">' +
             '<pre><span></span><br></pre>' +
             '<textarea id="te-' + label + '" placeholder="['+ mode + ']" name="content"></textarea>' +
         '</div>' +
-        '<div id="rnd-' + label + '" class="btn-group" data-toggle="buttons">' +
-            '<label class="btn btn-xs btn-default btn-info ' + data.bb_active + '">' +
-                '<input type="radio" name="renderer" value="bbcode"/> BBCode' +
-            '</label>' +
-            '<label class="btn btn-xs btn-default btn-info ' + data.tx_active + '">' +
-                '<input type="radio" name="renderer" value="textile" /> Textile' +
-            '</label>' +
-            '<label class="btn btn-xs btn-default btn-info ' + data.hs_active + '">' +
-                '<input type="radio" name="renderer" value="htmlsan" /> HTML' +
-            '</label>' +
-        '</div>&nbsp;' +
         '<button class="btn btn-xs btn-warning" value="Preview" ' +
             'onclick="showPreview(\'' + label + '\'); return false;">Preview</button>' +
-        '<button class="btn btn-xs btn-success" value="Reply" ' +
-            'onclick="submit' + mode + '(\'' + label + '\'); return false;">Reply</button>' +
-        '<button class="btn btn-xs btn-danger" value="Cancel" ' +
-            'onclick="close' + mode + '(\'' + btn_id +'\', \'' + id +'\', \'#' + label + '\'); return false;">Cancel</button>' +
+        '<button class="btn btn-xs btn-success" value="' + mode + '" ' +
+            'onclick="submit' + mode + '(\'' + label + '\'); return false;">' + mode + '</button>' +
+        '&nbsp;<button class="btn btn-xs btn-danger" value="Cancel" ' +
+            'onclick="close' + mode + '(' + label + '\'); return false;">Cancel</button>' +
+        '&nbsp;<div id="rnd-' + label + '" class="btn-group" data-toggle="buttons">' +
+            '<label id="rnd-' + label + '-bbcode" class="btn btn-xs btn-default btn-info ' + _d.bb_active + '">' +
+                '<input type="radio" name="renderer" value="bbcode"/> BBCode' +
+            '</label>' +
+            '<label id="rnd-' + label + '-textile" class="btn btn-xs btn-default btn-info ' + _d.tx_active + '">' +
+                '<input type="radio" name="renderer" value="textile" /> Textile' +
+            '</label>' +
+            '<label id="rnd-' + label + '-htmlsan" class="btn btn-xs btn-default btn-info ' + _d.hs_active + '">' +
+                '<input type="radio" name="renderer" value="htmlsan" /> HTML' +
+            '</label>' +
+        '</div>' +
         '<div class="preview-window">' +
             '<span id="prv-' + label + '"><br></span>' +
         '</div>' +
@@ -54,21 +56,28 @@ function showPreview(label) {
 }
 
 
-function close(data, btn_id, id, label) {
-    $(label).remove();
-    $(id).data(data, false);
-    $(btn_id).css('color', $(id).data('old-color'));
+function close(data, label) {
+    var d = _d.windows[label];
+    $('#' + label).remove();
+    $(d.id).data(data, false);
+    $(d.btn_id).css('color', $(d.id).data('old-color'));
 }
 
 
 function reply(btn, id, pid) {
     var btn_id = '#' + $(btn).attr('id');
+    var label = 'r' + pid;
 
     if($(id).data('reply-open')) {
-        closeReply(btn_id, id, '#r' + pid);
+        closeReply(label);
 
     } else {
-        openExpandingArea(id, 'r' + pid, 'Reply', btn_id);
+        openExpandingArea(id, label, 'Reply', btn_id);
+        _d.windows[label] = {
+            btn_id: btn_id,
+            id: id,
+            pid: pid,
+        }
 
         $(id).data('reply-open', true).
             data('old-color', $(btn).css('color'));
@@ -77,12 +86,13 @@ function reply(btn, id, pid) {
 }
 
 
-function closeReply(btn_id, id, label) {
-    close('reply-open', btn_id, id, label);
+function closeReply(label) {
+    close('reply-open', label);
 }
 
 
 function submitReply(label) {
+
     var txt = $('#' + label + ' textarea').val();
     var sel = $('#rnd-' + label + ' label.active input').val();
     $.ajax({
@@ -100,12 +110,19 @@ function submitReply(label) {
 
 function edit(btn, id, pid) {
     var btn_id = '#' + $(btn).attr('id');
+    var label = 'e' + pid;
 
     if($(id).data('edit-open')) {
-        closeEdit(btn_id, id, '#e' + pid);
+        closeEdit(label);
 
     } else {
-        openExpandingArea(id, 'e' + pid, 'Edit', btn_id);
+        openExpandingArea(id, label, 'Edit', btn_id);
+        populateEditData(pid);
+        _d.windows[label] = {
+            btn_id: btn_id,
+            id: id,
+            pid: pid,
+        }
 
         $(id).data('edit-open', true).
             data('old-color', $(btn).css('color'));
@@ -114,12 +131,47 @@ function edit(btn, id, pid) {
 }
 
 
-function closeEdit(btn_id, id, label) {
-    close('edit-open', btn_id, id, label);
+function closeEdit(label) {
+    close('edit-open', label);
 }
 
 
-function submitEdit() {
+function populateEditData(pid) {
+    var label = 'e' + pid;
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/get-post',
+        data: 'p=' + pid,
+        success: function(data) {
+            $('#te-' + label).html(data.i);
+            $('#prv-' + label).html(data.o);
+            $('#te-' + label).trigger('input');
+            $('#rnd-' + label + ' label').removeClass('active');
+            $('#rnd-' + label + '-' + data.t).addClass('active');
+        }
+    });
+}
+
+
+function submitEdit(label) {
+    var txt = $('#' + label + ' textarea').val();
+    var sel = $('#rnd-' + label + ' label.active input').val();
+    var pid = _d.windows[label].pid;
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/update-post',
+        data: 'p=' + pid + '&r=' + sel + '&t=' + encodeURIComponent(txt) + '&th',
+        success: function(data) {
+            var d = _d.windows[label];
+
+            closeEdit(label);
+            $('#c-' + pid).html(data.o);
+        }
+    });
 }
 
 
@@ -171,15 +223,15 @@ function initThreadPage(thid, transform, from, to) {
 
     switch(transform) {
         case 'bbcode': {
-            data.bb_active = 'active';
+            _d.bb_active = 'active';
             break;
         }
         case 'textile': {
-            data.tx_active = 'active';
+            _d.tx_active = 'active';
             break;
         }
         default: {
-            data.hs_active = 'active';
+            _d.hs_active = 'active';
             break;
         }
     }
