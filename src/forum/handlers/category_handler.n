@@ -8,7 +8,7 @@ using httplib;
 namespace forum {
 
 [HasHandlerFactory]
-public class CategoryHandler: BaseHandler {
+public class CategoryHandler: BasePageHandler {
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);

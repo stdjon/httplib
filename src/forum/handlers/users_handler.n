@@ -8,7 +8,7 @@ using httplib;
 namespace forum {
 
 [HasHandlerFactory]
-public class UsersHandler: BaseHandler {
+public class UsersHandler: BasePageHandler {
 
     public IsPlural: bool { get; }
     public Transform: string { get; private set; }

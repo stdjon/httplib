@@ -60,7 +60,7 @@ public class ForumServer: Server {
         Rng = RNGCryptoServiceProvider();
 
         route([ (HTTP.GET, "/"),
-            (HTTP.GET, "/index") ], BaseHandler.Factory("index.nyml"));
+            (HTTP.GET, "/index") ], BasePageHandler.Factory("index.nyml"));
 
         route(HTTP.GET, "/nav-{{action}}", NavHandler.Factory(HTTP.GET));
         route(HTTP.POST, "/nav-{{action}}", NavHandler.Factory(HTTP.POST));

@@ -8,7 +8,7 @@ using Nemerle.Extensions;
 namespace forum {
 
 [HasHandlerFactory]
-public class SignupHandler: BaseHandler {
+public class SignupHandler: BasePageHandler {
 
     IsSubmit: bool;
 

@@ -38,25 +38,18 @@ public class Fonts {
 
 
 [HasHandlerFactory]
-[HasLogging]
-public class CssHandler: ComplexHandler {
+public class CssHandler: BaseHandler {
 
     [Accessor]
     static deserializer: YamlDeserializer = YamlDeserializer();
 
     public override ContentType: string { get { "text/css" } }
-    public override PagePath: string { get; private set; }
-    public override PageData: PageData { get; private set; }
 
     public Font: string { get; private set; }
     public Colour: string { get; private set; }
 
-    public new Server: ForumServer {
-        get { base.Server :> ForumServer }
-    }
-
     public this(hd: HandlerData, path: string, data: string) {
-        base(hd);
+        base(hd, path);
 
         def c = Request.QueryString["c"];
         def cookies = Request.Cookies;
@@ -79,9 +72,6 @@ public class CssHandler: ComplexHandler {
         command.execute(reader => {
             Font = reader.getValue("Font", "serif1");
         });
-
-        PagePath = path;
-        PageData = PageData();
 
         def data_file = Server.openLocalFile(data);
         using(reader = StreamReader(data_file)) {
@@ -109,6 +99,7 @@ public class CssHandler: ComplexHandler {
     }
 
     public override initialize(): void {
+        base.initialize();
     }
 
     public override renderPage(renderer: Renderer, fs: Stream): string {

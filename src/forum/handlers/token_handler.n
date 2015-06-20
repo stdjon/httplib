@@ -8,7 +8,7 @@ using Nemerle.Extensions;
 namespace forum {
 
 [HasHandlerFactory]
-public class TokenHandler: BaseHandler {
+public class TokenHandler: BasePageHandler {
 
     Method: HTTP { get; private set; }
 

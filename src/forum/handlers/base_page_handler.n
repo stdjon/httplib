@@ -1,0 +1,116 @@
+using System;
+using System.Collections.Specialized;
+using System.IO;
+using System.Web;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class BasePageHandler: BaseHandler {
+
+    public RenderContent: bool { get; private set; }
+
+    public SignedInUserId: uint { get; private set; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+
+        SignedInUserId = 0;
+
+        // remove QS components starting with _$
+        def parsed_url = parseUrl(Request.Url);
+
+        _ = PageData <- [
+            "DefaultSecurePrefix" = Server.DefaultSecurePrefix,
+            "DefaultInsecurePrefix" = Server.DefaultInsecurePrefix,
+            "DefaultPrefix" = Server.getDefaultPrefix(Request),
+            "CurrentUrl" = Uri.EscapeDataString(parsed_url),
+            "CurrentUrlUnescaped" = parsed_url,
+        ];
+
+        RenderContent =
+            Context.Vars["_$content"] != null ||
+            Request.QueryString["_$content"] != null;
+
+        if(RenderContent) {
+            PageData["RenderContent"] = true;
+        } else {
+            PageData["RenderFullPage"] = true;
+        }
+    }
+
+    public override initialize(): void {
+        temporaryLoginHandling(); //
+        initializeUserClasses();
+    }
+
+    public override renderPage(renderer: Renderer, fs: Stream): string {
+        def page = renderer.loadPage(fs);
+
+        if(RenderContent) {
+            page.renderContent(PageData);
+        } else {
+            page.render(PageData);
+        }
+    }
+
+    parseUrl(url: Uri): string {
+        def coll = HttpUtility.ParseQueryString(url.Query);
+        mutable qs = "";
+        foreach(x in coll.AllKeys) {
+            when(x.Length < 2 || x.Substring(0, 2) != "_$") {
+                def sep = String.IsNullOrEmpty(qs) ? "?" : "&";
+                qs += $"$sep$x=$(coll[x])";
+            }
+        }
+        def port_spec = url.IsDefaultPort ? "" : $":$(url.Port)";
+        def result = url.Scheme + "://" +
+            url.Host + port_spec + url.AbsolutePath + qs + url.Fragment;
+        Log.d("parseUrl: {0} -> {1}", url, result);
+        result;
+    }
+
+    // TODO: this lives here in the interim, handles the final stages of login
+    //  negotiation with the nav. 
+    temporaryLoginHandling(): void {
+        def signout = Request.QueryString["signout"];
+        def cookies = Request.Cookies;
+        def isession =
+            (signout == null && cookies != null) ? cookies["_isession"] : null;
+
+        when(signout != null) {
+            Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
+        }
+
+        if(isession != null) {
+            def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
+            SignedInUserId = id ? (id :> uint) : 0;
+
+            def name = id ? Server.getUserName(id :> uint) : null;
+            PageData["SignedInUser"] = name;
+        } else {
+            def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
+            PageData["TempToken"] = t;
+        }
+        Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
+    }
+
+    initializeUserClasses(): void {
+        def command = Server.Database.createCommand(
+            "SELECT Colour, Font From Users WHERE Id=@Id") <- [
+                "@Id" = SignedInUserId,
+            ];
+        command.execute(reader => {
+            PageData["FontClass"] = reader.getValue("Font", "serif1");
+            PageData["ColourClass"] = reader.getValue("Colour", "x360");
+        });
+    }
+}
+
+
+} // forum
