@@ -106,6 +106,13 @@ div.jumbotron h1 {
   font-size: 500%;
 }
 
+div.preview-window {
+  margin: 4px;
+  padding: 4px;
+  width: 100%;
+  border: 1px dotted #ccc;
+}
+
 /* Scrollspy requires this... */
 body, html { height:100%; }
 body > .anchor { min-height:100%; }

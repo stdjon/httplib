@@ -39,9 +39,11 @@ Partials:
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
-          &nbsp;<span class="fa fa-fw fa-reply" onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
+          &nbsp;<span id="btn-reply-{{Number}}" class="fa fa-fw fa-reply"
+            onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
           {{#IsOwnPost}}
-          <span class="fa fa-fw fa-edit" onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
+          <span id="btn-edit-{{Number}}" class="fa fa-fw fa-edit"
+            onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
           <span class="fa fa-fw fa-quote-left" onclick="quote(this, '#{{Number}}', {{PostId}})"></span>
           {{^IsOwnPost}}
@@ -83,5 +85,7 @@ Partials:
     <script src="/swatches.js"></script>
     <script src="/expanding-area.js"></script>
     <script src="/thread.js"></script>
+  PageScripts: |
+    initThreadPage('{{Transform}}');
 
 

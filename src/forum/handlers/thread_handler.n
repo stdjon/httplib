@@ -134,6 +134,11 @@ public class ThreadHandler: BaseHandler {
                 "Prev" = prev,
                 "Next" = next,
             ];
+
+            // User pref (transform)
+            def command3 = Server.Database.createCommand(
+                "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
+            PageData["Transform"] = command3.executeScalar() :> string;
         }
     }
 }

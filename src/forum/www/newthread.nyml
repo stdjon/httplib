@@ -22,12 +22,6 @@ Partials:
       div.swatches { cursor: default; }
       div.swatches span { cursor: pointer; }
       div.swatches span.selected { border: 1px dotted #000; }
-      div.preview-window {
-        margin: 4px;
-        padding: 4px;
-        width: 100%;
-        border: 1px dotted #ccc;
-      }
     </style>
     <p>&nbsp;</p>
     {{>Swatches}}
