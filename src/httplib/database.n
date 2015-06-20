@@ -70,7 +70,7 @@ public abstract class Database: IDisposable  {
     }
 
     public virtual createCommand(query: string = null): Command {
-        mutable result = Command(Connection.CreateCommand());
+        mutable result = Command(Connection.CreateCommand(), this);
         when(query != null) {
             result.Query = query;
         }
@@ -93,6 +93,8 @@ public class Command {
 
     [Accessor]
     protected mutable command: IDbCommand = null;
+    [Accessor]
+    internal mutable database: Database = null;
 
     public virtual Query: string {
         get { Command.CommandText; }
@@ -103,8 +105,9 @@ public class Command {
         get { Command.Parameters; }
     }
 
-    public this(c: IDbCommand) {
+    public this(c: IDbCommand, d: Database) {
         command = c;
+        database = d;
     }
 
     public virtual createParameter(
@@ -206,7 +209,7 @@ public class DataReader: IDisposable {
     }
 
     public enumerate(lambda: void -> void): void {
-        lock(command) {
+        lock(command.Database) {
             while(reader.Read()) {
                 lambda();
             }
@@ -216,7 +219,7 @@ public class DataReader: IDisposable {
 
     public enumerate(lambda: int -> void): int {
         mutable i = 0;
-        lock(command) {
+        lock(command.Database) {
             while(reader.Read()) {
                 lambda(i);
                 i++;
