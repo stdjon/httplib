@@ -85,10 +85,6 @@ div.guide {
 }
 
 /* Jumbotron */
-h1, h2, h3, h4 {
-  font-weight: bold;
-  font-size: 200%;
-}
 .container .jumbotron {
   padding: 50px 80px;
   text-align: left;
