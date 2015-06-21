@@ -108,7 +108,7 @@ function submitReply(wnd_id) {
         url: '/createpost',
         data: 'r=' + sel + '&t=' + encodeURIComponent(txt) + '&th=' + _g.ThreadId,
         success: function(data) {
-            location.reload(); //urgh...
+            reloadPageContent();
         }
     });
 }

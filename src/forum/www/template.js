@@ -1,12 +1,3 @@
-
-// Required for scrollspy (see http://www.iwstudio.it/scrollspy/)
-$(window).resize(function(){
-    $('[data-spy="scroll"]').each(function() {
-        var $spy = $(this).scrollspy('refresh');
-    });
-});
-
-
 //scroll updates URL
 $(document).bind('scroll',function(e) {
     $('.anchor').each(function() {
@@ -63,17 +54,7 @@ addEventListener("message", function(msg) {
                     url: '/tok-check',
                     data: 't=' + cmd[1],
                     success: function(data) {
-                        $.ajax({
-                            type: 'GET',
-                            dataType: 'text',
-                            url: _g.CurrentUrlUnescaped + '?_$content=1',
-                            success: function(data) {
-                                $('#mainspace').html(data);
-                                Hyphenator.run();
-                                pageInit();
-                            }
-
-                        });
+                        reloadPageContent();
                     }
                 });
             }
@@ -86,6 +67,41 @@ function pageInit() {
     postIframeMessage('ehlo');
     initHdrCols();
     initFonts();
+    resetScrollspyAffix();
+    $('*').hyphenate($('html').attr('lang'));
+
+    $(window).resize(function(){
+        resetScrollspyAffix();
+    });
 }
 
 
+function reloadPageContent() {
+    $.ajax({
+        type: 'GET',
+        dataType: 'text',
+        url: _g.CurrentUrlUnescaped + '?_$content=1',
+        success: function(data) {
+            $('#mainspace').html(data);
+            pageInit();
+        }
+
+    });
+}
+
+
+function resetScrollspyAffix() {
+    $('[data-spy="scroll"]').each(function() {
+        $(this).scrollspy('refresh');
+    });
+    $('[data-spy="affix"]').each(function () {
+        $(this).affix({
+            offset: {
+                top: 230,
+                bottom: function() {
+                    $('#mainspace').outerHeight(true);
+                }
+            }
+        }).affix('checkPosition');
+    });
+}

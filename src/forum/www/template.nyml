@@ -29,7 +29,7 @@ Partials:
     {{>MainSpace}}
   PageLayoutFullPage: |
     {{>Nav}}
-    <div id="mainspace" class="outside container hyphenate">
+    <div id="mainspace" class="outside container">
       {{>MainSpace}}
     </div>
     {{>Scripts}}
@@ -51,7 +51,8 @@ Partials:
   LoadScripts: |
     <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
     <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-    <script src="/Hyphenator-5.0.1/Hyphenator.js" type="text/javascript"></script>
+    <script src="/hypher-0.2.3/dist/jquery.hypher.js"></script>
+    <script src="/hyphenation-patterns-0.2.1/dist/browser/en-gb.js"></script>
     <script src="/template.js"></script>
     <script src="/font_data.js"></script>
     <script src="/fonts.js"></script>
@@ -66,7 +67,6 @@ Partials:
       ColourId: '{{ColourId}}',
       FontClass: '{{FontClass}}',
     };
-    Hyphenator.run();
     {{>PageScripts}}
     // init!
     $(window).load(function() {
