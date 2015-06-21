@@ -5,8 +5,6 @@ using System.Text;
 
 using Nemerle.Extensions;
 
-using Newtonsoft.Json;
-
 using httplib;
 
 
@@ -173,19 +171,12 @@ public class ForumServer: Server {
             }
         }
         if(ok) {
-            def sb = StringBuilder();
-            def sw = StringWriter(sb);
-            using(jw = JsonTextWriter(sw)) {
-                jw.WriteStartObject();
-                jw.WritePropertyName("p");
-                jw.WriteValue(post_id :> uint);
-                jw.WritePropertyName("o");
-                jw.WriteValue(output);
-                jw.WritePropertyName("t");
-                jw.WriteValue(Date.FromTicks(utc_now));
-                jw.WriteEndObject();
-            }
-            response.append(sb.ToString());
+            def json = JsonObject() <- [
+                "p" = post_id :> uint,
+                "o" = output,
+                "t" = Date.FromTicks(utc_now),
+            ];
+            response.append(json.toString());
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);
@@ -228,17 +219,11 @@ public class ForumServer: Server {
         }
 
         if(ok) {
-            def sb = StringBuilder();
-            def sw = StringWriter(sb);
-            using(jw = JsonTextWriter(sw)) {
-                jw.WriteStartObject();
-                jw.WritePropertyName("p");
-                jw.WriteValue(post_id);
-                jw.WritePropertyName("o");
-                jw.WriteValue(output);
-                jw.WriteEndObject();
-            }
-            response.append(sb.ToString());
+            def json = JsonObject() <- [
+                "p" = post_id,
+                "o" = output,
+            ];
+            response.append(json.toString());
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);
@@ -274,21 +259,13 @@ public class ForumServer: Server {
         }
 
         if(ok) {
-            def sb = StringBuilder();
-            def sw = StringWriter(sb);
-            using(jw = JsonTextWriter(sw)) {
-                jw.WriteStartObject();
-                jw.WritePropertyName("p");
-                jw.WriteValue(post_id);
-                jw.WritePropertyName("o");
-                jw.WriteValue(output);
-                jw.WritePropertyName("i");
-                jw.WriteValue(input);
-                jw.WritePropertyName("t");
-                jw.WriteValue(transform);
-                jw.WriteEndObject();
-            }
-            response.append(sb.ToString());
+            def json = JsonObject() <- [
+                "p" = post_id,
+                "o" = output,
+                "i" = input,
+                "t" = transform,
+            ];
+            response.append(json.toString());
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);

@@ -1,0 +1,89 @@
+using System;
+
+using Nemerle.Extensions;
+
+using NUnit.Framework;
+
+
+namespace httplib.test {
+
+[TestFixture]
+public class JsonObjects {
+
+    [Test] public jsonFromString(): void {
+
+        def json = JsonObject(
+            <#{"a":100,"b":"string","c":[1,2,3],"d":{"e":130,"f":"string2"}}#>);
+
+        Assert.AreEqual(json["a"], 100);
+        Assert.AreEqual(json["b"], "string");
+
+        def c = json["c"] :> JsonArrayValue;
+        Assert.AreEqual(c[0] :> int, 1);
+        Assert.AreEqual(c[1] :> int, 2);
+        Assert.AreEqual(c[2] :> int, 3);
+
+        def d = json["d"] :> JsonObjectValue;
+        Assert.AreEqual(d["e"] :> int, 130);
+        Assert.AreEqual(d["f"] :> string, "string2");
+}
+
+    [Test] public jsonToString(): void {
+
+        def json = JsonObject() <- [
+            "a" = 100,
+            "b" = "string",
+            "c" = array[1, 2, 3],
+            "d" = JsonObject() <- [
+                "e" = 130,
+                "f" = "string2"
+            ]
+        ];
+
+        Assert.AreEqual(json.toString(),
+            <#{"a":100,"b":"string","c":[1,2,3],"d":{"e":130,"f":"string2"}}#>);
+    }
+
+    [Test] public jsonObjectRoundTrip(): void {
+
+        def input = JsonObject() <- [
+            "a" = 100,
+            "b" = "string",
+            "c" = array[1, 2, 3],
+            "d" = JsonObject() <- [
+                "e" = 130,
+                "f" = "string2"
+            ]
+        ];
+
+        def output = JsonObject(input.toString());
+
+        Assert.AreEqual(input["a"], output["a"]);
+        Assert.AreEqual(input["b"], output["b"]);
+
+        def ic = input["c"] :> array[int];
+        def oc = output["c"] :> JsonArrayValue;
+        Assert.AreEqual(ic[0], oc[0] :> int);
+        Assert.AreEqual(ic[1], oc[1] :> int);
+        Assert.AreEqual(ic[2], oc[2] :> int);
+
+        def id = input["d"] :> JsonObject;
+        def od = output["d"] :> JsonObjectValue;
+        Assert.AreEqual(id["e"], od["e"] :> int);
+        Assert.AreEqual(id["f"], od["f"] :> string);
+    }
+
+    [Test] public jsonStringRoundTrip(): void {
+
+        def input =
+            <#{"a":100,"b":"string","c":[1,2,3],"d":{"e":130,"f":"string2"}}#>;
+
+        def json = JsonObject(input);
+        def output = json.toString();
+
+        Assert.AreEqual(input, output);
+    }
+}
+
+
+} // namespace httplib.test

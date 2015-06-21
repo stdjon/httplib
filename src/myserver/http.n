@@ -9,8 +9,6 @@ using System.Threading;
 using Nemerle.Extensions;
 using Nemerle.Utility;
 
-using Newtonsoft.Json;
-
 using httplib;
 
 
@@ -452,31 +450,15 @@ class MyServer: Server {
         }
         //Log.t("diffText("
         //    "\"{0}\", \"{1}\") -> a={2}, b={3}, s=\"{4}\"", o, n, a, b, s);
-        def sb = StringBuilder();
-        def sw = StringWriter(sb);
-        using(jw = JsonTextWriter(sw)) {
-            jw.WriteStartObject();
-            jw.WritePropertyName("a");
-            jw.WriteValue(a);
-            jw.WritePropertyName("b");
-            jw.WriteValue(b);
-            jw.WritePropertyName("s");
-            jw.WriteValue(s);
-            jw.WriteEndObject();
-        }
-        sb.ToString();
+        (JsonObject() <- [
+            "a" = a,
+            "b" = b,
+            "s" = s,
+        ]).toString();
     }
 
     syncText(s: string): string {
-        def sb = StringBuilder();
-        def sw = StringWriter(sb);
-        using(jw = JsonTextWriter(sw)) {
-            jw.WriteStartObject();
-            jw.WritePropertyName("v");
-            jw.WriteValue(s);
-            jw.WriteEndObject();
-        }
-        sb.ToString();
+        (JsonObject() <- [ "v" = s ]).toString();
     }
 
     public uploadImageResponse(
@@ -495,7 +477,7 @@ class MyServer: Server {
         }
 
         def f = context.Vars["f"];
-        mutable datastr = "";
+        mutable json;
         when(!String.IsNullOrEmpty(f)) {
             def b64 = Regex.Match(f, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
             def data = Convert.FromBase64String(b64);
@@ -504,19 +486,15 @@ class MyServer: Server {
             def out80 = transformImage(memstr, "avatar64");
             def out64 = transformImage(memstr, "avatar80");
             def out120 = transformImage(memstr, "avatar120");
-            def sb = StringBuilder();
-            def sw = StringWriter(sb);
-            using(jw = JsonTextWriter(sw)) {
-                jw.WriteStartObject();
-                jw.WritePropertyName("i40"); jw.WriteValue(out40);
-                jw.WritePropertyName("i64"); jw.WriteValue(out64);
-                jw.WritePropertyName("i80"); jw.WriteValue(out80);
-                jw.WritePropertyName("i120"); jw.WriteValue(out120);
-                jw.WriteEndObject();
-            }
-            datastr = sb.ToString();
+
+            json = JsonObject() <- [
+                "i40" = out40,
+                "i64" = out64,
+                "i80" = out80,
+                "i120" = out120,
+            ];
         }
-        response.append(datastr);
+        response.append(json.toString());
         response.Status = (200, "OK");
     }
 

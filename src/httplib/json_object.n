@@ -1,0 +1,88 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+
+using Newtonsoft.Json;
+
+
+namespace httplib {
+
+type JsonDictionary = Dictionary[string, object];
+
+// Deserialization helper types...
+public type JsonArrayValue = Linq.JArray;
+public type JsonObjectValue = Linq.JObject;
+
+
+public class JsonObjectConverter: JsonConverter {
+
+    public override WriteJson(
+        writer: JsonWriter, value: object, serializer: JsonSerializer): void {
+
+        def json_object = value :> JsonObject;
+        serializer.Serialize(writer, json_object.data);
+    }
+
+    public override ReadJson(reader: JsonReader,
+        _type: Type, _value: object, serializer: JsonSerializer): object {
+
+        def d = serializer.Deserialize.[JsonDictionary](reader);
+        JsonObject(d);
+    }
+
+    public override CanConvert(type: Type): bool {
+        type == typeof(JsonObject);
+    }
+}
+
+
+[JsonConverter(typeof(JsonObjectConverter))]
+public class JsonObject {
+
+    static serializer: JsonSerializer = JsonSerializer();
+
+    internal data: JsonDictionary;
+
+    public Item[k: string]: object {
+        get { data[k] }
+        set { data[k] = value; }
+    }
+
+    public this() {
+        data = JsonDictionary();
+    }
+
+    public this(d: JsonDictionary) {
+        data = d;
+    }
+
+    public this(json: string) {
+        data = serializer.Deserialize.[JsonDictionary](
+            JsonTextReader(StringReader(json)) );
+    }
+
+    // For use with Nemerle.Extensions <- operator...
+    public virtual Add[T](name: string, value: T): void {
+        data.Add(name, value);
+    }
+
+    public override ToString(): string {
+        toString();
+    }
+
+    public virtual toString(): string {
+
+        def sb = StringBuilder();
+        def sw = StringWriter(sb);
+
+        using(jw = JsonTextWriter(sw)) {
+            serializer.Serialize(jw, data);
+        }
+
+        sb.ToString();
+    }
+}
+
+
+} // namespace httplib
