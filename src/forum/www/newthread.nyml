@@ -66,7 +66,7 @@ Partials:
   Guide: |
     {{#Title}}
     <div id="scrollspy">
-      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="0">
       {{#Markers}}
         <li><a href="#{{Mark}}">{{Mark}}</a></li>
       {{/Markers}}

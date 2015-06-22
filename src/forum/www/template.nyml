@@ -35,7 +35,7 @@ Partials:
     {{>Scripts}}
   MainSpace: |
       <div class="banner user-font">
-        {{>Banner}}
+        <div id="banner">{{>Banner}}</div>
         <div class="col-xs-10 body">
           {{>Body}}
         </div>

@@ -97,7 +97,7 @@ Partials:
     <div class="anchor" id="69"><p>Vestibulum quis quam ut magna consequat faucibus. Pellentesque eget nisi a mi suscipit tincidunt. Ut tempus dictum risus. Pellentesque viverra sagittis quam at mattis. Suspendisse potenti. Aliquam sit amet gravida nibh, facilisis gravida odio. Phasellus auctor velit at lacus blandit, commodo iaculis justo viverra. Etiam vitae est arcu. Mauris vel congue dolor. Aliquam eget mi mi. Fusce quam tortor, commodo ac dui quis, bibendum viverra erat. Maecenas mattis lectus enim, quis tincidunt dui molestie euismod. Curabitur et diam tristique, accumsan nunc eu, hendrerit tellus.</p></div>
   Guide: |
     <div id="scrollspy">
-      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="230">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="0">
         <li><a href="#1">1</a></li>
         <li><a href="#6">6</a></li>
         <li><a href="#11">11</a></li>

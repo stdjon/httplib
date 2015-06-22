@@ -71,7 +71,6 @@ function pageInit() {
 
     $('*').hyphenate($('html').attr('lang'));
 
-
     initDropCaps();
 
     $(window).resize(function(){
@@ -99,18 +98,17 @@ function resetScrollspyAffix() {
         $(this).scrollspy('refresh');
     });
     $('[data-spy="affix"]').each(function () {
-        $(this).affix({
-            offset: {
-                top: 230,
-                bottom: function() {
-                    $('#mainspace').outerHeight(true);
-                }
-            }
-        }).affix('checkPosition');
+        // This is the only way I can find to update the affix offsets, and at
+        // this point, I'm past caring any more...
+        $(this).data('bs.affix').options.offset.top =
+            $('#banner').outerHeight(true) * .75;
+        $(this).affix().affix('checkPosition');
     });
 }
 
+
 function initDropCaps() {
+
     // hypher breaks drop-caps - reapply it as inserted CSS
     $('head').append('<style>' +
         'div[id=\'1\'] div.post::first-letter {' +
