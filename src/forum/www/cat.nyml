@@ -3,7 +3,7 @@ Template: template.nyml
 Title: "{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}"
 Partials:
   Nav: |
-    <iframe id='navbar-frame' src='{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}'
+    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
       width='100%' height='50px' frameborder='0' allowtransparency='true'
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
@@ -22,7 +22,7 @@ Partials:
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
     {{/Name}}
-    <ol start='{{From}}' class="list-group">
+    <ol start="{{From}}" class='list-group'>
     {{#Threads}}
       <li class="list-group-item">#{{Number}}. <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
       by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> on {{CreateDate}} ({{PostCount}})</li>

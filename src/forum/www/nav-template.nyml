@@ -43,11 +43,11 @@ Partials:
   NavScripts: |
     {{>NavScriptsPre}}
     var _g = {
-      DefaultSecurePrefix: '{{DefaultSecurePrefix}}',
-      DefaultInsecurePrefix: '{{DefaultInsecurePrefix}}',
-      DefaultPrefix: '{{DefaultPrefix}}',
-      CurrentUrl: '{{CurrentUrl}}',
-      CurrentUrlUnescaped: '{{CurrentUrlUnescaped}}',
-      ColourId: '{{ColourId}}',
+      DefaultSecurePrefix: "{{DefaultSecurePrefix}}",
+      DefaultInsecurePrefix: "{{DefaultInsecurePrefix}}",
+      DefaultPrefix: "{{DefaultPrefix}}",
+      CurrentUrl: "{{CurrentUrl}}",
+      CurrentUrlUnescaped: "{{CurrentUrlUnescaped}}",
+      ColourId: "{{ColourId}}",
     };
 

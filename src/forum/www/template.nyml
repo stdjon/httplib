@@ -59,20 +59,20 @@ Partials:
     {{>PageLoadScripts}}
   SharedScripts: |
     var _g = {
-      DefaultSecurePrefix: '{{DefaultSecurePrefix}}',
-      DefaultInsecurePrefix: '{{DefaultInsecurePrefix}}',
-      DefaultPrefix: '{{DefaultPrefix}}',
-      CurrentUrl: '{{CurrentUrl}}',
-      CurrentUrlUnescaped: '{{CurrentUrlUnescaped}}',
-      ColourId: '{{ColourId}}',
-      FontClass: '{{FontClass}}',
+      DefaultSecurePrefix: "{{DefaultSecurePrefix}}",
+      DefaultInsecurePrefix: "{{DefaultInsecurePrefix}}",
+      DefaultPrefix: "{{DefaultPrefix}}",
+      CurrentUrl: "{{CurrentUrl}}",
+      CurrentUrlUnescaped: "{{CurrentUrlUnescaped}}",
+      ColourId: "{{ColourId}}",
+      FontClass: "{{FontClass}}",
     };
     {{>PageScripts}}
     // init!
     $(window).load(function() {
       pageInit();
       {{#TempToken}}
-      postIframeMessage('tokTmp', encodeURIComponent('{{TempToken}}'));
+      postIframeMessage('tokTmp', encodeURIComponent("{{TempToken}}"));
       {{/TempToken}}
     });
   Swatches: |
