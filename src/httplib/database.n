@@ -51,17 +51,24 @@ public abstract class Database: IDisposable  {
 
     public withTransaction(
         lambda: Database -> void,
-        handle: Exception -> void = null): void {
+        handle: Exception -> void = null,
+        use_transaction = true): void {
 
         mutable transaction = null;
         try {
-            transaction = Connection.BeginTransaction();
+            when(use_transaction) {
+                transaction = Connection.BeginTransaction();
+            }
             _ = lambda(this);
-            transaction.Commit();
+            when(use_transaction) {
+                transaction.Commit();
+            }
         } catch {
             | ex => {
-                Log.w("Rolling back...");
-                transaction.Rollback();
+                when(use_transaction) {
+                    Log.w("Rolling back...");
+                    transaction.Rollback();
+                }
                 when(handle != null) {
                     handle(ex);
                 }

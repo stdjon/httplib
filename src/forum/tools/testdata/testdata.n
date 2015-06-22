@@ -169,25 +169,34 @@ public class TestData {
 
     generatePost(): void {
         def content = generatePostContent();
-        def uid = Random.Next(UserCount) + 1;
-        def tid = Random.Next(ThreadCount) + 1;
-        def create_date = Date.NowTicks;
-        def command2 = Db.createCommand(
-            "INSERT INTO Posts(OutputContent, UserId, ThreadId, Points, CreateDate) VALUES "
-                "(@OutputContent, @UserId, @ThreadId, 0, @CreateDate)") <- [
-            "@OutputContent" = content,
-            "@UserId" = uid,
-            "@ThreadId" = tid,
-            "@CreateDate" = create_date,
-        ];
-        _ = command2.executeNonQuery();
+        def uid = Random.Next(UserCount) :> uint + 1;
+        def tid = Random.Next(ThreadCount) :> uint + 1;
 
-        def command3 = Db.createCommand(
-            "SELECT Id FROM Posts WHERE OutputContent=@OutputContent") <- [ "@OutputContent" = content ];
-        def pid = command3.executeScalar() :> uint?;
+        def replyto = (Random.Next(5) < 2) ? null : {
+            mutable result: uint? = null;
+            def commmand1 = Db.createCommand(
+                "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
+                    "@ThreadId" = tid,
+                ];
+            def count = commmand1.executeScalar() :> long?;
+            when(count != null) {
+                def commmand2 = Db.createCommand("SELECT Id FROM Posts WHERE "
+                    "ThreadId=@ThreadId LIMIT @N, @N") <- [
+                        "@ThreadId" = tid,
+                        "@N" = Random.Next(count :> int),
+                    ];
+                result = commmand2.executeScalar() :> uint?;
+            }
+            result;
+        };
 
-        if(pid != null) {
-            Log.d("Post added to database [id={0}, th={1}, user={2}]...", pid, tid, uid);
+        def (pid, _o, _d) = server.createPost(
+            uid, tid, replyto, "bbcode", content);
+
+        if(pid != 0) {
+            Log.d("Post added to database "
+                "[id={0}, th={1}, user={2}, replyto={3}]...",
+                pid, tid, uid, replyto);
         } else {
             Log.w("Post id={0} was not properly added!", pid)
         }

@@ -101,12 +101,14 @@ function submitReply(wnd_id) {
 
     var txt = $('#' + wnd_id + ' textarea').val();
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
+    var pid = _d.windows[wnd_id].pid;
     $.ajax({
         type: 'POST',
         dataType: 'json',
         global: false,
         url: '/createpost',
-        data: 'r=' + sel + '&t=' + encodeURIComponent(txt) + '&th=' + _g.ThreadId,
+        data: 'r=' + sel + '&t=' + encodeURIComponent(txt) +
+            '&p=' + pid + '&th=' + _g.ThreadId,
         success: function(data) {
             reloadPageContent();
         }

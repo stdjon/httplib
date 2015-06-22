@@ -19,9 +19,6 @@ Partials:
         color: #666;
       }
     </style>
-    {{#SignedInUser}}
-      <p>You are <a href="{{DefaultPrefix}}/u/{{SignedInUser}}">{{SignedInUser}}</a>.</p>
-    {{/SignedInUser}}
     {{#Title}}
       <p>Thread started in <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>
       by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
@@ -50,7 +47,16 @@ Partials:
           <span class="fa fa-fw fa-thumbs-o-up" onclick="thumbsup(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
           <span class="fa fa-fw fa-star-o" onclick="star(this, '#{{Number}}', {{PostId}})"></span></div>
-          </span>
+          <div class="rhs"><small>
+          {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
+          {{#ReplySep}} | {{/ReplySep}}
+          {{#HasReplies}}
+            {{ReplySummary}}:
+              {{#Replies}}
+                [<a href="{{PostUrl}}">#{{PostId}}</a>]
+              {{/Replies}}
+            {{/HasReplies}}
+          </small></div>
         </div>
       </div>
     {{/Posts}}

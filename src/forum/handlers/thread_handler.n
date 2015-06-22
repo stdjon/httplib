@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Nemerle.Extensions;
 
@@ -10,23 +11,32 @@ namespace forum {
 [HasHandlerFactory]
 public class ThreadHandler: BasePageHandler {
 
+    public ThreadId: uint { get; private set; }
+    public From: int { get; private set; }
+    public To: int { get; private set; }
+    public PostCount: int { get; private set; }
+    public PostIds: array[uint] { get; private set; }
+    public PostIdMap: Dictionary[uint, uint] { get; private set; }
+
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        ThreadId = UInt32.Parse(Context.Vars["id"]);
+        def fr_st = Context.Vars["from"];
+        From = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
+        def to_st = Context.Vars["to"];
+        To = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (From + 49);  //TODO: configurable?
+        PostCount = To + 1 - From;
+
+        populatePostIds();
     }
 
     public override initialize(): void {
         base.initialize();
 
-        def thid = UInt32.Parse(Context.Vars["id"]);
-        def fr_st = Context.Vars["from"];
-        def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
-        def to_st = Context.Vars["to"];
-        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 49);  //TODO: configurable?
-        def dist = to + 1 - from;
-
         def command = Server.Database.createCommand(
             "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
-                "WHERE Id = @Id") <- [ "@Id" = thid ];
+                "WHERE Id = @Id") <- [ "@Id" = ThreadId ];
 
         mutable ok = false;
         mutable uid;
@@ -40,7 +50,6 @@ public class ThreadHandler: BasePageHandler {
                 "UserId" = uid,
                 "CategoryId" = catid,
                 "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
-                //"CreateDate" = reader.getValue.[DateTime]("CreateDate"),
                 "ColourId" = reader.getValue("Colour"),
                 "IsOwnThread" = is_own_thread,
                 "OwnThreadClass" = is_own_thread ? "own-thread" : "",
@@ -52,29 +61,30 @@ public class ThreadHandler: BasePageHandler {
         PageData["UserName"] = Server.getUserName(uid);
 
         when(ok) {
-            mutable posts: PageDataArray = array(dist);
+            mutable posts: PageDataArray = array(PostCount);
             mutable i = 0;
 
             def command2 = Server.Database.createCommand(
-                "SELECT Id, UserId, Points, CreateDate, OutputContent FROM Posts WHERE "
-                    "ThreadId = @ThreadId ORDER BY CreateDate LIMIT @From, @To") <- [
-                "@ThreadId" = thid,
-                "@From" = from - 1,
-                "@To" = to - 1,
+                "SELECT Id, UserId, Points, CreateDate, OutputContent, ReplyTo "
+                    "FROM Posts WHERE ThreadId = @ThreadId ORDER BY CreateDate "
+                    "LIMIT @From, @To") <- [
+                "@ThreadId" = ThreadId,
+                "@From" = From - 1,
+                "@To" = To - 1,
             ];
 
             i = command2.execute((j, reader: DataReader) => {
-                when(j < dist) {
+                when(j < PostCount) {
                     def id = reader.getValue.[uint]("Id", 0);
                     uid = reader.getValue.[uint]("UserId", 0);
                     def points = reader.getValue.[int]("Points", 0);
-                    //def date = reader.getValue.[DateTime]("CreateDate");
                     def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
                     def content = reader.getValue("OutputContent");
+                    def reply_to = reader.getValue.[uint?]("ReplyTo");
                     def is_own_post = (uid == SignedInUserId);
 
                     posts[j] = PageData() <- [
-                        "Number" = from + j,
+                        "Number" = From + j,
                         "PostId" = id,
                         "UserId" = uid,
                         "Points" = points,
@@ -82,11 +92,16 @@ public class ThreadHandler: BasePageHandler {
                         "Content" = content,
                         "IsOwnPost" = is_own_post,
                         "OwnPostClass" = is_own_post ? "own-post" : "",
-
                     ];
+                    when(reply_to != null) {
+                        _ = posts[j] <- [
+                            "ReplyTo" = reply_to :> uint,
+                            "ReplyToUrl" = postUrl(reply_to :> uint),
+                        ];
+                    }
                 }
             });
-            when(i < dist) {
+            when(i < PostCount) {
                 Array.Resize(ref posts, i);
             }
             def limit = i;
@@ -96,17 +111,57 @@ public class ThreadHandler: BasePageHandler {
                     Server.getUserName(posts[i]["UserId"] :> uint);
             }
 
+            // Replies
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Server.Database.createCommand(
+                    "SELECT Count(Id) FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                        "@ReplyTo" = post_id,
+                    ];
+                def result = command.executeScalar() :> long?;
+                when(result != null) {
+                    def reply_count = result :> int;
+                    when(reply_count > 0) {
+                        def replies: PageDataArray = array(reply_count);
+
+                        def command2 = Server.Database.createCommand(
+                            "SELECT PostId FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                                "@ReplyTo" = post_id,
+                            ];
+                        _ = command2.execute((j, reader) => {
+                            def pid = reader.getValue.[uint]("PostId", 0U);
+                            replies[j] = PageData() <- [
+                                "PostId" = pid,
+                                "PostUrl" = postUrl(pid),
+                            ];
+                        });
+
+                        posts[i]["HasReplies"] = true;
+                        def plural = reply_count > 1;
+                        posts[i]["ReplySummary"] =
+                            $<#$reply_count $(plural ? "replies" : "reply")#>; //TODO: l8n?
+                        posts[i]["Replies"] = replies;
+
+                        when(posts[i].ContainsKey("ReplyTo")) {
+                            posts[i]["ReplySep"] = true;
+                        }
+                    }
+                    posts[i]["ReplyCount"] = reply_count;
+                }
+            }
+
             // Add a marker for every fifth post (1, 6, 11...)
             def marker_count = (limit + 4) / 5;
             def markers: PageDataArray = array(marker_count);
             for(i = 0; i < marker_count; i++) {
-                markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
+                markers[i] = PageData() <- [ "Mark" = (i * 5) + From ];
             }
 
             _ = PageData <- [
-                "ThreadId" = thid,
-                "From" = from,
-                "To" = to,
+                "ThreadId" = ThreadId,
+                "From" = From,
+                "To" = To,
                 "Posts" = posts,
                 "Markers" = markers,
             ];
@@ -116,20 +171,20 @@ public class ThreadHandler: BasePageHandler {
             mutable prev = null;
             mutable next = null;
 
-            Log.d("from = {0} > 1 {1}", from, from > 1);
-            when(from > 1) {
-                def pf = Math.Max(1, from - dist);
-                def pt = pf + dist - 1;
-                prev = $"$prf/th/$thid/$pf-$pt";
+            Log.d("From = {0} > 1 {1}", From, From > 1);
+            when(From > 1) {
+                def pf = Math.Max(1, From - PostCount);
+                def pt = pf + PostCount - 1;
+                prev = $"$prf/th/$ThreadId/$pf-$pt";
             }
             Log.d("prev = {0}", prev);
 
-            def user_count = Server.getPostCount(thid);
-            Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-            when(to < user_count) {
-                def nf = from + dist;
-                def nt = nf + dist - 1;
-                next = $"$prf/th/$thid/$nf-$nt";
+            def user_count = Server.getPostCount(ThreadId);
+            Log.d("To = {0} < {1} {2}", To, user_count, To < user_count);
+            when(To < user_count) {
+                def nf = From + PostCount;
+                def nt = nf + PostCount - 1;
+                next = $"$prf/th/$ThreadId/$nf-$nt";
             }
             Log.d("next = {0}", next);
 
@@ -142,6 +197,39 @@ public class ThreadHandler: BasePageHandler {
             def command3 = Server.Database.createCommand(
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
             PageData["Transform"] = command3.executeScalar() :> string;
+        }
+    }
+
+    populatePostIds(): void {
+        PostIds = array(Server.getPostCount(ThreadId));
+        PostIdMap = Dictionary();
+
+        def command = Server.Database.createCommand(
+            "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
+                "@ThreadId" = ThreadId
+            ];
+        _ = command.execute((j, reader) => {
+            def pid = reader.getValue("Id", 0U);
+            PostIds[j] = pid;
+            PostIdMap[pid] = j :> uint + 1;
+        });
+    }
+
+    postUrl(post_id: uint): string {
+        def prefix = Server.getDefaultPrefix(Request);
+
+        if(PostIdMap.ContainsKey(post_id)) {
+            def post_number = PostIdMap[post_id] :> int;
+            def from = (((post_number - 1) / PostCount) * PostCount) + 1;
+            def to = from + (PostCount - 1);
+
+            if(1 == from && 50 == to) { // FIXME: configurable {
+                $"$prefix/th/$ThreadId#$post_number"
+            } else {
+                $"$prefix/th/$ThreadId/$from-$to#$post_number"
+            }
+        } else {
+            $"$prefix/p/$post_id"
         }
     }
 }

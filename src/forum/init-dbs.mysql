@@ -13,7 +13,8 @@
 /* Drop existing tables */
 
 DROP TABLE IF EXISTS
-    Uploads, PostsRead, Drafts, Posts, Threads, Categories, Sessions, Auth, Users;
+    Uploads, PostsRead, Drafts, Replies, Posts,
+    Threads, Categories, Sessions, Auth, Users;
 
 
 /*----------------------------------------------------------------------------*/
@@ -97,6 +98,17 @@ CREATE TABLE IF NOT EXISTS Posts(
     CreateDate BIGINT,
     FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE,
     FOREIGN KEY(ThreadId) REFERENCES Threads(Id) ON DELETE CASCADE,
+    FOREIGN KEY(ReplyTo) REFERENCES Posts(Id) ON DELETE CASCADE
+)
+    ENGINE=INNODB
+    CHARACTER SET utf8;
+
+
+CREATE TABLE IF NOT EXISTS Replies(
+    Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    PostId INT UNSIGNED,
+    ReplyTo INT UNSIGNED,
+    FOREIGN KEY(PostId) REFERENCES Posts(Id) ON DELETE CASCADE,
     FOREIGN KEY(ReplyTo) REFERENCES Posts(Id) ON DELETE CASCADE
 )
     ENGINE=INNODB

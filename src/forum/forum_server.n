@@ -123,56 +123,27 @@ public class ForumServer: Server {
         mutable ok = false;
         mutable output = "";
         mutable post_id, thid;
-        def utc_now = Date.NowTicks;
+        mutable utc_now;
+        //def utc_now = Date.NowTicks;
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
             getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
 
         when(userid != 0) {
+            def reply_to = UInt32.Parse(context.Vars["p"]);
             thid = UInt32.Parse(context.Vars["th"]);
             def transform = context.Vars["r"];
             def content = context.Vars["t"];
-            (ok, output) = renderPost(transform, content);
 
-            when(ok) {
-                def commmand = Database.createCommand(
-                    "INSERT INTO Posts(InputContent, OutputContent, "
-                        "Transform, UserId, ThreadId, CreateDate) VALUES("
-                        "@InputContent, @OutputContent, "
-                        "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
-                    "@InputContent" = content,
-                    "@OutputContent" = output,
-                    "@Transform" = transform,
-                    "@UserId" = userid,
-                    "@ThreadId" = thid,
-                    "@CreateDate" = utc_now,
-                ];
-
-                def result2 = commmand.executeNonQuery();
-                when(result2 <= 0) {
-                    ok = false;
-                }
-            }
-
+            (post_id, output, utc_now) =
+                createPost(userid, thid, reply_to, transform, content);
+            ok = (post_id > 0);
         }
 
-        when(ok) {
-            def commmand = Database.createCommand(
-                "SELECT Id FROM Posts WHERE "
-                    "UserId=@UserId AND CreateDate=@CreateDate") <- [
-                "@UserId" = userid,
-                "@CreateDate" = utc_now,
-            ];
-            post_id = commmand.executeScalar() :> uint?;
-
-            when(post_id == null) {
-                ok = false;
-            }
-        }
         if(ok) {
             def json = JsonObject() <- [
-                "p" = post_id :> uint,
+                "p" = post_id,
                 "o" = output,
                 "t" = Date.FromTicks(utc_now),
             ];
@@ -404,6 +375,83 @@ public class ForumServer: Server {
         tok: SessionTokenType, token: string): uint {
 
         SessionToken.getUserId(tok, token);
+    }
+
+    public createPost(
+        user_id: uint, thread_id: uint, reply_to: uint?, transform: string,
+        input: string, use_transaction = true): (uint * string * long) {
+
+        mutable post_id = 0U;
+        mutable output = "";
+        mutable utc_now = Date.NowTicks;
+        mutable ok = false;
+        mutable render_ok = false;
+
+        when(user_id > 0) {
+            (render_ok, output) = renderPost(transform, input);
+        }
+        when(render_ok) {
+            Database.withTransaction(db => {
+                def commmand = db.createCommand(
+                    "INSERT INTO Posts(InputContent, OutputContent, "
+                        "Transform, UserId, ThreadId, CreateDate) VALUES("
+                        "@InputContent, @OutputContent, "
+                        "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
+                    "@InputContent" = input,
+                    "@OutputContent" = output,
+                    "@Transform" = transform,
+                    "@UserId" = user_id,
+                    "@ThreadId" = thread_id,
+                    "@CreateDate" = utc_now,
+                ];
+
+                def result = commmand.executeNonQuery();
+                when(result > 0) {
+                    def commmand2 = db.createCommand(
+                        "SELECT Id FROM Posts WHERE "
+                            "UserId=@UserId AND CreateDate=@CreateDate") <- [
+                        "@UserId" = user_id,
+                        "@CreateDate" = utc_now,
+                    ];
+                    def result2 = commmand2.executeScalar() :> uint?;
+                    post_id = result2 ? (result2 :> uint) : 0U;
+
+                    when(post_id > 0U) {
+                        if(reply_to != null) {
+                            def commmand3 = db.createCommand(
+                                "INSERT INTO Replies(PostId, ReplyTo) VALUES("
+                                    "@PostId, @ReplyTo)") <- [
+                                "@PostId" = post_id,
+                                "@ReplyTo" = reply_to :> uint,
+                            ];
+                            def result3 = commmand3.executeNonQuery();
+                            when(result3 > 0) {
+                                def command4 = db.createCommand(
+                                    "UPDATE Posts SET ReplyTo=@ReplyTo "
+                                        "WHERE Id=@Id") <- [
+                                    "@ReplyTo" = reply_to :> uint,
+                                    "@Id" = post_id,
+                                ];
+                                def result4 = command4.executeNonQuery();
+                                when(result4 > 0) {
+                                    ok = true;
+                                }
+                            }
+                        } else {
+                            ok = true;
+                        }
+                    }
+                }
+            }, ex => {
+                internalServerError(ex);
+            }, use_transaction);
+        }
+
+        if(ok) {
+            (post_id, output, utc_now);
+        } else {
+            (0U, "", 0L);
+        }
     }
 }
 

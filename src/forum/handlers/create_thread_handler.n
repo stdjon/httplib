@@ -38,10 +38,7 @@ public class CreateThreadHandler: BaseHandler {
             Log.d("renderer was not set; user's DB default is '{0}'...", renderer);
         }
 
-        def (render_ok, output) = Server.renderPost(renderer, content);
-        ok = render_ok;
-
-        Log.d("createThreadResponse(): category={0}, userid={1}, renderer={2}, "
+        Log.d("CreateThreadHandler: category={0}, userid={1}, renderer={2}, "
             "utc_now={3}, fp={4}", category, userid, renderer, utc_now, fp);
 
         Server.Database.withTransaction(db => {
@@ -76,24 +73,11 @@ public class CreateThreadHandler: BaseHandler {
                 when(thid > 0) {
                     if(fp == "on") {
 
-                        def commmand3 = db.createCommand(
-                            "INSERT INTO Posts(InputContent, OutputContent, "
-                                "Transform, UserId, ThreadId, CreateDate) VALUES("
-                                "@InputContent, @OutputContent, "
-                                "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
-                            "@InputContent" = content,
-                            "@OutputContent" = output,
-                            "@Transform" = renderer,
-                            "@UserId" = userid,
-                            "@ThreadId" = thid,
-                            "@CreateDate" = utc_now,
-                        ];
+                        def (post_id, _, _) = Server.createPost(
+                            userid, thid, null, renderer, content, false);
 
-                        def result2 = commmand3.executeNonQuery();
-                        Log.t("result2={0}", result2);
-                        when(result2 > 0) {
-                            ok = true;
-                        }
+                        ok = post_id > 0;
+
                     } else {
                         ok = true;
                     }
