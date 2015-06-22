@@ -11,15 +11,6 @@ Partials:
       <h1>Supercalifragilisticexpialidocious</h1>
     </div>
   Body: |
-    <style>
-      p:first-letter {
-        font-size: 2.8em;
-        line-height: 1em;
-        margin-right: 2px;
-        display: block;
-        float: left;
-      }
-    </style>
     <pre>
       CurrentUrl: {{CurrentUrl}}
       DefaultSecurePrefix: {{DefaultSecurePrefix}}
@@ -116,4 +107,20 @@ Partials:
     </div>
   PageLoadScripts: |
     <script src="/swatches.js"></script>
+  PageScripts: |
+    // This is a super-horrible way to apply drop-caps style once hyphenation
+    // has finished. This whole page will be going away at some point though...
+    $(window).load(function() {
+      setTimeout(function() {
+        $('head').append('<style>\n' +
+          'p::first-letter {\n' +
+            'font-size: 2.8em;\n' +
+            'line-height: 1em;\n' +
+            'margin-right: 2px;\n' +
+            'display: block;\n' +
+            'float: left;\n' +
+          '}\n' +
+        '</style>');
+      }, 300);
+    });
 
