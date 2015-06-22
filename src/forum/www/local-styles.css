@@ -43,8 +43,8 @@ div.outside {
   background-color: rgba(246, 246, 230, .75); /*#f6f6e6, slightly transparent */
   border-left: 5px solid #666;
   padding: 0;
-  padding-bottom: 48px;
-  margin-bottom: 36px;
+  padding-bottom: 256px;
+  margin-bottom: 64px;
 }
 div.banner {
   padding-top: 50px;
@@ -57,7 +57,7 @@ div.banner .anchor {
 }
 div.body {
   padding-top: 10px;
-  padding-bottom: 30px;
+  padding-bottom: 64px;
   background-color: #ffe;
   border-left: 5px solid #ffb;
 }
@@ -190,13 +190,13 @@ div.anchor.trg:nth-child(odd) div.post {
 div[id='1'] div.post {
   font-size: 1.25em;
 }
-div[id='1'] div.post:first-letter {
+/*div[id='1'] div.post::first-letter {
   font-size: 2.8em;
   line-height: 1em;
   margin-right: 2px;
   display: block;
   float: left;
-}
+}*/
 
 /* Colour swatches (tech demo...) */
 .swatches p {
