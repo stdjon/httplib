@@ -95,14 +95,24 @@ function reloadPageContent() {
 
 function resetScrollspyAffix() {
     $('[data-spy="scroll"]').each(function() {
-        $(this).scrollspy('refresh');
+        $(this).scrollspy('activate').scrollspy('process');
     });
     $('[data-spy="affix"]').each(function () {
-        // This is the only way I can find to update the affix offsets, and at
-        // this point, I'm past caring any more...
-        $(this).data('bs.affix').options.offset.top =
-            $('#banner').outerHeight(true) * .75;
-        $(this).affix().affix('checkPosition');
+        var affix_data = $(this).data('bs.affix')
+        var top = $('#banner').outerHeight(true) * .75;
+
+        if(affix_data) {
+            // This is the only way I can find to update the initial affix
+            // offsets, and at this point, I'm past caring any more...
+            affix_data.options.offset.top = top;
+            $(this).affix('checkPosition');
+        } else {
+            $(this).affix({
+                offset: {
+                    top: top
+                }
+            }).affix('checkPosition');
+        }
     });
 }
 
