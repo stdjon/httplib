@@ -7,7 +7,7 @@ Partials:
       width='100%' height='50px' frameborder='0' allowtransparency='true'
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
-    <div id="banner" class="jumbotron anchor">
+    <div class="jumbotron anchor">
       <h1>{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}</h1>
     </div>
   Body: |
