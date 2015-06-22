@@ -38,7 +38,8 @@ Partials:
         <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
       </div>
       <br>
-      <button class="btn btn-warning" value="Preview" onclick="showPreview(); return false;">Preview</button>
+      <button id="fp-preview" class="btn btn-warning" value="Preview"
+        onclick="showPreview(); return false;">Preview</button>
       <div id="fp-render" class="btn-group" data-toggle="buttons">
         <label class="btn btn-default btn-info {{BbCodeActive}}">
           <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode

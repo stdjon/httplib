@@ -30,11 +30,38 @@ function openWindow(num, wnd_id, text, btn_id, next) {
 
             $('#te-' + wnd_id).keydown(function (e) {
 
-                if(e.ctrlKey && e.keyCode === 13) {
-                    $('#btn-' + wnd_id + '-submit').click();
+                if(e.ctrlKey) {
+                    switch(e.keyCode) {
+                        case 13: { //'Enter'
+                            $('#btn-' + wnd_id + '-submit').click();
+                            e.preventDefault();
+                            break;
+                        }
+                        case 80: { //'P'
+                            $('#btn-' + wnd_id + '-preview').click();
+                            e.preventDefault();
+                            break;
+                        }
+                        case 85: { //'U'
+                            $('#btn-' + wnd_id + '-bb').click();
+                            e.preventDefault();
+                            break;
+                        }
+                        case 73: { //'I'
+                            $('#btn-' + wnd_id + '-tx').click();
+                            e.preventDefault();
+                            break;
+                        }
+                        case 79: { //'O'
+                            $('#btn-' + wnd_id + '-hs').click();
+                            e.preventDefault();
+                            break;
+                        }
+                    }
                 }
                 if(e.keyCode === 27) {
                     $('#btn-' + wnd_id + '-cancel').click();
+                    e.preventDefault();
                 }
             });
 

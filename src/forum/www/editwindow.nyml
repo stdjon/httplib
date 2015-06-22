@@ -5,7 +5,7 @@ Content: |
       <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"></textarea>
     </div>
     <div>
-      <button class="btn btn-xs btn-warning" value="Preview"
+      <button id="btn-{{id}}-preview" class="btn btn-xs btn-warning" value="Preview"
         onclick="showPreview('{{id}}'); return false;">Preview</button>
       <button id="btn-{{id}}-submit" class="btn btn-xs btn-success" value="{{text}}"
         onclick="{{submit}}('{{id}}'); return false;">{{text}}</button>
@@ -15,12 +15,12 @@ Content: |
       &nbsp;
       <div id="rnd-{{id}}" class="btn-group" data-toggle="buttons">
         <label id="rnd-{{id}}-bbcode" class="btn btn-xs btn-default btn-info">
-          <input type="radio" name="renderer" value="bbcode"/> BBCode
+          <input id="btn-{{id}}-bb" type="radio" name="renderer" value="bbcode"/> BBCode
         </label>
         <label id="rnd-{{id}}-textile" class="btn btn-xs btn-default btn-info">
-          <input type="radio" name="renderer" value="textile" /> Textile
+          <input id="btn-{{id}}-tx" type="radio" name="renderer" value="textile" /> Textile
         </label>
-        <label id="rnd-{{id}}-htmlsan" class="btn btn-xs btn-default btn-info">
+        <label id="btn-{{id}}-hs" class="btn btn-xs btn-default btn-info">
           <input type="radio" name="renderer" value="htmlsan" /> HTML
         </label>
       </div>

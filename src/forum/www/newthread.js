@@ -39,7 +39,33 @@ function showPreview() {
 
 $('#fp-text').keydown(function (e) {
 
-    if(e.ctrlKey && e.keyCode === 13) {
-        $('#fp-submit').click();
+    if(e.ctrlKey) {
+        switch(e.keyCode) {
+            case 13: { //'Enter'
+                $('#fp-submit').click();
+                e.preventDefault();
+                break;
+            }
+            case 80: { //'P'
+                $('#fp-preview').click();
+                e.preventDefault();
+                break;
+            }
+            case 85: { //'U'
+                $('#bb-rb').click();
+                e.preventDefault();
+                break;
+            }
+            case 73: { //'I'
+                $('#tx-rb').click();
+                e.preventDefault();
+                break;
+            }
+            case 79: { //'O'
+                $('#hs-rb').click();
+                e.preventDefault();
+                break;
+            }
+        }
     }
 });
