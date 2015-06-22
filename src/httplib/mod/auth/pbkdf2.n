@@ -6,18 +6,14 @@ using httplib;
 
 namespace httplib.mod {
 
-public interface IPbkdf2Auth: IAuth {
-}
-
-
 /** This module implements a PBKDF2-based Authentication module based in part on
  *  Taylor Hornby's implementation in C#, available online at:
  *  https://crackstation.net/hashing-security.htm#aspsourcecode */
 [HasLogging]
-public class Pbkdf2Auth: Module, IPbkdf2Auth {
+public class Pbkdf2Auth: Module, IAuth {
 
     public override InterfaceType: Type {
-        get { typeof(IPbkdf2Auth) }
+        get { typeof(IAuth) }
     }
 
     Salt: RNGCryptoServiceProvider { get; private set; }

@@ -8,10 +8,6 @@ using httplib;
 
 namespace forum.mod {
 
-public interface IFilter: ITextTransform {
-}
-
-
 [Record]
 public class FilterAction {
 
@@ -25,10 +21,10 @@ public class FilterAction {
  *  be used to 'censor' swearing, to discourage use of particular terms, or
  *  simply for the amusement value... */
 [HasLogging]
-public class Filter: Module, IFilter {
+public class Filter: Module, ITextTransform {
 
     public override InterfaceType: Type {
-        get { typeof(IFilter) }
+        get { typeof(ITextTransform) }
     }
 
     public Filters: List[FilterAction] { get; private set; }

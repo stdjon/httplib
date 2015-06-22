@@ -6,15 +6,11 @@ using Textile;
 
 namespace httplib.mod {
 
-public interface ITextile: ITextTransform {
-}
-
-
 [HasLogging]
-public class Textile: Module, ITextile {
+public class Textile: Module, ITextTransform {
 
     public override InterfaceType: Type {
-        get { typeof(ITextile) }
+        get { typeof(ITextTransform) }
     }
 
     Formatter: TextileFormatter { get; private set; }

@@ -35,14 +35,22 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
-  - Assembly: http.exe
+  MyTestModule:
+    Assembly: http.exe
     Typename: MyTestModule
-  - Assembly: httplib.mod.auth.dll
+  MyTestModule2:
+    Assembly: http.exe
+    Typename: MyTestModule
+    Data:
+      Text: This is some text from the second instance of MyTestModule.
+  Pbkdf2Auth:
+    Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth
     Data:
       IterationCount: 300
       HashLength: 25
-  - Assembly: httplib.mod.bbcode.dll
+  BbCode:
+    Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
     Data:
       Tags:
@@ -67,9 +75,11 @@ Modules:
         - { Tag: "*", Open: "<li>", Close: "</li>", Flags: "NoClose" }
         - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
-  - Assembly: httplib.mod.htmlsanitize.dll
+  HtmlSan:
+    Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
-  - Assembly: httplib.mod.imageprocessor.dll
+  ImageProcessor:
+    Assembly: httplib.mod.imageprocessor.dll
     Typename: httplib.mod.ImageProcessor
     Data:
       Operations:
@@ -84,7 +94,8 @@ Modules:
         avatar64: [ white-bg, entropycrop, resize64 ]
         avatar80: [ white-bg, entropycrop, resize80 ]
         avatar120: [ white-bg, entropycrop, resize120 ]
-  - Assembly: httplib.mod.textile.dll
+  Textile:
+    Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile
 MimeTypes:
   js: application/javascript

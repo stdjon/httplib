@@ -173,7 +173,6 @@ class MyDatabaseHandler: ComplexHandler {
 
 public interface IMyTestModule: IModuleInterface {
 
-    Name: string { get };
     Server: Server { get }; // Module.Server 'magically' fulfils this API
     testMethod(): string;
 }
@@ -181,20 +180,24 @@ public interface IMyTestModule: IModuleInterface {
 
 public class MyTestModule: Module, IMyTestModule {
 
+    text: string;
+
     // overridden from Module, indicates the module interface we're providing...
     public override InterfaceType: Type {
         get { typeof(IMyTestModule) }
     }
 
-    public Name: string {
-        get { "MyTestModule" }
-    }
+    public this(conf: ModuleData) {
 
-    public this(_conf: ModuleData) {
+        text = if(conf != null && conf.ContainsKey("Text")) {
+            $<#<p>$(conf["Text"])</p>#>;
+        } else {
+            "<p>This is some test text which the module returned.</p>";
+        }
     }
 
     public testMethod(): string {
-        "<p>This is some test text which the module returned.</p>";
+        text;
     }
 }
 
@@ -246,7 +249,7 @@ class MyServer: Server {
     public pwResponse(
         context: Context, request: Request, response: Response): void {
 
-        def auth = getModuleInterface.[mod.IPbkdf2Auth]();
+        def auth = getModuleInterface.[IAuth]("Pbkdf2Auth");
         if(auth != null) {
             def test_pw = "n0ts3cr3t";
             def record = auth.createPasswordRecord(test_pw);
@@ -365,9 +368,9 @@ class MyServer: Server {
                 };
         }
 
-        def bbcode = getModuleInterface.[mod.IBbCode]();
-        def textile = getModuleInterface.[mod.ITextile]();
-        def htmlsan = getModuleInterface.[mod.IHtmlSanitizer]();
+        def bbcode = getModuleInterface.[ITextTransform]("BbCode");
+        def textile = getModuleInterface.[ITextTransform]("Textile");
+        def htmlsan = getModuleInterface.[ITextTransform]("HtmlSan");
 
         def encoded = match(edit_mode) {
             | "bbcode" => bbcode.transform(EditText)
@@ -465,7 +468,7 @@ class MyServer: Server {
         context: Context, _request: Request, response: Response): void {
 
         def transformImage(memstr, xform) {
-            def iimage = getModuleInterface.[mod.IImageProcessor]();
+            def iimage = getModuleInterface.[IImageTransform]("ImageProcessor");
             _ = iimage.load(memstr);
             _ = iimage.transform(xform);
             //_ = iimage.save($"./tmp-$xform.png");
@@ -540,15 +543,19 @@ module Test {
             });
 
             my_server.route(HTTP.GET, "/module", (_ctx, _req, res) => {
-                def iface = my_server.getModuleInterface.[IMyTestModule]();
-                if(iface != null) {
+                def iface = my_server.getModuleInterface.[IMyTestModule]("MyTestModule");
+                def iface2 = my_server.getModuleInterface.[IMyTestModule]("MyTestModule2");
+                if(iface != null && iface2 != null) {
                     def same_server = my_server.Equals(iface.Server);
-                    res.append($"<html><body><h1>Module Test [$(iface.Name)]</h1>"
-                        $"$(iface.testMethod())<p>Same server: $same_server</p></body></html>");
+                    res.append("<html><body><h1>Module Test "
+                        $"[$(iface.Name) and $(iface2.Name)]</h1>"
+                        $"$(iface.testMethod())"
+                        $"$(iface2.testMethod())"
+                        $"<p>Same server: $same_server</p></body></html>");
                     res.Status = (200, "OK");
                 } else {
-                    res.append("<html><body><h1>Module Missing :(</h1></body></html>");
-                    res.Status = (500, "Module missing");
+                    res.append("<html><body><h1>Modules Missing :(</h1></body></html>");
+                    res.Status = (500, "Modules missing");
                 }
             });
 

@@ -10,7 +10,7 @@ namespace httplib {
 
 public interface IModuleInterface {
 
-    // Currently an empty interface, this _may_ change in future...
+    Name: string { get; } // We expect this to be fulfilled by Module.Name
 }
 
 
@@ -20,6 +20,7 @@ public interface IModuleInterface {
 public abstract class Module {
 
     public abstract InterfaceType: Type { get };
+    public Name: string { get; internal set; }
     public Server: Server { get; internal set };
 
     // NB: This method is expecting derived Modules to implement (a derivation
@@ -33,13 +34,17 @@ public abstract class Module {
     }
 
     /** Load a DB by reflection, given a DLL and type name. */
-    public static load(conf: ModuleConfiguration): Module {
+    public static load(name: string, conf: ModuleConfiguration): Module {
 
         def assembly = Assembly.LoadFrom(conf.Assembly);
         def type = assembly.GetType(conf.Typename);
-        def data = conf.Data;
 
-        Activator.CreateInstance(type, data) :> Module;
+        def result = Activator.CreateInstance(type, conf.Data) :> Module;
+
+        when(result != null) {
+            result.Name = name;
+        }
+        result;
     }
 }
 
@@ -49,29 +54,29 @@ public abstract class Module {
 
 public class ModuleCache {
 
-    modules: Dictionary[Type, Module] = Dictionary();
+    modules: Dictionary[string * Type, Module] = Dictionary();
 
     public loadModule(
-        conf: ModuleConfiguration, server: Server): void {
+        name: string, conf: ModuleConfiguration, server: Server): void {
 
-        mutable module_ = Module.load(conf);
+        mutable module_ = Module.load(name, conf);
         module_.Server = server;
-        addModule(module_);
+        addModule(name, module_);
     }
 
-    public addModule(m: Module): void {
-        modules[m.InterfaceType] = m;
+    public addModule(name: string, m: Module): void {
+        modules[name, m.InterfaceType] = m;
     }
 
-    public getModuleInterface[T](): T {
-        getModuleInterface(typeof(T)) :> T;
+    public getModuleInterface[T](name: string): T {
+        getModuleInterface(name, typeof(T)) :> T;
     }
 
-    public getModuleInterface(type: Type): IModuleInterface {
+    public getModuleInterface(name: string, type: Type): IModuleInterface {
         mutable result = null;
         mutable probe;
 
-        when(modules.TryGetValue(type, out probe)) {
+        when(modules.TryGetValue((name, type), out probe)) {
             result = probe.getInterface();
         }
         result;

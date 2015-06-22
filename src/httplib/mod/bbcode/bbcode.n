@@ -13,15 +13,11 @@ using CodeKicker.BBCode;
 
 namespace httplib.mod {
 
-public interface IBbCode: ITextTransform {
-}
-
-
 [HasLogging]
-public class BbCode: Module, IBbCode {
+public class BbCode: Module, ITextTransform {
 
     public override InterfaceType: Type {
-        get { typeof(IBbCode) }
+        get { typeof(ITextTransform) }
     }
 
     Parser: BBCodeParser { get; private set; }

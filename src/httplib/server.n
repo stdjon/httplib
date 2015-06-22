@@ -184,7 +184,7 @@ public class Server: IDisposable {
 
         when(Configuration.Modules != null) {
             foreach(m in Configuration.Modules) {
-                ModuleCache.loadModule(m, this);
+                ModuleCache.loadModule(m.Key, m.Value, this);
             }
         }
 
@@ -298,12 +298,12 @@ public class Server: IDisposable {
         }
     }
 
-    public getModuleInterface[T](): T {
-        ModuleCache.getModuleInterface.[T]();
+    public getModuleInterface[T](name: string): T {
+        ModuleCache.getModuleInterface.[T](name);
     }
 
-    public getModuleInterface(type: Type): IModuleInterface {
-        ModuleCache.getModuleInterface(type);
+    public getModuleInterface(name: string, type: Type): IModuleInterface {
+        ModuleCache.getModuleInterface(name, type);
     }
 
     findHandler(

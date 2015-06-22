@@ -32,7 +32,8 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
-  - Assembly: forum.mod.filter.dll
+  Filter:
+    Assembly: forum.mod.filter.dll
     Typename: forum.mod.Filter
     Data:
       Filters:
@@ -40,12 +41,14 @@ Modules:
         - { Search: "frist post", Replace: "lamer", Flags: "IgnoreCase|Boundary" }
         - { Search: "cock", Replace: "rooster", Flags: "IgnoreCase" }
         - { Search: "string", Replace: "chord", Flags: "IgnoreCase" }
-  - Assembly: httplib.mod.auth.dll
+  Pbkdf2Auth:
+    Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth
     Data:
       IterationCount: 25000
       HashLength: 40
-  - Assembly: httplib.mod.bbcode.dll
+  BbCode:
+    Assembly: httplib.mod.bbcode.dll
     Typename: httplib.mod.BbCode
     Data:
       Tags:
@@ -70,11 +73,14 @@ Modules:
         - { Tag: "*", Open: "<li>", Close: "</li>", Flags: "NoClose" }
         - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
-  - Assembly: httplib.mod.htmlsanitize.dll
+  HtmlSan:
+    Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
-  - Assembly: httplib.mod.oembed.dll
+  OEmbed:
+    Assembly: httplib.mod.oembed.dll
     Typename: httplib.mod.OEmbed
-  - Assembly: httplib.mod.textile.dll
+  Textile:
+    Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile
 MimeTypes:
   js: application/javascript

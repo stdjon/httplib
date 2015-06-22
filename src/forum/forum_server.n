@@ -244,9 +244,9 @@ public class ForumServer: Server {
     }
 
     public renderPost(method: string, text: string): bool * string {
-        def bbc = getModuleInterface.[mod.IBbCode]();
-        def txt = getModuleInterface.[mod.ITextile]();
-        def htm = getModuleInterface.[mod.IHtmlSanitizer]();
+        def bbc = getModuleInterface.[ITextTransform]("BbCode");
+        def txt = getModuleInterface.[ITextTransform]("Textile");
+        def htm = getModuleInterface.[ITextTransform]("HtmlSan");
         mutable ok = true;
 
         def pre =
@@ -263,7 +263,7 @@ public class ForumServer: Server {
     public filterTestResponse(
         context: Context, request: Request, response: Response): void {
 
-        def filter = getModuleInterface.[mod.IFilter]();
+        def filter = getModuleInterface.[ITextTransform]("Filter");
         if(filter != null) {
             def i = request.QueryString["input"];
             def input = i ? i : ("Use ?input=xyz on "

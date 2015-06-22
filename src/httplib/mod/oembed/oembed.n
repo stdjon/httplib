@@ -7,7 +7,7 @@ using OEmbed.Net.Domain;
 // TODO: this is a WIP, we will probably need to check incoming URL's against a
 //   list of known providers to synthesise a request URL.
 
-namespace httplib.mod {
+namespace httplib{
 
 public variant OEMB {
     | LINK {
@@ -34,6 +34,8 @@ public interface IOEmbed: IModuleInterface {
     getEmbed(data: OEMB): string;
 }
 
+
+namespace mod {
 
 [HasLogging]
 public class OEmbed: Module, IOEmbed {
@@ -68,4 +70,5 @@ public class OEmbed: Module, IOEmbed {
 }
 
 
-} // namespace httplib.mod
+} // namespace mod
+} // namespace httplib

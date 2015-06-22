@@ -80,7 +80,7 @@ public class SignupHandler: BasePageHandler {
                 Response.append("<html><body><h1>Bad Request!</h1></body></html>");
                 Response.Status = (400, "Bad Request");
             } else {
-                def auth = Server.getModuleInterface.[mod.IPbkdf2Auth]();
+                def auth = Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
                 mutable token = null;
                 mutable expiry;
 

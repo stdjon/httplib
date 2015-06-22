@@ -6,12 +6,8 @@ using Ganss.XSS;
 
 namespace httplib.mod {
 
-public interface IHtmlSanitizer: ITextTransform {
-}
-
-
 [HasLogging]
-public class HtmlSanitizer: Module, IHtmlSanitizer {
+public class HtmlSanitizer: Module, ITextTransform {
 
     type Configuration = Dictionary[string, List[string]];
 
@@ -19,7 +15,7 @@ public class HtmlSanitizer: Module, IHtmlSanitizer {
         array["Tags", "Schemes", "Attrs", "UriAttrs", "CssProps"];
 
     public override InterfaceType: Type {
-        get { typeof(IHtmlSanitizer) }
+        get { typeof(ITextTransform) }
     }
 
     Sanitizer: Ganss.XSS.HtmlSanitizer { get; private set; }

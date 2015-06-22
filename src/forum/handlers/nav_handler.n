@@ -91,7 +91,7 @@ public class NavHandler: BasePageHandler {
         if(Request.IsSecure) {
             def user = Context.Vars["user"];
             def password = Context.Vars["password"];
-            def auth = Server.getModuleInterface.[mod.IPbkdf2Auth]();
+            def auth = Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
             def command1 = Server.Database.createCommand(
                 "SELECT Id FROM Users WHERE "
                     "Name = @Name") <- [ "@Name" = user ];

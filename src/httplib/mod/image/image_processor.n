@@ -102,15 +102,11 @@ variant Operation {
 
 //------------------------------------------------------------------------------
 
-public interface IImageProcessor: IImageTransform {
-}
-
-
 [HasLogging]
-public class ImageProcessor: Module, IImageProcessor {
+public class ImageProcessor: Module, IImageTransform {
 
     public override InterfaceType: Type {
-        get { typeof(IImageProcessor) }
+        get { typeof(IImageTransform) }
     }
 
     ImageFactory: ImageFactory { get; set; }
