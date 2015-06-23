@@ -1,4 +1,5 @@
 using System;
+using System.Text.RegularExpressions;
 
 using Nemerle.Extensions;
 
@@ -177,15 +178,22 @@ public class UsersHandler: BasePageHandler {
         i = command3.execute((j, reader) => {
             mutable content = reader.getValue("OutputContent");
             when(content.Length > 50) {
-                content = content.Substring(0, 47) + "...";
+                content = content.Substring(0, 50) + "...";
             }
-            // Use HtmlSanitizer to close any tags lost by the truncation of content.
-            // TODO: strip some additional tags: <p>, <h*> ...
-            def htmlsan = Server.getModuleInterface.[ITextTransform]("HtmlSan");
+            // Use HtmlSanitizer to close any tags lost by the truncation.
+            def htmlsan = Server.
+                getModuleInterface.[ITextTransform]("HtmlSanitizer");
+            content = htmlsan.transform(content);
+
+            // Strip out <hN>, <p> and <br> tags for the post preview
+            // TODO: use a CsQuery-based module to allow proper tag replacement.
+            content = Regex(@"</?h[0-9]+>").Replace(content, "");
+            content = Regex(@"</?p>").Replace(content, "");
+            content = content.Replace("<br>", "");
 
             posts[j] = PageData() <- [
                 "Id" = reader.getValue("Id", 0U),
-                "Content" = htmlsan.transform(content),
+                "Content" = content,
                 "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });

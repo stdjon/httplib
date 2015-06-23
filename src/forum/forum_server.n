@@ -246,7 +246,7 @@ public class ForumServer: Server {
     public renderPost(method: string, text: string): bool * string {
         def bbc = getModuleInterface.[ITextTransform]("BbCode");
         def txt = getModuleInterface.[ITextTransform]("Textile");
-        def htm = getModuleInterface.[ITextTransform]("HtmlSan");
+        def htm = getModuleInterface.[ITextTransform]("HtmlSanitizer");
         mutable ok = true;
 
         def pre =
