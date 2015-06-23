@@ -61,11 +61,11 @@ public class ModuleCache {
 
         mutable module_ = Module.load(name, conf);
         module_.Server = server;
-        addModule(name, module_);
+        addModule(module_);
     }
 
-    public addModule(name: string, m: Module): void {
-        modules[name, m.InterfaceType] = m;
+    public addModule(m: Module): void {
+        modules[m.Name, m.InterfaceType] = m;
     }
 
     public getModuleInterface[T](name: string): T {
