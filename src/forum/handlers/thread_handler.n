@@ -11,6 +11,8 @@ namespace forum {
 [HasHandlerFactory]
 public class ThreadHandler: BasePageHandler {
 
+    static PostsPerPage: int { get { 50 } }   //TODO: configurable?
+
     public ThreadId: uint { get; private set; }
     public From: int { get; private set; }
     public To: int { get; private set; }
@@ -22,10 +24,14 @@ public class ThreadHandler: BasePageHandler {
         base(hd, path);
 
         ThreadId = UInt32.Parse(Context.Vars["id"]);
+
         def fr_st = Context.Vars["from"];
         From = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
+
         def to_st = Context.Vars["to"];
-        To = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (From + 49);  //TODO: configurable?
+        To = !String.IsNullOrEmpty(to_st) ?
+            Int32.Parse(to_st) :
+            (From + PostsPerPage - 1);
         PostCount = To + 1 - From;
 
         populatePostIds();
@@ -41,15 +47,15 @@ public class ThreadHandler: BasePageHandler {
         mutable ok = false;
         mutable uid;
         mutable catid;
-        command.execute(reader: DataReader => {
-            uid = reader.getValue.[uint]("UserId", 0);
-            catid = reader.getValue.[uint]("CategoryId", 0);
+        command.execute(reader => {
+            uid = reader.getValue("UserId", 0U);
+            catid = reader.getValue("CategoryId", 0U);
             def is_own_thread = (uid == SignedInUserId);
             _ = PageData <- [
                 "Title" = reader.getValue("Title"),
                 "UserId" = uid,
                 "CategoryId" = catid,
-                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
                 "ColourId" = reader.getValue("Colour"),
                 "IsOwnThread" = is_own_thread,
                 "OwnThreadClass" = is_own_thread ? "own-thread" : "",
@@ -73,14 +79,14 @@ public class ThreadHandler: BasePageHandler {
                 "@To" = To - 1,
             ];
 
-            i = command2.execute((j, reader: DataReader) => {
+            i = command2.execute((j, reader) => {
                 when(j < PostCount) {
-                    def id = reader.getValue.[uint]("Id", 0);
-                    uid = reader.getValue.[uint]("UserId", 0);
-                    def points = reader.getValue.[int]("Points", 0);
-                    def date = Date.FromTicks(reader.getValue.[long]("CreateDate", 0));
+                    def id = reader.getValue("Id", 0U);
+                    uid = reader.getValue("UserId", 0U);
+                    def points = reader.getValue("Points", 0);
+                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
                     def content = reader.getValue("OutputContent");
-                    def reply_to = reader.getValue.[uint?]("ReplyTo");
+                    def reply_to = reader.getValue("ReplyTo"): uint?;
                     def is_own_post = (uid == SignedInUserId);
 
                     posts[j] = PageData() <- [
@@ -130,7 +136,7 @@ public class ThreadHandler: BasePageHandler {
                                 "@ReplyTo" = post_id,
                             ];
                         _ = command2.execute((j, reader) => {
-                            def pid = reader.getValue.[uint]("PostId", 0U);
+                            def pid = reader.getValue("PostId", 0U);
                             replies[j] = PageData() <- [
                                 "PostId" = pid,
                                 "PostUrl" = postUrl(pid),
@@ -223,7 +229,8 @@ public class ThreadHandler: BasePageHandler {
             def from = (((post_number - 1) / PostCount) * PostCount) + 1;
             def to = from + (PostCount - 1);
 
-            if(1 == from && 50 == to) { // FIXME: configurable {
+            if(1 == from && PostsPerPage == to) {
+                // special-case URL for first page of the thread
                 $"$prefix/th/$ThreadId#$post_number"
             } else {
                 $"$prefix/th/$ThreadId/$from-$to#$post_number"
