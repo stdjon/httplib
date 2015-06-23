@@ -89,13 +89,6 @@ div.guide {
   padding: 50px 80px;
   text-align: left;
   border-radius: 0;
-  /**/
-  background-color: #666;
-  color: #ccc;
-  /*/
-  background-color: #888;
-  color: #444;
-  /**/
 }
 div.jumbotron h1 {
   font-weight: 900;
