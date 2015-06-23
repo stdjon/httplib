@@ -32,12 +32,12 @@ public class CategoryHandler: BasePageHandler {
 
         mutable ok = false;
         mutable uid;
-        command.execute(reader: DataReader => {
-            uid = reader.getValue.[uint]("UserId", 0);
+        command.execute(reader => {
+            uid = reader.getValue("UserId", 0U);
             _ = PageData <- [
                 "Name" = reader.getValue("Name"),
                 "UserId" = uid,
-                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
                 "ColourId" = reader.getValue("Colour"),
             ];
             ok = true;
@@ -57,13 +57,13 @@ public class CategoryHandler: BasePageHandler {
                 "@To" = to - 1,
             ];
 
-            i = command2.execute((j, reader: DataReader) => {
+            i = command2.execute((j, reader) => {
                     when(j < dist) {
-                        def id = reader.getValue.[uint]("Id", 0);
-                        uid = reader.getValue.[uint]("UserId", 0);
-                        //def _points = reader.getValue.[int]("Points", 0);
-                        def date= Date.FromTicks(reader.getValue.[long]("CreateDate", 0): long);
-                        def title = reader.getValue.[string]("Title");
+                        def id = reader.getValue("Id", 0U);
+                        uid = reader.getValue("UserId", 0U);
+                        //def _points = reader.getValue("Points", 0);
+                        def date= Date.FromTicks(reader.getValue("CreateDate", 0L));
+                        def title = reader.getValue("Title");
 
                         threads[j] = PageData() <- [
                             "Number" = from + j,

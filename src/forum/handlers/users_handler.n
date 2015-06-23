@@ -68,10 +68,10 @@ public class UsersHandler: BasePageHandler {
 
         i = command.execute((j, reader) => {
             when(j < dist) {
-                def u = reader.getValue.[string]("Name");
+                def u = reader.getValue("Name");
                 when(u != null) {
-                    def points = reader.getValue.[int]("Points", 0);
-                    def level = reader.getValue.[uint]("Level", 0);
+                    def points = reader.getValue("Points", 0);
+                    def level = reader.getValue("Level", 0U);
                     def motto = reader.getValue("Motto", "");
                     users[j] = PageData() <- [
                         "Num" = (from + j).ToString(),
@@ -124,8 +124,8 @@ public class UsersHandler: BasePageHandler {
             "@Name" = user
         ];
 
-        command.execute(reader: DataReader => {
-            def date: long = reader.getValue.[long]("JoinDate", 0);
+        command.execute(reader => {
+            def date: long = reader.getValue("JoinDate", 0L);
             Transform = reader.getValue("Transform", "bbcode");
             Font = reader.getValue("Font", "serif1");
 
@@ -134,8 +134,8 @@ public class UsersHandler: BasePageHandler {
                 "Motto" = reader.getValue("Motto", ""),
                 "Location" = reader.getValue("Location", ""),
                 "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
-                "Points" = reader.getValue.[int]("Points", 0),
-                "Level" = reader.getValue.[uint]("Level", 0),
+                "Points" = reader.getValue("Points", 0),
+                "Level" = reader.getValue("Level", 0U),
                 "ColourId" = reader.getValue("Colour", "x360"),
                 "Font" = Font,
             ];
@@ -160,11 +160,11 @@ public class UsersHandler: BasePageHandler {
                 "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
             "@UserId" = userid,
         ];
-        i = command2.execute((j, reader: DataReader) => {
+        i = command2.execute((j, reader) => {
             threads[j] = PageData() <- [
-                "Id" = reader.getValue.[uint]("Id", 0),
+                "Id" = reader.getValue("Id", 0U),
                 "Title" = reader.getValue("Title"),
-                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref threads, i);
@@ -174,7 +174,7 @@ public class UsersHandler: BasePageHandler {
                 "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
             "@UserId" = userid,
         ];
-        i = command3.execute((j, reader: DataReader) => {
+        i = command3.execute((j, reader) => {
             mutable content = reader.getValue("OutputContent");
             when(content.Length > 50) {
                 content = content.Substring(0, 47) + "...";
@@ -184,9 +184,9 @@ public class UsersHandler: BasePageHandler {
             def htmlsan = Server.getModuleInterface.[ITextTransform]("HtmlSan");
 
             posts[j] = PageData() <- [
-                "Id" = reader.getValue.[uint]("Id", 0),
+                "Id" = reader.getValue("Id", 0U),
                 "Content" = htmlsan.transform(content),
-                "CreateDate" = Date.FromTicks(reader.getValue.[long]("CreateDate", 0)),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref posts, i);

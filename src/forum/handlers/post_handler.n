@@ -29,11 +29,11 @@ public class PostHandler: BasePageHandler {
         mutable content;
         mutable ok = false;
 
-        command.execute(reader: DataReader => {
-            uid = reader.getValue.[uint]("UserId", 0);
-            thid = reader.getValue.[uint]("ThreadId", 0);
-            date = reader.getValue.[long]("CreateDate", 0);
-            points = reader.getValue.[int]("Points", 0);
+        command.execute(reader => {
+            uid = reader.getValue("UserId", 0U);
+            thid = reader.getValue("ThreadId", 0U);
+            date = reader.getValue("CreateDate", 0L);
+            points = reader.getValue("Points", 0);
             content = reader.getValue("OutputContent");
             ok = true;
         });
