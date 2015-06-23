@@ -238,7 +238,7 @@ public class DataReader: IDisposable {
 
     public getValue[T](field: string, default: T): T {
         def ordinal = reader.GetOrdinal(field);
-        getValue.[T](ordinal, default);
+        getValue(ordinal, default);
     }
 
     public getValue[T](field: int, default: T): T {
@@ -251,7 +251,7 @@ public class DataReader: IDisposable {
 
     public getValue[T](field: string): T {
         def ordinal = reader.GetOrdinal(field);
-        getValue.[T](ordinal);
+        getValue(ordinal);
     }
 
     public getValue[T](field: int): T {
