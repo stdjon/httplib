@@ -11,11 +11,6 @@ Partials:
       <h1>{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}</h1>
     </div>
   Body: |
-    <style>
-      div.swatches { cursor: default; }
-      div.swatches span { cursor: pointer; }
-      div.swatches span.selected { border: 1px dotted #000; }
-    </style>
     <div>
     {{^IsPrefs}}
       <p>&nbsp;</p>

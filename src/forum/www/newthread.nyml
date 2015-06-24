@@ -19,9 +19,6 @@ Partials:
   Body: |
     <style>
       .concealed { display: none; }
-      div.swatches { cursor: default; }
-      div.swatches span { cursor: pointer; }
-      div.swatches span.selected { border: 1px dotted #000; }
     </style>
     <p>&nbsp;</p>
     {{>Swatches}}
