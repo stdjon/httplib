@@ -11,85 +11,111 @@ Partials:
       <h1>{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}</h1>
     </div>
   Body: |
+    <style>
+      h4.panel-title { font-size: 20px; font-weight: bold; }
+    </style>
     <div>
+    <p>&nbsp;</p>
     {{^IsPrefs}}
-      <p>&nbsp;</p>
-      <p>&nbsp;</p>
       {{#User}}
-        <p>Motto: <em>{{Motto}}</em></p>
-        <p>Location: <em>{{Location}}</em></p>
-        <p>User since: <em>{{JoinDate}}</em></p>
-        <p>Points: <em>{{Points}}</em></p>
-        <p>Level: <em>{{Level}}</em></p>
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h4 class="panel-title">Details</h4>
+        </div>
+        <div class="panel-body">
+          <p>Motto: <em>{{Motto}}</em></p>
+          <p>Location: <em>{{Location}}</em></p>
+          <p>User since: <em>{{JoinDate}}</em></p>
+          <p>Points: <em>{{Points}}</em></p>
+          <p>Level: <em>{{Level}}</em></p>
+        </div>
+      </div>
       {{/User}}
       {{^User}}
-        <p> No user with this name exists.</p>
+      <p> No user with this name exists.</p>
       {{/User}}
     {{/IsPrefs}}
     {{#IsPrefs}}
-      <p>&nbsp;</p>
-      {{>Swatches}}
-      <p>&nbsp;</p>
-      <p>Motto: <input id='motto' value="{{Motto}}" placeholder='[Motto]'
-        onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
-      <p>Location: <input id='_loc' value="{{Location}}" placeholder='[Location]'
-        onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
-      <p>User since: <em>{{JoinDate}}</em></p>
-      <p>Points: <em>{{Points}}</em></p>
-      <p>Level: <em>{{Level}}</em></p>
-      Default post format:
-      <div id="transform" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio(false)">
-          <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
-        </label>
-        <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio(false)">
-          <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
-        </label>
-        <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio(false)">
-          <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
-        </label>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Settings</h4>
       </div>
-      <br>
-      Font:
-      <div id="font" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default btn-warning {{Serif1Active}}" onclick="onRadio(true)">
-          <input type="radio" id="sf1-rb" name="renderer" value="serif1"/> Serif 1
-        </label>
-        <label class="btn btn-default btn-warning {{Serif2Active}}" onclick="onRadio(true)">
-          <input type="radio" id="sf2-rb" name="renderer" value="serif2" /> Serif 2
-        </label>
-        <label class="btn btn-default btn-warning {{Sans1Active}}" onclick="onRadio(true)">
-          <input type="radio" id="ss1-rb" name="renderer" value="sans1" /> Sans 1
-        </label>
-        <label class="btn btn-default btn-warning {{Sans2Active}}" onclick="onRadio(true)">
-          <input type="radio" id="ss2-rb" name="renderer" value="sans2" /> Sans 2
-        </label>
+      <div class="panel-body">
+        {{>Swatches}}
+        <p>&nbsp;</p>
+        <p>Motto: <input id='motto' value="{{Motto}}" placeholder='[Motto]'
+          onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
+        <p>Location: <input id='_loc' value="{{Location}}" placeholder='[Location]'
+          onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p>
+        <p>User since: <em>{{JoinDate}}</em></p>
+        <p>Points: <em>{{Points}}</em></p>
+        <p>Level: <em>{{Level}}</em></p>
+        Default post format:
+        <div id="transform" class="btn-group" data-toggle="buttons">
+          <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio(false)">
+            <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
+          </label>
+          <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio(false)">
+            <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
+          </label>
+          <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio(false)">
+            <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
+          </label>
+        </div>
+        <br>
+        Font:
+        <div id="font" class="btn-group" data-toggle="buttons">
+          <label class="btn btn-default btn-warning {{Serif1Active}}" onclick="onRadio(true)">
+            <input type="radio" id="sf1-rb" name="renderer" value="serif1"/> Serif 1
+          </label>
+          <label class="btn btn-default btn-warning {{Serif2Active}}" onclick="onRadio(true)">
+            <input type="radio" id="sf2-rb" name="renderer" value="serif2" /> Serif 2
+          </label>
+          <label class="btn btn-default btn-warning {{Sans1Active}}" onclick="onRadio(true)">
+            <input type="radio" id="ss1-rb" name="renderer" value="sans1" /> Sans 1
+          </label>
+          <label class="btn btn-default btn-warning {{Sans2Active}}" onclick="onRadio(true)">
+            <input type="radio" id="ss2-rb" name="renderer" value="sans2" /> Sans 2
+          </label>
+        </div>
+        <br>
+        <button id='update' type="submit" disabled="disabled" class="btn btn-success"
+          onclick="update()">Update</button>
+        <span id='notify'></span>
       </div>
-      <br>
-      <button id='update' type="submit" disabled="disabled" class="btn btn-success"
-        onclick="update()">Update</button>
-      <span id='notify'></span>
+    </div>
     {{/IsPrefs}}
-    <p>&nbsp;</p>
     {{#User}}
-    <h4>Recent Threads:</h4>
-    <ul class="list-group">
-    {{#Threads}}
-      <li class="list-group-item">
-        <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
-        <em>{{Title}}</em></li>
-    {{/Threads}}
-    </ul>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Recent Threads</h4>
+      </div>
+      <div class="panel-body">
+        <ul class="list-group">
+        {{#Threads}}
+          <li class="list-group-item">
+            <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+            <em>{{Title}}</em></li>
+        {{/Threads}}
+        </ul>
+      </div>
+    </div>
     {{/User}}
     {{#User}}
-    <h4>Recent Posts:</h4>
-    <ul class="list-group">
-    {{#Posts}}
-      <li class="list-group-item">
-        <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
-        <em>{{{Content}}}</em></li>
-    {{/Posts}}
-    </ul>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Recent Posts</h4>
+      </div>
+      <div class="panel-body">
+      <ul class="list-group">
+      {{#Posts}}
+        <li class="list-group-item">
+          <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+          <em>{{{Content}}}</em></li>
+      {{/Posts}}
+      </ul>
+      </div>
+    </div>
     {{/User}}
     </div>
   PageLoadScripts: |
