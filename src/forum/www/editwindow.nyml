@@ -4,6 +4,12 @@ Content: |
       <pre><span></span><br></pre>
       <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"></textarea>
     </div>
+    <div class="tags">
+      <small><table style="width: 100%;"><tr><td>
+        Tags:</td><td style="width: 92.5%;">
+        <select id="tags-{{id}}" autofocus multiple="true" data-placeholder="[Tags]" style="width: 100%; height: 24px">
+      </td></tr></table></small>
+    </div>
     <div>
       <button id="btn-{{id}}-preview" class="btn btn-xs btn-warning" value="Preview"
         onclick="showPreview('{{id}}'); return false;">Preview</button>
@@ -29,4 +35,11 @@ Content: |
       <span id="prv-{{id}}"><br></span>
     </div>
   </div>
+  <script>
+      $("select#tags-{{id}}").select2({
+        tags: true,
+        maximumInputLength: 30,
+        maximumSelectionLength: 5,
+      });
+  </script>
 

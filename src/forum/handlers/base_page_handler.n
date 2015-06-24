@@ -63,7 +63,7 @@ public class BasePageHandler: BaseHandler {
         def coll = HttpUtility.ParseQueryString(url.Query);
         mutable qs = "";
         foreach(x in coll.AllKeys) {
-            when(x.Length < 2 || x.Substring(0, 2) != "_$") {
+            when(x != null && (x.Length < 2 || x.Substring(0, 2) != "_$")) {
                 def sep = String.IsNullOrEmpty(qs) ? "?" : "&";
                 qs += $"$sep$x=$(coll[x])";
             }

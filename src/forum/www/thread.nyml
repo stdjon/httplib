@@ -32,6 +32,11 @@ Partials:
         <div class="post {{OwnPostClass}}">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
           <span id="c-{{PostId}}">{{{Content}}}</span><br>
+          <div><small>
+            <span id="tg-{{PostId}}">
+              {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
+            </span>
+          </small></div>
           <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
@@ -88,6 +93,7 @@ Partials:
     </div>
     {{/Title}}
   PageLoadScripts: |
+    <script src="/select2-4.0.0/dist/js/select2.js"></script>
     <script src="/swatches.js"></script>
     <script src="/expanding-area.js"></script>
     <script src="/thread.js"></script>

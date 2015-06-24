@@ -24,7 +24,6 @@ function openWindow(num, wnd_id, text, btn_id, next) {
             '&submit=' + w.submit + '&cancel=' + w.cancel + '&text=' + w.text,
         success: function(data) {
             $(data).insertAfter(num);
-            $('#te-' + wnd_id).focus();
 
             initalizeExpandingAreas();
 
@@ -111,6 +110,7 @@ function reply(btn, num, pid) {
                 num: num,
                 pid: pid,
             }
+            delaySetFocus(wnd_id);
         });
         $(num).data('reply-open', true).
             data('old-color', $(btn).css('color'));
@@ -126,15 +126,16 @@ function closeReply(wnd_id) {
 
 function submitReply(wnd_id) {
 
-    var txt = $('#' + wnd_id + ' textarea').val();
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
+    var txt = encodeURIComponent($('#' + wnd_id + ' textarea').val());
+    var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
     $.ajax({
         type: 'POST',
         dataType: 'json',
         global: false,
         url: '/createpost',
-        data: 'r=' + sel + '&t=' + encodeURIComponent(txt) +
+        data: 'r=' + sel + '&t=' + txt + '&tg=' + tags +
             '&p=' + pid + '&th=' + _g.ThreadId,
         success: function(data) {
             reloadPageContent();
@@ -153,11 +154,13 @@ function edit(btn, num, pid) {
     } else {
         openWindow(num, wnd_id, 'edit', btn_id, function() {
             populateEditData(pid);
+            $('#te-' + wnd_id).focus();
             _d.windows[wnd_id] = {
                 btn_id: btn_id,
                 num: num,
                 pid: pid,
             }
+            delaySetFocus(wnd_id);
         });
 
         $(num).data('edit-open', true).
@@ -183,6 +186,7 @@ function populateEditData(pid) {
         success: function(data) {
             $('#te-' + wnd_id).html(data.i);
             $('#prv-' + wnd_id).html(data.o);
+            selectTags($('select#tags-' + wnd_id), decodeTagString(data.tg));
             $('#te-' + wnd_id).trigger('input');
             $('#rnd-' + wnd_id + ' label').removeClass('active');
             var t = data.t || _g.Transform;
@@ -193,20 +197,24 @@ function populateEditData(pid) {
 
 
 function submitEdit(wnd_id) {
-    var txt = $('#' + wnd_id + ' textarea').val();
+
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
+    var txt = encodeURIComponent($('#' + wnd_id + ' textarea').val());
+    var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
+
     $.ajax({
         type: 'POST',
         dataType: 'json',
         global: false,
         url: '/update-post',
-        data: 'p=' + pid + '&r=' + sel + '&t=' + encodeURIComponent(txt) + '&th',
+        data: 'p=' + pid + '&r=' + sel + '&t=' + txt + '&tg=' + tags,
         success: function(data) {
             var d = _d.windows[wnd_id];
 
             closeEdit(wnd_id);
             $('#c-' + pid).html(data.o);
+            $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
         }
     });
 }
@@ -274,4 +282,62 @@ function initThreadPage(thid, transform, from, to) {
     }
 }
 
+
+// encode tag string (the individual tags do get double-URIencoded...)
+function encodeTagString(tags) {
+    tags = tags || [];
+    for(var i = 0; i < tags.length; i++) {
+        tags[i] = encodeURIComponent(tags[i]);
+    }
+    tags = tags.join('\0');
+    return encodeURIComponent(tags);
+}
+
+function decodeTagString(tags) {
+    tags = tags || "";
+    tags = decodeURIComponent(tags);
+    tags = tags.split('\0');
+    var result = [];
+    var j = 0;
+    for(var i = 0; i < tags.length; i++) {
+        var d = decodeURIComponent(tags[i]);
+        if(d.length > 0) {
+            result[j++] = d;
+        }
+    }
+    return result;
+}
+
+
+// insert tag array into the select2 object as selected options, so the tags
+// field is populated properly...
+function selectTags(select, tags) {
+    for(var i = 0; i < tags.length; i++) {
+        var opt = $('<option></option>').
+            attr('selected', true).text(tags[i]).val(tags[i]);
+        opt.appendTo(select);
+    }
+    select.trigger('change');
+}
+
+
+
+function tagsHtml(tags) {
+    var result = '';
+    if(tags.length > 0) {
+        result = 'Filed under: ';
+        for(var i = 0; i < tags.length; i++) {
+            result += '[<a href="' + _g.DefaultPrefix + '/tg/' +
+                encodeURIComponent(tags[i]) + '">' + tags[i] + '</a>] '
+        }
+    }
+    return result;
+}
+
+// FIXME?
+function delaySetFocus(wnd_id) {
+    setTimeout(function() {
+        $('#te-' + wnd_id).focus();
+    }, 100);
+}
 

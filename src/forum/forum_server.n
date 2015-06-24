@@ -51,6 +51,8 @@ public class ForumServer: Server {
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
 
+        route(HTTP.GET, "/tg/{{tag:.*}}", TagHandler.Factory("tag.nyml"));
+
         route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
 
         route(HTTP.POST, "/preview-post", previewPostResponse);
@@ -135,9 +137,10 @@ public class ForumServer: Server {
             thid = UInt32.Parse(context.Vars["th"]);
             def transform = context.Vars["r"];
             def content = context.Vars["t"];
+            def tags = context.Vars["tg"];
 
             (post_id, output, utc_now) =
-                createPost(userid, thid, reply_to, transform, content);
+                createPost(userid, thid, reply_to, transform, content, tags);
             ok = (post_id > 0);
         }
 
@@ -159,6 +162,7 @@ public class ForumServer: Server {
 
         mutable ok = false;
         mutable output = "";
+        mutable tags;
         mutable post_id;
         def cookies = request.Cookies;
         def isession = cookies ? cookies["_isession"] : null;
@@ -172,20 +176,32 @@ public class ForumServer: Server {
             (ok, output) = renderPost(transform, content);
 
             when(ok) {
-                def commmand = Database.createCommand(
-                    "UPDATE Posts SET InputContent=@InputContent, "
-                        "OutputContent=@OutputContent, Transform=@Transform WHERE "
-                        "Id=@Id") <- [
-                    "@InputContent" = content,
-                    "@OutputContent" = output,
-                    "@Transform" = transform,
-                    "@Id" = post_id,
-                ];
+                Database.withTransaction(db => {
+                    def commmand = db.createCommand(
+                        "UPDATE Posts SET InputContent=@InputContent, "
+                            "OutputContent=@OutputContent, Transform=@Transform WHERE "
+                            "Id=@Id") <- [
+                        "@InputContent" = content,
+                        "@OutputContent" = output,
+                        "@Transform" = transform,
+                        "@Id" = post_id,
+                    ];
 
-                def result2 = commmand.executeNonQuery();
-                when(result2 <= 0) {
-                    ok = false;
-                }
+                    def result2 = commmand.executeNonQuery();
+                    when(result2 <= 0) {
+                        ok = false;
+                    }
+
+                    when(ok) {
+                        def tg = context.Vars["tg"];
+                        tags = tagsFromTagString(tg);
+                        deleteExistingPostTags(post_id);
+                        def ids = getTagIds(tags, false);
+                        _ = insertPostTags(post_id, ids);
+                    }
+                }, ex => {
+                    internalServerError(ex);
+                });
             }
         }
 
@@ -194,6 +210,9 @@ public class ForumServer: Server {
                 "p" = post_id,
                 "o" = output,
             ];
+            when(tags != null) {
+                json["tg"] = encodeTags(tags);
+            }
             response.append(json.toString());
             response.Status = (200, "OK");
         } else {
@@ -211,6 +230,7 @@ public class ForumServer: Server {
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
             getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        mutable tags = null;
 
         when(userid != 0) {
             post_id = UInt32.Parse(context.Vars["p"]);
@@ -226,6 +246,8 @@ public class ForumServer: Server {
                 transform = reader.getValue("Transform");
             });
 
+            tags = getPostTags(post_id);
+
             ok = true;
         }
 
@@ -236,6 +258,9 @@ public class ForumServer: Server {
                 "i" = input,
                 "t" = transform,
             ];
+            when(tags != null) {
+                json["tg"] = encodeTags(tags);
+            }
             response.append(json.toString());
             response.Status = (200, "OK");
         } else {
@@ -377,9 +402,149 @@ public class ForumServer: Server {
         SessionToken.getUserId(tok, token);
     }
 
-    public createPost(
-        user_id: uint, thread_id: uint, reply_to: uint?, transform: string,
-        input: string, use_transaction = true): (uint * string * long) {
+    public tagsFromTagString(tag_string: string): array[string] {
+        def tag_input = tag_string ?
+            tag_string.Split(array['\0'], 5,
+                StringSplitOptions.RemoveEmptyEntries) : array(0);
+
+        mutable tags = array(5);
+        mutable i = 0;
+
+        foreach(t in tag_input) {
+            mutable u = t.Split(array['\0'], 2)[0];
+            u = Uri.UnescapeDataString(u);
+            when(u.Length > 30) {
+                u = u.Substring(0, 30);
+            }
+            tags[i] = u.Trim();
+            i++;
+        }
+
+        Array.Resize(ref tags, i);
+        tags;
+    }
+
+    public getExistingTagId(tag: string): uint? {
+        (Database.createCommand(
+            "SELECT Id From Tags WHERE Name=@Name") <- [ "@Name" = tag ]).
+            executeScalar() :> uint?;
+    }
+
+    public getExistingTag(tag_id: uint): string {
+        if(tag_id > 0) {
+            (Database.createCommand(
+                "SELECT Name From Tags WHERE Id=@Id") <- [ "@Id" = tag_id ]).
+                executeScalar() :> string;
+        } else {
+            null;
+        }
+    }
+
+    public getTagIds(tags: array[string],
+        use_transaction = false): array[uint] {
+
+        mutable result = array((tags != null) ? tags.Length : 0);
+        when(tags != null) {
+            Database.withTransaction(db => {
+                mutable i = 0;
+                foreach(t in tags) {
+                    def id = getExistingTagId(t);
+                    if(id != null) {
+                        result[i] = id :> uint;
+                    } else {
+                        def commmand2 = db.createCommand("INSERT Into Tags(Name) "
+                            "VALUES(@Name)") <- [ "@Name" = t ];
+                        def result2 = commmand2.executeNonQuery();
+                        when(result2 > 0) {
+                            def id = getExistingTagId(t);
+                            if(id != null) {
+                                result[i] = id :> uint;
+                            } else {
+                                Log.e("Could not insert Tag '{0}'!", t);
+                            }
+                        }
+                    }
+                    i++;
+                }
+            }, ex => {
+                internalServerError(ex);
+            }, use_transaction);
+        }
+        result;
+    }
+
+    public deleteExistingPostTags(post_id: uint): void {
+        def command = Database.createCommand(
+            "DELETE FROM PostTags WHERE (PostId = @PostId)") <- [
+                "@PostId" = post_id
+            ];
+        _ = command.executeNonQuery();
+    }
+
+    public insertPostTags(post_id: uint, tag_ids: array[uint]): bool {
+        mutable result = true;
+        foreach(id in tag_ids) {
+            def command = Database.createCommand(
+                "INSERT INTO PostTags(PostId, TagId) VALUES(@PostId, @TagId)") <- [
+                    "@PostId" = post_id,
+                    "@TagId" = id,
+                ];
+            def result2 = command.executeNonQuery();
+            when(result2 <= 0) {
+                Log.e("Could not insert PostTags({0}, {1})", post_id, id);
+                result = false;
+            }
+        }
+        result;
+    }
+
+    public getPostTags(post_id: uint): array[string] {
+        mutable tags = array(5);
+        def tag_ids = array(5);
+        def command = Database.createCommand(
+            "SELECT TagId FROM PostTags WHERE PostId=@PostId") <- [
+                "@PostId" = post_id,
+            ];
+        _ = command.execute((j, reader) => {
+            tag_ids[j] = reader.getValue("TagId", 0U);
+        });
+        mutable k = 0;
+        for(mutable j = 0; j < tag_ids.Length; j++) {
+            def t = getExistingTag(tag_ids[j]);
+            when(t != null) {
+                tags[k] = t;
+                k++;
+            }
+        }
+        if(k > 0) {
+            Array.Resize(ref tags, k);
+            tags;
+        } else {
+            null;
+        }
+    }
+
+    public encodeTags(tags: array[string]): string {
+        mutable esc = array(5);
+        when(tags != null) {
+            mutable i = 0;
+            foreach(t in tags) {
+                when(!String.IsNullOrEmpty(t)) {
+                    esc[i] = Uri.EscapeDataString(t);
+                    i++;
+                }
+            }
+            Array.Resize(ref esc, i);
+        }
+        match(esc.Length) {
+            | 0 => null
+            | _ => Uri.EscapeDataString(String.Join("\0", esc))
+        }
+    }
+
+    public createPost(user_id: uint, thread_id: uint, reply_to: uint?,
+        transform: string, input: string, tag_string: string = null,
+        use_transaction = true): (uint * string * long) {
 
         mutable post_id = 0U;
         mutable output = "";
@@ -440,6 +605,12 @@ public class ForumServer: Server {
                         } else {
                             ok = true;
                         }
+                    }
+
+                    when(ok) {
+                        def tags = tagsFromTagString(tag_string);
+                        def ids = getTagIds(tags, false);
+                        _ = insertPostTags(post_id, ids);
                     }
                 }
             }, ex => {

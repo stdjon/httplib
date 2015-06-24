@@ -117,6 +117,25 @@ public class ThreadHandler: BasePageHandler {
                     Server.getUserName(posts[i]["UserId"] :> uint);
             }
 
+            // Tags
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+                def tags = Server.getPostTags(post_id);
+                when(tags != null) {
+                    def prf = Server.getDefaultPrefix(Request);
+                    mutable tagdata: PageDataArray = array(tags.Length);
+                    for(mutable j = 0; j < tags.Length; j++) {
+                        def url = Uri.EscapeDataString(tags[j]);
+                        tagdata[j] = PageData() <- [
+                            "Name" = tags[j],
+                            "Url" = $"$prf/tg/$url",
+                        ];
+                    }
+                    posts[i]["Tags"] = tagdata;
+                    posts[i]["HasTags"] = true;
+                }
+            }
+
             // Replies
             for(i = 0; i < limit; i++) {
                 def post_id = posts[i]["PostId"] :> uint;

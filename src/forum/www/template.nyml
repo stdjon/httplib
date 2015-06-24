@@ -8,6 +8,7 @@ Metas:
   - name="viewport" content="width=device-width, initial-scale=1"
 Stylesheets:
   - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /select2-4.0.0/dist/css/select2.css
   - /font-awesome-4.3.0/css/font-awesome.css
   - /local-styles.css
   - /custom-styles.css?c={{ColourId}}

@@ -28,7 +28,7 @@ public class CreateThreadHandler: BaseHandler {
         def isession = cookies ? cookies["_isession"] : null;
         def userid = isession ?
             Server.getUserIdFromSessionToken(STOK.INSECURE, isession) : 0;
-        mutable thid: uint = 0;
+        mutable thid = 0U;
         mutable ok = false;
 
         when(String.IsNullOrEmpty(renderer)) {
@@ -74,7 +74,7 @@ public class CreateThreadHandler: BaseHandler {
                     if(fp == "on") {
 
                         def (post_id, _, _) = Server.createPost(
-                            userid, thid, null, renderer, content, false);
+                            userid, thid, null, renderer, content, null, false);
 
                         ok = post_id > 0;
 
