@@ -58,23 +58,22 @@ public class CategoryHandler: BasePageHandler {
             ];
 
             i = command2.execute((j, reader) => {
-                    when(j < dist) {
-                        def id = reader.getValue("Id", 0U);
-                        uid = reader.getValue("UserId", 0U);
-                        //def _points = reader.getValue("Points", 0);
-                        def date= Date.FromTicks(reader.getValue("CreateDate", 0L));
-                        def title = reader.getValue("Title");
+                when(j < dist) {
+                    def id = reader.getValue("Id", 0U);
+                    uid = reader.getValue("UserId", 0U);
+                    //def _points = reader.getValue("Points", 0);
+                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                    def title = reader.getValue("Title");
 
-                        threads[j] = PageData() <- [
-                            "Number" = from + j,
-                            "UserId" = uid,
-                            "CreateDate" = date,
-                            "Title" = title,
-                            "Id" = id,
-                        ];
-                    }
-                });
-            //}
+                    threads[j] = PageData() <- [
+                        "Number" = from + j,
+                        "UserId" = uid,
+                        "CreateDate" = date,
+                        "Title" = title,
+                        "Id" = id,
+                    ];
+                }
+            });
             when(i < dist) {
                 Array.Resize(ref threads, i);
             }
