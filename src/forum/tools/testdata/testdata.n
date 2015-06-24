@@ -24,6 +24,7 @@ public class TestData {
     [Accessor] auth: IAuth;
     [Accessor] random: Random = Random();
 
+    [Accessor] mutable tags: array[string];
     [Accessor] mutable user_count: int = 0;
     [Accessor] mutable category_count: int = 0;
     [Accessor] mutable thread_count: int = 0;
@@ -58,6 +59,13 @@ public class TestData {
 
         thread_count = getThreadCount();
 
+        Log.i("Generating {0} tags...", args.Tags);
+        tags = array(args.Tags);
+        for(mutable i = 0; i < args.Tags; i++) {
+            tags[i] = generateTagName();
+        }
+
+        thread_count = getThreadCount();
         Log.i("Generating {0} posts...", args.Posts);
         for(mutable i = 0; i < args.Posts; i++) {
             generatePost();
@@ -171,6 +179,12 @@ public class TestData {
         def content = generatePostContent();
         def uid = Random.Next(UserCount) :> uint + 1;
         def tid = Random.Next(ThreadCount) :> uint + 1;
+        def tags = array(Random.Next(Random.Next(6)));
+
+        for(mutable i = 0; i < tags.Length; i++) {
+            tags[i] = Tags[Random.Next(Tags.Length)];
+        }
+        def tag_string = String.Join("\0", tags);
 
         def replyto = (Random.Next(5) < 2) ? null : {
             mutable result: uint? = null;
@@ -191,12 +205,12 @@ public class TestData {
         };
 
         def (pid, _o, _d) = server.createPost(
-            uid, tid, replyto, "bbcode", content);
+            uid, tid, replyto, "bbcode", content, tag_string);
 
         if(pid != 0) {
-            Log.d("Post added to database "
-                "[id={0}, th={1}, user={2}, replyto={3}]...",
-                pid, tid, uid, replyto);
+            Log.d("Post added to database ({0} tags)"
+                "[id={1}, th={2}, user={3}, replyto={4}]...",
+                tags.Length, pid, tid, uid, replyto);
         } else {
             Log.w("Post id={0} was not properly added!", pid)
         }
@@ -253,6 +267,19 @@ public class TestData {
         }
         result = string(name);
         //Log.d("Title: '{0}'", result);
+        result;
+    }
+
+    generateTagName(): string {
+        mutable result = "";
+        def length = Random.Next(1, Random.Next(15, 30));
+        mutable name: array[char] = array(length);
+        for(mutable i = 0; i < length; i++) {
+            def x = Random.Next(PostChars.Length);
+            name[i] = PostChars[x];
+        }
+        result = string(name);
+        //Log.d("Tag: '{0}'", result);
         result;
     }
 

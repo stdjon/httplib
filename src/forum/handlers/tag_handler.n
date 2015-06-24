@@ -86,6 +86,7 @@ public class TagHandler: BasePageHandler {
                             "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
                         ];
                         users[i] = reader.getValue("UserId", 0U);
+                        i++;
                     });
                 }
                 for(mutable j = 0; j < c; j++) {

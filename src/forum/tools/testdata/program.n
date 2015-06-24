@@ -20,6 +20,7 @@ public module Program {
             Users = 15;
             Categories = 30;
             Threads = 120;
+            Tags = 100;
             Posts = 1000;
         }
         public ShowHelp: bool { get; set; }
@@ -28,6 +29,7 @@ public module Program {
         public Users: int { get; set; }
         public Categories: int { get; set; }
         public Threads: int { get; set; }
+        public Tags: int { get; set; }
         public Posts: int { get; set; }
     }
 
@@ -63,6 +65,8 @@ public module Program {
                 v => { arguments.Categories = v }).
             Add("t|threads=", "Number of threads.",
                 v => { arguments.Threads = v }).
+            Add("T|tags=", "Number of tags.",
+                v => { arguments.Tags = v }).
             Add("p|posts=", "Number of posts.",
                 v => { arguments.Posts = v });
     }
