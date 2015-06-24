@@ -147,33 +147,43 @@ public class Command {
     }
 
     public virtual executeNonQuery(): int {
-        Command.ExecuteNonQuery();
+        lock(Database) {
+            Command.ExecuteNonQuery();
+        }
     }
 
     public virtual executeReader(): DataReader {
-        DataReader(Command.ExecuteReader(), this);
+        lock(Database) {
+            DataReader(Command.ExecuteReader(), this);
+        }
     }
 
     public virtual execute(lambda: DataReader -> void): void {
-        using(reader = executeReader()) {
-            reader.enumerate(() => {
-                lambda(reader);
-            })
+        lock(Database) {
+            using(reader = executeReader()) {
+                reader.enumerate(() => {
+                    lambda(reader);
+                })
+            }
         }
     }
 
     public virtual execute(lambda: int * DataReader -> void): int {
         mutable result;
-        using(reader = executeReader()) {
-            result = reader.enumerate(i => {
-                lambda(i, reader);
-            })
+        lock(Database) {
+            using(reader = executeReader()) {
+                result = reader.enumerate(i => {
+                    lambda(i, reader);
+                })
+            }
         }
         result;
     }
 
     public virtual executeScalar(): object {
-        Command.ExecuteScalar();
+        lock(Database) {
+            Command.ExecuteScalar();
+        }
     }
 }
 
@@ -216,22 +226,16 @@ public class DataReader: IDisposable {
     }
 
     public enumerate(lambda: void -> void): void {
-        lock(command.Database) {
-            while(reader.Read()) {
-                lambda();
-            }
-            reader.Close();
+        while(reader.Read()) {
+            lambda();
         }
     }
 
     public enumerate(lambda: int -> void): int {
         mutable i = 0;
-        lock(command.Database) {
-            while(reader.Read()) {
-                lambda(i);
-                i++;
-            }
-            reader.Close();
+        while(reader.Read()) {
+            lambda(i);
+            i++;
         }
         i;
     }
