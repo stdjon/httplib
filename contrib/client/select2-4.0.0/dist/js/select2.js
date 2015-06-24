@@ -5087,36 +5087,46 @@ S2.define('select2/core',[
     this.on('keypress', function (evt) {
       var key = evt.which;
 
-      if (self.isOpen()) {
-        if (key === KEYS.ENTER) {
-          self.trigger('results:select');
+      // jonh 24.6.15 BEGIN LOCAL CHANGE: capture/relay keypress events via
+      // $('body'). We can call preventDefault() from our handler to inhibit
+      // the default select2 keypress handling behaviour...
+      var e2 = evt;
+      e2.id = $(self).attr('id');
+      e2.open = self.isOpen();
+      $('body').trigger('s2_keypress', e2);
 
-          evt.preventDefault();
-        } else if ((key === KEYS.SPACE && evt.ctrlKey)) {
-          self.trigger('results:toggle');
+      if(!e2.isDefaultPrevented()) {
+        if (self.isOpen()) {
+          if (key === KEYS.ENTER) {
+            self.trigger('results:select');
 
-          evt.preventDefault();
-        } else if (key === KEYS.UP) {
-          self.trigger('results:previous');
+            evt.preventDefault();
+          } else if ((key === KEYS.SPACE && evt.ctrlKey)) {
+            self.trigger('results:toggle');
 
-          evt.preventDefault();
-        } else if (key === KEYS.DOWN) {
-          self.trigger('results:next');
+            evt.preventDefault();
+          } else if (key === KEYS.UP) {
+            self.trigger('results:previous');
 
-          evt.preventDefault();
-        } else if (key === KEYS.ESC || key === KEYS.TAB) {
-          self.close();
+            evt.preventDefault();
+          } else if (key === KEYS.DOWN) {
+            self.trigger('results:next');
 
-          evt.preventDefault();
+            evt.preventDefault();
+          } else if (key === KEYS.ESC || key === KEYS.TAB) {
+            self.close();
+
+            evt.preventDefault();
+          }
+        } else {
+          if (key === KEYS.ENTER || key === KEYS.SPACE ||
+              ((key === KEYS.DOWN || key === KEYS.UP) && evt.altKey)) {
+            self.open();
+
+            evt.preventDefault();
+          }
         }
-      } else {
-        if (key === KEYS.ENTER || key === KEYS.SPACE ||
-            ((key === KEYS.DOWN || key === KEYS.UP) && evt.altKey)) {
-          self.open();
-
-          evt.preventDefault();
-        }
-      }
+      } //END LOCAL CHANGE
     });
   };
 

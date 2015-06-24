@@ -27,42 +27,7 @@ function openWindow(num, wnd_id, text, btn_id, next) {
 
             initalizeExpandingAreas();
 
-            $('#te-' + wnd_id).keydown(function (e) {
-
-                if(e.ctrlKey) {
-                    switch(e.keyCode) {
-                        case 13: { //'Enter'
-                            $('#btn-' + wnd_id + '-submit').click();
-                            e.preventDefault();
-                            break;
-                        }
-                        case 80: { //'P'
-                            $('#btn-' + wnd_id + '-preview').click();
-                            e.preventDefault();
-                            break;
-                        }
-                        case 85: { //'U'
-                            $('#btn-' + wnd_id + '-bb').click();
-                            e.preventDefault();
-                            break;
-                        }
-                        case 73: { //'I'
-                            $('#btn-' + wnd_id + '-tx').click();
-                            e.preventDefault();
-                            break;
-                        }
-                        case 79: { //'O'
-                            $('#btn-' + wnd_id + '-hs').click();
-                            e.preventDefault();
-                            break;
-                        }
-                    }
-                }
-                if(e.keyCode === 27) {
-                    $('#btn-' + wnd_id + '-cancel').click();
-                    e.preventDefault();
-                }
-            });
+            $('#te-' + wnd_id).keydown(keyHandler(wnd_id, false));
 
             next();
         }
@@ -321,7 +286,6 @@ function selectTags(select, tags) {
 }
 
 
-
 function tagsHtml(tags) {
     var result = '';
     if(tags.length > 0) {
@@ -334,6 +298,7 @@ function tagsHtml(tags) {
     return result;
 }
 
+
 // FIXME?
 function delaySetFocus(wnd_id) {
     setTimeout(function() {
@@ -341,3 +306,54 @@ function delaySetFocus(wnd_id) {
     }, 100);
 }
 
+
+function keyHandler(wnd_id, suppress_open_close) {
+    return function(e) {
+        if(e.ctrlKey) {
+            switch(e.keyCode) {
+                case 13: { //'Enter'
+                    if(!suppress_open_close) {
+                        $('#btn-' + wnd_id + '-submit').click();
+                        e.preventDefault();
+                    }
+                    break;
+                }
+                case 80: { //'P'
+                    $('#btn-' + wnd_id + '-preview').click();
+                    e.preventDefault();
+                    break;
+                }
+                case 85: { //'U'
+                    $('#btn-' + wnd_id + '-bb').click();
+                    e.preventDefault();
+                    break;
+                }
+                case 73: { //'I'
+                    $('#btn-' + wnd_id + '-tx').click();
+                    e.preventDefault();
+                    break;
+                }
+                case 79: { //'O'
+                    $('#btn-' + wnd_id + '-hs').click();
+                    e.preventDefault();
+                    break;
+                }
+            }
+        }
+        if(e.keyCode === 27) {
+            if(!suppress_open_close) {
+                $('#btn-' + wnd_id + '-cancel').click();
+                e.preventDefault();
+            }
+        }
+    }
+}
+
+
+// install handler for (hacked) keypress events from select2 elements
+$(document).ready(function() {
+    $('body').on("s2_keypress", function(_, e) {
+        var wnd_id = e.id.replace("select2-tags-", "");
+        keyHandler(wnd_id, e.open)(e);
+    });
+})
