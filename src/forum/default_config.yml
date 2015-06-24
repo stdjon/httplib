@@ -73,7 +73,7 @@ Modules:
         - { Tag: "*", Open: "<li>", Close: "</li>", Flags: "NoClose" }
         - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
-  HtmlSan:
+  HtmlSanitizer:
     Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
   OEmbed:
