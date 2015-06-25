@@ -178,6 +178,20 @@ div.anchor.trg:nth-child(odd) div.post {
   background-color: #ffffc4;
   border-left: 5px solid #666;
 }
+div.panel {
+  background-color: #ffd;
+}
+div.panel-heading, .panel-title {
+  background-color: #ffb !important;
+}
+ul.list-group, li.list-group-item {
+  background-color: #ffe;
+}
+
+table td {
+/*  text-align: center;*/
+}
+
 
 /* Custom CSS for frist post*/
 div[id='1'] div.post {
@@ -215,9 +229,9 @@ select, .select2-search, .select2-search__field, .select2-search--inline,
 
 
 /* Colour swatches */
-.swatches {
+/*.swatches {
   text-align: center;
-}
+}*/
 .swatches div button#x0 {
   background-color: hsl(0, 55%, 55%);
 }

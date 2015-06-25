@@ -78,7 +78,7 @@ Partials:
     });
   Swatches: |
     <div class="swatches" role="toolbar">
-      <div class="btn-group" role="group">
+      <div class="btn-group btn-group-sm" role="group">
         <button class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360'); return false;">&nbsp; &nbsp;</button>
         <button class="btn btn-default swatch" id="x0" onclick="selectSwatch('x0'); return false;">&nbsp; &nbsp;</button>
         <button class="btn btn-default swatch" id="x24" onclick="selectSwatch('x24'); return false;">&nbsp; &nbsp;</button>
@@ -96,7 +96,7 @@ Partials:
         <button class="btn btn-default swatch" id="x312" onclick="selectSwatch('x312'); return false;">&nbsp; &nbsp;</button>
         <button class="btn btn-default swatch" id="x336" onclick="selectSwatch('x336'); return false;">&nbsp; &nbsp;</button>
       </div>
-      <div class="btn-group" role="group">
+      <div class="btn-group btn-group-sm" role="group">
         <button class="btn btn-default swatch" id="y360" onclick="selectSwatch('y360'); return false;">&nbsp; &nbsp;</button>
         <button class="btn btn-default swatch" id="y0" onclick="selectSwatch('y0'); return false;">&nbsp; &nbsp;</button>
         <button class="btn btn-default swatch" id="y24" onclick="selectSwatch('y24'); return false;">&nbsp; &nbsp;</button>
