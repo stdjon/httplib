@@ -1,34 +1,24 @@
 //swatches/jumbotron colour
 
+$('head').append('<style id="dynamic-css" type="text/css"></style>');
+
+
 function liActiveA(cls, css) {
     css = css || '';
-    return 'ul.' + cls + ' li.active a, ul.' + cls + ' li.active a:hover {' + css + '}'
+    return 'ul.' + cls + ' li.active a, ul.' + cls + ' li.active a:hover {' + css + '} '
 }
 
 
 function divAnchorTrg(css) {
     css = css || '';
-    return 'div.anchor.trg div.post, div.anchor.trg:nth-child(odd) div.post {' + css + '}'
+    return 'div.anchor.trg div.post, div.anchor.trg:nth-child(odd) div.post {' + css + '} '
 }
 
 
 function divExpandingH1Area(css) {
     css = css || '';
-    return 'div.expanding-h1-area textarea, div.expanding-h1-area pre {' + css + '}'
+    return 'div.expanding-h1-area textarea, div.expanding-h1-area pre {' + css + '} '
 }
-
-
-$('head').append(
-    '<style id="active-colour" type="text/css">' + liActiveA('nav-tabs') + '</style>');
-
-$('head').append(
-    '<style id="pgn-colour" type="text/css">' + liActiveA('pagination') + '</style>');
-
-$('head').append(
-    '<style id="trg-colour" type="text/css">' + divAnchorTrg() + '</style>');
-
-$('head').append(
-    '<style id="expand-colour" type="text/css">' + divExpandingH1Area() + '</style>');
 
 
 function colFromId(cx) {
@@ -56,10 +46,13 @@ function setHdrCols(cx) {
     $('.container .jumbotron').css('background-color', col);
     $('.container .jumbotron').css('color', fg);
     $('div.outside').css('border-left-color', col);
-    $('#active-colour').text(liActiveA('nav-tabs', 'border-left-color: ' + col + ';'));
-    $('#pgn-colour').text(liActiveA('pagination', 'border-bottom-color: ' + col + ';'));
-    $('#trg-colour').text(divAnchorTrg('border-left-color: ' + col + ';'));
-    $('#expand-colour').text(divExpandingH1Area('background-color: ' + col + '; color: ' + fg + ';'));
+
+    $('#dynamic-css').text(
+        liActiveA('nav-tabs', 'border-left-color: ' + col + ';') +
+        liActiveA('pagination', 'border-bottom-color: ' + col + ';') +
+        divAnchorTrg('border-left-color: ' + col + ';') +
+        divExpandingH1Area('background-color: ' + col + '; color: ' + fg + ';') );
+
     postIframeMessage('hdrCol/' + col);
 }
 
