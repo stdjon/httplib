@@ -215,13 +215,36 @@ public class ThreadHandler: BasePageHandler {
 
             _ = PageData <- [
                 "Prev" = prev,
+                "PrevDisabled" = prev == null,
                 "Next" = next,
+                "NextDisabled" = next == null,
             ];
 
-            // User pref (transform)
             def command3 = Server.Database.createCommand(
+                "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
+                    "@ThreadId" = ThreadId,
+                ];
+            def total_count = (command3.executeScalar() :> long) :> int;
+
+            def page_count = (total_count / PostCount) + 1;
+            def pages = array(page_count);
+            for(i = 0; i < page_count; i++) {
+                def f = i * PostCount + 1;
+                def t = (i + 1) * PostCount;
+                pages[i] = PageData() <- [
+                    "Number" = i + 1,
+                    "Url" = (f == 1 && t == PostsPerPage) ?
+                        $"$prf/th/$ThreadId" : $"$prf/th/$ThreadId/$f-$t",
+                    "Active" = (f == From) && (t == To),
+                ];
+            }
+            PageData["Pages"] = pages;
+
+
+            // User pref (transform)
+            def command4 = Server.Database.createCommand(
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
-            PageData["Transform"] = command3.executeScalar() :> string;
+            PageData["Transform"] = command4.executeScalar() :> string;
         }
     }
 

@@ -25,10 +25,7 @@ Partials:
     {{#Title}}
       <p>Thread started in <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>
       by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/Title}}
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
@@ -80,10 +77,7 @@ Partials:
       {{/Title}}
     {{/Posts}}
     {{#Title}}
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/Title}}
   Guide: |
     {{#Title}}
@@ -102,5 +96,13 @@ Partials:
     <script src="/thread.js"></script>
   PageScripts: |
     initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
+  Pagination: |
+    <div style="text-align: center;">
+    <ul class="pagination">
+      <li {{#PrevDisabled}}class="disabled"{{/PrevDisabled}}><a href="{{Prev}}">&laquo;</a></li>
+      {{#Pages}}<li {{#Active}}class="active"{{/Active}}><a href="{{Url}}">{{Number}}</a></li>{{/Pages}}
+      <li {{#NextDisabled}}class="disabled"{{/NextDisabled}}><a href="{{Next}}">&raquo;</a></li>
+    </ul>
+    </div>
 
 

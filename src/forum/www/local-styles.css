@@ -188,6 +188,43 @@ ul.list-group, li.list-group-item {
   background-color: #ffe;
 }
 
+ul.pagination li a, ul.pagination li:first-child a, ul.pagination li:last-child a {
+  border-radius: 0 !important;
+}
+ul.pagination li a {
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 0;
+  background-color: #ffe;
+  border: 0 solid #ff8;
+  border-bottom: 5px solid #ffb;
+}
+ul.pagination li a:hover {
+  background-color: #ff8;
+  text-decoration: underline;
+  padding: 4px 10px;
+  border: 0 solid #ff8;
+  border-bottom: 5px solid #ff4;
+}
+ul.pagination li.active a {
+  color: #fff;
+  background: #333;
+  border: 0 solid #333;
+  border-bottom: 5px solid #666;
+}
+ul.pagination li.active a:hover {
+  color: #ff8;
+  background: #333;
+  border: 0 solid #333;
+  border-bottom: 5px solid #666;
+}
+ul.pagination li.disabled a {
+  color: #999;
+  background-color: #ffe;
+  border: 0 solid #333;
+  border-bottom: 5px solid #eee;
+}
+
 table td {
 /*  text-align: center;*/
 }
