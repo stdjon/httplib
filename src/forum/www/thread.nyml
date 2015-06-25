@@ -41,17 +41,20 @@ Partials:
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           <span style="word-spacing: 15px;">
-          &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply"
+          &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
             onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
           {{#IsOwnPost}}
-          <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit"
+          <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
             onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span class="ptr fa fa-fw fa-quote-left" onclick="quote(this, '#{{Number}}', {{PostId}})"></span>
+          <span class="ptr fa fa-fw fa-quote-left" title="Quote post"
+            onclick="quote(this, '#{{Number}}', {{PostId}})"></span>
           {{^IsOwnPost}}
-          <span class="ptr fa fa-fw fa-thumbs-o-up" onclick="thumbsup(this, '#{{Number}}', {{PostId}})"></span>
+          <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
+            onclick="thumbsup(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span class="ptr fa fa-fw fa-star-o" onclick="star(this, '#{{Number}}', {{PostId}})"></span></div>
+          <span class="ptr fa fa-fw fa-star-o" title="Remember post"
+            onclick="star(this, '#{{Number}}', {{PostId}})"></span></div>
           <div class="rhs"><small>
           {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
           {{#ReplySep}} | {{/ReplySep}}
