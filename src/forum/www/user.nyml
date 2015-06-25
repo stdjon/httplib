@@ -44,14 +44,14 @@ Partials:
       </div>
       <div class="panel-body">
         <table class="table">
-          <tr><td>Colour:</td>
+          <tr><td style="width: 25%;">Colour:</td>
           <td>{{>Swatches}}</td></tr>
           <tr><td>Motto:</td>
           <td><input id='motto' value="{{Motto}}" placeholder='[Motto]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></td></tr>
           <tr><td>Location:</td>
           <td><input id='_loc' value="{{Location}}" placeholder='[Location]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="70"></input></p></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></p></td></tr>
           <tr><td>User since:</td><td><em>{{JoinDate}}</em></td></tr>
           <tr><td>Points:</td><td><em>{{Points}}</em></td></tr>
           <tr><td>Level:</td><td><em>{{Level}}</em></td></tr>
@@ -82,9 +82,8 @@ Partials:
               <input type="radio" id="ss2-rb" name="renderer" value="sans2" /> Sans 2
             </label>
           </div></td></tr>
-          <tr><td><button id='update' type="submit" disabled="disabled" class="btn btn-success"
-            onclick="update()">Update</button></td>
-          <td><span id='notify'></span></tr></tr>
+          <tr><td></td><td><button id='update' type="submit" disabled="disabled" class="btn btn-success"
+            onclick="update()">Update</button>&nbsp; &nbsp;<span id='notify'></span></tr></tr>
         </table>
       </div>
     </div>
