@@ -34,6 +34,13 @@ Partials:
         <pre><span></span><br></pre>
         <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
       </div>
+      <div class="tags">
+        <small><table style="width: 100%;"><tr><td>
+          Tags:</td><td style="width: 92.5%;">
+          <select id="fp-tags" autofocus multiple="true" data-placeholder="[Tags]"
+            style="width: 100%; height: 24px">
+        </td></tr></table></small>
+      </div>
       <br>
       <button id="fp-preview" class="btn btn-warning" value="Preview"
         onclick="showPreview(); return false;">Preview</button>
@@ -55,6 +62,7 @@ Partials:
     </div>
     <input id="colour" name="colour" type="hidden" value="x360"/>
     <input id="category" name="category" type="hidden" value="{{CategoryId}}"/>
+    <input id="tags" name="tags" type="hidden" value=""/>
     <p>&nbsp;</p>
     <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
       formmethod="post" formtarget="_top">Create thread</button>
@@ -75,10 +83,16 @@ Partials:
     <script src="/select2-4.0.0/dist/js/select2.js"></script>
     <script src="/swatches.js"></script>
     <script src="/expanding-area.js"></script>
+    <script src="/tags.js"></script>
     <script src="/newthread.js"></script>
   PageScripts: |
     $(window).load(function() {
       $('#title').focus();
+      $("select#fp-tags").select2({
+        tags: true,
+        maximumInputLength: 30,
+        maximumSelectionLength: 5,
+      });
     });
 
 

@@ -22,6 +22,7 @@ public class CreateThreadHandler: BaseHandler {
         def fp = Context.Vars["fp"];
         def content = Context.Vars["content"];
         mutable renderer = Context.Vars["renderer"];
+        def tagstring = Uri.UnescapeDataString(Context.Vars["tags"]);
         def category = UInt32.Parse(Context.Vars["category"]);
         def utc_now = Date.NowTicks;
         def cookies = Request.Cookies;
@@ -39,7 +40,8 @@ public class CreateThreadHandler: BaseHandler {
         }
 
         Log.d("CreateThreadHandler: category={0}, userid={1}, renderer={2}, "
-            "utc_now={3}, fp={4}", category, userid, renderer, utc_now, fp);
+            "utc_now={3}, fp={4}, tagstring={5}",
+            category, userid, renderer, utc_now, fp, tagstring);
 
         Server.Database.withTransaction(db => {
             def commmand = db.createCommand(
@@ -74,7 +76,7 @@ public class CreateThreadHandler: BaseHandler {
                     if(fp == "on") {
 
                         def (post_id, _, _) = Server.createPost(
-                            userid, thid, null, renderer, content, null, false);
+                            userid, thid, null, renderer, content, tagstring, false);
 
                         ok = post_id > 0;
 

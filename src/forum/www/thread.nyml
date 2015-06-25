@@ -96,6 +96,7 @@ Partials:
     <script src="/select2-4.0.0/dist/js/select2.js"></script>
     <script src="/swatches.js"></script>
     <script src="/expanding-area.js"></script>
+    <script src="/tags.js"></script>
     <script src="/thread.js"></script>
   PageScripts: |
     initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});

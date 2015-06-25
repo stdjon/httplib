@@ -37,7 +37,7 @@ function showPreview() {
 }
 
 
-$('#fp-text').keydown(function (e) {
+function keyHandler(e) {
 
     if(e.ctrlKey) {
         switch(e.keyCode) {
@@ -68,4 +68,20 @@ $('#fp-text').keydown(function (e) {
             }
         }
     }
-});
+}
+
+$('#fp-text').keydown(keyHandler);
+
+
+// install handler for (hacked) keypress events from select2 elements
+$(document).ready(function() {
+    $('body').on("s2_keypress", function(_, e) {
+        keyHandler(e);
+    });
+    $('#fp-tags').on('change', function(e) {
+        var v = $(this).val();
+        $('#tags').val(encodeTagString(v));
+    });
+
+
+})
