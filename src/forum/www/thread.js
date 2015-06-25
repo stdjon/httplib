@@ -63,6 +63,10 @@ function reply(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
     var wnd_id = 'r' + pid;
 
+    if($(num).data('edit-open')) {
+        closeEdit('e' + pid);
+    }
+
     if($(num).data('reply-open')) {
         closeReply(wnd_id);
 
@@ -112,6 +116,10 @@ function submitReply(wnd_id) {
 function edit(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
     var wnd_id = 'e' + pid;
+
+    if($(num).data('reply-open')) {
+        closeReply('r' + pid);
+    }
 
     if($(num).data('edit-open')) {
         closeEdit(wnd_id);
