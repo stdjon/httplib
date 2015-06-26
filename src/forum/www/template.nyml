@@ -77,43 +77,41 @@ Partials:
       {{/TempToken}}
     });
   Swatches: |
-    <div class="swatches" role="toolbar">
-      <div class="btn-group btn-group-xs" role="group">
-        <button class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x0" onclick="selectSwatch('x0'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x24" onclick="selectSwatch('x24'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x48" onclick="selectSwatch('x48'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x72" onclick="selectSwatch('x72'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x96" onclick="selectSwatch('x96'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x120" onclick="selectSwatch('x120'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x144" onclick="selectSwatch('x144'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x168" onclick="selectSwatch('x168'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x192" onclick="selectSwatch('x192'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x216" onclick="selectSwatch('x216'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x240" onclick="selectSwatch('x240'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x264" onclick="selectSwatch('x264'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x288" onclick="selectSwatch('x288'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x312" onclick="selectSwatch('x312'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="x336" onclick="selectSwatch('x336'); return false;">&nbsp; &nbsp;</button>
-      </div>
-      <div class="btn-group btn-group-xs" role="group">
-        <button class="btn btn-default swatch" id="y360" onclick="selectSwatch('y360'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y0" onclick="selectSwatch('y0'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y24" onclick="selectSwatch('y24'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y48" onclick="selectSwatch('y48'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y72" onclick="selectSwatch('y72'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y96" onclick="selectSwatch('y96'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y120" onclick="selectSwatch('y120'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y144" onclick="selectSwatch('y144'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y168" onclick="selectSwatch('y168'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y192" onclick="selectSwatch('y192'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y216" onclick="selectSwatch('y216'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y240" onclick="selectSwatch('y240'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y264" onclick="selectSwatch('y264'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y288" onclick="selectSwatch('y288'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y312" onclick="selectSwatch('y312'); return false;">&nbsp; &nbsp;</button>
-        <button class="btn btn-default swatch" id="y336" onclick="selectSwatch('y336'); return false;">&nbsp; &nbsp;</button>
-      </div>
+    <div class="swatches btn-group btn-group-sm" data-toggle="buttons">
+      <label class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x0" onclick="selectSwatch('x0')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x24" onclick="selectSwatch('x24')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x48" onclick="selectSwatch('x48')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x72" onclick="selectSwatch('x72')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x96" onclick="selectSwatch('x96')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x120" onclick="selectSwatch('x120')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x144" onclick="selectSwatch('x144')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x168" onclick="selectSwatch('x168')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x192" onclick="selectSwatch('x192')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x216" onclick="selectSwatch('x216')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x240" onclick="selectSwatch('x240')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x264" onclick="selectSwatch('x264')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x288" onclick="selectSwatch('x288')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x312" onclick="selectSwatch('x312')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="x336" onclick="selectSwatch('x336')"><input type="radio"/>&nbsp;</label>
+    </div>
+    <div class="swatches btn-group btn-group-sm" data-toggle="buttons">
+      <label class="btn btn-default swatch" id="y360" onclick="selectSwatch('y360')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y0" onclick="selectSwatch('y0')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y24" onclick="selectSwatch('y24')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y48" onclick="selectSwatch('y48')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y72" onclick="selectSwatch('y72')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y96" onclick="selectSwatch('y96')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y120" onclick="selectSwatch('y120')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y144" onclick="selectSwatch('y144')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y168" onclick="selectSwatch('y168')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y192" onclick="selectSwatch('y192')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y216" onclick="selectSwatch('y216')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y240" onclick="selectSwatch('y240')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y264" onclick="selectSwatch('y264')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y288" onclick="selectSwatch('y288')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y312" onclick="selectSwatch('y312')"><input type="radio"/>&nbsp;</label>
+      <label class="btn btn-default swatch" id="y336" onclick="selectSwatch('y336')"><input type="radio"/>&nbsp;</label>
     </div>
 
 
