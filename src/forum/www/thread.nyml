@@ -31,7 +31,7 @@ Partials:
       <div class="anchor" id="{{Number}}">
         <div class="post {{OwnPostClass}}">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          <span id="c-{{PostId}}">{{{Content}}}</span><br>
+          <div id="c-{{PostId}}">{{{Content}}}</div><br>
           <div><small>
             <span id="tg-{{PostId}}">
               {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
@@ -47,8 +47,8 @@ Partials:
           <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
             onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span class="ptr fa fa-fw fa-quote-left" title="Quote post"
-            onclick="quote(this, '#{{Number}}', {{PostId}})"></span>
+          <span id="q-{{PostId}}" class="ptr fa fa-fw fa-quote-left" title="Quote post"
+            style="color: #ccc" ></span>
           {{^IsOwnPost}}
           <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
             onclick="thumbsup(this, '#{{Number}}', {{PostId}})"></span>
