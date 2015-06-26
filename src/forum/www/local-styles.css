@@ -237,13 +237,6 @@ blockquote {
 div[id='1'] div.post {
   font-size: 1.25em;
 }
-/*div[id='1'] div.post::first-letter {
-  font-size: 2.8em;
-  line-height: 1em;
-  margin-right: 2px;
-  display: block;
-  float: left;
-}*/
 
 /* select/select2 */
 .select2-container, .select2-dropdown {

@@ -119,14 +119,17 @@ function resetScrollspyAffix() {
 
 
 function initDropCaps() {
-
-    // hypher breaks drop-caps - reapply it as inserted CSS
-    $('head').append('<style>' +
-        'div[id=\'1\'] div.post::first-letter {' +
-            'font-size: 2.8em;' +
-            'line-height: 1em;' +
-            'margin-right: 2px;' +
-            'display: block;' +
-            'float: left;' +
-        '}</style>');
+    if(_g.Browser === 'Chrome') {
+        // hypher breaks drop-caps on Chrome - apply it as inserted CSS after
+        // page load is complete.
+        //
+        $('head').append('<style>' +
+            'div[id=\'1\'] div.post div.content::first-letter {' +
+                'font-size: 2.8em;' +
+                'line-height: 1em;' +
+                'margin-right: 2px;' +
+                'display: block;' +
+                'float: left;' +
+            '}</style>');
+    }
 }

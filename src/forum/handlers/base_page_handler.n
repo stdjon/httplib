@@ -45,6 +45,7 @@ public class BasePageHandler: BaseHandler {
     }
 
     public override initialize(): void {
+        base.initialize();
         temporaryLoginHandling(); //
         initializeUserClasses();
     }

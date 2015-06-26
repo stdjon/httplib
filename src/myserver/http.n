@@ -501,6 +501,13 @@ class MyServer: Server {
         response.Status = (200, "OK");
     }
 
+    public checkUserAgentResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        response.append($<#<html>$(request["User-Agent"])</html>#>);
+        response.Status = (200, "OK");
+    }
+
     public override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
@@ -572,6 +579,8 @@ module Test {
 
             my_server.route(HTTP.GET, "/ajax", my_server.ajaxResponse);
             my_server.route(HTTP.POST, "/ajax", my_server.ajaxResponse);
+
+            my_server.route(HTTP.GET, "/check", my_server.checkUserAgentResponse);
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 

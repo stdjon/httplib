@@ -67,6 +67,7 @@ Partials:
       CurrentUrlUnescaped: "{{CurrentUrlUnescaped}}",
       ColourId: "{{ColourId}}",
       FontClass: "{{FontClass}}",
+      Browser: "{{Browser}}",
     };
     {{>PageScripts}}
     // init!

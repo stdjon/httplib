@@ -31,7 +31,7 @@ Partials:
       <div class="anchor" id="{{Number}}">
         <div class="post {{OwnPostClass}}">
           <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
-          <div id="c-{{PostId}}">{{{Content}}}</div><br>
+          <div class="content" id="c-{{PostId}}">{{{Content}}}</div><br>
           <div><small>
             <span id="tg-{{PostId}}">
               {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
