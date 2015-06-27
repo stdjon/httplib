@@ -90,7 +90,7 @@ endif
 # Contrib
 
 CONTRIB_LIBS:= \
-	CodeKicker.BBCode-Parser-5.0/CodeKicker.BBCode.dll \
+	CodeKicker.BBCode-5.0-custom/CodeKicker.BBCode.dll \
 	CsQuery-1.3.4/lib/net40/CsQuery.dll \
 	HtmlSanitizer.2.0.5595.30325/lib/net40/HtmlSanitizer.dll \
 	ImageProcessor-2.2.5/lib/net45/ImageProcessor.dll \
