@@ -134,6 +134,6 @@ Partials:
           '}\n' +
         '</style>');
       }, 300);
-    {{/ChromeBrowser}}
     });
+    {{/ChromeBrowser}}
 
