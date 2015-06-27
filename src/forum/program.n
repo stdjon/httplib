@@ -67,12 +67,16 @@ module Program {
             Server.CanonicalRoot = arguments.Root;
         }
 
-        mutable mod_time = File.GetLastWriteTime(arguments.Config);
         mutable restarting = false;
+        def config_path = Server.canonicalPath(arguments.Config);
+        mutable mod_time = File.GetLastWriteTime(config_path);
+
         using(mutable server = ForumServer(arguments.Config)) {
 
+            Server.Log.i("Canonical path to config file: {0}", config_path);
+
             def checkConfigWriteTime() {
-                def t = File.GetLastWriteTime(arguments.Config);
+                def t = File.GetLastWriteTime(config_path);
                 when(t != mod_time) {
                     mod_time = t;
                     restarting = true;
@@ -83,7 +87,7 @@ module Program {
 
             def handleRestart() {
                 when(restarting && !server.Running) {
-                    server = ForumServer(arguments.Config);
+                    server = ForumServer(config_path);
                     server.start();
                     restarting = false;
                 }
