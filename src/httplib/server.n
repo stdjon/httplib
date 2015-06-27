@@ -436,6 +436,7 @@ public class Server: IDisposable {
             } else {
                 callback(context, request, response);
             }
+            compressResponseStream(request, response);
         } catch {
             | ex => {
                 internalServerError(ex);
@@ -452,6 +453,25 @@ public class Server: IDisposable {
                     internalServerError(ex);
                 }
             }
+        }
+    }
+
+    compressResponseStream(request: Request, response: Response): void {
+
+        def encodings = request["Accept-Encoding"];
+        mutable encoding;
+
+        exit: {
+            foreach(c in Configuration.Compression) {
+                when(encodings.Contains(c)) {
+                    encoding = c;
+                    exit();
+                }
+            }
+        }
+
+        when(encoding != null) {
+            response.encode(encoding);
         }
     }
 

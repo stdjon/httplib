@@ -127,6 +127,8 @@ public class ServerConfiguration {
     public FileChunkLength: int { get; set; }
     /** Content of Server: header in HTTP Response */
     public ServerHeader: string { get; set; }
+    /** Compression schemes */
+    public Compression: array[string] { get; set; }
 }
 
 

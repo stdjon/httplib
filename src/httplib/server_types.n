@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Text.Encoding;
@@ -522,6 +523,24 @@ public class Response {
         def os = response.OutputStream;
         os.Write(output, 0, ContentLength :> int);
         os.Close();
+    }
+
+    internal encode(encoding: string): void {
+        when(encoding != null) {
+            Array.Resize(ref output, ContentLength :> int);
+            using(ms = MemoryStream()) {
+                using(str = match(encoding) {
+                    | "gzip" => GZipStream(ms, CompressionMode.Compress)
+                    | "deflate" => DeflateStream(ms, CompressionMode.Compress)
+                    | _ => null }) {
+
+                    str.Write(output, 0, output.Length);
+                }
+                output = ms.ToArray();
+                ContentLength = output.Length;
+            }
+            this["Content-Encoding"] = encoding;
+        }
     }
 }
 
