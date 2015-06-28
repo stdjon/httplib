@@ -61,4 +61,22 @@ public interface ITextTransform: IModuleInterface {
 }
 
 
+public interface IEmail {
+
+    From: string { get; set; }
+    To: list[string] { get; set; }
+    Subject: string { get; set; }
+    Body: string { get; set; }
+    Html: bool { get; set; }
+
+    send(): void;
+};
+
+/** Interface for SMTP (email) */
+public interface ISmtp: IModuleInterface {
+
+    makeEmail(): IEmail;
+}
+
+
 }

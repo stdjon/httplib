@@ -97,6 +97,12 @@ Modules:
         avatar64: [ white-bg, entropycrop, resize64 ]
         avatar80: [ white-bg, entropycrop, resize80 ]
         avatar120: [ white-bg, entropycrop, resize120 ]
+  Smtp:
+    Assembly: httplib.mod.smtp.dll
+    Typename: httplib.mod.Smtp
+    Data:
+      Host: localhost
+      Port: 25
   Textile:
     Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile

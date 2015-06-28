@@ -584,9 +584,25 @@ module Test {
 
             my_server.route(HTTP.GET, "/check", my_server.checkUserAgentResponse);
 
+            my_server.route(HTTP.GET, "/mail",  (_ctx, req, res) => {
+                def qto = req.QueryString["to"];
+                def to = (!String.IsNullOrEmpty(qto)) ? qto : "test@example.com";
+
+                def ismtp = my_server.getModuleInterface.[ISmtp]("Smtp");
+                def imail = ismtp.makeEmail();
+                imail.From = "test@example.com";
+                imail.To = [to];
+                imail.Subject = "test mail";
+                imail.Body = "this is a test mail...";
+                imail.send();
+                res.append($"<html><body>Mail sent to $to...</body></html>");
+                res.Status = (200, "OK");
+            });
+
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 
             my_server.start();
+
 
             while(my_server.Running) {
                 my_server.update();

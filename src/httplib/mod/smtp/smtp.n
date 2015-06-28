@@ -1,0 +1,87 @@
+using System;
+using System.Net;
+using System.Net.Mail;
+
+
+namespace httplib.mod {
+
+[HasLogging]
+public class Email: IEmail {
+
+    public virtual From: string { get; set; }
+    public virtual To: list[string] { get; set; }
+    public virtual Subject: string { get; set; }
+    public virtual Body: string { get; set; }
+    public virtual Html: bool { get; set; }
+
+    Client: SmtpClient { get; set; }
+
+    public this(client: SmtpClient) {
+        Client = client;
+    }
+
+    public virtual send(): void {
+        def message = MailMessage();
+        message.From = MailAddress(From);
+        message.To.Add(String.Join(",", To));
+        message.Subject = Subject;
+        message.Body = Body;
+        message.IsBodyHtml = Html;
+        Client.Send(message);
+    }
+
+}
+
+
+[HasLogging]
+public class Smtp: Module, ISmtp {
+
+    public override InterfaceType: Type {
+        get { typeof(ISmtp) }
+    }
+
+    public Client: SmtpClient { get; private set; }
+
+    public this(conf: ModuleData) {
+        Log.i("Starting Smtp module... (conf: {0})", conf);
+
+        def host = conf["Host"] :> string;
+        def port = Int32.Parse(conf["Port"] :> string);
+
+        mutable ssl = false;
+        mutable username;
+        mutable password;
+        mutable timeout;
+
+        mutable probe;
+        when(conf.TryGetValue("Ssl", out probe)) {
+            ssl = probe :> bool;
+        }
+        when(conf.TryGetValue("User", out probe)) {
+            username = probe :> string;
+        }
+        when(conf.TryGetValue("Password", out probe)) {
+            password = probe :> string;
+        }
+        when(conf.TryGetValue("Timeout", out probe)) {
+            timeout = probe :> int?;
+        }
+
+        Client = SmtpClient(host, port);
+        Client.EnableSsl = ssl;
+        when(username != null && password != null) {
+            Client.UseDefaultCredentials = false;
+            Client.Credentials = NetworkCredential(username, password);
+        }
+        when(timeout != null) {
+            Client.Timeout = timeout :> int;
+        }
+    }
+
+    public makeEmail(): IEmail {
+        Email(Client);
+    }
+}
+
+
+} // namespace httplib.mod

@@ -312,6 +312,14 @@ $(eval $(call emit_dll_rule,httplib.mod.oembed.dll, \
 
 
 # ------------------------------------------------------------------------------
+# httplib.mod.smtp.dll
+
+$(eval $(call emit_dll_rule,httplib.mod.smtp.dll, \
+	src/httplib/mod/smtp, \
+	httplib.dll httplib.macros.dll))
+
+
+# ------------------------------------------------------------------------------
 # httplib.mod.textile.dll
 
 $(eval $(call emit_dll_rule,httplib.mod.textile.dll, \
