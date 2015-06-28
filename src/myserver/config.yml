@@ -83,7 +83,7 @@ Modules:
     Typename: httplib.mod.HtmlSanitizer
   ImageProcessor:
     Assembly: httplib.mod.imageprocessor.dll
-    Typename: httplib.mod.ImageProcessor
+    Typename: httplib.mod.ImageProcessorFactory
     Data:
       Operations:
         white-bg: { op: BackgroundColour, r: 255, g: 255, b: 255, a: 255 }

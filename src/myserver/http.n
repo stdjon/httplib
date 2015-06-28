@@ -468,7 +468,9 @@ class MyServer: Server {
         context: Context, _request: Request, response: Response): void {
 
         def transformImage(memstr, xform) {
-            def iimage = getModuleInterface.[IImageTransform]("ImageProcessor");
+            def iimagefactory =
+                getModuleInterface.[IImageTransformFactory]("ImageProcessor");
+            def iimage = iimagefactory.makeImageTransform();
             _ = iimage.load(memstr);
             _ = iimage.transform(xform);
             //_ = iimage.save($"./tmp-$xform.png");

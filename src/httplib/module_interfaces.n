@@ -37,13 +37,20 @@ public interface IAuth: IModuleInterface {
 
 
 /** Interface for image transformations */
-public interface IImageTransform: IModuleInterface {
+public interface IImageTransform {
 
     load(path: string): bool;
     load(stream: Stream): bool;
     save(path: string): bool;
     save(stream: Stream): bool;
     transform(transform: string): Image;
+}
+
+
+/** Interface for image transformations */
+public interface IImageTransformFactory: IModuleInterface {
+
+    makeImageTransform(): IImageTransform;
 }
 
 

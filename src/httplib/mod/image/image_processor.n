@@ -103,11 +103,7 @@ variant Operation {
 //------------------------------------------------------------------------------
 
 [HasLogging]
-public class ImageProcessor: Module, IImageTransform {
-
-    public override InterfaceType: Type {
-        get { typeof(IImageTransform) }
-    }
+public class ImageProcessor: IImageTransform {
 
     ImageFactory: ImageFactory { get; set; }
 
@@ -184,6 +180,27 @@ public class ImageProcessor: Module, IImageTransform {
                 Transforms[t.Key :> string].Add(Operations[n :> string]);
             }
         }
+    }
+}
+
+
+[HasLogging]
+public class ImageProcessorFactory: Module, IImageTransformFactory {
+
+    public override InterfaceType: Type {
+        get { typeof(IImageTransformFactory) }
+    }
+
+    public ModuleData: ModuleData { get; private set; }
+
+    public this(conf: ModuleData = null) {
+        Log.i("Starting ImageProcessor module... (conf: {0})", conf);
+        ModuleData = conf;
+    }
+
+
+    public makeImageTransform(): ImageProcessor {
+        ImageProcessor(ModuleData);
     }
 }
 
