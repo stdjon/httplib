@@ -22,18 +22,18 @@ public class Pbkdf2Auth: Module, IAuth {
     public HashLength: int { get; private set; }
 
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting Pbkdf2Auth module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting Pbkdf2Auth module... (data: {0})", data);
         Salt = RNGCryptoServiceProvider();
         IterationCount = 12500;
         HashLength = 40;
 
-        when(conf != null) {
+        when(data != null) {
             mutable probe;
-            when(conf.TryGetValue("IterationCount", out probe)) {
+            when(data.TryGetValue("IterationCount", out probe)) {
                 IterationCount = Int32.Parse(probe :> string);
             }
-            when(conf.TryGetValue("HashLength", out probe)) {
+            when(data.TryGetValue("HashLength", out probe)) {
                 HashLength = Int32.Parse(probe :> string);
             }
         }

@@ -44,8 +44,8 @@ public class OEmbed: Module, IOEmbed {
         get { typeof(IOEmbed) }
     }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting OEmbed module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting OEmbed module... (data: {0})", data);
     }
 
     public getEmbed(input: OEMB): string {

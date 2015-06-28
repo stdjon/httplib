@@ -29,14 +29,14 @@ public class Filter: Module, ITextTransform {
 
     public Filters: List[FilterAction] { get; private set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting Filter module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting Filter module... (data: {0})", data);
 
         Filters = List();
 
         mutable filters, probe;
 
-        when(conf.TryGetValue("Filters", out probe)) {
+        when(data.TryGetValue("Filters", out probe)) {
             filters = probe :> List[object];
         }
 

@@ -16,8 +16,8 @@ public class Textile: Module, ITextTransform {
     Formatter: TextileFormatter { get; private set; }
     Output: StringBuilderTextileFormatter { get; private set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting Textile module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting Textile module... (data: {0})", data);
         Output = StringBuilderTextileFormatter();
         Formatter = TextileFormatter(Output);
     }

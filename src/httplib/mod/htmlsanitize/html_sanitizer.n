@@ -20,10 +20,10 @@ public class HtmlSanitizer: Module, ITextTransform {
 
     Sanitizer: Ganss.XSS.HtmlSanitizer { get; private set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting HtmlSanitizer module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting HtmlSanitizer module... (data: {0})", data);
 
-        def c = conf ? getConfiguration(conf) : null;
+        def c = data ? getConfiguration(data) : null;
 
         // Use Configuration if provided, otherwise launch with the Sanitizer's
         // internal defaults.

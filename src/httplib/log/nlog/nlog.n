@@ -45,19 +45,19 @@ public class NLogLogging: Logging {
         NLogLogger(type);
     }
 
-    configureTarget(conf: LogTarget): Target {
-        def type = Assembly.GetType("NLog.Targets." + conf.Type);
+    configureTarget(lt: LogTarget): Target {
+        def type = Assembly.GetType("NLog.Targets." + lt.Type);
         def target = Activator.CreateInstance(type) :> Target;
 
         match(target) {
             | ColoredConsoleTarget as cct => {
-                configureColoredConsoleTarget(cct, conf);
+                configureColoredConsoleTarget(cct, lt);
             }
             | ConsoleTarget as ct => {
-                configureConsoleTarget(ct, conf);
+                configureConsoleTarget(ct, lt);
             }
             | FileTarget as ft => {
-                configureFileTarget(ft, conf);
+                configureFileTarget(ft, lt);
             }
             | _ => {
                 target;
@@ -65,11 +65,11 @@ public class NLogLogging: Logging {
         }
     }
 
-    configureColoredConsoleTarget(cct: ColoredConsoleTarget, conf: LogTarget): Target {
-        cct.Layout = conf.Layout;
+    configureColoredConsoleTarget(cct: ColoredConsoleTarget, lt: LogTarget): Target {
+        cct.Layout = lt.Layout;
 
-        when(conf.Colours != null) {
-            foreach(c in conf.Colours) {
+        when(lt.Colours != null) {
+            foreach(c in lt.Colours) {
                 cct.RowHighlightingRules.Add(ConsoleRowHighlightingRule(
                     $"level == LogLevel.$(c.Key)",
                     colour(c.Value),
@@ -79,14 +79,14 @@ public class NLogLogging: Logging {
         cct;
     }
 
-    configureConsoleTarget(ct: ConsoleTarget, conf: LogTarget): Target {
-        ct.Layout = conf.Layout;
+    configureConsoleTarget(ct: ConsoleTarget, lt: LogTarget): Target {
+        ct.Layout = lt.Layout;
         ct;
     }
 
-    configureFileTarget(ft: FileTarget, conf: LogTarget): Target {
-       ft.Layout = conf.Layout;
-       ft.FileName = conf.Path;
+    configureFileTarget(ft: FileTarget, lt: LogTarget): Target {
+       ft.Layout = lt.Layout;
+       ft.FileName = lt.Path;
        ft;
     }
 

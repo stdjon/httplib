@@ -187,10 +187,10 @@ public class MyTestModule: Module, IMyTestModule {
         get { typeof(IMyTestModule) }
     }
 
-    public this(conf: ModuleData) {
+    public this(data: ModuleData) {
 
-        text = if(conf != null && conf.ContainsKey("Text")) {
-            $<#<p>$(conf["Text"])</p>#>;
+        text = if(data != null && data.ContainsKey("Text")) {
+            $<#<p>$(data["Text"])</p>#>;
         } else {
             "<p>This is some test text which the module returned.</p>";
         }
@@ -595,7 +595,7 @@ module Test {
                 imail.Subject = "test mail";
                 imail.Body = "this is a test mail...";
                 imail.send();
-                res.append($"<html><body>Mail sent to $to...</body></html>");
+                res.append($"<html><body>Mail sent to $to: check your SMTP server...</body></html>");
                 res.Status = (200, "OK");
             });
 

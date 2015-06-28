@@ -110,19 +110,19 @@ public class ImageProcessor: IImageTransform {
     Operations: Operations { get; set; }
     Transforms: Transforms { get; set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting ImageProcessor module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting ImageProcessor module... (data: {0})", data);
 
         ImageFactory = ImageFactory();
         Operations = Operations();
         Transforms = Transforms();
 
-        when(conf != null) {
+        when(data != null) {
             mutable operations, transforms, probe;
-            when(conf.TryGetValue("Operations", out probe)) {
+            when(data.TryGetValue("Operations", out probe)) {
                 operations = probe :> Config;
             }
-            when(conf.TryGetValue("Transforms", out probe)) {
+            when(data.TryGetValue("Transforms", out probe)) {
                 transforms = probe :> Config;
             }
             when(operations != null) {
@@ -193,9 +193,9 @@ public class ImageProcessorFactory: Module, IImageTransformFactory {
 
     public ModuleData: ModuleData { get; private set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting ImageProcessor module... (conf: {0})", conf);
-        ModuleData = conf;
+    public this(data: ModuleData = null) {
+        Log.i("Starting ImageProcessor module... (data: {0})", data);
+        ModuleData = data;
     }
 
 

@@ -22,17 +22,19 @@ public class BbCode: Module, ITextTransform {
 
     Parser: BBCodeParser { get; private set; }
 
-    public this(conf: ModuleData = null) {
-        Log.i("Starting BBCode module... (conf: {0})", conf);
+    public this(data: ModuleData = null) {
+        Log.i("Starting BBCode module... (data: {0})", data);
 
-        def bbtags = conf ? getTagsFromData(conf) : null;
+        def bbtags = data ? getTagsFromData(data) : null;
         when(bbtags != null) {
             Parser = BBCodeParser(bbtags);
         }
     }
 
     public transform(input: string): string {
-        Parser ? Parser.ToHtml(input) : input;
+        def result = Parser ? Parser.ToHtml(input) : input;
+        Log.f("input='{0}' result='{1}'", input, result);
+        result;
     }
 
     getTagsFromData(data: ModuleData): List[BBTag] {
@@ -89,7 +91,17 @@ public class BbCode: Module, ITextTransform {
             def id = a["Id"] :> string;
             def name = a["Name"] :> string;
 
-            result.Add(BBAttribute(id, name));
+            mutable encode = HtmlEncodingMode.HtmlAttributeEncode;
+            mutable probe;
+            when(a.TryGetValue("Encode", out probe)) {
+                encode = match(probe :> string) {
+                    | "Html" => HtmlEncodingMode.HtmlEncode;
+                    | "None" => HtmlEncodingMode.UnsafeDontEncode;
+                    | _ => HtmlEncodingMode.HtmlAttributeEncode;
+                }
+            }
+
+            result.Add(BBAttribute(id, name, null, encode));
         }
 
         result ? result.ToArray() : null;

@@ -42,11 +42,11 @@ public class Smtp: Module, ISmtp {
 
     public Client: SmtpClient { get; private set; }
 
-    public this(conf: ModuleData) {
-        Log.i("Starting Smtp module... (conf: {0})", conf);
+    public this(data: ModuleData) {
+        Log.i("Starting Smtp module... (data: {0})", data);
 
-        def host = conf["Host"] :> string;
-        def port = Int32.Parse(conf["Port"] :> string);
+        def host = data["Host"] :> string;
+        def port = Int32.Parse(data["Port"] :> string);
 
         mutable ssl = false;
         mutable username;
@@ -54,16 +54,16 @@ public class Smtp: Module, ISmtp {
         mutable timeout;
 
         mutable probe;
-        when(conf.TryGetValue("Ssl", out probe)) {
+        when(data.TryGetValue("Ssl", out probe)) {
             ssl = probe :> bool;
         }
-        when(conf.TryGetValue("User", out probe)) {
+        when(data.TryGetValue("User", out probe)) {
             username = probe :> string;
         }
-        when(conf.TryGetValue("Password", out probe)) {
+        when(data.TryGetValue("Password", out probe)) {
             password = probe :> string;
         }
-        when(conf.TryGetValue("Timeout", out probe)) {
+        when(data.TryGetValue("Timeout", out probe)) {
             timeout = probe :> int?;
         }
 
