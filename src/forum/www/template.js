@@ -66,6 +66,7 @@ addEventListener("message", function(msg) {
 
 
 function pageInit() {
+    normalizeLocation();
     postIframeMessage('ehlo');
     initHdrCols();
     initFonts();
@@ -137,5 +138,33 @@ function initDropCaps() {
                 'display: block;' +
                 'float: left;' +
             '}</style>');
+    }
+}
+
+
+// remove any _$x=x components from location.search
+function normalizeLocation() {
+    if(location.search.match(/.*_\$.*/)) {
+        var queries = {};
+        $.each(location.search.substr(1).split('&'), function(_, q) {
+            var i = q.split('=');
+            var k = i[0].toString();
+            var v = i[1].toString();
+            if(!k.match(/^_\$/)) {
+                queries[k] = v;
+            }
+        });
+        var str = '';
+        var first = true;
+        $.each(queries, function(k, v) {
+            str += (first ? '?' : '&');
+            str += (k + '=' + v);
+            first = false;
+        });
+        if(str === '?') {
+            str = '';
+        }
+        history.replaceState({}, document.title,
+            location.origin + location.pathname + str);
     }
 }
