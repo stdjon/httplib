@@ -39,6 +39,9 @@ addEventListener("message", function(msg) {
                     success: function(data) {
                         postMainWindowMessage('tokUp', encodeURIComponent(data));
                     },
+                    error: function() {
+                        postMainWindowMessage('tokDown');
+                    },
                 });
             }
         }

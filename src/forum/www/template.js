@@ -1,4 +1,4 @@
-var _initHook = undefined;
+var _reinitHooks = [];
 
 //scroll updates URL
 $(document).bind('scroll',function(e) {
@@ -59,6 +59,11 @@ addEventListener("message", function(msg) {
                         reloadPageContent();
                     }
                 });
+                break;
+            }
+            case 'tokDown': {
+                reloadPageContent();
+                break;
             }
         }
     }
@@ -81,9 +86,9 @@ function pageInit() {
         resetScrollspyAffix();
     });
 
-    if(_initHook) {
-        _initHook();
-    }
+    $.each(_reinitHooks, function(_, f) {
+        f();
+    });
 }
 
 

@@ -15,7 +15,7 @@ function setPrefs(m, l, c, t, f) {
     _g.Font = prf.font = f;
     $('span#' + c).addClass('selected');
 
-    _initHook = enableAvatarDragDrop;
+    _reinitHooks.push(enableAvatarDragDrop);
 }
 
 
