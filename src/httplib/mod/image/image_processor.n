@@ -105,6 +105,8 @@ variant Operation {
 [HasLogging]
 public class ImageProcessor: IImageTransform {
 
+    public virtual Image: Image { get { ImageFactory.Image } }
+
     ImageFactory: ImageFactory { get; set; }
 
     Operations: Operations { get; set; }
@@ -164,7 +166,7 @@ public class ImageProcessor: IImageTransform {
                 o.run(ImageFactory);
             }
         }
-        ImageFactory.Image;
+        Image;
     }
 
     addOperations(operations: Config): void {

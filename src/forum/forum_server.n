@@ -10,12 +10,28 @@ using httplib;
 
 namespace forum {
 
+[YamlRecord]
+public class ForumServerConfiguration: ServerConfiguration {
+
+    public DefaultAvatarImage: string { get; set; }
+};
+
+
 public class ForumServer: Server {
 
     SessionToken: SessionToken { get; private set; }
 
+    public new Configuration: ForumServerConfiguration {
+        get { base.Configuration :> ForumServerConfiguration }
+    }
+
     public this(path: string) {
-        base(path);
+        def config = loadConfiguration.[ForumServerConfiguration](path);
+        this(config);
+    }
+
+    public this(config: ForumServerConfiguration) {
+        base(config);
 
         SessionToken = SessionToken(this);
 
@@ -68,6 +84,11 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/custom-styles.css",
             CssHandler.Factory("custom-styles.nyml", "font_data.yml"));
+
+        route(HTTP.POST, "/upload-avatar", UploadAvatarHandler.Factory());
+        route(HTTP.GET,
+            "/avatar/{{size}}/{{user}}", AvatarImageHandler.Factory());
+
     }
 
     public isUserResponse(
@@ -376,6 +397,13 @@ public class ForumServer: Server {
             ];
         def ex = commmand.executeScalar() :> long;
         unchecked ex :> int;
+    }
+
+    public getUserId(name: string): uint {
+        def commmand = Database.createCommand(
+            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = name ];
+        def u = commmand.executeScalar() :> uint?;
+        u ? (u :> uint) : 0;
     }
 
     public getUserName(user_id: uint): string {

@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class AvatarImageHandler: BaseHandler {
+
+    static DefaultImage: array[byte] { get; set; }
+
+    public override ContentType: string { get { "image/png" } }
+    public Size: uint { get; private set; }
+    public UserId: uint { get; private set; }
+    public Data: array[byte] { get; private set; }
+
+    public this(hd: HandlerData) {
+        base(hd, null);
+
+        when(DefaultImage == null) {
+            initializeDefaultImage(Server);
+        }
+
+        Size = UInt32.Parse(Context.Vars["size"]);
+        def user = Context.Vars["user"];
+        when(!String.IsNullOrEmpty(user)) {
+            UserId = Server.getUserId(user);
+        }
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def command = Server.Database.createCommand(
+            "SELECT Data FROM Avatars WHERE "
+                " UserId = @UserId AND Size = @Size") <- [
+            "@Size" = Size,
+            "@UserId" = UserId,
+        ];
+
+        Data = command.executeScalar() :> array[byte];
+    }
+
+    public override finish(): void {
+        if(Data != null) {
+            Response.appendBytes(Data);
+            Response.Status = (200, "OK");
+        } else {
+            def data = DefaultImage;
+            if(data != null) {
+                Response.appendBytes(data);
+                Response.Status = (200, "OK");
+            } else {
+                Server.internalServerErrorResponse(Context, Request, Response);
+            }
+        }
+    }
+
+    static initializeDefaultImage(server: ForumServer): void {
+        Log.d("initializeDefaultImage()...");
+        def file = server.openLocalFile(
+            server.Configuration.DefaultAvatarImage);
+        def length = file.Length :> int;
+        DefaultImage = array(length);
+        _ = file.Read(DefaultImage, 0, length);
+    }
+}
+
+
+} // forum
+

@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------------
 # Example forum.exe configuration
 ---
+DefaultAvatarImage: avatar-tiny.png
 Databases:
   default:
     Assembly: httplib.db.mysql.dll
@@ -79,6 +80,25 @@ Modules:
   HtmlSanitizer:
     Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
+  ImageProcessor:
+    Assembly: httplib.mod.imageprocessor.dll
+    Typename: httplib.mod.ImageProcessorFactory
+    Data:
+      Operations:
+        entropycrop: { op: EntropyCrop, threshold: 128 }
+        resize40: { op: Resize, x: 40, y: 40 }
+        resize64: { op: Resize, x: 64, y: 64 }
+        resize80: { op: Resize, x: 80, y: 80 }
+        resize120: { op: Resize, x: 120, y: 120 }
+      Transforms:
+        avatar40: [ resize40 ]
+        avatar64: [ resize64 ]
+        avatar80: [ resize80 ]
+        avatar120: [ resize120 ]
+        avatar40crop: [ entropycrop, resize40 ]
+        avatar64crop: [ entropycrop, resize64 ]
+        avatar80crop: [ entropycrop, resize80 ]
+        avatar120crop: [ entropycrop, resize120 ]
   OEmbed:
     Assembly: httplib.mod.oembed.dll
     Typename: httplib.mod.OEmbed
@@ -89,6 +109,7 @@ MimeTypes:
   js: application/javascript
   json: application/json
   html: text/html
+  png: image/png
   css: text/css
   ttf: application/x-font-ttf
   woff: application/x-font-woff

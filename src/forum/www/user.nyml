@@ -13,6 +13,8 @@ Partials:
   Body: |
     <style>
       h4.panel-title { font-size: 20px; font-weight: bold; }
+      .hover { background-color: #9f9; }
+      img#avatar-show { padding: 4px; }
     </style>
     <div>
     <p>&nbsp;</p>
@@ -24,6 +26,9 @@ Partials:
         </div>
         <div class="panel-body">
           <table class="table">
+            <tr><td>Avatar:</td><td>
+              <img width="120" height="120" src="{{DefaultPrefix}}/avatar/120/{{User}}"/>
+            </td></tr>
             <tr><td>Motto:</td><td><em>{{Motto}}</em></td></tr>
             <tr><td>Location:</td><td><em>{{Location}}</em></td></tr>
             <tr><td>User since:</td><td><em>{{JoinDate}}</em></td></tr>
@@ -46,6 +51,13 @@ Partials:
         <table class="table">
           <tr><td style="width: 25%;">Colour:</td>
           <td>{{>Swatches}}</td></tr>
+          <tr><td>Avatar:</td>
+          <td><div>
+            <input type="file" accept="image/*" id="avatar-drop" style="display:none">
+            </input>
+            <img id="avatar-show" width="120" height="120" src="{{DefaultPrefix}}/avatar/120/{{User}}"/>
+            <span id="avatar-work"></span>
+          </div></td></tr>
           <tr><td>Motto:</td>
           <td><input id='motto' value="{{Motto}}" placeholder='[Motto]'
             onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></td></tr>

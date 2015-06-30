@@ -76,3 +76,82 @@ function selectSwatch(col_id) {
 }
 
 
+window.onload = function() {
+    var dropzone = document.querySelector("#avatar-drop");
+    var preview = document.querySelector("#avatar-show");
+
+    dropzone.addEventListener("change", function(e) {
+        acceptFile(e.target.files[0]);
+    });
+
+    preview.addEventListener("click", function (e) {
+        if (dropzone) {
+            dropzone.click();
+        }
+        e.preventDefault(); // prevent navigation to "#"
+    }, false);
+
+    function setDragDrop(element) {
+        element.addEventListener("dragover", function(e) {
+            if(e.preventDefault) { e.preventDefault(); }
+            if(e.stopPropagation) { e.stopPropagation(); }
+            e.dataTransfer.dropEffect = "copy";
+        });
+        element.addEventListener("dragenter", function(e) {
+            this.className = "hover";
+        });
+        element.addEventListener("dragleave", function(e) {
+            this.className = "";
+        });
+        element.addEventListener("drop", function(e) {
+            if(e.preventDefault) { e.preventDefault(); }
+            if(e.stopPropagation) { e.stopPropagation(); }
+            this.className = "";
+            var f = e.dataTransfer.files;
+            if (f.length > 0) {
+                acceptFile(f[0]);
+            }
+        });
+    }
+
+    setDragDrop(dropzone);
+    setDragDrop(preview);
+
+    function acceptFile(f) {
+
+        document.querySelector('#avatar-work').innerHTML =
+            'Working...<span class="fa fa-spinner fa-pulse"></span>';
+
+        var reader = new FileReader();
+
+        reader.onloadend = function(e) {
+            if (e.target.readyState == FileReader.DONE) {
+                var content = reader.result;
+                preview.src = content;
+                //document.querySelector('#dataurl').innerHTML = content;
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'text',
+                    global: false,
+                    url: '/upload-avatar',
+                    data: 'f=' + encodeURIComponent(content),
+                    success: uploaded,
+                    error: failed
+                });
+
+            }
+        }
+
+        reader.readAsDataURL(f);
+    }
+
+    function uploaded(data) {
+        document.querySelector('#avatar-work').innerHTML = 'Done!'
+        var obj = JSON.parse(data);
+        document.querySelector('#avatar-show').src = obj.image;
+    }
+    function failed() {
+        document.querySelector('#avatar-work').innerHTML = "Sorry, that image didn't work :( ";
+    }
+}
+

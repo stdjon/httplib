@@ -30,7 +30,7 @@ Partials:
     {{#Posts}}
       <div class="anchor" id="{{Number}}">
         <div class="post {{OwnPostClass}}">
-          <img class="avatar" src="/avatar-tiny.png" width="40" height="40"/>
+          <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{UserName}}" width="40" height="40"/>
           <div class="content" id="c-{{PostId}}">{{{Content}}}</div><br>
           <div><small>
             <span id="tg-{{PostId}}">
