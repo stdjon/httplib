@@ -1,3 +1,5 @@
+var _initHook = undefined;
+
 //scroll updates URL
 $(document).bind('scroll',function(e) {
     $('.anchor').each(function() {
@@ -77,6 +79,10 @@ function pageInit() {
     $(window).resize(function(){
         resetScrollspyAffix();
     });
+
+    if(_initHook) {
+        _initHook();
+    }
 }
 
 

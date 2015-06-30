@@ -79,7 +79,7 @@ public class BasePageHandler: BaseHandler {
     // TODO: this lives here in the interim, handles the final stages of login
     //  negotiation with the nav. 
     temporaryLoginHandling(): void {
-        def signout = Request.QueryString["signout"];
+        def signout = Request.QueryString["_$signout"];
         def cookies = Request.Cookies;
         def isession =
             (signout == null && cookies != null) ? cookies["_isession"] : null;

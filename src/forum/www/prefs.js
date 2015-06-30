@@ -14,6 +14,8 @@ function setPrefs(m, l, c, t, f) {
     _g.Transform = prf.trans = t;
     _g.Font = prf.font = f;
     $('span#' + c).addClass('selected');
+
+    _initHook = enableAvatarDragDrop;
 }
 
 
@@ -76,9 +78,13 @@ function selectSwatch(col_id) {
 }
 
 
-window.onload = function() {
+function enableAvatarDragDrop() {
     var dropzone = document.querySelector("#avatar-drop");
     var preview = document.querySelector("#avatar-show");
+
+    if(!dropzone || !preview) {
+        return;
+    }
 
     dropzone.addEventListener("change", function(e) {
         acceptFile(e.target.files[0]);
@@ -155,3 +161,4 @@ window.onload = function() {
     }
 }
 
+window.onload = enableAvatarDragDrop();

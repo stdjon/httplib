@@ -140,7 +140,7 @@ public class NavHandler: BasePageHandler {
             }
 
             Response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
-            Response["Location"] = CurrentUrl + "?signout=1";
+            Response["Location"] = CurrentUrl + "?_$signout=1";
             Response.Status = (303, "See Other");
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");
