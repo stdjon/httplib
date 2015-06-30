@@ -19,10 +19,7 @@ public class UploadAvatarHandler: BaseHandler {
     }
 
     public override callback(): void {
-        def cookies = Request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            Server.getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
         def f = Context.Vars["f"];
         mutable json;
         when(userid > 0 && !String.IsNullOrEmpty(f)) {

@@ -25,10 +25,7 @@ public class CreateThreadHandler: BaseHandler {
         def tagstring = Uri.UnescapeDataString(Context.Vars["tags"]);
         def category = UInt32.Parse(Context.Vars["category"]);
         def utc_now = Date.NowTicks;
-        def cookies = Request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            Server.getUserIdFromSessionToken(STOK.INSECURE, isession) : 0;
+        def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
         mutable thid = 0U;
         mutable ok = false;
 

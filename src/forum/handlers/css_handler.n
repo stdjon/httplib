@@ -51,16 +51,11 @@ public class CssHandler: BaseHandler {
     public this(hd: HandlerData, path: string, data: string) {
         base(hd, path);
 
+        def iuid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
+        def userid = (iuid != 0) ? iuid :
+            Server.getUserIdFromCookie(Request, STOK.SECURE);
+
         def c = Request.QueryString["c"];
-        def cookies = Request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def session = cookies ? cookies["_session"] : null;
-        def userid = isession ?
-            Server.getUserIdFromSessionToken(STOK.INSECURE, isession) :
-            (session ?
-                Server.getUserIdFromSessionToken(STOK.SECURE, session) : 0);
-
-
         Font = "serif1";
         Colour = !String.IsNullOrEmpty(c) ? c : "x360";
 

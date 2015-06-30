@@ -41,9 +41,7 @@ public class TokenHandler: BasePageHandler {
 
             def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
             def chk = (tmp == 0);
-            def cookies = Request.Cookies;
-            def session = cookies ? cookies["_session"] : null;
-            def id = Server.getUserIdFromSessionToken(STOK.SECURE, session);
+            def id = Server.getUserIdFromCookie(Request, STOK.SECURE);
             mutable ok = false;
 
             when(chk && id != 0) {

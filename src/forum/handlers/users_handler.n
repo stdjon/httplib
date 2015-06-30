@@ -31,10 +31,7 @@ public class UsersHandler: BasePageHandler {
     }
 
     public initializeSingle(): void {
-
-        def cookies = Request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def session_userid = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
+        def session_userid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
         def user = Context.Vars["user"];
 
         def command = Server.Database.createCommand(

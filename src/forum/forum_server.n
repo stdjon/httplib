@@ -147,11 +147,7 @@ public class ForumServer: Server {
         mutable output = "";
         mutable post_id, thid;
         mutable utc_now;
-        //def utc_now = Date.NowTicks;
-        def cookies = request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        def userid = getUserIdFromCookie(request, STOK.INSECURE);
 
         when(userid != 0) {
             def reply_to = UInt32.Parse(context.Vars["p"]);
@@ -185,10 +181,7 @@ public class ForumServer: Server {
         mutable output = "";
         mutable tags;
         mutable post_id;
-        def cookies = request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        def userid = getUserIdFromCookie(request, STOK.INSECURE);
 
         when(userid != 0) {
             post_id = UInt32.Parse(context.Vars["p"]);
@@ -247,10 +240,7 @@ public class ForumServer: Server {
         mutable ok = false;
         mutable input = "", output = "", transform = "";
         mutable post_id;
-        def cookies = request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        def userid = getUserIdFromCookie(request, STOK.INSECURE);
         mutable tags = null;
 
         when(userid != 0) {
@@ -333,10 +323,7 @@ public class ForumServer: Server {
         def c = context.Vars["c"];
         def r = context.Vars["r"];
         def f = context.Vars["f"];
-        def cookies = request.Cookies;
-        def isession = cookies ? cookies["_isession"] : null;
-        def userid = isession ?
-            getUserIdFromSessionToken(STOK.INSECURE, isession) : 0U;
+        def userid = getUserIdFromCookie(request, STOK.INSECURE);
         mutable ok = false;
 
         when(userid != 0) {
@@ -428,6 +415,18 @@ public class ForumServer: Server {
         tok: SessionTokenType, token: string): uint {
 
         SessionToken.getUserId(tok, token);
+    }
+
+    public getUserIdFromCookie(
+        request: Request, tok: SessionTokenType): uint {
+        def cookiename = match(tok) {
+            | INSECURE => "_isession"
+            | SECURE => "_session"
+            | _ => null
+        };
+        def cookies = request.Cookies;
+        def cookie = cookies ? cookies[cookiename] : null;
+        cookie ? getUserIdFromSessionToken(tok, cookie) : 0U;
     }
 
     public tagsFromTagString(tag_string: string): array[string] {
