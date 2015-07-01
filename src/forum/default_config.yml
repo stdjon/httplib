@@ -6,7 +6,7 @@ Databases:
   default:
     Assembly: httplib.db.mysql.dll
     Typename: httplib.db.MySqlDatabase
-    Connection: server=localhost;userid=forum;password=n0ts3cr3t;database=forum
+    Connection: server=localhost;userid=forum;password=n0ts3cr3t;database=forum;charset=utf8
 Prefixes:
   Secure:
     - https://127.0.0.1:8443/
@@ -77,6 +77,8 @@ Modules:
         - { Tag: "*", Open: "<li>", Close: "</li>", Flags: "NoClose" }
         - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
+        - { Tag: "q", Open: "<blockquote>", Close: "</blockquote>",
+            Attrs: [ { Id: "content", Name: "" } ] }
   HtmlSanitizer:
     Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer
