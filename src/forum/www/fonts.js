@@ -42,7 +42,7 @@ function setMainFonts(h, c) {
         '.user-font .expanding-h1-area pre, ' +
         '.user-font .expanding-h1-area textarea').css('font-family', h);
 
-    postIframeMessage('font/' + c);
+    postIframeMessage('font', c);
 }
 
 

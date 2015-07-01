@@ -53,7 +53,7 @@ function setHdrCols(cx) {
         divAnchorTrg('border-left-color: ' + col + ';') +
         divExpandingH1Area('background-color: ' + col + '; color: ' + fg + ';') );
 
-    postIframeMessage('hdrCol/' + col);
+    postIframeMessage('hdrCol', col);
 }
 
 
