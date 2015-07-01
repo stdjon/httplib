@@ -45,9 +45,10 @@ function setMainFonts(h, c) {
     postIframeMessage('font/' + c);
 }
 
+
 function initFonts() {
     //default to serif1...
-    if(''==_g.FontClass) {
+    if(!_g.FontClass) {
         _g.FontClass = 'serif1';
     }
     setFonts(_g.FontClass);

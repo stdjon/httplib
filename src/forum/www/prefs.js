@@ -161,4 +161,7 @@ function enableAvatarDragDrop() {
     }
 }
 
+
 window.onload = enableAvatarDragDrop();
+
+

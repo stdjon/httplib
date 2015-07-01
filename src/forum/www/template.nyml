@@ -44,6 +44,19 @@ Partials:
           {{>Guide}}
         </div>
       </div>
+      <script>
+      function resetProperties(_g) {
+        _g.DefaultSecurePrefix = "{{DefaultSecurePrefix}}";
+        _g.DefaultInsecurePrefix = "{{DefaultInsecurePrefix}}";
+        _g.DefaultPrefix = "{{DefaultPrefix}}";
+        _g.CurrentUrl = "{{CurrentUrl}}";
+        _g.CurrentUrlUnescaped = "{{CurrentUrlUnescaped}}";
+        _g.ColourId = "{{ColourId}}";
+        _g.FontClass = "{{FontClass}}";
+        _g.Browser = "{{Browser}}";
+      }
+      </script>
+      {{>ReloadableContent}}
   Scripts: |
     {{>LoadScripts}}
     <script>
@@ -59,16 +72,7 @@ Partials:
     <script src="/fonts.js"></script>
     {{>PageLoadScripts}}
   SharedScripts: |
-    var _g = {
-      DefaultSecurePrefix: "{{DefaultSecurePrefix}}",
-      DefaultInsecurePrefix: "{{DefaultInsecurePrefix}}",
-      DefaultPrefix: "{{DefaultPrefix}}",
-      CurrentUrl: "{{CurrentUrl}}",
-      CurrentUrlUnescaped: "{{CurrentUrlUnescaped}}",
-      ColourId: "{{ColourId}}",
-      FontClass: "{{FontClass}}",
-      Browser: "{{Browser}}",
-    };
+    _g = {};
     {{>PageScripts}}
     // init!
     $(window).load(function() {

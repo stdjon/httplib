@@ -71,6 +71,8 @@ addEventListener("message", function(msg) {
 
 
 function pageInit() {
+    resetProperties(_g);
+    reloadCustomStylesheet();
     normalizeLocation();
     postIframeMessage('ehlo');
     initHdrCols();
@@ -85,10 +87,6 @@ function pageInit() {
     $(window).resize(function(){
         resetScrollspyAffix();
     });
-
-    $.each(_reinitHooks, function(_, f) {
-        f();
-    });
 }
 
 
@@ -100,6 +98,9 @@ function reloadPageContent() {
         success: function(data) {
             $('#mainspace').html(data);
             pageInit();
+            $.each(_reinitHooks, function(_, f) {
+                f();
+            });
         }
 
     });
@@ -173,3 +174,20 @@ function normalizeLocation() {
             location.origin + location.pathname + str);
     }
 }
+
+
+function reloadCustomStylesheet() {
+    var qx = 'qx=' + new Date().getTime();
+    $('link[rel="stylesheet"]').each(function () {
+        if(this.href.match(/custom-styles/)) {
+            if(this.href.match(/qx=/)) {
+                this.href = this.href.replace(/qx=[^&]*/, qx);
+            } else if(this.href.match(/.+\?/)) {
+                this.href = this.href + '&' + qx;
+            } else {
+                this.href = this.href + '?' + qx;
+            }
+        }
+    });
+}
+
