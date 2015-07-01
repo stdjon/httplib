@@ -174,8 +174,8 @@ public class UsersHandler: BasePageHandler {
         ];
         i = command3.execute((j, reader) => {
             mutable content = reader.getValue("OutputContent");
-            when(content.Length > 50) {
-                content = content.Substring(0, 50) + "...";
+            when(content.Length > 100) {
+                content = content.Substring(0, 100) + "&hellip;";
             }
             // Use HtmlSanitizer to close any tags lost by the truncation.
             def htmlsan = Server.

@@ -49,15 +49,16 @@ Partials:
       </div>
       <div class="panel-body">
         <table class="table">
-          <tr><td style="width: 25%;">Colour:</td>
-          <td>{{>Swatches}}</td></tr>
           <tr><td>Avatar:</td>
           <td><div>
             <input type="file" accept="image/*" id="avatar-drop" style="display:none">
             </input>
             <img id="avatar-show" width="120" height="120" src="{{DefaultPrefix}}/avatar/120/{{User}}"/>
-            <span id="avatar-work"></span>
+            <span id="avatar-work"></span><br>
+            <small><em>To change avatar, click the image, or drag a file onto the image.</em></small>
           </div></td></tr>
+          <tr><td style="width: 25%;">Colour:</td>
+          <td>{{>Swatches}}</td></tr>
           <tr><td>Motto:</td>
           <td><input id='motto' value="{{Motto}}" placeholder='[Motto]'
             onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></td></tr>
