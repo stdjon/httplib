@@ -16,6 +16,7 @@ var _copy = {
     range: undefined,
     buffer: undefined,
     id: undefined,
+    user: undefined,
 };
 
 
@@ -260,6 +261,7 @@ function checkSelection() {
                     }
                     _copy.buffer = got;
                     _copy.id = node.id.replace('c-', '');
+                    _copy.user = node.getAttribute('data-author');
                     quote(_copy.id, true);
                 }
                 _copy.range = rng;
@@ -271,6 +273,7 @@ function checkSelection() {
             _copy.range = undefined;
             _copy.buffer = undefined;
             _copy.id = undefined;
+            _copy.user = undefined;
         }
     }
 }
@@ -402,8 +405,8 @@ $(document).ready(function() {
     document.addEventListener('copy', function(e) {
         checkSelection();
 
-        if(_copy.id && _copy.buffer) {
-            var buf = '<blockquote id="'+ _copy.id + '">' + _copy.buffer + '</blockquote>';
+        if(_copy.user && _copy.buffer) {
+            var buf = '<q><cite>' + _copy.user + '</cite>' + _copy.buffer + '</q>';
             e.clipboardData.clearData('text/plain');
             e.clipboardData.setData('text/plain', buf);
             e.preventDefault();

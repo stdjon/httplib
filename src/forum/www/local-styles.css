@@ -229,9 +229,28 @@ table td {
 /*  text-align: center;*/
 }
 blockquote {
-  font-size: 100%;
-  margin: 0;
+  font-size: 90%;
+  margin: 4px;
+  padding: 4px;
 }
+q cite {
+  display: block;
+  font-size: 90%;
+  font-style: italic;
+}
+q cite:after { content: ':' }
+q {
+  display: block;
+  font-size: 90%;
+  margin: 4px;
+  padding: 4px;
+  border-left: 5px solid #eee;
+}
+q:before { content: none; }
+q:after { content: none; }
+
+ins { background-color: #9f9; }
+del { background-color: #f99; }
 
 /* Custom CSS for frist post*/
 div[id='1'] div.post {
