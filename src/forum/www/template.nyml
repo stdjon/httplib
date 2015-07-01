@@ -76,7 +76,7 @@ Partials:
     {{>PageScripts}}
     // init!
     $(window).load(function() {
-      pageInit();
+      initPage();
       {{#TempToken}}
       postIframeMessage('tokTmp', encodeURIComponent("{{TempToken}}"));
       {{/TempToken}}

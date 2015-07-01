@@ -70,9 +70,8 @@ addEventListener("message", function(msg) {
 });
 
 
-function pageInit() {
+function initPage() {
     resetProperties(_g);
-    reloadCustomStylesheet();
     normalizeLocation();
     postIframeMessage('ehlo');
     initHdrCols();
@@ -97,7 +96,7 @@ function reloadPageContent() {
         url: _g.CurrentUrlUnescaped + '?_$content=1',
         success: function(data) {
             $('#mainspace').html(data);
-            pageInit();
+            initPage();
             $.each(_reinitHooks, function(_, f) {
                 f();
             });
@@ -191,3 +190,5 @@ function reloadCustomStylesheet() {
     });
 }
 
+
+_reinitHooks.push(reloadCustomStylesheet);
