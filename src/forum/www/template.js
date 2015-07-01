@@ -177,17 +177,14 @@ function normalizeLocation() {
 
 function reloadCustomStylesheet() {
     var qx = 'qx=' + new Date().getTime();
-    $('link[rel="stylesheet"]').each(function () {
-        if(this.href.match(/custom-styles/)) {
-            if(this.href.match(/qx=/)) {
-                this.href = this.href.replace(/qx=[^&]*/, qx);
-            } else if(this.href.match(/.+\?/)) {
-                this.href = this.href + '&' + qx;
-            } else {
-                this.href = this.href + '?' + qx;
-            }
-        }
-    });
+    var css = $('link#custom-styles');
+    var href = css.attr('href');
+    if(href.match(/qx=/)) {
+        href = href.replace(/qx=[^&]*/, qx);
+    } else {
+        href = href + (href.match(/.+\?/) ? '&' : '?') + qx;
+    }
+    css.attr('href',  href);
 }
 
 

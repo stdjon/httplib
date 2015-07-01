@@ -49,8 +49,19 @@ public class Page {
         mutable stylesheet = "";
         when(Stylesheets != null) {
             foreach(s in Stylesheets) {
+                // It's occasionally useful to have a link to a stylesheet which
+                // has an associated id attribute. If a stylesheet path contains
+                // a # character, we will use everything after it as the id name:
+                // - /path/to/stylesheet.css#stylesheet-id
                 when(!String.IsNullOrEmpty(s)) {
-                    stylesheet += $"\n<link href='$(renderString(s, data))' rel='stylesheet'>"
+                    def attrs =
+                        if(s.Contains("#")) {
+                            def a = s.Split(array['#'], 2);
+                            $"href='$(renderString(a[0], data))' id='$(a[1])'";
+                        } else {
+                            $"href='$(renderString(s, data))'";
+                        };
+                    stylesheet += $"\n<link $attrs rel='stylesheet'>"
                 }
             }
         }

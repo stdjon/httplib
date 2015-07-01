@@ -11,7 +11,7 @@ Stylesheets:
   - /select2-4.0.0/dist/css/select2.css
   - /font-awesome-4.3.0/css/font-awesome.css
   - /local-styles.css
-  - /custom-styles.css?c={{ColourId}}
+  - /custom-styles.css?c={{ColourId}}#custom-styles
 Title: Template Test Page
 BodyAttributes:
   - data-spy="scroll"
