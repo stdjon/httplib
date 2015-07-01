@@ -87,7 +87,7 @@ public class ForumServer: Server {
 
         route(HTTP.POST, "/upload-avatar", UploadAvatarHandler.Factory());
         route(HTTP.GET,
-            "/avatar/{{size}}/{{user}}", AvatarImageHandler.Factory());
+            "/avatar/{{size:[0-9]+}}/{{user:.*}}", AvatarImageHandler.Factory());
 
     }
 
