@@ -3,8 +3,6 @@ body {
   background-attachment: fixed;
 }
 * {
-  border-radius: 0;
-
   /* word breaks/hyphenation... */
 
   /* Non standard for webkit */
@@ -225,8 +223,20 @@ ul.pagination li.disabled a {
   border-bottom: 5px solid #eee;
 }
 
-table td {
-/*  text-align: center;*/
+div.panel-body table {
+  border: 1px solid #ddd;
+  border-radius: 4px !important;
+  background-color: #ffe;
+  border-collapse: separate;
+}
+div.panel-body table tbody {
+  border: 0;
+  border-radius: 4px !important;
+  /*border-radius: 40px !important;
+  background-color: #ffe;*/
+}
+div.panel-body table tr:first-child, div.panel-body table tr:first-child td {
+  border-top: none;
 }
 blockquote {
   font-size: 90%;
