@@ -73,6 +73,7 @@ Partials:
     {{>PageLoadScripts}}
   SharedScripts: |
     _g = {};
+    resetProperties(_g);
     {{>PageScripts}}
     // init!
     $(window).load(function() {

@@ -378,11 +378,9 @@ function initThreadPage(thid, transform, from, to) {
         }
     }
 
-    setTimeout(function () {
-        $('span[data-thumbed="true"], span[data-starred="true"]').each(function () {
-            $(this).css('color', colFromId(_g.ColourId));
-        });
-    }, 100);
+    $('span[data-thumbed="true"], span[data-starred="true"]').each(function () {
+        $(this).css('color', colFromId(_g.ColourId));
+    });
 }
 
 

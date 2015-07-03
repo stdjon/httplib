@@ -118,9 +118,7 @@ Partials:
     <script src="/tags.js"></script>
     <script src="/thread.js"></script>
   PageScripts: |
-    $(window).load(function() {
-      initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
-    });
+    initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
   Pagination: |
     <div style="text-align: center;">
     <ul class="pagination">
