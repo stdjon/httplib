@@ -19,7 +19,9 @@ Partials:
       <ul class="list-group">
       {{#Users}}
         <li class="list-group-item"><a href="{{DefaultPrefix}}/u/{{Name}}">
-          {{Name}}</a> [{{Level}}/{{Points}}] <em><small>{{Motto}}</small></em></li>
+          <img src="{{DefaultPrefix}}/avatar/120/{{Name}}" height="40" width="40"></img></a>
+          <a href="{{DefaultPrefix}}/u/{{Name}}">{{Name}}</a>
+          [{{Level}}/{{Points}}] <em><small>{{Motto}}</small></em></li>
       {{/Users}}
       </ul>
       <p>
