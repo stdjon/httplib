@@ -18,16 +18,26 @@ Partials:
       </p>
       <ul class="list-group">
       {{#Users}}
-        <li class="list-group-item"><a href="{{DefaultPrefix}}/u/{{Name}}">
+        <li class="list-group-item"><div id="{{Num}}" class="anchor">
+          <a href="{{DefaultPrefix}}/u/{{Name}}">
           <img src="{{DefaultPrefix}}/avatar/120/{{Name}}" height="40" width="40"></img></a>
           <a href="{{DefaultPrefix}}/u/{{Name}}">{{Name}}</a>
-          [{{Level}}/{{Points}}] <em><small>{{Motto}}</small></em></li>
+          [{{Level}}/{{Points}}] <em><small>{{Motto}}</small></em>
+        </div></li>
       {{/Users}}
       </ul>
       <p>
         {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
+    </div>
+  Guide: |
+    <div id="scrollspy">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="0">
+      {{#Markers}}
+        <li><a href="#{{Mark}}">{{Mark}}</a></li>
+      {{/Markers}}
+      </ul>
     </div>
   PageLoadScripts: |
     <script src="/swatches.js"></script>
