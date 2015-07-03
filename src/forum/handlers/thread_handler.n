@@ -176,6 +176,54 @@ public class ThreadHandler: BasePageHandler {
                 }
             }
 
+            // Thumbs markers
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Server.Database.createCommand(
+                    "SELECT COUNT(Id) FROM Thumbs WHERE "
+                        "PostId = @PostId") <- [
+                    "@PostId" = post_id,
+                ];
+                def result = command.executeScalar() :> long;
+                posts[i]["Thumbs"] = result :> uint;
+
+                def command2 = Server.Database.createCommand(
+                    "SELECT COUNT(Id) FROM Thumbs WHERE "
+                        "PostId = @PostId  AND UserId = @UserId") <- [
+                    "@PostId" = post_id,
+                    "@UserId" = SignedInUserId,
+                ];
+                def result2 = command2.executeScalar() :> long;
+                when(result2 > 0) {
+                    posts[i]["IsOwnThumb"] = true;
+                }
+            }
+
+            // Bookmarks markers
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Server.Database.createCommand(
+                    "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                        "PostId = @PostId") <- [
+                    "@PostId" = post_id,
+                ];
+                def result = command.executeScalar() :> long;
+                posts[i]["Bookmarks"] = result :> uint;
+
+                def command2 = Server.Database.createCommand(
+                    "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                        "PostId = @PostId  AND UserId = @UserId") <- [
+                    "@PostId" = post_id,
+                    "@UserId" = SignedInUserId,
+                ];
+                def result2 = command2.executeScalar() :> long;
+                when(result2 > 0) {
+                    posts[i]["IsOwnBookmark"] = true;
+                }
+            }
+
             // Add a marker for every fifth post (1, 6, 11...)
             def marker_count = (limit + 4) / 5;
             def markers: PageDataArray = array(marker_count);

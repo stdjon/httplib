@@ -279,30 +279,80 @@ function checkSelection() {
 }
 
 
-function thumbsup(btn, num, pid) {
-    if($(num).data('thumbed')) {
-        $(num).data('thumbed', false);
-        $(btn).css('color', $(num).data('old-color')).
-            attr('class', 'fa fa-fw fa-thumbs-o-up');
+function thumbsup(btn, pid) {
+    var cnt = '#tc-' + pid;
+    if($(btn).data('thumbed')) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            global: false,
+            url: '/thumb',
+            data: 'p=' + pid,
+            success: function(data) {
+                $(btn).data('thumbed', false).
+                    css('color', $(btn).data('old-color')).
+                    attr('class', 'fa fa-fw fa-thumbs-o-up');
+                var c = $(cnt).text();
+                if(c > 0) { c--; }
+                $(cnt).text(c);
+            }
+        });
     } else {
-        $(num).data('thumbed', true).
-            data('old-color', $(btn).css('color'));
-        $(btn).css('color', colFromId(_g.ColourId)).
-            attr('class', 'fa fa-fw fa-thumbs-up');
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            global: false,
+            url: '/thumb',
+            data: 'p=' + pid + '&on=true',
+            success: function(data) {
+                $(btn).data('thumbed', true).
+                    data('old-color', $(btn).css('color')).
+                    css('color', colFromId(_g.ColourId)).
+                    attr('class', 'fa fa-fw fa-thumbs-up');
+                var c = $(cnt).text();
+                c++;
+                $(cnt).text(c);
+            }
+        });
     }
 }
 
 
-function star(btn, num, pid) {
-    if($(num).data('starred')) {
-        $(num).data('starred', false);
-        $(btn).css('color', $(num).data('old-color')).
-            attr('class', 'fa fa-fw fa-star-o');
+function star(btn, pid) {
+    var cnt = '#bc-' + pid;
+    if($(btn).data('starred')) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            global: false,
+            url: '/star',
+            data: 'p=' + pid,
+            success: function(data) {
+                $(btn).data('starred', false).
+                    css('color', $(btn).data('old-color')).
+                    attr('class', 'fa fa-fw fa-star-o');
+                var c = $(cnt).text();
+                if(c > 0) { c--; }
+                $(cnt).text(c);
+            }
+        });
     } else {
-        $(num).data('starred', true).
-            data('old-color', $(btn).css('color'));
-        $(btn).css('color', colFromId(_g.ColourId)).
-            attr('class', 'fa fa-fw fa-star');
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            global: false,
+            url: '/star',
+            data: 'p=' + pid + '&on=true',
+            success: function(data) {
+                $(btn).data('starred', true).
+                    data('old-color', $(btn).css('color')).
+                    css('color', colFromId(_g.ColourId)).
+                    attr('class', 'fa fa-fw fa-star');
+                var c = $(cnt).text();
+                c++;
+                $(cnt).text(c);
+            }
+        });
     }
 }
 
@@ -327,6 +377,12 @@ function initThreadPage(thid, transform, from, to) {
             break;
         }
     }
+
+    setTimeout(function () {
+        $('span[data-thumbed="true"], span[data-starred="true"]').each(function () {
+            $(this).css('color', colFromId(_g.ColourId));
+        });
+    }, 100);
 }
 
 

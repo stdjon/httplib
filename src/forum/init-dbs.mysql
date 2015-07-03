@@ -13,8 +13,8 @@
 /* Drop existing tables */
 
 DROP TABLE IF EXISTS
-    Uploads, PostsRead, Drafts, Replies, PostTags, Tags, Posts,
-    Threads, Categories, Sessions, Auth, Users;
+    Uploads, Bookmarks, Threads, PostsRead, Drafts, Replies, PostTags, Tags,
+    Posts, Threads, Categories, Sessions, Auth, Users;
 
 
 /*----------------------------------------------------------------------------*/
@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS Users(
     Level INT UNSIGNED,
     Points INT,
     JoinDate BIGINT,
-    Avatar BLOB,
     Motto VARCHAR(40),
     Location VARCHAR(40),
     Colour VARCHAR(30),
@@ -166,10 +165,30 @@ CREATE TABLE IF NOT EXISTS Drafts(
 CREATE TABLE IF NOT EXISTS PostsRead(
     Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
     UserId INT UNSIGNED,
-    ThreadId INT UNSIGNED,
     PostId INT UNSIGNED,
     FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE,
-    FOREIGN KEY(ThreadId) REFERENCES Threads(Id) ON DELETE CASCADE,
+    FOREIGN KEY(PostId) REFERENCES Posts(Id) ON DELETE CASCADE
+)
+    ENGINE=INNODB
+    CHARACTER SET utf8;
+
+
+CREATE TABLE IF NOT EXISTS Thumbs(
+    Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    UserId INT UNSIGNED,
+    PostId INT UNSIGNED,
+    FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE,
+    FOREIGN KEY(PostId) REFERENCES Posts(Id) ON DELETE CASCADE
+)
+    ENGINE=INNODB
+    CHARACTER SET utf8;
+
+
+CREATE TABLE IF NOT EXISTS Bookmarks(
+    Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    UserId INT UNSIGNED,
+    PostId INT UNSIGNED,
+    FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE,
     FOREIGN KEY(PostId) REFERENCES Posts(Id) ON DELETE CASCADE
 )
     ENGINE=INNODB

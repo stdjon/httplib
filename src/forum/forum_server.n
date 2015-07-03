@@ -89,6 +89,8 @@ public class ForumServer: Server {
         route(HTTP.GET,
             "/avatar/{{size:[0-9]+}}/{{user:.*}}", AvatarImageHandler.Factory());
 
+        route(HTTP.POST, "/thumb", thumbPostResponse);
+        route(HTTP.POST, "/star", starPostResponse);
     }
 
     public isUserResponse(
@@ -349,6 +351,28 @@ public class ForumServer: Server {
         }
     }
 
+    public thumbPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def on = !String.IsNullOrEmpty(context.Vars["on"]);
+        def pid = UInt32.Parse(context.Vars["p"]);
+        def uid = getUserIdFromCookie(request, STOK.INSECURE);
+
+        thumbPost(pid, uid, on);
+        response.Status = (200, "OK");
+    }
+
+    public starPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def on = !String.IsNullOrEmpty(context.Vars["on"]);
+        def pid = UInt32.Parse(context.Vars["p"]);
+        def uid = getUserIdFromCookie(request, STOK.INSECURE);
+
+        starPost(pid, uid, on);
+        response.Status = (200, "OK");
+    }
+
     public override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
@@ -468,7 +492,7 @@ public class ForumServer: Server {
     }
 
     public getTagIds(tags: array[string],
-        use_transaction = false): array[uint] {
+        use_transaction = true): array[uint] {
 
         mutable result = array((tags != null) ? tags.Length : 0);
         when(tags != null) {
@@ -650,6 +674,88 @@ public class ForumServer: Server {
         } else {
             (0U, "", 0L);
         }
+    }
+
+    public thumbPost(post_id: uint, user_id: uint, on: bool,
+        use_transaction = true): void {
+
+        Log.d("thumbPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
+        Database.withTransaction(db => {
+            def check = isThumbPost(post_id, user_id);
+            when(on != check) {
+                def command = if(on) {
+                    db.createCommand(
+                        "INSERT INTO Thumbs(PostId, UserId) "
+                            "VALUES (@PostId, @UserId)") <- [
+                        "@PostId" = post_id,
+                        "@UserId" = user_id,
+                    ];
+                } else {
+                    db.createCommand(
+                        "DELETE FROM Thumbs WHERE "
+                            "PostId = @PostId AND UserId = @UserId") <- [
+                        "@PostId" = post_id,
+                        "@UserId" = user_id,
+                    ];
+                }
+                def _result = command.executeNonQuery();
+                Log.d("thumbPost {0} -> {1}", (on ? "insert" : "delete"), _result);
+            }
+        }, ex => {
+            internalServerError(ex);
+        }, use_transaction);
+    }
+
+    public isThumbPost(post_id: uint, user_id: uint): bool {
+        def command = Database.createCommand(
+            "SELECT COUNT(Id) FROM Thumbs WHERE "
+                "PostId=@PostId AND UserId=@UserId") <- [
+            "@PostId" = post_id,
+            "@UserId" = user_id,
+        ];
+        def result = command.executeScalar() :> long;
+        result > 0;
+    }
+
+    public starPost(post_id: uint, user_id: uint, on: bool,
+        use_transaction = true): void {
+
+        Log.d("starPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
+        Database.withTransaction(db => {
+            def check = isStarPost(post_id, user_id);
+            when(on != check) {
+                def command = if(on) {
+                    db.createCommand(
+                        "INSERT INTO Bookmarks(PostId, UserId) "
+                            "VALUES (@PostId, @UserId)") <- [
+                        "@PostId" = post_id,
+                        "@UserId" = user_id,
+                    ];
+                } else {
+                    db.createCommand(
+                        "DELETE FROM Bookmarks WHERE "
+                            "PostId = @PostId AND UserId = @UserId") <- [
+                        "@PostId" = post_id,
+                        "@UserId" = user_id,
+                    ];
+                }
+                def _result = command.executeNonQuery();
+                Log.d("starPost {0} -> {1}", (on ? "insert" : "delete"), _result);
+            }
+        }, ex => {
+            internalServerError(ex);
+        }, use_transaction);
+    }
+
+    public isStarPost(post_id: uint, user_id: uint): bool {
+        def command = Database.createCommand(
+            "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                "PostId=@PostId AND UserId=@UserId") <- [
+            "@PostId" = post_id,
+            "@UserId" = user_id,
+        ];
+        def result = command.executeScalar() :> long;
+        result > 0;
     }
 }
 
