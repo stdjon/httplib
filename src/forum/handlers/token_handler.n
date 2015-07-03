@@ -56,7 +56,7 @@ public class TokenHandler: BasePageHandler {
             if(ok) {
                 Response.Status = (200, "OK");
             } else {
-                Server.internalServerErrorResponse(Context, Request, Response);
+                internalServerErrorResponse();
             }
         } else {
             Response.Status = (403, "Forbidden");
@@ -81,7 +81,7 @@ public class TokenHandler: BasePageHandler {
         if(ok) {
             Response.Status = (200, "OK");
         } else {
-            Server.internalServerErrorResponse(Context, Request, Response);
+            internalServerErrorResponse();
         }
     }
 

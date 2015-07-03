@@ -57,7 +57,7 @@ public class AvatarImageHandler: BaseHandler {
                 Response.appendBytes(data);
                 Response.Status = (200, "OK");
             } else {
-                Server.internalServerErrorResponse(Context, Request, Response);
+                internalServerErrorResponse();
             }
         }
     }

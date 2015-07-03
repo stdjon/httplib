@@ -92,7 +92,7 @@ public class CreateThreadHandler: BaseHandler {
             Response.Status = (303, "See Other");
         } else {
             // TODO: return to /createthread page?
-            Server.internalServerErrorResponse(Context, Request, Response);
+            internalServerErrorResponse();
         }
     }
 }

@@ -128,7 +128,7 @@ public class SignupHandler: BasePageHandler {
                     Response.Status = (303, "See Other");
 
                 } else {
-                    Server.internalServerErrorResponse(Context, Request, Response);
+                    internalServerErrorResponse();
                     Log.w("IPbkdf2Auth module was not found.");
                 }
             }

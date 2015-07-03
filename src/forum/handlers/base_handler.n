@@ -54,6 +54,11 @@ public class BaseHandler: ComplexHandler {
         PageData[$"$(browser)Browser"] = true;
         PageData["Browser"] = browser;
     }
+
+    // convenience method...
+    public internalServerErrorResponse(): void {
+        Server.internalServerErrorResponse(Context, Request, Response);
+    }
 }
 
 

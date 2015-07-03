@@ -40,7 +40,7 @@ public class UploadAvatarHandler: BaseHandler {
             Response.append(json.toString());
             Response.Status = (200, "OK");
         } else {
-            Server.internalServerErrorResponse(Context, Request, Response);
+            internalServerErrorResponse();
         }
     }
 
