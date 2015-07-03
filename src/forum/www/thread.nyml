@@ -47,31 +47,31 @@ Partials:
           <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
             onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
           {{/IsOwnPost}}
-          <span id="q-{{PostId}}" class="ptr fa fa-fw fa-quote-left" title="Quote post"
+          <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
             style="color: #ccc" ></span>
           {{^IsOwnPost}}
           {{#IsOwnThumb}}
           <span class="ptr fa fa-fw fa-thumbs-up" title="Commend post"
             onclick="thumbsup(this, {{PostId}})"
-            data-thumbed="true" data-old-color="#333"></span>
-            <small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+            data-thumbed="true" data-old-color="#333"></span><!--
+            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
           {{/IsOwnThumb}}
           {{^IsOwnThumb}}
           <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
-            onclick="thumbsup(this, {{PostId}})"></span>
-            <small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+            onclick="thumbsup(this, {{PostId}})"></span><!--
+            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
           {{/IsOwnThumb}}
           {{/IsOwnPost}}
           {{#IsOwnBookmark}}
           <span class="ptr fa fa-fw fa-star" title="Bookmark post"
             onclick="star(this, {{PostId}})"
-            data-starred="true" data-old-color="#333"></span>
-            <small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+            data-starred="true" data-old-color="#333"></span><!--
+            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
           {{/IsOwnBookmark}}
           {{^IsOwnBookmark}}
           <span class="ptr fa fa-fw fa-star-o" title="Bookmark post"
-            onclick="star(this, {{PostId}})"></span>
-            <small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+            onclick="star(this, {{PostId}})"></span><!--
+            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
           {{/IsOwnBookmark}}
           </div>
           <div class="rhs"><small>
