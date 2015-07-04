@@ -1,7 +1,7 @@
 ---
 Template: nav-template.nyml
 Partials:
-  NavScriptsPre: |
+  PageScript: |
     var navCollapseHeight = '120px';
   NavContent: |
     <div class="navbar-header">

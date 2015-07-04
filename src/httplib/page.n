@@ -21,6 +21,7 @@ public class Page {
     public Metas: List[string] { get; set; }
     public Title: string { get; set; }
     public Stylesheets: List[string] { get; set; }
+    public Scripts: List[string] { get; set; }
     public BodyAttributes: List[string] { get; set; }
     public Content: string { get; set; }
     public Partials: PartialsType { get; set; }
@@ -46,25 +47,9 @@ public class Page {
             }
         }
 
-        mutable stylesheet = "";
-        when(Stylesheets != null) {
-            foreach(s in Stylesheets) {
-                // It's occasionally useful to have a link to a stylesheet which
-                // has an associated id attribute. If a stylesheet path contains
-                // a # character, we will use everything after it as the id name:
-                // - /path/to/stylesheet.css#stylesheet-id
-                when(!String.IsNullOrEmpty(s)) {
-                    def attrs =
-                        if(s.Contains("#")) {
-                            def a = s.Split(array['#'], 2);
-                            $"href='$(renderString(a[0], data))' id='$(a[1])'";
-                        } else {
-                            $"href='$(renderString(s, data))'";
-                        };
-                    stylesheet += $"\n<link $attrs rel='stylesheet'>"
-                }
-            }
-        }
+        def stylesheet = renderFileElementList(
+            Stylesheets, "link/href/rel='stylesheet'", data);
+        def script = renderFileElementList(Scripts, "script/src", data);
 
         mutable body_attrs = "";
         when(BodyAttributes != null) {
@@ -75,7 +60,13 @@ public class Page {
             }
         }
 
-        def content = renderContent(data, parts);
+        // insert "_Scripts" into partial data for content render, so client has
+        // control over where scripts are placed within a page.
+        mutable pd = PartialsType();
+        pd["_Scripts"] = script;
+        pd = mergeDicts(parts, pd);
+
+        def content = renderContent(data, pd);
 
         $"<!DOCTYPE html>\n<html$lang>\n"
         $"<head>$meta$title$stylesheet\n</head>\n"
@@ -99,6 +90,32 @@ public class Page {
         template;
     }
 
+    protected virtual renderFileElementList(
+        paths: List[string], template: string, data: ObjectsType = null): string {
+        mutable result = "";
+        def split = template.Split(array['/'], 3);
+        def (tag, loc, attr) = (split[0], split[1], split.Length > 2 ? split[2] : "");
+        when(paths != null) {
+            foreach(p in paths) {
+                // It's occasionally useful to have a file element which has an
+                // associated id attribute. If a file path contains a '#'
+                // character, we will use everything after it as the id name:
+                // - /path/to/file.ext#file-id
+                when(!String.IsNullOrEmpty(p)) {
+                    def attrs =
+                        if(p.Contains("#")) {
+                            def a = p.Split(array['#'], 2);
+                            $"$loc='$(renderString(a[0], data))' id='$(a[1])'";
+                        } else {
+                            $"$loc='$(renderString(p, data))'";
+                        };
+                    result += $"\n<$tag $attr $attrs></$tag>"
+                }
+            }
+        }
+        result;
+    }
+
     public merge(other: Page): void {
         when(Lang == null) {
             Lang = other.Lang;
@@ -111,6 +128,7 @@ public class Page {
         }
         Metas = mergeLists(other.Metas, Metas);
         Stylesheets = mergeLists(other.Stylesheets, Stylesheets);
+        Scripts = mergeLists(other.Scripts, Scripts);
         BodyAttributes = mergeLists(other.BodyAttributes, BodyAttributes);
         Partials = mergeDicts(other.Partials, Partials);
         Objects = mergeDicts(other.Objects, Objects);

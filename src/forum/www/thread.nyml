@@ -2,6 +2,12 @@
 Template: template.nyml
 Stylesheets:
   - /expanding-area.css
+Scripts:
+  - /select2-4.0.0/dist/js/select2.js
+  - /swatches.js
+  - /expanding-area.js
+  - /tags.js
+  - /thread.js
 Title: "{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}"
 Partials:
   Nav: |
@@ -111,13 +117,7 @@ Partials:
       </ul>
     </div>
     {{/Title}}
-  PageLoadScripts: |
-    <script src="/select2-4.0.0/dist/js/select2.js"></script>
-    <script src="/swatches.js"></script>
-    <script src="/expanding-area.js"></script>
-    <script src="/tags.js"></script>
-    <script src="/thread.js"></script>
-  PageScripts: |
+  PageScript: |
     initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
   Pagination: |
     <div style="text-align: center;">

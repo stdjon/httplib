@@ -1,5 +1,8 @@
 ---
 Template: template.nyml
+Scripts:
+  - /swatches.js
+  - /prefs.js
 Title: "{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}"
 Partials:
   Nav: |
@@ -134,10 +137,7 @@ Partials:
     </div>
     {{/User}}
     </div>
-  PageLoadScripts: |
-    <script src="/swatches.js"></script>
-    <script src="/prefs.js"></script>
-  PageScripts: |
+  PageScript: |
     setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{Font}}");
     $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');
     loadAllFonts = true;

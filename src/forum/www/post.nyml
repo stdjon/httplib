@@ -1,5 +1,7 @@
 ---
 Template: template.nyml
+Scripts:
+  - /swatches.js
 Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}"
 Partials:
   Nav: |
@@ -21,6 +23,5 @@ Partials:
       <p>Points: <em>{{Points}}</em></p>
     {{/PostId}}
     </div>
-  PageLoadScripts: |
-    <script src="/swatches.js"></script>
+
 

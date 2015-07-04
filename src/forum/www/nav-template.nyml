@@ -11,6 +11,12 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
   - /local-styles.css
   - /custom-styles.css?c={{ColourId}}
+Scripts:
+  - /jquery-1.11.2/jquery-1.11.2.min.js
+  - /bootstrap-3.3.4-dist/js/bootstrap.min.js
+  - /nav_template.js
+  - /font_data.js
+  - /fonts.js
 Content: |
   {{>PageLayout}}
 Partials:
@@ -31,17 +37,13 @@ Partials:
           {{>NavContent}}
         </div>
       </nav>
-      <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
-      <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-      <script src="/nav_template.js"></script>
-      <script src="/font_data.js"></script>
-      <script src="/fonts.js"></script>
+      {{>_Scripts}}
       <script>
-        {{>NavScripts}}
+        {{>CommonScript}}
       </script>
     </div>
-  NavScripts: |
-    {{>NavScriptsPre}}
+  CommonScript: |
+    {{>PageScript}}
     var _g = {
       DefaultSecurePrefix: "{{DefaultSecurePrefix}}",
       DefaultInsecurePrefix: "{{DefaultInsecurePrefix}}",

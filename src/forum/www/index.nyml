@@ -1,5 +1,7 @@
 ---
 Template: template.nyml
+Scripts:
+  - /swatches.js
 Title: Title Title Title
 Partials:
   Nav: |
@@ -116,9 +118,7 @@ Partials:
         <li><a href="#66">66</a></li>
       </ul>
     </div>
-  PageLoadScripts: |
-    <script src="/swatches.js"></script>
-  PageScripts: |
+  PageScript: |
     {{#ChromeBrowser}}
     // This is a super-horrible way to apply drop-caps style once hyphenation
     // has finished. This whole page will be going away at some point though...

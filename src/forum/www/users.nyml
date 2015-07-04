@@ -1,5 +1,7 @@
 ---
 Template: template.nyml
+Scripts:
+  - /swatches.js
 Title: Users
 Partials:
   Nav: |
@@ -39,7 +41,5 @@ Partials:
       {{/Markers}}
       </ul>
     </div>
-  PageLoadScripts: |
-    <script src="/swatches.js"></script>
 
 

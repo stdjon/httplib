@@ -12,6 +12,14 @@ Stylesheets:
   - /font-awesome-4.3.0/css/font-awesome.css
   - /local-styles.css
   - /custom-styles.css?c={{ColourId}}#custom-styles
+Scripts:
+  - /jquery-1.11.2/jquery-1.11.2.min.js
+  - /bootstrap-3.3.4-dist/js/bootstrap.min.js
+  - /hypher-0.2.3/dist/jquery.hypher.js
+  - /hyphenation-patterns-0.2.1/dist/browser/en-gb.js
+  - /template.js
+  - /font_data.js
+  - /fonts.js
 Title: Template Test Page
 BodyAttributes:
   - data-spy="scroll"
@@ -33,7 +41,10 @@ Partials:
     <div id="mainspace" class="outside container">
       {{>MainSpace}}
     </div>
-    {{>Scripts}}
+    {{>_Scripts}}
+    <script>
+      {{>CommonScript}}
+    </script>
   MainSpace: |
       <div class="banner user-font">
         <div id="banner">{{>Banner}}</div>
@@ -57,24 +68,10 @@ Partials:
       }
       </script>
       {{>ReloadableContent}}
-  Scripts: |
-    {{>LoadScripts}}
-    <script>
-      {{>SharedScripts}}
-    </script>
-  LoadScripts: |
-    <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
-    <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
-    <script src="/hypher-0.2.3/dist/jquery.hypher.js"></script>
-    <script src="/hyphenation-patterns-0.2.1/dist/browser/en-gb.js"></script>
-    <script src="/template.js"></script>
-    <script src="/font_data.js"></script>
-    <script src="/fonts.js"></script>
-    {{>PageLoadScripts}}
-  SharedScripts: |
+  CommonScript: |
     _g = {};
     resetProperties(_g);
-    {{>PageScripts}}
+    {{>PageScript}}
     // init!
     $(window).load(function() {
       initPage();

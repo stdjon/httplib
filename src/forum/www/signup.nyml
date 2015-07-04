@@ -1,5 +1,9 @@
 ---
 Template: template.nyml
+Scripts:
+  - /zxcvbn-async.js
+  - /signup.js
+  - /swatches.js
 Title: Sign up
 Partials:
   Nav: |
@@ -62,9 +66,5 @@ Partials:
           formaction="{{DefaultSecurePrefix}}/signup-submit" formmethod="post" formtarget="_top">Sign up</button>
         <input type="hidden" name="redirect" value="{{DefaultPrefix}}/">
       </form>
-  PageLoadScripts: |
-    <script src="/zxcvbn-async.js"></script>
-    <script src="/signup.js"></script>
-    <script src="/swatches.js"></script>
 
 

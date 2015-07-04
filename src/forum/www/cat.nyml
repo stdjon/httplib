@@ -1,5 +1,7 @@
 ---
 Template: template.nyml
+Scripts:
+  - /swatches.js
 Title: "{{#Name}}{{Name}}{{/Name}}{{^Name}}No such category{{/Name}}"
 Partials:
   Nav: |
@@ -58,7 +60,5 @@ Partials:
       </ul>
     </div>
     {{/Name}}
-  PageLoadScripts: |
-    <script src="/swatches.js"></script>
 
 
