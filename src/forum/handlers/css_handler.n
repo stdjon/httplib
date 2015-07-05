@@ -97,8 +97,10 @@ public class CssHandler: BaseHandler {
         base.initialize();
     }
 
-    public override renderPage(renderer: Renderer, fs: Stream): string {
-        def page = renderer.loadPage(fs);
+    public override renderPage(
+        renderer: Renderer, path: string, fs: Stream): string {
+
+        def page = renderer.loadPage(path, fs);
 
         page.renderContent(PageData);
     }

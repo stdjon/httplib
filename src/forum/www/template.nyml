@@ -13,8 +13,8 @@ Stylesheets:
   - /local-styles.css
   - /custom-styles.css?c={{ColourId}}#custom-styles
 Scripts:
-  - /jquery-1.11.2/jquery-1.11.2.min.js
-  - /bootstrap-3.3.4-dist/js/bootstrap.min.js
+  - /jquery-1.11.2/jquery-1.11.2.min.js*
+  - /bootstrap-3.3.4-dist/js/bootstrap.min.js*
   - /hypher-0.2.3/dist/jquery.hypher.js
   - /hyphenation-patterns-0.2.1/dist/browser/en-gb.js
   - /template.js

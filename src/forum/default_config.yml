@@ -13,12 +13,17 @@ Prefixes:
   Insecure:
     - http://localhost:8080/
 Roots:
+  - ../../bin/cache/forum
   - www
   - ../../contrib/client
   - ../../contrib/fonts
 Compression:
   - gzip
   - deflate
+Consolidation:
+  CachePath: ../../bin/cache/forum
+  Types:
+    Scripts: cat
 FileServing:
   /.*css: { Cache-Control: "public, max-age=86400" }
   /.*html: { Cache-Control: "no-cache" }

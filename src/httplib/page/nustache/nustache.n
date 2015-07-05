@@ -12,7 +12,6 @@ namespace httplib.page {
 // NustachePage
 
 [YamlRecord]
-[HasLogging]
 public class NustachePage: Page {
 
     protected override renderString(

@@ -25,15 +25,17 @@ public class Renderer {
         server = s;
     }
 
-    public virtual loadPage(stream: Stream, use_template = true): Page {
-        Log.d("Renderer.loadPage [{0}]...", PageType);
+    public virtual loadPage(path: string, stream: Stream, use_template = true): Page {
+        Log.d("Renderer.loadPage '{0}' [{1}]...", path, PageType);
         mutable result = null;
         using(reader = StreamReader(stream)) {
             result = yaml_deserializer.Deserialize(reader, PageType) :> Page;
+            result.Path = path;
+            result.Server = Server;
 
             when(use_template && !String.IsNullOrEmpty(result.Template)) {
                 def fs = Server.openLocalFile(result.Template);
-                def template = loadPage(fs, false);
+                def template = loadPage(path, fs, false);
                 result.merge(template);
             }
         }

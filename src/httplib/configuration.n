@@ -93,12 +93,19 @@ public class ModuleConfiguration {
 }
 
 
+[YamlRecord]
+public class Consolidation {
+
+    public CachePath: string { get; set; }
+    public Types: Dictionary[string, string] { get; set; }
+}
+
+
 public type Databases = Dictionary[string, DatabaseConfiguration];
 public type FileServing = Dictionary[string, Headers];
 public type Renderers = Dictionary[string, RendererConfiguration];
 public type Modules = Dictionary[string, ModuleConfiguration];
 public type MimeTypes = Dictionary[string, string];
-
 
 //------------------------------------------------------------------------------
 // ServerConfiguration
@@ -129,6 +136,8 @@ public class ServerConfiguration {
     public ServerHeader: string { get; set; }
     /** Compression schemes */
     public Compression: array[string] { get; set; }
+    /** File consolidation */
+    public Consolidation: Consolidation { get; set; }
 }
 
 

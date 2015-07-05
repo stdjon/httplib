@@ -92,7 +92,7 @@ public class ComplexHandler: Handler {
         }
 
         when(renderer != null) {
-            def text = renderPage(renderer, fs);
+            def text = renderPage(renderer, path, fs);
             Response.append(text);
             Response.ContentType = ContentType;
             Response.Status = Status;
@@ -123,8 +123,8 @@ public class ComplexHandler: Handler {
         Server.Renderers[ext];
     }
 
-    public virtual renderPage(renderer: Renderer, fs: Stream): string {
-        def page = renderer.loadPage(fs);
+    public virtual renderPage(renderer: Renderer, path: string, fs: Stream): string {
+        def page = renderer.loadPage(path, fs);
         page.render(PageData);
     }
 

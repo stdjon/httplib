@@ -50,7 +50,7 @@ public class Server: IDisposable {
     [Accessor(flags = Protected)]
     listener: HttpListener = HttpListener();
 
-    [Accessor(flags = Protected)]
+    [Accessor]
     configuration: ServerConfiguration;
 
     public Database: Database {
@@ -359,7 +359,7 @@ public class Server: IDisposable {
 
         using(stream = openLocalFile(path)) {
             def renderer = Renderers[ext];
-            def page = renderer.loadPage(stream);
+            def page = renderer.loadPage(path, stream);
 
             m(page, data, pd);
         }
@@ -650,7 +650,7 @@ public class Server: IDisposable {
         context: Context, request: Request, response: Response): void {
 
         def renderer = Renderers[request.Extension];
-        def page = renderer.loadPage(context.FileStream);
+        def page = renderer.loadPage(request.RawPath, context.FileStream);
 
         response.append(page.render(context.PageData));
         response.Status = (200, "OK");

@@ -3,13 +3,47 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
+using YamlDotNet.Serialization; // for [YamlIgnore]
+
 
 namespace httplib {
+
+//------------------------------------------------------------------------------
+// FileType
+
+public type FileType = FILE;
+public enum FILE {
+    | JS
+    | CSS
+}
+
+
+public type JoinType = JOIN;
+public enum JOIN {
+    | CAT
+    | MIN
+}
+
+
+public module FileTypeExtensions {
+
+    public extension(this ft: FileType): string {
+        match(ft) {
+            | JS => "js"
+            | CSS => "css"
+        }
+    }
+    public rename(this ft: FileType, path: string): string {
+        Path.ChangeExtension(path, ft.extension());
+    }
+}
+
 
 //------------------------------------------------------------------------------
 // Page
 
 [YamlRecord]
+[HasLogging]
 public class Page {
 
     type Dict[T] = Dictionary[string, T];
@@ -28,6 +62,9 @@ public class Page {
     public Objects: ObjectsType { get; set; }
     public Template: string { get; set; }
 
+    [YamlIgnore]
+    public Server: Server { get; set; }
+
     public virtual render(
         data: ObjectsType = null, parts: PartialsType = null): string {
 
@@ -44,6 +81,20 @@ public class Page {
                 when(!String.IsNullOrEmpty(m)) {
                     meta += $"\n<meta $(renderString(m, data))>"
                 }
+            }
+        }
+
+        def conf = Server.Configuration.Consolidation.Types;
+        mutable probe;
+        when(conf.TryGetValue("Scripts", out probe)) {
+            when("cat" == probe) {
+                consolidateScripts(JOIN.CAT);
+            }
+        }
+
+        when(conf.TryGetValue("Stylesheets", out probe)) {
+            when("cat" == probe) {
+                consolidateStylesheets(JOIN.CAT);
             }
         }
 
@@ -106,6 +157,9 @@ public class Page {
                         if(p.Contains("#")) {
                             def a = p.Split(array['#'], 2);
                             $"$loc='$(renderString(a[0], data))' id='$(a[1])'";
+                        } else if(p.Contains("*")) {
+                            def a = p.Split(array['*'], 2);
+                            $"$loc='$(renderString(a[0], data))' id='$(a[1])'";
                         } else {
                             $"$loc='$(renderString(p, data))'";
                         };
@@ -114,6 +168,57 @@ public class Page {
             }
         }
         result;
+    }
+
+    public consolidateScripts(type: JoinType = JOIN.CAT): void {
+        def (ok, files) = consolidateFiles(FILE.JS, type, Scripts);
+        when(ok) {
+            Scripts = files;
+        }
+    }
+
+    public consolidateStylesheets(type: JoinType = JOIN.CAT): void {
+        def (ok, files) = consolidateFiles(FILE.CSS, type, Stylesheets);
+        when(ok) {
+            Stylesheets = files;
+        }
+    }
+
+    protected consolidateFiles(
+        ftype: FileType, _jtype: JoinType, files: List[string]): bool * List[string] {
+
+        mutable x = List();
+        def path = Path.Replace('/', '_').Replace('\\', '_');
+        mutable result = false;
+        def output = ftype.rename($"/_$path");
+        def pth = Server.canonicalPath(Server.Configuration.Consolidation.CachePath);
+        def outpath = $"$pth$output";
+
+        using(ostream = FileStream(outpath, FileMode.Create, FileAccess.Write)) {
+            when(ostream != null) {
+                foreach(f in files) {
+                    if(f.Contains("*")) {
+                        def i = f.Split(array['*']);
+                        x.Add(i[0]);
+                    } else {
+                        def g = ('/' == f[0]) ? f.Substring(1) : f;
+                        using(istream = Server.openLocalFile(g)) {
+                            if(istream != null) {
+                                istream.CopyTo(ostream);
+                            } else {
+                                x.Add(f);
+                            }
+                        }
+                    }
+                }
+                result = true;
+            }
+        }
+        when(result) {
+            x.Add(output);
+        }
+
+        (result, x);
     }
 
     public merge(other: Page): void {

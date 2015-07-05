@@ -12,8 +12,8 @@ Stylesheets:
   - /local-styles.css
   - /custom-styles.css?c={{ColourId}}
 Scripts:
-  - /jquery-1.11.2/jquery-1.11.2.min.js
-  - /bootstrap-3.3.4-dist/js/bootstrap.min.js
+  - /jquery-1.11.2/jquery-1.11.2.min.js*
+  - /bootstrap-3.3.4-dist/js/bootstrap.min.js*
   - /nav_template.js
   - /font_data.js
   - /fonts.js
