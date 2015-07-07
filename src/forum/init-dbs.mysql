@@ -13,7 +13,7 @@
 /* Drop existing tables */
 
 DROP TABLE IF EXISTS
-    Uploads, Bookmarks, Threads, PostsRead, Drafts, Replies, PostTags, Tags,
+    Uploads, Bookmarks, Thumbs, PostsRead, Drafts, Replies, PostTags, Tags,
     Posts, Threads, Categories, Sessions, Auth, Users;
 
 
