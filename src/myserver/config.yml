@@ -117,6 +117,7 @@ MimeTypes:
   _: text/plain
 OutputLength: 800
 FileChunkLength: 1024
+ForceInsecureOperation: false
 Logging:
   Assembly: httplib.log.nlog.dll
   Typename: httplib.log.NLogLogging

@@ -378,7 +378,7 @@ public class Request {
         get { Headers[key] }
     }
 
-    public this(req: HttpListenerRequest) {
+    public this(req: HttpListenerRequest, force_insecure: bool = false) {
 
         http_method = req.HttpMethod.methodType();
         url = req.Url;
@@ -391,7 +391,7 @@ public class Request {
         raw_path = makeRawPath(Path);
         user_agent = req.UserAgent;
         is_authenticated = req.IsAuthenticated;
-        is_secure = req.IsSecureConnection;
+        is_secure = req.IsSecureConnection || force_insecure;
         is_web_socket = req.IsWebSocketRequest;
         http_version = makeHttpVersion(req.ProtocolVersion);
         extension = makeExtension(Path);

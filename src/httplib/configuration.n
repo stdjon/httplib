@@ -138,6 +138,9 @@ public class ServerConfiguration {
     public Compression: array[string] { get; set; }
     /** File consolidation */
     public Consolidation: Consolidation { get; set; }
+    /** Force server to treat DefaultSecurePrefix as an alias for
+     *  DefaultSecurePrefix (insecure, bypass HTTPS for testing only). */
+    public ForceInsecureOperation: bool { get; set; }
 }
 
 

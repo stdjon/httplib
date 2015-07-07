@@ -140,7 +140,8 @@ public class Server: IDisposable {
         }
 
         when(Configuration.Prefixes != null) {
-            when(Configuration.Prefixes.Secure != null) {
+            when( Configuration.Prefixes.Secure != null &&
+                !Configuration.ForceInsecureOperation ) {
                 foreach(p in Configuration.Prefixes.Secure) {
                     Log.d("Adding prefix \"{0}\"...", p);
                     when(!Regex(@"^https://").IsMatch(p)) {
@@ -167,8 +168,14 @@ public class Server: IDisposable {
                 default_insecure_prefix = Regex(@"(http://.*)/").Replace(
                     Configuration.Prefixes.Insecure[0], "$1");
                 Log.d("Default prefix (insecure):=  {0}", DefaultInsecurePrefix);
+
+                when(Configuration.ForceInsecureOperation) {
+                    default_secure_prefix = DefaultInsecurePrefix;
+                }
             }
         }
+        Log.i("DefaultSecurePrefix = {0}", DefaultSecurePrefix);
+        Log.i("DefaultInsecurePrefix = {0}", DefaultInsecurePrefix);
 
         fileServing(Configuration.FileServing);
 
@@ -397,7 +404,8 @@ public class Server: IDisposable {
         mutable context, request, response;
         try {
             context = Context();
-            request = Request(http_ctx.Request);
+            request = Request(http_ctx.Request,
+                Configuration.ForceInsecureOperation);
             response = Response(http_ctx.Response, Configuration.OutputLength);
             setResponseHeaders(response);
 

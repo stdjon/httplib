@@ -107,13 +107,15 @@ public class NavHandler: BasePageHandler {
 
             def ok = !String.IsNullOrEmpty(record) &&
                 auth.validatePassword(password, record);
-            Log.d("Login attempt as {0}: {1}", user, ok);
+            Log.i("Login attempt as {0}: {1}", user, ok);
             when(ok) {
 
                 def (_ok2, token, expiry) =
                     Server.registerSessionToken(STOK.SECURE, id :> uint);
+                def cookie_flags = Server.Configuration.ForceInsecureOperation ?
+                    COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
                 Response.Cookies.add(
-                    "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);
+                    "_session", token, expiry, cookie_flags);
             }
             Response["Location"] = CurrentUrl;
             Response.Status = (303, "See Other");
