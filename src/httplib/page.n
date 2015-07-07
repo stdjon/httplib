@@ -84,17 +84,19 @@ public class Page {
             }
         }
 
-        def conf = Server.Configuration.Consolidation.Types;
-        mutable probe;
-        when(conf.TryGetValue("Scripts", out probe)) {
-            when("cat" == probe) {
-                consolidateScripts(JOIN.CAT);
+        when(Server.Configuration.Consolidation != null) {
+            def conf = Server.Configuration.Consolidation.Types;
+            mutable probe;
+            when(conf.TryGetValue("Scripts", out probe)) {
+                when("cat" == probe) {
+                    consolidateScripts(JOIN.CAT);
+                }
             }
-        }
 
-        when(conf.TryGetValue("Stylesheets", out probe)) {
-            when("cat" == probe) {
-                consolidateStylesheets(JOIN.CAT);
+            when(conf.TryGetValue("Stylesheets", out probe)) {
+                when("cat" == probe) {
+                    consolidateStylesheets(JOIN.CAT);
+                }
             }
         }
 
