@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Math;
 using System.Text;
 
 using Nemerle.Extensions;
@@ -700,6 +701,14 @@ public class ForumServer: Server {
                 }
                 def _result = command.executeNonQuery();
                 Log.d("thumbPost {0} -> {1}", (on ? "insert" : "delete"), _result);
+                def command2 = db.createCommand(
+                    "SELECT UserId From Posts WHERE Id = @Id") <- [
+                        "@Id" = post_id,
+                    ];
+                def uid = command2.executeScalar() :> uint;
+                when(uid != user_id) {
+                    addPointsToUser(uid, on ? 5 : -5, false);
+                }
             }
         }, ex => {
             internalServerError(ex);
@@ -741,6 +750,14 @@ public class ForumServer: Server {
                 }
                 def _result = command.executeNonQuery();
                 Log.d("starPost {0} -> {1}", (on ? "insert" : "delete"), _result);
+                def command2 = db.createCommand(
+                    "SELECT UserId From Posts WHERE Id = @Id") <- [
+                        "@Id" = post_id,
+                    ];
+                def uid = command2.executeScalar() :> uint;
+                when(uid != user_id) {
+                    addPointsToUser(uid, on ? 2 : -2, false);
+                }
             }
         }, ex => {
             internalServerError(ex);
@@ -756,6 +773,40 @@ public class ForumServer: Server {
         ];
         def result = command.executeScalar() :> long;
         result > 0;
+    }
+
+    public addPointsToUser(user_id: uint, points: int,
+        use_transaction = true): void {
+
+        Database.withTransaction(db => {
+            def command = db.createCommand(
+                "SELECT Points FROM Users WHERE Id = @Id") <- [
+                    "@Id" = user_id,
+                ];
+            mutable user_points = command.executeScalar() :> int;
+            user_points += points;
+            def level = pointsToLevel(user_points);
+
+            def command2 = db.createCommand(
+                "UPDATE Users SET Points = @Points, Level = @Level WHERE "
+                    "Id = @Id") <- [
+                "@Points" = user_points,
+                "@Level" = level,
+                "@Id" = user_id,
+            ];
+            _ = command2.executeNonQuery();
+
+        }, ex => {
+            internalServerError(ex);
+        }, use_transaction);
+    }
+
+    public pointsToLevel(points: int): float {
+        def bias = 25.0f; //TODO: config
+        def scale = 3.0f; //TODO: config
+        def level = Max(0.0f, Log(points / bias, scale) :> float + 1.0f);
+        //Log.t("points {0} -> level {1}", points, level);
+        level;
     }
 }
 

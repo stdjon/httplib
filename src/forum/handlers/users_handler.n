@@ -69,13 +69,13 @@ public class UsersHandler: BasePageHandler {
                 def u = reader.getValue("Name");
                 when(u != null) {
                     def points = reader.getValue("Points", 0);
-                    def level = reader.getValue("Level", 0U);
+                    def level = reader.getValue("Level", 0.0f);
                     def motto = reader.getValue("Motto", "");
                     users[j] = PageData() <- [
                         "Num" = (from + j).ToString(),
                         "Name" = u,
                         "Points" = points.ToString(),
-                        "Level" = level.ToString(),
+                        "Level" = level.ToString("f2"),
                         "Motto" = motto,
                     ];
                 }
@@ -141,7 +141,7 @@ public class UsersHandler: BasePageHandler {
                 "Location" = reader.getValue("Location", ""),
                 "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
                 "Points" = reader.getValue("Points", 0),
-                "Level" = reader.getValue("Level", 0U),
+                "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
                 "ColourId" = reader.getValue("Colour", "x360"),
                 "Font" = Font,
             ];
