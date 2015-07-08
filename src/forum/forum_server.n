@@ -38,7 +38,7 @@ public class ForumServer: Server {
         SessionToken = SessionToken(this);
 
         route([ (HTTP.GET, "/"),
-            (HTTP.GET, "/index") ], BasePageHandler.Factory("index.nyml"));
+            (HTTP.GET, "/index") ], IndexHandler.Factory("index.nyml"));
 
         route(HTTP.GET, "/nav-{{action}}", NavHandler.Factory(HTTP.GET));
         route(HTTP.POST, "/nav-{{action}}", NavHandler.Factory(HTTP.POST));

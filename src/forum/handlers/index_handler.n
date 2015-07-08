@@ -1,0 +1,72 @@
+using System;
+using System.Text.RegularExpressions;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class IndexHandler: BasePageHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        mutable threads = array(10);
+        mutable posts = array(10);
+        mutable i;
+
+        def command = Server.Database.createCommand(
+            "SELECT Id, Title, CreateDate FROM Threads "
+                " ORDER BY CreateDate DESC LIMIT 0, 9");
+
+        i = command.execute((j, reader) => {
+            threads[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Title" = reader.getValue("Title"),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+            ];
+        });
+        Array.Resize(ref threads, i);
+
+        def command2 = Server.Database.createCommand(
+            "SELECT Id, OutputContent, CreateDate FROM Posts "
+                "ORDER BY CreateDate DESC LIMIT 0, 9");
+
+        i = command2.execute((j, reader) => {
+            mutable content = reader.getValue("OutputContent");
+            when(content.Length > 100) {
+                content = content.Substring(0, 100) + "&hellip;";
+            }
+            // Use HtmlSanitizer to close any tags lost by the truncation.
+            def htmlsan = Server.
+                getModuleInterface.[ITextTransform]("HtmlSanitizer");
+            content = htmlsan.transform(content);
+
+            // Strip out <hN>, <p> and <br> tags for the post preview
+            // TODO: use a CsQuery-based module to allow proper tag replacement.
+            content = Regex(@"</?h[0-9]+>").Replace(content, "");
+            content = Regex(@"</?p>").Replace(content, "");
+            content = content.Replace("<br>", "");
+
+            posts[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Content" = content,
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+            ];
+        });
+        Array.Resize(ref posts, i);
+
+        PageData["Threads"] = threads;
+        PageData["Posts"] = posts;
+    }
+}
+
+
+} // forum.hnd

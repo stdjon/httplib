@@ -34,15 +34,22 @@ public class SignupHandler: BasePageHandler {
     public signupResponse(): void {
 
         if(Request.IsSecure) {
-            def cookies = Request.Cookies;
-            def u = cookies ? cookies["_u"] : null;
-            mutable user = !String.IsNullOrEmpty(u) ? u : null;
+            if(0 == SignedInUserId) {
+                def cookies = Request.Cookies;
+                def u = cookies ? cookies["_u"] : null;
+                mutable user = !String.IsNullOrEmpty(u) ? u : null;
 
-            PageData["User"] = user;
+                PageData["User"] = user;
 
-            Response.append(Server.renderPage("signup.nyml", PageData));
-            Response.Cookies.expire("_u", COOKIE.SECURE_HTTP_ONLY);
-            Response.Status = (200, "OK");
+                Response.append(Server.renderPage("signup.nyml", PageData));
+                Response.Cookies.expire("_u", COOKIE.SECURE_HTTP_ONLY);
+                Response.Status = (200, "OK");
+            } else {
+                // redirect to index...
+                Response.append("<html><body><h1>You are already signed in!</h1></body></html>");
+                Response["Location"] = Server.DefaultInsecurePrefix + "/";
+                Response.Status = (303, "See Other");
+            }
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");
             Response.Status = (403, "Forbidden");
