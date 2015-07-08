@@ -409,7 +409,8 @@ public class Server: IDisposable {
             response = Response(http_ctx.Response, Configuration.OutputLength);
             setResponseHeaders(response);
 
-            Log.i("Requesting: \"/{0}\"...", request.RawPath);
+            Log.w("Requesting: \"/{0}\" (referrer={1}, endpoint={2})...",
+                request.RawPath, request.Referrer, request.RemoteEndpoint);
 
             // check for existing file under roots...
             def (fs, ext, hdrs) = findLocalFileForRequest(request);

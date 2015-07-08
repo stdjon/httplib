@@ -359,6 +359,9 @@ public class Request {
     [Accessor] http_method: Method;
     [Accessor] url: Uri;
     [Accessor] raw_url: string;
+    [Accessor] referrer: Uri;
+    [Accessor] local_endpoint: IPEndPoint;
+    [Accessor] remote_endpoint: IPEndPoint;
     [Accessor] query_string: HashTable;
     [Accessor] headers: HashTable;
     [Accessor] cookies: CookieTable;
@@ -383,6 +386,9 @@ public class Request {
         http_method = req.HttpMethod.methodType();
         url = req.Url;
         raw_url = req.RawUrl;
+        referrer = req.UrlReferrer;
+        local_endpoint = req.LocalEndPoint;
+        remote_endpoint = req.RemoteEndPoint;
         query_string = HashTable(req.QueryString);
         headers = HashTable(req.Headers);
         cookies = CookieTable(req.Cookies);
