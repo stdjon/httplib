@@ -5,15 +5,11 @@ using System.Reflection;
 
 using Nemerle.Utility;
 
-using YamlDotNet.Serialization;
-
 
 namespace httplib {
 
 [HasLogging]
 public class Renderer {
-
-    static yaml_deserializer = Deserializer();
 
     [Accessor] server: Server;
 
@@ -25,21 +21,12 @@ public class Renderer {
         server = s;
     }
 
-    public virtual loadPage(path: string, stream: Stream, use_template = true): Page {
-        Log.d("Renderer.loadPage '{0}' [{1}]...", path, PageType);
-        mutable result = null;
-        using(reader = StreamReader(stream)) {
-            result = yaml_deserializer.Deserialize(reader, PageType) :> Page;
-            result.Path = path;
-            result.Server = Server;
+    public virtual loadPage(
+        path: string, stream: Stream, use_template = true): Page {
 
-            when(use_template && !String.IsNullOrEmpty(result.Template)) {
-                def fs = Server.openLocalFile(result.Template);
-                def template = loadPage(path, fs, false);
-                result.merge(template);
-            }
-        }
-        result;
+        Log.d("Renderer.loadPage '{0}' [{1}]...", path, PageType);
+
+        Page.load(path, stream, PageType, Server, use_template);
     }
 
     /** Load a Renderer by reflection, given a DLL and type name. */

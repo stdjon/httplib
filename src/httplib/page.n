@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-using YamlDotNet.Serialization; // for [YamlIgnore]
+using YamlDotNet.Serialization;
 
 
 namespace httplib {
@@ -50,6 +50,8 @@ public class Page {
     public type PartialsType = Dict[string];
     public type ObjectsType = Dict[object];
 
+    static yaml_deserializer = Deserializer();
+
     public Path: string { get; set; }
     public Lang: string { get; set; }
     public Metas: List[string] { get; set; }
@@ -62,8 +64,29 @@ public class Page {
     public Objects: ObjectsType { get; set; }
     public Template: string { get; set; }
 
-    [YamlIgnore]
-    public Server: Server { get; set; }
+    [YamlIgnore] public Server: Server { get; set; }
+    [YamlIgnore] public Consolidation: Consolidation { get; set; }
+
+    internal static load(path: string, stream: Stream,
+        type: Type, server: Server, use_template: bool): Page {
+
+        mutable result = null;
+        using(reader = StreamReader(stream)) {
+            result = yaml_deserializer.Deserialize(reader, type) :> Page;
+        }
+
+        result.Path = path;
+        result.Server = server;
+        result.Consolidation = server.Configuration.Consolidation;
+
+        when(use_template && !String.IsNullOrEmpty(result.Template)) {
+            def fs = server.openLocalFile(result.Template);
+            def template = load(path, fs, type, server, false);
+            result.merge(template);
+        }
+
+        result;
+    }
 
     public virtual render(
         data: ObjectsType = null, parts: PartialsType = null): string {
@@ -84,8 +107,8 @@ public class Page {
             }
         }
 
-        when(Server.Configuration.Consolidation != null) {
-            def conf = Server.Configuration.Consolidation.Types;
+        when(Consolidation != null) {
+            def conf = Consolidation.Types;
             mutable probe;
             when(conf.TryGetValue("Scripts", out probe)) {
                 when("cat" == probe) {
@@ -190,38 +213,38 @@ public class Page {
     protected consolidateFiles(
         ftype: FileType, _jtype: JoinType, files: List[string]): bool * List[string] {
 
-        mutable x = List();
+        mutable ok = false;
+        mutable result = List();
         def path = Path.Replace('/', '_').Replace('\\', '_');
-        mutable result = false;
         def output = ftype.rename($"/_$path");
-        def pth = Server.canonicalPath(Server.Configuration.Consolidation.CachePath);
-        def outpath = $"$pth$output";
+        def canonical_path = Server.canonicalPath(Consolidation.CachePath);
+        def outpath = $"$canonical_path$output";
 
         using(ostream = FileStream(outpath, FileMode.Create, FileAccess.Write)) {
             when(ostream != null) {
                 foreach(f in files) {
                     def p = filePath(f);
                     if(standalone(f)) {
-                        x.Add(p);
+                        result.Add(p);
                     } else {
                         def g = ('/' == p[0]) ? p.Substring(1) : p;
                         using(istream = Server.openLocalFile(g)) {
                             if(istream != null) {
                                 istream.CopyTo(ostream);
                             } else {
-                                x.Add(p);
+                                result.Add(p);
                             }
                         }
                     }
                 }
-                result = true;
+                ok = true;
             }
         }
-        when(result) {
-            x.Add(output);
+        when(ok) {
+            result.Add(output);
         }
 
-        (result, x);
+        (ok, result);
     }
 
     // merging
