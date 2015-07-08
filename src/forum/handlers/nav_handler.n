@@ -23,6 +23,7 @@ public class NavHandler: BasePageHandler {
         when(CurrentUrl != null) {
             PageData["CurrentUrl"] = CurrentUrl;
         }
+        initializeSiteName();
     }
 
     public override callback(): void {

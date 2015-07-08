@@ -2,7 +2,7 @@
 Template: template.nyml
 Scripts:
   - /swatches.js
-Title: Title Title Title
+Title: "{{SiteName}}"
 Partials:
   Nav: |
     <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
@@ -10,7 +10,7 @@ Partials:
       style='position: fixed; z-index: 100;'></iframe>
   Banner: |
     <div class="jumbotron anchor">
-      <h1>Supercalifragilisticexpialidocious</h1>
+      <h1>{{SiteName}}</h1>
     </div>
   Body: |
     {{^ChromeBrowser}}

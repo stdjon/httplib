@@ -13,8 +13,9 @@ namespace forum {
 [HasHandlerFactory]
 public class BasePageHandler: BaseHandler {
 
-    public RenderContent: bool { get; private set; }
+    static SiteName: string { get; private set;}
 
+    public RenderContent: bool { get; private set; }
     public SignedInUserId: uint { get; private set; }
 
     public this(hd: HandlerData, path: string) {
@@ -46,6 +47,7 @@ public class BasePageHandler: BaseHandler {
 
     public override initialize(): void {
         base.initialize();
+        initializeSiteName();
         temporaryLoginHandling(); //
         initializeUserClasses();
     }
@@ -101,6 +103,19 @@ public class BasePageHandler: BaseHandler {
             PageData["TempToken"] = t;
         }
         Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
+    }
+
+    protected initializeSiteName(): void {
+        when(SiteName == null) {
+            def c = Server.Configuration;
+            SiteName =
+                if(c != null && c.SiteName != null) {
+                    c.SiteName
+                } else {
+                    "[SiteName]"
+                };
+        }
+        PageData["SiteName"] = SiteName;
     }
 
     initializeUserClasses(): void {

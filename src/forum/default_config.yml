@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------------
 # Example forum.exe configuration
 ---
+SiteName: myforum.com
 DefaultAvatarImage: avatar-tiny.png
 Databases:
   default:
