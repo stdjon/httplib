@@ -145,9 +145,12 @@ public class Page {
 
     protected virtual renderFileElementList(
         paths: List[string], template: string, data: ObjectsType = null): string {
+
         mutable result = "";
         def split = template.Split(array['/'], 3);
-        def (tag, loc, attr) = (split[0], split[1], split.Length > 2 ? split[2] : "");
+        def (tag, loc, add) =
+            (split[0], split[1], (split.Length > 2 ? $" $(split[2]) " : " "));
+
         when(paths != null) {
             foreach(p in paths) {
                 // It's occasionally useful to have a file element which has an
@@ -155,17 +158,15 @@ public class Page {
                 // character, we will use everything after it as the id name:
                 // - /path/to/file.ext#file-id
                 when(!String.IsNullOrEmpty(p)) {
+                    def f = filePath(p);
                     def attrs =
-                        if(p.Contains("#")) {
-                            def a = p.Split(array['#'], 2);
-                            $"$loc='$(renderString(a[0], data))' id='$(a[1])'";
-                        } else if(p.Contains("*")) {
-                            def a = p.Split(array['*'], 2);
-                            $"$loc='$(renderString(a[0], data))' id='$(a[1])'";
+                        if(hasId(p)) {
+                            def id = fileId(p);
+                            $"$loc='$(renderString(f, data))' id='$id'";
                         } else {
-                            $"$loc='$(renderString(p, data))'";
+                            $"$loc='$(renderString(f, data))'";
                         };
-                    result += $"\n<$tag $attr $attrs></$tag>"
+                    result += $"\n<$tag$add$attrs></$tag>"
                 }
             }
         }
@@ -199,16 +200,16 @@ public class Page {
         using(ostream = FileStream(outpath, FileMode.Create, FileAccess.Write)) {
             when(ostream != null) {
                 foreach(f in files) {
-                    if(f.Contains("*")) {
-                        def i = f.Split(array['*']);
-                        x.Add(i[0]);
+                    def p = filePath(f);
+                    if(standalone(f)) {
+                        x.Add(p);
                     } else {
-                        def g = ('/' == f[0]) ? f.Substring(1) : f;
+                        def g = ('/' == p[0]) ? p.Substring(1) : p;
                         using(istream = Server.openLocalFile(g)) {
                             if(istream != null) {
                                 istream.CopyTo(ostream);
                             } else {
-                                x.Add(f);
+                                x.Add(p);
                             }
                         }
                     }
@@ -222,6 +223,8 @@ public class Page {
 
         (result, x);
     }
+
+    // merging
 
     public merge(other: Page): void {
         when(Lang == null) {
@@ -270,6 +273,28 @@ public class Page {
             foreach(m in b) {
                 result[m.Key] = m.Value;
             }
+        }
+        result;
+    }
+
+    // path utils
+
+    protected static filePath(path: string): string {
+        path.Split(array['#', '*'])[0];
+    }
+
+    protected static standalone(path: string): bool {
+        path.Contains("*");
+    }
+
+    protected static hasId(path: string): bool {
+        path.Contains("#");
+    }
+
+    protected static fileId(path: string): string {
+        mutable result = null;
+        when(hasId(path)) {
+            result = path.Split(array['#'], 2)[1];
         }
         result;
     }
