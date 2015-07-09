@@ -214,7 +214,7 @@ public class ForumServer: Server {
                         def tg = context.Vars["tg"];
                         tags = tagsFromTagString(tg);
                         deleteExistingPostTags(post_id);
-                        def ids = getTagIds(tags, false);
+                        def ids = getTagIds(tags);
                         _ = insertPostTags(post_id, ids);
                     }
                 }, ex => {
@@ -493,8 +493,7 @@ public class ForumServer: Server {
         }
     }
 
-    public getTagIds(tags: array[string],
-        use_transaction = true): array[uint] {
+    public getTagIds(tags: array[string]): array[uint] {
 
         mutable result = array((tags != null) ? tags.Length : 0);
         when(tags != null) {
@@ -521,7 +520,7 @@ public class ForumServer: Server {
                 }
             }, ex => {
                 internalServerError(ex);
-            }, use_transaction);
+            });
         }
         result;
     }
@@ -596,8 +595,7 @@ public class ForumServer: Server {
     }
 
     public createPost(user_id: uint, thread_id: uint, reply_to: uint?,
-        transform: string, input: string, tag_string: string = null,
-        use_transaction = true): (uint * string * long) {
+        transform: string, input: string, tag_string: string = null): (uint * string * long) {
 
         mutable post_id = 0U;
         mutable output = "";
@@ -662,13 +660,13 @@ public class ForumServer: Server {
 
                     when(ok) {
                         def tags = tagsFromTagString(tag_string);
-                        def ids = getTagIds(tags, false);
+                        def ids = getTagIds(tags);
                         _ = insertPostTags(post_id, ids);
                     }
                 }
             }, ex => {
                 internalServerError(ex);
-            }, use_transaction);
+            });
         }
 
         if(ok) {
@@ -678,8 +676,7 @@ public class ForumServer: Server {
         }
     }
 
-    public thumbPost(post_id: uint, user_id: uint, on: bool,
-        use_transaction = true): void {
+    public thumbPost(post_id: uint, user_id: uint, on: bool): void {
 
         Log.d("thumbPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
         Database.withTransaction(db => {
@@ -708,12 +705,12 @@ public class ForumServer: Server {
                     ];
                 def uid = command2.executeScalar() :> uint;
                 when(uid != user_id) {
-                    addPointsToUser(uid, on ? 5 : -5, false);
+                    addPointsToUser(uid, on ? 5 : -5);
                 }
             }
         }, ex => {
             internalServerError(ex);
-        }, use_transaction);
+        });
     }
 
     public isThumbPost(post_id: uint, user_id: uint): bool {
@@ -727,8 +724,7 @@ public class ForumServer: Server {
         result > 0;
     }
 
-    public starPost(post_id: uint, user_id: uint, on: bool,
-        use_transaction = true): void {
+    public starPost(post_id: uint, user_id: uint, on: bool): void {
 
         Log.d("starPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
         Database.withTransaction(db => {
@@ -757,12 +753,12 @@ public class ForumServer: Server {
                     ];
                 def uid = command2.executeScalar() :> uint;
                 when(uid != user_id) {
-                    addPointsToUser(uid, on ? 2 : -2, false);
+                    addPointsToUser(uid, on ? 2 : -2);
                 }
             }
         }, ex => {
             internalServerError(ex);
-        }, use_transaction);
+        });
     }
 
     public isStarPost(post_id: uint, user_id: uint): bool {
@@ -776,8 +772,7 @@ public class ForumServer: Server {
         result > 0;
     }
 
-    public addPointsToUser(user_id: uint, points: int,
-        use_transaction = true): void {
+    public addPointsToUser(user_id: uint, points: int): void {
 
         Database.withTransaction(db => {
             def command = db.createCommand(
@@ -799,7 +794,7 @@ public class ForumServer: Server {
 
         }, ex => {
             internalServerError(ex);
-        }, use_transaction);
+        });
     }
 
     public pointsToLevel(points: int): float {

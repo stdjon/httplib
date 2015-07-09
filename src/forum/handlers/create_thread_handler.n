@@ -73,7 +73,7 @@ public class CreateThreadHandler: BaseHandler {
                     if(fp == "on") {
 
                         def (post_id, _, _) = Server.createPost(
-                            userid, thid, null, renderer, content, tagstring, false);
+                            userid, thid, null, renderer, content, tagstring);
 
                         ok = post_id > 0;
 

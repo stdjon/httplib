@@ -13,11 +13,23 @@ public abstract class Database: IDisposable  {
     [Accessor(flags = WantSetter)]
     protected mutable connection: IDbConnection = null;
 
+    // This variable is nonzero iff a transaction has begun on the DB, and has
+    // not yet committed or rolled back.
+    mutable in_transaction: uint;
+
+    // Lock objects
+    execute_lock: object;
+    transaction_lock: object;
+
     public virtual Initialized: bool {
         get { Connection != null }
     }
 
     public this(connection: string = null) {
+        in_transaction = 0;
+        execute_lock = Object();
+        transaction_lock = Object();
+
         when(connection != null) {
             initialize(connection);
         }
@@ -50,34 +62,39 @@ public abstract class Database: IDisposable  {
     }
 
     public withTransaction(
-        lambda: Database -> void,
-        handle: Exception -> void = null,
-        use_transaction = true): void {
+        lambda: Database -> void, handle: Exception -> void = null): void {
 
-        mutable transaction = null;
-        try {
-            when(use_transaction) {
-                transaction = Connection.BeginTransaction();
-            }
-            _ = lambda(this);
-            when(use_transaction) {
-                transaction.Commit();
-            }
-        } catch {
-            | ex => {
-                when(use_transaction) {
-                    Log.w("Rolling back...");
-                    transaction.Rollback();
+        lock(transaction_lock) {
+            mutable transaction = null;
+            try {
+                when(0 == in_transaction) {
+                    transaction = Connection.BeginTransaction();
                 }
-                when(handle != null) {
-                    handle(ex);
+
+                in_transaction++;
+                _ = lambda(this);
+                in_transaction--;
+
+                when(0 == in_transaction) {
+                    transaction.Commit();
+                }
+            } catch {
+                | ex => {
+                    when(0 != in_transaction) {
+                        Log.w("Rolling back...");
+                        transaction.Rollback();
+                        in_transaction = 0;
+                    }
+                    when(handle != null) {
+                        handle(ex);
+                    }
                 }
             }
         }
     }
 
     public virtual createCommand(query: string = null): Command {
-        mutable result = Command(Connection.CreateCommand(), this);
+        mutable result = Command(Connection.CreateCommand(), execute_lock);
         when(query != null) {
             result.Query = query;
         }
@@ -98,10 +115,8 @@ public abstract class Database: IDisposable  {
 
 public class Command {
 
-    [Accessor]
-    protected mutable command: IDbCommand = null;
-    [Accessor]
-    internal mutable database: Database = null;
+    [Accessor] protected command: IDbCommand;
+    [Accessor] execute_lock: object;
 
     public virtual Query: string {
         get { Command.CommandText; }
@@ -112,9 +127,9 @@ public class Command {
         get { Command.Parameters; }
     }
 
-    public this(c: IDbCommand, d: Database) {
+    public this(c: IDbCommand, l: object) {
         command = c;
-        database = d;
+        execute_lock = l;
     }
 
     public virtual createParameter(
@@ -147,19 +162,19 @@ public class Command {
     }
 
     public virtual executeNonQuery(): int {
-        lock(Database) {
+        lock(ExecuteLock) {
             Command.ExecuteNonQuery();
         }
     }
 
     public virtual executeReader(): DataReader {
-        lock(Database) {
-            DataReader(Command.ExecuteReader(), this);
+        lock(ExecuteLock) {
+            DataReader(Command.ExecuteReader());
         }
     }
 
     public virtual execute(lambda: DataReader -> void): void {
-        lock(Database) {
+        lock(ExecuteLock) {
             using(reader = executeReader()) {
                 reader.enumerate(() => {
                     lambda(reader);
@@ -170,7 +185,7 @@ public class Command {
 
     public virtual execute(lambda: int * DataReader -> void): int {
         mutable result;
-        lock(Database) {
+        lock(ExecuteLock) {
             using(reader = executeReader()) {
                 result = reader.enumerate(i => {
                     lambda(i, reader);
@@ -181,7 +196,7 @@ public class Command {
     }
 
     public virtual executeScalar(): object {
-        lock(Database) {
+        lock(ExecuteLock) {
             Command.ExecuteScalar();
         }
     }
@@ -190,8 +205,7 @@ public class Command {
 
 public class Parameter {
 
-    [Accessor]
-    protected mutable parameter: IDbDataParameter = null;
+    [Accessor] protected parameter: IDbDataParameter;
 
     public virtual Name: string {
         get { Parameter.ParameterName; }
@@ -212,13 +226,10 @@ public class Parameter {
 [HasLogging]
 public class DataReader: IDisposable {
 
-    [Accessor]
-    protected mutable reader: IDataReader = null;
-    protected mutable command: Command = null;
+    [Accessor] protected reader: IDataReader;
 
-    public this(r: IDataReader, c: Command) {
+    public this(r: IDataReader) {
         reader = r;
-        command = c;
     }
 
     public Dispose(): void {
