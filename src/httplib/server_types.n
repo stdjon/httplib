@@ -101,12 +101,11 @@ public module CookieFlagExtensions {
 // IAssociation
 // NB: we may want to vary on the association value type as well (for cookies).
 
-public interface IAssociation[T] {
+public interface IAssociation[T]: IEnumerable[string * string] {
     public type SystemType = T;
 
     Item[key: string]: string { get; }
     Keys: array[string] { get; }
-    forEach(lambda: string * string -> void): void;
     toSystemType(): T;
 }
 
@@ -114,7 +113,7 @@ public interface IAssociation[T] {
 //------------------------------------------------------------------------------
 // Array
 
-public class Array {
+public class Array: IEnumerable[string] {
 
     type SystemType = array[string];
 
@@ -132,9 +131,9 @@ public class Array {
         get { arr.Length; }
     }
 
-    public forEach(lambda: string -> void): void {
+    public GetEnumerator(): IEnumerator[string] {
         foreach(v in arr) {
-            lambda(v);
+            yield v;
         }
     }
 
@@ -170,9 +169,9 @@ public class HashTable: IAssociation[NameValueCollection] {
         get { nvc.AllKeys; }
     }
 
-    public forEach(lambda: string * string -> void): void {
+    public GetEnumerator(): IEnumerator[string * string] {
         foreach(k in Keys) {
-            lambda(k, Item[k]);
+            yield (k, Item[k]);
         }
     }
 
@@ -218,9 +217,9 @@ public class CookieTable: IAssociation[CookieCollection] {
         get { cachedKeys(); }
     }
 
-    public forEach(lambda: string * string -> void): void {
+    public GetEnumerator(): IEnumerator[string * string] {
         foreach(k in Keys) {
-            lambda(k, Item[k]);
+            yield (k, Item[k]);
         }
     }
 

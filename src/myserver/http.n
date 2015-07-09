@@ -70,28 +70,28 @@ class MyComplexHandler: ComplexHandler {
         mutable qs: array[string] = array(0);
         mutable hdrs: array[string] = array(0);
         mutable i = 0;
-        Context.Vars.forEach((k, v) => {
+        foreach((k, v) in Context.Vars) {
             System.Array.Resize(ref vars, i + 1);
             vars[i] = ($"$k = $v").ToString();
             i++;
-        });
-        page_data.Add("Vars", vars);
+        }
+        page_data["Vars"] = vars;
 
         i = 0;
-        Request.QueryString.forEach((k, v) => {
+        foreach((k, v) in Request.QueryString) {
             System.Array.Resize(ref qs, i + 1);
             qs[i] = ($"$k = $v").ToString();
             i++;
-        });
-        page_data.Add("QueryString", qs);
+        }
+        page_data["QueryString"] = qs;
 
         i = 0;
-        Request.Headers.forEach((k, v) => {
+        foreach((k, v) in Request.Headers) {
             System.Array.Resize(ref hdrs, i + 1);
             hdrs[i] = ($"$k = $v").ToString();
             i++;
-        });
-        page_data.Add("Headers", hdrs);
+        }
+        page_data["Headers"] = hdrs;
 
         when(Context.Vars["name"] != null) {
             page_data.Add("name", Context.Vars["name"]);
