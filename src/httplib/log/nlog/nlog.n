@@ -90,38 +90,34 @@ public class NLogLogging: Logging {
        ft;
     }
 
-    logLevel(l: string): LogLevel {
-        match(l) {
-            | "Trace" => LogLevel.Trace
-            | "Debug" => LogLevel.Debug
-            | "Info" => LogLevel.Info
-            | "Warn" => LogLevel.Warn
-            | "Error" => LogLevel.Error
-            | "Fatal" => LogLevel.Fatal
-            | _ => LogLevel.Off
-        }
+    logLevel(_: string): LogLevel {
+        | "Trace" => LogLevel.Trace
+        | "Debug" => LogLevel.Debug
+        | "Info" => LogLevel.Info
+        | "Warn" => LogLevel.Warn
+        | "Error" => LogLevel.Error
+        | "Fatal" => LogLevel.Fatal
+        | _ => LogLevel.Off
     }
 
-    colour(c: string): ConsoleOutputColor {
-        match(c) {
-            | "Black" => Black
-            | "DarkBlue" => DarkBlue
-            | "DarkGreen" => DarkGreen
-            | "DarkCyan" => DarkCyan
-            | "DarkRed" => DarkRed
-            | "DarkMagenta" => DarkMagenta
-            | "DarkYellow" => DarkYellow
-            | "Gray" => Gray
-            | "DarkGray" => DarkGray
-            | "Blue" => Blue
-            | "Green" => Green
-            | "Cyan" => Cyan
-            | "Red" => Red
-            | "Magenta" => Magenta
-            | "Yellow" => Yellow
-            | "White" => White
-            | _ => NoChange
-        }
+    colour(_: string): ConsoleOutputColor {
+        | "Black" => Black
+        | "DarkBlue" => DarkBlue
+        | "DarkGreen" => DarkGreen
+        | "DarkCyan" => DarkCyan
+        | "DarkRed" => DarkRed
+        | "DarkMagenta" => DarkMagenta
+        | "DarkYellow" => DarkYellow
+        | "Gray" => Gray
+        | "DarkGray" => DarkGray
+        | "Blue" => Blue
+        | "Green" => Green
+        | "Cyan" => Cyan
+        | "Red" => Red
+        | "Magenta" => Magenta
+        | "Yellow" => Yellow
+        | "White" => White
+        | _ => NoChange
     }
 }
 

@@ -27,11 +27,9 @@ public enum JOIN {
 
 public module FileTypeExtensions {
 
-    public extension(this ft: FileType): string {
-        match(ft) {
-            | JS => "js"
-            | CSS => "css"
-        }
+    public extension(this _: FileType): string {
+        | JS => "js"
+        | CSS => "css"
     }
     public rename(this ft: FileType, path: string): string {
         Path.ChangeExtension(path, ft.extension());

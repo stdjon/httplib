@@ -55,18 +55,16 @@ public module MethodExtensions {
         }
     }
 
-    public methodName(this mth: Method): string {
-        match(mth) {
-            | OPTIONS => "OPTIONS"
-            | GET => "GET"
-            | HEAD => "HEAD"
-            | POST => "POST"
-            | PUT => "PUT"
-            | DELETE => "DELETE"
-            | TRACE => "TRACE"
-            | CONNECT => "CONNECT"
-            | _ => "?"
-        }
+    public methodName(this _: Method): string {
+        | OPTIONS => "OPTIONS"
+        | GET => "GET"
+        | HEAD => "HEAD"
+        | POST => "POST"
+        | PUT => "PUT"
+        | DELETE => "DELETE"
+        | TRACE => "TRACE"
+        | CONNECT => "CONNECT"
+        | _ => "?"
     }
 }
 

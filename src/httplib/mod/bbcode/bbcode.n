@@ -66,11 +66,9 @@ public class BbCode: Module, ITextTransform {
                     def arr = flags.Split(array['|']);
 
                     foreach(f in arr) {
-                        match(f) {
-                            | "NoAutoRender" => auto_render = false
-                            | "NoClose" => require_close = false
-                            | _ => {}
-                        }
+                        | "NoAutoRender" => auto_render = false
+                        | "NoClose" => require_close = false
+                        | _ => {}
                     }
                 }
 

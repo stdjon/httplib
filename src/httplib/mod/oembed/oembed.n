@@ -48,23 +48,21 @@ public class OEmbed: Module, IOEmbed {
         Log.i("Starting OEmbed module... (data: {0})", data);
     }
 
-    public getEmbed(input: OEMB): string {
-        match(input) {
-            | LINK(_u) => {
-                "" // not really sure what to do here...
-            }
-            | PHOTO(u, _, _) => {
-                def c = Consumer.[Photo]();
-                "<img src='" + c.GetObject(u).Url + "'></img>";
-            }
-            | RICH(u) => {
-                def c = Consumer.[Rich]();
-                c.GetObject(u).Html;
-            }
-            | VIDEO(u, _, _) => {
-                def c = Consumer.[Video]();
-                c.GetObject(u).Html;
-            }
+    public getEmbed(_: OEMB): string {
+        | LINK(_) => {
+            "" // not really sure what to do here...
+        }
+        | PHOTO(u, _, _) => {
+            def c = Consumer.[Photo]();
+            "<img src='" + c.GetObject(u).Url + "'></img>";
+        }
+        | RICH(u) => {
+            def c = Consumer.[Rich]();
+            c.GetObject(u).Html;
+        }
+        | VIDEO(u, _, _) => {
+            def c = Consumer.[Video]();
+            c.GetObject(u).Html;
         }
     }
 }

@@ -21,24 +21,20 @@ public enum STOK {
 public module SecureTokenExtensions {
 
     // Token Length (bytes)
-    public Length(this tok: SessionTokenType): int {
-        match(tok) {
-            | SECURE => 60
-            | INSECURE => 40
-            | TEMPORARY => 20
-        }
+    public Length(this _: SessionTokenType): int {
+        | SECURE => 60
+        | INSECURE => 40
+        | TEMPORARY => 20
     }
 
     // Token duration (minutes)
-    public Duration(this tok: SessionTokenType): int {
-        match(tok) {
-            | SECURE => 30 * 24 * 60
-            | INSECURE => 30
-            | TEMPORARY => 1
-        }
+    public Duration(this _: SessionTokenType): int {
+        | SECURE => 30 * 24 * 60
+        | INSECURE => 30
+        | TEMPORARY => 1
     }
 
-    public IsSecure(this tok: SessionTokenType): bool {
+    public IsSecure(this _: SessionTokenType): bool {
         | SECURE => true
         | _ => false
     }
