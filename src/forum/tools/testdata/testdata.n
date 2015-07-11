@@ -20,7 +20,6 @@ public class TestData {
     [Accessor] static hexChars: string = "01234567890abcdef";
 
     [Accessor] server: ForumServer;
-    [Accessor] db: Database;
     [Accessor] auth: IAuth;
     [Accessor] random: Random = Random();
 
@@ -32,7 +31,6 @@ public class TestData {
     public this(fs: ForumServer) {
         Log.i("Generating test data...");
         server = fs;
-        db = server.Database;
         auth = server.getModuleInterface.[IAuth]("Pbkdf2Auth");
     }
 
@@ -80,45 +78,46 @@ public class TestData {
         def location = generateMotto();
         def colour = generateColour();
 
-        def command1 = Db.createCommand(
-            "INSERT INTO Users("
-                "Name, Points, Level, JoinDate, Motto, Location, Colour, Transform, Font) VALUES "
-                "(@Name, 0, 0, @JoinDate, @Motto, @Location, @Colour, 'bbcode', 'serif1')") <- [
-            "@Name" = name,
-            "@JoinDate" = joindate,
-            "@Motto" = motto,
-            "@Location" = location,
-            "@Colour" = colour,
-        ];
-        _ = command1.executeNonQuery();
-
-        def command2 = Db.createCommand(
-            "SELECT Id FROM Users WHERE Name=@Name") <- [ "@Name" = name ];
-        def id = command2.executeScalar() :> uint?;
-        mutable pwid = null;
-
-        when(id !=  null) {
-            // allow login with empty string...
-            def record = auth.createPasswordRecord("");
-            def command3 = Db.createCommand(
-                "INSERT INTO Auth(UserId, PwRecord, Email) VALUES "
-                    "(@UserId, @PwRecord, '')") <- [
-                "@UserId" = id,
-                "@PwRecord" = record,
+        using(db = server.openDatabase()) {
+            def command1 = db.createCommand(
+                "INSERT INTO Users("
+                    "Name, Points, Level, JoinDate, Motto, Location, Colour, Transform, Font) VALUES "
+                    "(@Name, 0, 0, @JoinDate, @Motto, @Location, @Colour, 'bbcode', 'serif1')") <- [
+                "@Name" = name,
+                "@JoinDate" = joindate,
+                "@Motto" = motto,
+                "@Location" = location,
+                "@Colour" = colour,
             ];
-            _ = command3.executeNonQuery();
+            _ = command1.executeNonQuery();
 
-            def command4 = Db.createCommand(
-                "SELECT Id FROM Auth WHERE UserId=@UserId") <- [ "@UserId" = id ];
-            pwid = command4.executeScalar() :> uint?;
-            ok = (pwid != null);
-        }
-        if(ok) {
-            Log.d("User '{0}' added to database [id={1}, pwid={2}]...", name, id, pwid);
-        } else {
-            Log.w("User '{0}' was not properly added!", name)
-        }
+            def command2 = db.createCommand(
+                "SELECT Id FROM Users WHERE Name=@Name") <- [ "@Name" = name ];
+            def id = command2.executeScalar() :> uint?;
+            mutable pwid = null;
 
+            when(id !=  null) {
+                // allow login with empty string...
+                def record = auth.createPasswordRecord("");
+                def command3 = db.createCommand(
+                    "INSERT INTO Auth(UserId, PwRecord, Email) VALUES "
+                        "(@UserId, @PwRecord, '')") <- [
+                    "@UserId" = id,
+                    "@PwRecord" = record,
+                ];
+                _ = command3.executeNonQuery();
+
+                def command4 = db.createCommand(
+                    "SELECT Id FROM Auth WHERE UserId=@UserId") <- [ "@UserId" = id ];
+                pwid = command4.executeScalar() :> uint?;
+                ok = (pwid != null);
+            }
+            if(ok) {
+                Log.d("User '{0}' added to database [id={1}, pwid={2}]...", name, id, pwid);
+            } else {
+                Log.w("User '{0}' was not properly added!", name)
+            }
+        }
     }
 
     generateCategory(): void {
@@ -126,24 +125,27 @@ public class TestData {
         def id = Random.Next(UserCount) + 1;
         def create_date = Date.NowTicks;
         def colour = generateColour();
-        def command2 = Db.createCommand(
-            "INSERT INTO Categories(Name, UserId, CreateDate, Colour) VALUES "
-                "(@Name, @UserId, @CreateDate, @Colour)") <- [
-            "@Name" = name,
-            "@UserId" = id,
-            "@CreateDate" = create_date,
-            "@Colour" = colour,
-        ];
-        _ = command2.executeNonQuery();
 
-        def command3 = Db.createCommand(
-            "SELECT Id FROM Categories WHERE Name=@Name") <- [ "@Name" = name ];
-        def catid = command3.executeScalar() :> uint?;
+        using(db = server.openDatabase()) {
+            def command2 = db.createCommand(
+                "INSERT INTO Categories(Name, UserId, CreateDate, Colour) VALUES "
+                    "(@Name, @UserId, @CreateDate, @Colour)") <- [
+                "@Name" = name,
+                "@UserId" = id,
+                "@CreateDate" = create_date,
+                "@Colour" = colour,
+            ];
+            _ = command2.executeNonQuery();
 
-        if(catid != null) {
-            Log.d("Category '{0}' added to database [id={1}, user={2}]...", name, catid, id);
-        } else {
-            Log.w("Category '{0}' was not properly added!", name)
+            def command3 = db.createCommand(
+                "SELECT Id FROM Categories WHERE Name=@Name") <- [ "@Name" = name ];
+            def catid = command3.executeScalar() :> uint?;
+
+            if(catid != null) {
+                Log.d("Category '{0}' added to database [id={1}, user={2}]...", name, catid, id);
+            } else {
+                Log.w("Category '{0}' was not properly added!", name)
+            }
         }
     }
 
@@ -153,25 +155,28 @@ public class TestData {
         def cid = Random.Next(CategoryCount) + 1;
         def create_date = Date.NowTicks;
         def colour = generateColour();
-        def command2 = Db.createCommand(
-            "INSERT INTO Threads(Title, UserId, CategoryId, CreateDate, Colour) VALUES "
-                "(@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
-            "@Title" = title,
-            "@UserId" = uid,
-            "@CategoryId" = cid,
-            "@CreateDate" = create_date,
-            "@Colour" = colour,
-        ];
-        _ = command2.executeNonQuery();
 
-        def command3 = Db.createCommand(
-            "SELECT Id FROM Threads WHERE Title=@Title") <- [ "@Title" = title ];
-        def thid = command3.executeScalar() :> uint?;
+        using(db = server.openDatabase()) {
+            def command2 = db.createCommand(
+                "INSERT INTO Threads(Title, UserId, CategoryId, CreateDate, Colour) VALUES "
+                    "(@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
+                "@Title" = title,
+                "@UserId" = uid,
+                "@CategoryId" = cid,
+                "@CreateDate" = create_date,
+                "@Colour" = colour,
+            ];
+            _ = command2.executeNonQuery();
 
-        if(thid != null) {
-            Log.d("Thread '{0}' added to database [id={1}, cat={2}, user={3}]...", title, thid, cid, uid);
-        } else {
-            Log.w("Thread '{0}' was not properly added!", title)
+            def command3 = db.createCommand(
+                "SELECT Id FROM Threads WHERE Title=@Title") <- [ "@Title" = title ];
+            def thid = command3.executeScalar() :> uint?;
+
+            if(thid != null) {
+                Log.d("Thread '{0}' added to database [id={1}, cat={2}, user={3}]...", title, thid, cid, uid);
+            } else {
+                Log.w("Thread '{0}' was not properly added!", title)
+            }
         }
     }
 
@@ -181,38 +186,40 @@ public class TestData {
         def tid = Random.Next(ThreadCount) :> uint + 1;
         def tags = array(Random.Next(Random.Next(6)));
 
-        for(mutable i = 0; i < tags.Length; i++) {
-            tags[i] = Tags[Random.Next(Tags.Length)];
-        }
-        def tag_string = String.Join("\0", tags);
-
-        def replyto = (Random.Next(5) < 2) ? null : {
-            mutable result: uint? = null;
-            def commmand1 = Db.createCommand(
-                "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
-                    "@ThreadId" = tid,
-                ];
-            def count = commmand1.executeScalar() :> long?;
-            when(count != null) {
-                def commmand2 = Db.createCommand("SELECT Id FROM Posts WHERE "
-                    "ThreadId=@ThreadId LIMIT @N, @N") <- [
-                        "@ThreadId" = tid,
-                        "@N" = Random.Next(count :> int),
-                    ];
-                result = commmand2.executeScalar() :> uint?;
+        using(db = server.openDatabase()) {
+            for(mutable i = 0; i < tags.Length; i++) {
+                tags[i] = Tags[Random.Next(Tags.Length)];
             }
-            result;
-        };
+            def tag_string = String.Join("\0", tags);
 
-        def (pid, _o, _d) = server.createPost(
-            uid, tid, replyto, "bbcode", content, tag_string);
+            def replyto = (Random.Next(5) < 2) ? null : {
+                mutable result: uint? = null;
+                def commmand1 = db.createCommand(
+                    "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
+                        "@ThreadId" = tid,
+                    ];
+                def count = commmand1.executeScalar() :> long?;
+                when(count != null) {
+                    def commmand2 = db.createCommand("SELECT Id FROM Posts WHERE "
+                        "ThreadId=@ThreadId LIMIT @N, @N") <- [
+                            "@ThreadId" = tid,
+                            "@N" = Random.Next(count :> int),
+                        ];
+                    result = commmand2.executeScalar() :> uint?;
+                }
+                result;
+            };
 
-        if(pid != 0) {
-            Log.d("Post added to database ({0} tags)"
-                "[id={1}, th={2}, user={3}, replyto={4}]...",
-                tags.Length, pid, tid, uid, replyto);
-        } else {
-            Log.w("Post id={0} was not properly added!", pid)
+            def (pid, _o, _d) = server.createPost(db,
+                uid, tid, replyto, "bbcode", content, tag_string);
+
+            if(pid != 0) {
+                Log.d("Post added to database ({0} tags)"
+                    "[id={1}, th={2}, user={3}, replyto={4}]...",
+                    tags.Length, pid, tid, uid, replyto);
+            } else {
+                Log.w("Post id={0} was not properly added!", pid)
+            }
         }
     }
 
@@ -307,21 +314,30 @@ public class TestData {
     }
 
     getUserCount(): int {
-        def commmand = Db.createCommand("SELECT COUNT(Name) FROM Users");
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
+        mutable result;
+        using(db = server.openDatabase()) {
+            def commmand = db.createCommand("SELECT COUNT(Name) FROM Users");
+            result = commmand.executeScalar() :> long;
+        }
+        unchecked result :> int;
     }
 
     getCategoryCount(): int {
-        def commmand = Db.createCommand("SELECT COUNT(Name) FROM Categories");
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
+        mutable result;
+        using(db = server.openDatabase()) {
+            def commmand = db.createCommand("SELECT COUNT(Name) FROM Categories");
+            result = commmand.executeScalar() :> long;
+        }
+        unchecked result :> int;
     }
 
     getThreadCount(): int {
-        def commmand = Db.createCommand("SELECT COUNT(Title) FROM Threads");
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
+        mutable result;
+        using(db = server.openDatabase()) {
+            def commmand = db.createCommand("SELECT COUNT(Title) FROM Threads");
+            result = commmand.executeScalar() :> long;
+        }
+        unchecked result :> int;
     }
 }
 

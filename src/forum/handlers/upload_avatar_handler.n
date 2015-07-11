@@ -19,22 +19,24 @@ public class UploadAvatarHandler: BaseHandler {
     }
 
     public override callback(): void {
-        def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
-        def f = Context.Vars["f"];
         mutable json;
-        when(userid > 0 && !String.IsNullOrEmpty(f)) {
-            def b64 = Regex.Match(f,
-                @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
-            def data = Convert.FromBase64String(b64);
-            def memstr = MemoryStream(data);
-            def out120 = transformImage(memstr, "avatar120");
+        using(db = Server.openDatabase()) {
+            def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, db);
+            def f = Context.Vars["f"];
+            when(userid > 0 && !String.IsNullOrEmpty(f)) {
+                def b64 = Regex.Match(f,
+                    @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+                def data = Convert.FromBase64String(b64);
+                def memstr = MemoryStream(data);
+                def out120 = transformImage(memstr, "avatar120");
 
-            _ = deleteImages(userid);
-            _ = storeImage(out120, userid, 120);
+                _ = deleteImages(userid);
+                _ = storeImage(out120, userid, 120);
 
-            json = JsonObject() <- [
-                "image" = dataUrl(out120),
-            ];
+                json = JsonObject() <- [
+                    "image" = dataUrl(out120),
+                ];
+            }
         }
         if(json != null) {
             Response.append(json.toString());
@@ -62,23 +64,27 @@ public class UploadAvatarHandler: BaseHandler {
     }
 
     deleteImages(userid: uint): void {
-        def command = Server.Database.createCommand(
-            "DELETE FROM Avatars WHERE (UserId = @UserId)") <- [
-            "@UserId" = userid,
-        ];
-        _ = command.executeNonQuery();
+        using(db = Server.openDatabase()) {
+            def command = db.createCommand(
+                "DELETE FROM Avatars WHERE (UserId = @UserId)") <- [
+                "@UserId" = userid,
+            ];
+            _ = command.executeNonQuery();
+        }
     }
 
     storeImage(data: array[byte], userid: uint, size: uint): void {
-        Log.d("storeImage({0} bytes, {1}, {2})", data.Length, userid, size);
-        def command = Server.Database.createCommand(
-            "INSERT INTO Avatars(UserId, Size, Data) VALUES ("
-                "@UserId, @Size, @Data)") <- [
-            "@UserId" = userid,
-            "@Size" = size,
-            "@Data" = data,
-        ];
-        _ = command.executeNonQuery();
+        using(db = Server.openDatabase()) {
+            Log.d("storeImage({0} bytes, {1}, {2})", data.Length, userid, size);
+            def command = db.createCommand(
+                "INSERT INTO Avatars(UserId, Size, Data) VALUES ("
+                    "@UserId, @Size, @Data)") <- [
+                "@UserId" = userid,
+                "@Size" = size,
+                "@Data" = data,
+            ];
+            _ = command.executeNonQuery();
+        }
     }
 
     dataUrl(data: array[byte]): string {

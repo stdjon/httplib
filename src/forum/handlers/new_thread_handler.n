@@ -17,23 +17,30 @@ public class NewThreadHandler: BasePageHandler {
     public override initialize(): void {
         base.initialize();
 
-        def catid = UInt32.Parse(Context.Vars["category"]);
-        PageData["CategoryId"] = catid;
+        using(db = Server.openDatabase()) {
 
-        def command = Server.Database.createCommand(
-            "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = catid ];
-        def catname = command.executeScalar() :> string;
-        PageData["Category"] = catname;
+            def catid = UInt32.Parse(Context.Vars["category"]);
+            PageData["CategoryId"] = catid;
 
-        def command2 = Server.Database.createCommand(
-            "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
-        def transform = command2.executeScalar() :> string;
+            def command = db.createCommand(
+                "SELECT Name FROM Categories WHERE Id = @Id") <- [
+                    "@Id" = catid 
+                ];
+            def catname = command.executeScalar() :> string;
+            PageData["Category"] = catname;
 
-        match(transform) {
-            | "bbcode" => PageData["BbCodeActive"] = "active"
-            | "textile" => PageData["TextileActive"] = "active"
-            | "htmlsan" => PageData["HtmlSanActive"] = "active"
-            | _ => {}
+            def command2 = db.createCommand(
+                "SELECT Transform FROM Users WHERE Id = @Id") <- [
+                    "@Id" = SignedInUserId
+                ];
+            def transform = command2.executeScalar() :> string;
+
+            match(transform) {
+                | "bbcode" => PageData["BbCodeActive"] = "active"
+                | "textile" => PageData["TextileActive"] = "active"
+                | "htmlsan" => PageData["HtmlSanActive"] = "active"
+                | _ => {}
+            }
         }
     }
 }

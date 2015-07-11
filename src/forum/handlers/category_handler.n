@@ -24,108 +24,113 @@ public class CategoryHandler: BasePageHandler {
         def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 24);  //TODO: configurable?
         def dist = to + 1 - from;
 
-        def command = Server.Database.createCommand(
-            "SELECT Name, UserId, CreateDate, Colour FROM Categories "
-                "WHERE Id = @Id") <- [ "@Id" = catid ];
-
-        PageData["Id"] = catid;
-
         mutable ok = false;
         mutable uid;
-        command.execute(reader => {
-            uid = reader.getValue("UserId", 0U);
-            _ = PageData <- [
-                "Name" = reader.getValue("Name"),
-                "UserId" = uid,
-                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                "ColourId" = reader.getValue("Colour"),
-            ];
-            ok = true;
-        });
+        using(db = Server.openDatabase()) {
+            def command = db.createCommand(
+                "SELECT Name, UserId, CreateDate, Colour FROM Categories "
+                    "WHERE Id = @Id") <- [ "@Id" = catid ];
 
-        PageData["UserName"] = Server.getUserName(uid);
+            PageData["Id"] = catid;
+
+            command.execute(reader => {
+                uid = reader.getValue("UserId", 0U);
+                _ = PageData <- [
+                    "Name" = reader.getValue("Name"),
+                    "UserId" = uid,
+                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                    "ColourId" = reader.getValue("Colour"),
+                ];
+                ok = true;
+            });
+
+            PageData["UserName"] = Server.getUserName(uid, db);
+        }
 
         when(ok) {
             mutable threads: PageDataArray = array(dist);
             mutable i = 0;
+            mutable limit;
 
-            def command2 = Server.Database.createCommand(
-                "SELECT Id, UserId, Title, CreateDate FROM Threads WHERE "
-                    "CategoryId = @CategoryId ORDER BY CreateDate LIMIT @From, @To") <- [
-                "@CategoryId" = catid,
-                "@From" = from - 1,
-                "@To" = to - 1,
-            ];
+            using(db = Server.openDatabase()) {
+                def command2 = db.createCommand(
+                    "SELECT Id, UserId, Title, CreateDate FROM Threads WHERE "
+                        "CategoryId = @CategoryId ORDER BY CreateDate LIMIT @From, @To") <- [
+                    "@CategoryId" = catid,
+                    "@From" = from - 1,
+                    "@To" = to - 1,
+                ];
 
-            i = command2.execute((j, reader) => {
-                when(j < dist) {
-                    def id = reader.getValue("Id", 0U);
-                    uid = reader.getValue("UserId", 0U);
-                    //def _points = reader.getValue("Points", 0);
-                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
-                    def title = reader.getValue("Title");
+                i = command2.execute((j, reader) => {
+                    when(j < dist) {
+                        def id = reader.getValue("Id", 0U);
+                        uid = reader.getValue("UserId", 0U);
+                        //def _points = reader.getValue("Points", 0);
+                        def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                        def title = reader.getValue("Title");
 
-                    threads[j] = PageData() <- [
-                        "Number" = from + j,
-                        "UserId" = uid,
-                        "CreateDate" = date,
-                        "Title" = title,
-                        "Id" = id,
-                    ];
+                        threads[j] = PageData() <- [
+                            "Number" = from + j,
+                            "UserId" = uid,
+                            "CreateDate" = date,
+                            "Title" = title,
+                            "Id" = id,
+                        ];
+                    }
+                });
+                when(i < dist) {
+                    Array.Resize(ref threads, i);
                 }
-            });
-            when(i < dist) {
-                Array.Resize(ref threads, i);
+                limit = i;
+
+                for(i = 0; i < limit; i++) {
+                    threads[i]["UserName"] =
+                        Server.getUserName(threads[i]["UserId"] :> uint, db);
+                    threads[i]["PostCount"] =
+                        Server.getPostCount(threads[i]["Id"] :> uint, db);
+                }
+
+                // Add a marker for every fifth thread (1, 6, 11...)
+                def marker_count = (limit + 4) / 5;
+                def markers: PageDataArray = array(marker_count);
+                for(i = 0; i < marker_count; i++) {
+                    markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
+                }
+
+                _ = PageData <- [
+                    "Threads" = threads,
+                    "Markers" = markers,
+                    "From" = from,
+                    "To" = to,
+                ];
+
+                // prev/next
+                def prf = Server.getDefaultPrefix(Request);
+                mutable prev = null;
+                mutable next = null;
+
+                Log.d("from = {0} > 1 {1}", from, from > 1);
+                when(from > 1) {
+                    def pf = Math.Max(1, from - dist);
+                    def pt = pf + dist - 1;
+                    prev = $"$prf/th/$catid/$pf-$pt";
+                }
+                Log.d("prev = {0}", prev);
+
+                def user_count = Server.getThreadCount(catid, db);
+                Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
+                when(to < user_count) {
+                    def nf = from + dist;
+                    def nt = nf + dist - 1;
+                    next = $"$prf/th/$catid/$nf-$nt";
+                }
+                Log.d("next = {0}", next);
+
+                _ = PageData <- [
+                    "Prev" = prev,
+                    "Next" = next,
+                ];
             }
-            def limit = i;
-
-            for(i = 0; i < limit; i++) {
-                threads[i]["UserName"] =
-                    Server.getUserName(threads[i]["UserId"] :> uint);
-                threads[i]["PostCount"] =
-                    Server.getPostCount(threads[i]["Id"] :> uint);
-            }
-
-            // Add a marker for every fifth thread (1, 6, 11...)
-            def marker_count = (limit + 4) / 5;
-            def markers: PageDataArray = array(marker_count);
-            for(i = 0; i < marker_count; i++) {
-                markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
-            }
-
-            _ = PageData <- [
-                "Threads" = threads,
-                "Markers" = markers,
-                "From" = from,
-                "To" = to,
-            ];
-
-            // prev/next
-            def prf = Server.getDefaultPrefix(Request);
-            mutable prev = null;
-            mutable next = null;
-
-            Log.d("from = {0} > 1 {1}", from, from > 1);
-            when(from > 1) {
-                def pf = Math.Max(1, from - dist);
-                def pt = pf + dist - 1;
-                prev = $"$prf/th/$catid/$pf-$pt";
-            }
-            Log.d("prev = {0}", prev);
-
-            def user_count = Server.getThreadCount(catid);
-            Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-            when(to < user_count) {
-                def nf = from + dist;
-                def nt = nf + dist - 1;
-                next = $"$prf/th/$catid/$nf-$nt";
-            }
-            Log.d("next = {0}", next);
-
-            _ = PageData <- [
-                "Prev" = prev,
-                "Next" = next,
-            ];
         }
     }
 }

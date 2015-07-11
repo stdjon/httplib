@@ -92,15 +92,17 @@ public class BasePageHandler: BaseHandler {
             Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
         }
 
-        if(isession != null) {
-            def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession);
-            SignedInUserId = id;
+        using(db = Server.openDatabase()) {
+            if(isession != null) {
+                def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession, db);
+                SignedInUserId = id;
 
-            def name = (id != 0) ? Server.getUserName(id) : null;
-            PageData["SignedInUser"] = name;
-        } else {
-            def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0);
-            PageData["TempToken"] = t;
+                def name = (id != 0) ? Server.getUserName(id, db) : null;
+                PageData["SignedInUser"] = name;
+            } else {
+                def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0, db);
+                PageData["TempToken"] = t;
+            }
         }
         Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
     }
@@ -119,14 +121,16 @@ public class BasePageHandler: BaseHandler {
     }
 
     initializeUserClasses(): void {
-        def command = Server.Database.createCommand(
-            "SELECT Colour, Font From Users WHERE Id=@Id") <- [
-                "@Id" = SignedInUserId,
-            ];
-        command.execute(reader => {
-            PageData["FontClass"] = reader.getValue("Font", "serif1");
-            PageData["ColourClass"] = reader.getValue("Colour", "x360");
-        });
+        using(db = Server.openDatabase()) {
+            def command = db.createCommand(
+                "SELECT Colour, Font From Users WHERE Id=@Id") <- [
+                    "@Id" = SignedInUserId,
+                ];
+            command.execute(reader => {
+                PageData["FontClass"] = reader.getValue("Font", "serif1");
+                PageData["ColourClass"] = reader.getValue("Colour", "x360");
+            });
+        }
     }
 }
 

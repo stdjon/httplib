@@ -46,11 +46,9 @@ public class SessionToken {
 
     rng: RNGCryptoServiceProvider = null;
     server: ForumServer = null;
-    database: Database = null;
 
     public this(s: ForumServer) {
         server = s;
-        database = s.Database;
         rng = RNGCryptoServiceProvider();
     }
 
@@ -75,12 +73,13 @@ public class SessionToken {
     }
 
     public register(
-        tok: SessionTokenType, id: uint): bool * string * DateTime {
+        tok: SessionTokenType, id: uint, db: Database): bool * string * DateTime {
 
         def token = create(tok);
         def expiry = Date.Now.AddMinutes(tok.Duration()).Ticks;
+        mutable rows;
 
-        mutable command = database.createCommand(
+        def command = db.createCommand(
             "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
                 "VALUES(@UserId, @Token, @ExpiryTime, @IsSecure)") <- [
             "@UserId" = id,
@@ -88,28 +87,29 @@ public class SessionToken {
             "@ExpiryTime" = expiry,
             "@IsSecure" = tok.IsSecure(),
         ];
-        def rows = command.executeNonQuery();
+        rows = command.executeNonQuery();
         (rows == 1, token, Date.FromTicks(expiry));
     }
 
-    public expire(): void {
+    public expire(db: Database): void {
         def now = Date.NowTicks;
 
-        def command = database.createCommand("DELETE FROM Sessions WHERE "
+        def command = db.createCommand("DELETE FROM Sessions WHERE "
             "(ExpiryTime < @Now)") <- [ "@Now" = now ];
         def rows = command.executeNonQuery();
         Log.i("Deleted {0} expired session tokens...", rows);
     }
 
-    public getUserId(tok: SessionTokenType, token: string): uint {
-        expire();
-        def commmand = database.createCommand(
+    public getUserId(tok: SessionTokenType, token: string, db: Database): uint {
+        expire(db);
+        mutable result;
+        def commmand = db.createCommand(
             "SELECT (UserId) FROM Sessions WHERE "
                 "(Token = @Token AND IsSecure = @IsSecure)") <- [
             "@Token" = token,
             "@IsSecure" = tok.IsSecure(),
         ];
-        def result = commmand.executeScalar() :> uint?;
+        result = commmand.executeScalar() :> uint?;
         result ? (result :> uint) : 0U;
     }
 }

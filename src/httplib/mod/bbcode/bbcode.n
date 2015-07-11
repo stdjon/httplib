@@ -33,7 +33,6 @@ public class BbCode: Module, ITextTransform {
 
     public transform(input: string): string {
         def result = Parser ? Parser.ToHtml(input) : input;
-        Log.f("input='{0}' result='{1}'", input, result);
         result;
     }
 

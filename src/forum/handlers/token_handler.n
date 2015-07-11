@@ -37,26 +37,28 @@ public class TokenHandler: BasePageHandler {
     public tokSetResponse(): void {
 
         if(Request.IsSecure) {
-            def t = Context.Vars["t"];
+            using(db = Server.openDatabase()) {
+                def t = Context.Vars["t"];
 
-            def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
-            def chk = (tmp == 0);
-            def id = Server.getUserIdFromCookie(Request, STOK.SECURE);
-            mutable ok = false;
+                def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t, db);
+                def chk = (tmp == 0);
+                def id = Server.getUserIdFromCookie(Request, STOK.SECURE, db);
+                mutable ok = false;
 
-            when(chk && id != 0) {
-                def (ok2, t, _x) =
-                    Server.registerSessionToken(STOK.TEMPORARY, id);
+                when(chk && id != 0) {
+                    def (ok2, t, _x) =
+                        Server.registerSessionToken(STOK.TEMPORARY, id, db);
 
-                when(ok2) {
-                    Response.append(t);
-                    ok = true;
+                    when(ok2) {
+                        Response.append(t);
+                        ok = true;
+                    }
                 }
-            }
-            if(ok) {
-                Response.Status = (200, "OK");
-            } else {
-                internalServerErrorResponse();
+                if(ok) {
+                    Response.Status = (200, "OK");
+                } else {
+                    internalServerErrorResponse();
+                }
             }
         } else {
             Response.Status = (403, "Forbidden");
@@ -65,16 +67,18 @@ public class TokenHandler: BasePageHandler {
 
     public tokCheckResponse(): void {
 
-        def t = Context.Vars["t"];
-        def id = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t);
         mutable ok = false;
+        using(db = Server.openDatabase()) {
+            def t = Context.Vars["t"];
+            def id = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t, db);
 
-        when(id > 0) {
-            def (ok2, t, x) = Server.registerSessionToken(STOK.INSECURE, id);
+            when(id > 0) {
+                def (ok2, t, x) = Server.registerSessionToken(STOK.INSECURE, id, db);
 
-            when(ok2) {
-                Response.Cookies.add("_isession", t, x, COOKIE.HTTP_ONLY);
-                ok = true;
+                when(ok2) {
+                    Response.Cookies.add("_isession", t, x, COOKIE.HTTP_ONLY);
+                    ok = true;
+                }
             }
         }
 

@@ -51,22 +51,24 @@ public class CssHandler: BaseHandler {
     public this(hd: HandlerData, path: string, data: string) {
         base(hd, path);
 
-        def iuid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
-        def userid = (iuid != 0) ? iuid :
-            Server.getUserIdFromCookie(Request, STOK.SECURE);
+        using(db = Server.openDatabase()) {
+            def iuid = Server.getUserIdFromCookie(Request, STOK.INSECURE, db);
+            def userid = (iuid != 0) ? iuid :
+                Server.getUserIdFromCookie(Request, STOK.SECURE, db);
 
-        def c = Request.QueryString["c"];
-        Font = "serif1";
-        Colour = !String.IsNullOrEmpty(c) ? c : "x360";
+            def c = Request.QueryString["c"];
+            Font = "serif1";
+            Colour = !String.IsNullOrEmpty(c) ? c : "x360";
 
-        def command = Server.Database.createCommand(
-            "SELECT Font FROM Users WHERE Id = @Id") <- [
-                "@Id" = userid,
-            ];
+            def command = db.createCommand(
+                "SELECT Font FROM Users WHERE Id = @Id") <- [
+                    "@Id" = userid,
+                ];
 
-        command.execute(reader => {
-            Font = reader.getValue("Font", "serif1");
-        });
+            command.execute(reader => {
+                Font = reader.getValue("Font", "serif1");
+            });
+        }
 
         def data_file = Server.openLocalFile(data);
         using(reader = StreamReader(data_file)) {

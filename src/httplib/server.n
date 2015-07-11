@@ -53,11 +53,6 @@ public class Server: IDisposable {
     [Accessor]
     configuration: ServerConfiguration;
 
-    public Database: Database {
-        get { Databases["default"] }
-    }
-    [Accessor] databases: Dictionary[string, Database] = Dictionary();
-
     public Routes[i: Method]: RouteMap {
         get { routes[i :> int] }
     }
@@ -120,7 +115,7 @@ public class Server: IDisposable {
 
         // Now logging is configured, we can start using Log API...
         Log.i("Starting up...");
-
+/*
         def dbc = Configuration.Databases;
         when(dbc != null) {
             foreach(d in dbc) {
@@ -138,6 +133,7 @@ public class Server: IDisposable {
                 }
             }
         }
+*/
 
         when(Configuration.Prefixes != null) {
             when( Configuration.Prefixes.Secure != null &&
@@ -303,6 +299,26 @@ public class Server: IDisposable {
                 _ = Listener.BeginGetContext(listenerCallback, this);
             }
         }
+    }
+
+    public openDatabase(name = "default"): Database {
+        mutable probe;
+        mutable conf = null;
+        mutable result = null;
+        when(Configuration.Databases.TryGetValue(name, out probe)) {
+            conf = probe;
+        }
+        when(conf != null) {
+            when(conf.Assembly != null &&
+                conf.Typename != null) {
+                result = Database.load(
+                    conf.Assembly, conf.Typename, conf.Connection);
+            }
+            when(result == null) {
+                Log.w("Database {0} not created!", name);
+            }
+        }
+        result;
     }
 
     public getModuleInterface[T](name: string): T {

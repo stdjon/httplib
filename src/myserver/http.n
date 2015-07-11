@@ -156,12 +156,14 @@ class MyDatabaseHandler: ComplexHandler {
             | "Books" => "Books"
             | _ => "#"
         };
-        def command = Server.Database.createCommand($"SELECT $c FROM $t");
-        using(reader = command.executeReader()) {
-            _ = reader.enumerate(j => {
-                Array.Resize(ref result, j + 1);
-                result[j] = reader.getValue(c);
-            });
+        using(db = Server.openDatabase()) {
+            def command = db.createCommand($"SELECT $c FROM $t");
+            using(reader = command.executeReader()) {
+                _ = reader.enumerate(j => {
+                    Array.Resize(ref result, j + 1);
+                    result[j] = reader.getValue(c);
+                });
+            }
         }
         result;
     }

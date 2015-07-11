@@ -22,81 +22,82 @@ public class TagHandler: BasePageHandler {
     public override initialize(): void {
         base.initialize();
 
-        Tag = Context.Vars["tag"];
-        PageData["Name"] = Tag;
+        using(db = Server.openDatabase()) {
 
-        def command = Server.Database.createCommand(
-            "SELECT Id FROM Tags WHERE Name=@Name") <- [ "@Name" = Tag ];
+            Tag = Context.Vars["tag"];
+            PageData["Name"] = Tag;
 
-        def tag_id = command.executeScalar() :> uint?;
+            def command = db.createCommand(
+                "SELECT Id FROM Tags WHERE Name=@Name") <- [ "@Name" = Tag ];
 
-        when(tag_id != null) {
+            def tag_id = command.executeScalar() :> uint?;
 
-            TagId = tag_id :> uint;
+            when(tag_id != null) {
+                TagId = tag_id :> uint;
 
-            def command2 = Server.Database.createCommand(
-                "SELECT COUNT(Id) FROM PostTags WHERE TagId=@TagId") <- [
-                    "@TagId" = TagId
-                ];
-
-            def count = command2.executeScalar() :> long?;
-
-            PostCount = count ? (count :> int) : 0;
-
-            when(PostCount > 0) {
-                mutable post_ids = array(25);
-                def command3 = Server.Database.createCommand(
-                    "SELECT PostId FROM PostTags WHERE "
-                    "TagId=@TagId LIMIT 0,24") <- [
+                def command2 = db.createCommand(
+                    "SELECT COUNT(Id) FROM PostTags WHERE TagId=@TagId") <- [
                         "@TagId" = TagId
                     ];
-                def c = command3.execute((i, reader) => {
-                    post_ids[i] = reader.getValue("PostId", 0U);
-                });
-                Array.Resize(ref post_ids, c);
 
-                def posts = array(c);
-                def users = array(c);
-                mutable i = 0;
-                foreach(pid in post_ids) {
-                    def command4 = Server.Database.createCommand(
-                        "SELECT OutputContent, CreateDate, UserId FROM Posts "
-                            "WHERE Id = @Id") <- [
-                        "@Id" = pid,
-                    ];
-                    command4.execute(reader => {
-                        mutable content = reader.getValue("OutputContent");
-                        when(content.Length > 50) {
-                            content = content.Substring(0, 50) + "...";
-                        }
-                        // Use HtmlSanitizer to close any tags lost by the truncation.
-                        def htmlsan = Server.
-                            getModuleInterface.[ITextTransform]("HtmlSanitizer");
-                        content = htmlsan.transform(content);
+                def count = command2.executeScalar() :> long?;
 
-                        // Strip out <hN>, <p> and <br> tags for the post preview
-                        // TODO: use a CsQuery-based module to allow proper tag replacement.
-                        content = Regex(@"</?h[0-9]+>").Replace(content, "");
-                        content = Regex(@"</?p>").Replace(content, "");
-                        content = content.Replace("<br>", "");
+                PostCount = count ? (count :> int) : 0;
 
-                        posts[i] = PageData() <- [
-                            "Id" = pid,
-                            "Content" = content,
-                            "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                when(PostCount > 0) {
+                    mutable post_ids = array(25);
+                    def command3 = db.createCommand(
+                        "SELECT PostId FROM PostTags WHERE "
+                        "TagId=@TagId LIMIT 0,24") <- [
+                            "@TagId" = TagId
                         ];
-                        users[i] = reader.getValue("UserId", 0U);
-                        i++;
+                    def c = command3.execute((i, reader) => {
+                        post_ids[i] = reader.getValue("PostId", 0U);
                     });
+                    Array.Resize(ref post_ids, c);
+
+                    def posts = array(c);
+                    def users = array(c);
+                    mutable i = 0;
+                    foreach(pid in post_ids) {
+                        def command4 = db.createCommand(
+                            "SELECT OutputContent, CreateDate, UserId FROM Posts "
+                                "WHERE Id = @Id") <- [
+                            "@Id" = pid,
+                        ];
+                        command4.execute(reader => {
+                            mutable content = reader.getValue("OutputContent");
+                            when(content.Length > 50) {
+                                content = content.Substring(0, 50) + "...";
+                            }
+                            // Use HtmlSanitizer to close any tags lost by the truncation.
+                            def htmlsan = Server.
+                                getModuleInterface.[ITextTransform]("HtmlSanitizer");
+                            content = htmlsan.transform(content);
+
+                            // Strip out <hN>, <p> and <br> tags for the post preview
+                            // TODO: use a CsQuery-based module to allow proper tag replacement.
+                            content = Regex(@"</?h[0-9]+>").Replace(content, "");
+                            content = Regex(@"</?p>").Replace(content, "");
+                            content = content.Replace("<br>", "");
+
+                            posts[i] = PageData() <- [
+                                "Id" = pid,
+                                "Content" = content,
+                                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                            ];
+                            users[i] = reader.getValue("UserId", 0U);
+                            i++;
+                        });
+                    }
+                    for(mutable j = 0; j < c; j++) {
+                        posts[j]["User"] = Server.getUserName(users[j], db);
+                    }
+                    PageData["Posts"] = posts;
                 }
-                for(mutable j = 0; j < c; j++) {
-                    posts[j]["User"] = Server.getUserName(users[j]);
-                }
-                PageData["Posts"] = posts;
+
             }
-
         }
-
     }
 }
 

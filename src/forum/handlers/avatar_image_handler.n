@@ -30,21 +30,25 @@ public class AvatarImageHandler: BaseHandler {
         Size = UInt32.Parse(Context.Vars["size"]);
         def user = Context.Vars["user"];
         when(!String.IsNullOrEmpty(user)) {
-            UserId = Server.getUserId(user);
+            using(db = Server.openDatabase()) {
+                UserId = Server.getUserId(user, db);
+            }
         }
     }
 
     public override initialize(): void {
         base.initialize();
 
-        def command = Server.Database.createCommand(
-            "SELECT Data FROM Avatars WHERE "
-                " UserId = @UserId AND Size = @Size") <- [
-            "@Size" = Size,
-            "@UserId" = UserId,
-        ];
+        using(db = Server.openDatabase()) {
+            def command = db.createCommand(
+                "SELECT Data FROM Avatars WHERE "
+                    " UserId = @UserId AND Size = @Size") <- [
+                "@Size" = Size,
+                "@UserId" = UserId,
+            ];
 
-        Data = command.executeScalar() :> array[byte];
+            Data = command.executeScalar() :> array[byte];
+        }
     }
 
     public override finish(): void {

@@ -17,74 +17,76 @@ public class CreateThreadHandler: BaseHandler {
     public override initialize(): void {
         base.initialize();
 
-        def title = Context.Vars["title"];
-        def colour = Context.Vars["colour"];
-        def fp = Context.Vars["fp"];
-        def content = Context.Vars["content"];
-        mutable renderer = Context.Vars["renderer"];
-        def tagstring = Uri.UnescapeDataString(Context.Vars["tags"]);
-        def category = UInt32.Parse(Context.Vars["category"]);
-        def utc_now = Date.NowTicks;
-        def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE);
-        mutable thid = 0U;
         mutable ok = false;
+            mutable thid = 0U;
+        using(database = Server.openDatabase()) {
+            def title = Context.Vars["title"];
+            def colour = Context.Vars["colour"];
+            def fp = Context.Vars["fp"];
+            def content = Context.Vars["content"];
+            mutable renderer = Context.Vars["renderer"];
+            def tagstring = Uri.UnescapeDataString(Context.Vars["tags"]);
+            def category = UInt32.Parse(Context.Vars["category"]);
+            def utc_now = Date.NowTicks;
+            def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, database);
 
-        when(String.IsNullOrEmpty(renderer)) {
-            def command = Server.Database.createCommand(
-                "SELECT Transform FROM Users WHERE Id=@Id") <- [ "@Id" = userid ];
-            renderer = command.executeScalar() :> string;
-            Log.d("renderer was not set; user's DB default is '{0}'...", renderer);
-        }
+            when(String.IsNullOrEmpty(renderer)) {
+                def command = database.createCommand(
+                    "SELECT Transform FROM Users WHERE Id=@Id") <- [ "@Id" = userid ];
+                renderer = command.executeScalar() :> string;
+                Log.d("renderer was not set; user's DB default is '{0}'...", renderer);
+            }
 
-        Log.d("CreateThreadHandler: category={0}, userid={1}, renderer={2}, "
-            "utc_now={3}, fp={4}, tagstring={5}",
-            category, userid, renderer, utc_now, fp, tagstring);
+            Log.d("CreateThreadHandler: category={0}, userid={1}, renderer={2}, "
+                "utc_now={3}, fp={4}, tagstring={5}",
+                category, userid, renderer, utc_now, fp, tagstring);
 
-        Server.Database.withTransaction(db => {
-            def commmand = db.createCommand(
-                "INSERT INTO Threads("
-                    "Title, UserId, CategoryId, CreateDate, Colour) VALUES("
-                    "@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
-                "@Title" = title,
-                "@UserId" = userid,
-                "@CategoryId" = category,
-                "@CreateDate" = utc_now,
-                "@Colour" = colour
-            ];
-            def result = commmand.executeNonQuery();
-            Log.t("result={0}", result);
-
-            when(result > 0) {
-                def commmand2 = db.createCommand(
-                    "SELECT Id From Threads WHERE Title=@Title AND "
-                        "UserId=@UserId AND CreateDate=@CreateDate") <- [
+            database.withTransaction(db => {
+                def commmand = db.createCommand(
+                    "INSERT INTO Threads("
+                        "Title, UserId, CategoryId, CreateDate, Colour) VALUES("
+                        "@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
                     "@Title" = title,
                     "@UserId" = userid,
+                    "@CategoryId" = category,
                     "@CreateDate" = utc_now,
+                    "@Colour" = colour
                 ];
-                def thid_ = commmand2.executeScalar() :> uint?;
+                def result = commmand.executeNonQuery();
+                Log.t("result={0}", result);
 
-                when(thid_ != null) {
-                    thid = thid_ :> uint;
-                }
+                when(result > 0) {
+                    def commmand2 = db.createCommand(
+                        "SELECT Id From Threads WHERE Title=@Title AND "
+                            "UserId=@UserId AND CreateDate=@CreateDate") <- [
+                        "@Title" = title,
+                        "@UserId" = userid,
+                        "@CreateDate" = utc_now,
+                    ];
+                    def thid_ = commmand2.executeScalar() :> uint?;
 
-                Log.d("createThreadResponse: thid={0}", thid);
-                when(thid > 0) {
-                    if(fp == "on") {
+                    when(thid_ != null) {
+                        thid = thid_ :> uint;
+                    }
 
-                        def (post_id, _, _) = Server.createPost(
-                            userid, thid, null, renderer, content, tagstring);
+                    Log.d("createThreadResponse: thid={0}", thid);
+                    when(thid > 0) {
+                        if(fp == "on") {
 
-                        ok = post_id > 0;
+                            def (post_id, _, _) = Server.createPost(
+                                db, userid, thid, null, renderer, content, tagstring);
 
-                    } else {
-                        ok = true;
+                            ok = post_id > 0;
+
+                        } else {
+                            ok = true;
+                        }
                     }
                 }
-            }
-        }, ex => {
-            Server.internalServerError(ex);
-        });
+            }, ex => {
+                Server.internalServerError(ex);
+            });
+        }
 
         if(ok) {
             // redirect to newly-created thread page...
