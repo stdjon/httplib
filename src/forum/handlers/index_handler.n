@@ -22,48 +22,47 @@ public class IndexHandler: BasePageHandler {
         mutable posts = array(10);
         mutable i;
 
-        using(db = Server.openDatabase()) {
-            def command = db.createCommand(
-                "SELECT Id, Title, CreateDate FROM Threads "
-                    " ORDER BY CreateDate DESC LIMIT 0, 9");
+        def command = Database.createCommand(
+            "SELECT Id, Title, CreateDate FROM Threads "
+                " ORDER BY CreateDate DESC LIMIT 0, 9");
 
-            i = command.execute((j, reader) => {
-                threads[j] = PageData() <- [
-                    "Id" = reader.getValue("Id", 0U),
-                    "Title" = reader.getValue("Title"),
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                ];
-            });
-            Array.Resize(ref threads, i);
+        i = command.execute((j, reader) => {
+            threads[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Title" = reader.getValue("Title"),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+            ];
+        });
+        Array.Resize(ref threads, i);
 
-            def command2 = db.createCommand(
-                "SELECT Id, OutputContent, CreateDate FROM Posts "
-                    "ORDER BY CreateDate DESC LIMIT 0, 9");
+        def command2 = Database.createCommand(
+            "SELECT Id, OutputContent, CreateDate FROM Posts "
+                "ORDER BY CreateDate DESC LIMIT 0, 9");
 
-            i = command2.execute((j, reader) => {
-                mutable content = reader.getValue("OutputContent");
-                when(content.Length > 100) {
-                    content = content.Substring(0, 100) + "&hellip;";
-                }
-                // Use HtmlSanitizer to close any tags lost by the truncation.
-                def htmlsan = Server.
-                    getModuleInterface.[ITextTransform]("HtmlSanitizer");
-                content = htmlsan.transform(content);
+        i = command2.execute((j, reader) => {
+            mutable content = reader.getValue("OutputContent");
+            when(content.Length > 100) {
+                content = content.Substring(0, 100) + "&hellip;";
+            }
+            // Use HtmlSanitizer to close any tags lost by the truncation.
+            def htmlsan = Server.
+                getModuleInterface.[ITextTransform]("HtmlSanitizer");
+            content = htmlsan.transform(content);
 
-                // Strip out <hN>, <p> and <br> tags for the post preview
-                // TODO: use a CsQuery-based module to allow proper tag replacement.
-                content = Regex(@"</?h[0-9]+>").Replace(content, "");
-                content = Regex(@"</?p>").Replace(content, "");
-                content = content.Replace("<br>", "");
+            // Strip out <hN>, <p> and <br> tags for the post preview
+            // TODO: use a CsQuery-based module to allow proper tag replacement.
+            content = Regex(@"</?h[0-9]+>").Replace(content, "");
+            content = Regex(@"</?p>").Replace(content, "");
+            content = content.Replace("<br>", "");
 
-                posts[j] = PageData() <- [
-                    "Id" = reader.getValue("Id", 0U),
-                    "Content" = content,
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                ];
-            });
-            Array.Resize(ref posts, i);
-        }
+            posts[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Content" = content,
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+            ];
+        });
+        Array.Resize(ref posts, i);
+
         PageData["Threads"] = threads;
         PageData["Posts"] = posts;
     }

@@ -51,25 +51,23 @@ public class NavHandler: BasePageHandler {
             def session = cookies ? cookies["_session"] : null;
             mutable id = 0U;
 
-            using(db = Server.openDatabase()) {
-                when(!String.IsNullOrEmpty(session)) {
-                    id = Server.getUserIdFromSessionToken(STOK.SECURE, session, db);
-                }
+            when(!String.IsNullOrEmpty(session)) {
+                id = Server.getUserIdFromSessionToken(STOK.SECURE, session, Database);
+            }
 
-                if(id > 0) {
-                    _ = PageData <- [
-                        "Id" = id,
-                        "User" = Server.getUserName(id, db),
-                        "Session" = session,
-                    ];
+            if(id > 0) {
+                _ = PageData <- [
+                    "Id" = id,
+                    "User" = Server.getUserName(id, Database),
+                    "Session" = session,
+                ];
 
-                    Response.append(Server.renderPage("nav-ok.nyml", PageData));
-                    Response.Status = (200, "OK");
+                Response.append(Server.renderPage("nav-ok.nyml", PageData));
+                Response.Status = (200, "OK");
 
-                } else {
-                    Response.append(Server.renderPage("nav-login.nyml", PageData));
-                    Response.Status = (200, "OK");
-                }
+            } else {
+                Response.append(Server.renderPage("nav-login.nyml", PageData));
+                Response.Status = (200, "OK");
             }
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");
@@ -91,35 +89,33 @@ public class NavHandler: BasePageHandler {
     public navSigninResponse(): void {
 
         if(Request.IsSecure) {
-            using(db = Server.openDatabase()) {
-                def user = Context.Vars["user"];
-                def password = Context.Vars["password"];
-                def auth = Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
-                def command1 = db.createCommand(
-                    "SELECT Id FROM Users WHERE "
-                        "Name = @Name") <- [ "@Name" = user ];
-                def id = command1.executeScalar() :> uint?;
-                mutable record;
+            def user = Context.Vars["user"];
+            def password = Context.Vars["password"];
+            def auth = Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
+            def command1 = Database.createCommand(
+                "SELECT Id FROM Users WHERE "
+                    "Name = @Name") <- [ "@Name" = user ];
+            def id = command1.executeScalar() :> uint?;
+            mutable record;
 
-                when(id != null) {
-                    def command2 = db.createCommand(
-                        "SELECT PwRecord FROM Auth WHERE "
-                            "UserId = @UserId") <- [ "@UserId" = id ];
-                    record = command2.executeScalar() :> string;
-                }
+            when(id != null) {
+                def command2 = Database.createCommand(
+                    "SELECT PwRecord FROM Auth WHERE "
+                        "UserId = @UserId") <- [ "@UserId" = id ];
+                record = command2.executeScalar() :> string;
+            }
 
-                def ok = !String.IsNullOrEmpty(record) &&
-                    auth.validatePassword(password, record);
-                Log.i("Login attempt as {0}: {1}", user, ok);
-                when(ok) {
+            def ok = !String.IsNullOrEmpty(record) &&
+                auth.validatePassword(password, record);
+            Log.i("Login attempt as {0}: {1}", user, ok);
+            when(ok) {
 
-                    def (_ok2, token, expiry) =
-                        Server.registerSessionToken(STOK.SECURE, id :> uint, db);
-                    def cookie_flags = Server.Configuration.ForceInsecureOperation ?
-                        COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
-                    Response.Cookies.add(
-                        "_session", token, expiry, cookie_flags);
-                }
+                def (_ok2, token, expiry) =
+                    Server.registerSessionToken(STOK.SECURE, id :> uint, Database);
+                def cookie_flags = Server.Configuration.ForceInsecureOperation ?
+                    COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
+                Response.Cookies.add(
+                    "_session", token, expiry, cookie_flags);
             }
             Response["Location"] = CurrentUrl;
             Response.Status = (303, "See Other");
@@ -135,17 +131,15 @@ public class NavHandler: BasePageHandler {
         if(Request.IsSecure) {
             def cookies = Request.Cookies;
             def session = cookies ? cookies["_session"] : null;
-            using(db = Server.openDatabase()) {
-                def id = Server.getUserIdFromSessionToken(STOK.SECURE, session, db);
+            def id = Server.getUserIdFromSessionToken(STOK.SECURE, session, Database);
 
-                when(!String.IsNullOrEmpty(session)) {
-                    def command = db.createCommand(
-                        "DELETE FROM Sessions WHERE (Id = @Id)") <- [
-                            "@Id" = id
-                        ];
-                    def rows = command.executeNonQuery();
-                    Log.i("Deleted {0} session tokens (user sign out)...", rows);
-                }
+            when(!String.IsNullOrEmpty(session)) {
+                def command = Database.createCommand(
+                    "DELETE FROM Sessions WHERE (Id = @Id)") <- [
+                        "@Id" = id
+                    ];
+                def rows = command.executeNonQuery();
+                Log.i("Deleted {0} session tokens (user sign out)...", rows);
             }
 
             Response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);

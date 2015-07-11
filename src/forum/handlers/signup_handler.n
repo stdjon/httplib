@@ -66,20 +66,18 @@ public class SignupHandler: BasePageHandler {
 
             mutable test1, test2;
 
-            using(db = Server.openDatabase()) {
-                mutable command1 = db.createCommand(
-                    "SELECT Name FROM Users WHERE Name = @Name") <- [
-                        "@Name" = user
-                    ];
+            mutable command1 = Database.createCommand(
+                "SELECT Name FROM Users WHERE Name = @Name") <- [
+                    "@Name" = user
+                ];
 
-                mutable command2 = db.createCommand(
-                    "SELECT Email FROM Auth WHERE Email = @Email") <- [
-                        "@Email" =  email
-                    ];
+            mutable command2 = Database.createCommand(
+                "SELECT Email FROM Auth WHERE Email = @Email") <- [
+                    "@Email" =  email
+                ];
 
-                test1 = command1.executeScalar() :> string;
-                test2 = command2.executeScalar() :> string;
-            }
+            test1 = command1.executeScalar() :> string;
+            test2 = command2.executeScalar() :> string;
 
             if(test1 != null || test2 != null || password != confirm) {
                 // TODO: also repeat the validation checks from client side
@@ -98,42 +96,40 @@ public class SignupHandler: BasePageHandler {
                 if(auth != null) {
                     def now = Date.NowTicks;
 
-                    using(db = Server.openDatabase()) {
-                        db.withTransaction(_ => {
-                            mutable command3 = db.createCommand(
-                                "INSERT INTO Users(Name, Level, Points, JoinDate) "
-                                    "VALUES (@Name, 0, 0, @JoinDate)") <- [
-                                "@Name" = user,
-                                "@JoinDate" = now,
-                            ];
-                            _ = command3.executeNonQuery();
+                    Database.withTransaction(db => {
+                        mutable command3 = db.createCommand(
+                            "INSERT INTO Users(Name, Level, Points, JoinDate) "
+                                "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                            "@Name" = user,
+                            "@JoinDate" = now,
+                        ];
+                        _ = command3.executeNonQuery();
 
-                            mutable command4 = db.createCommand(
-                                "SELECT Id FROM Users WHERE "
-                                    "Name = @Name") <- [ "@Name" = user ];
+                        mutable command4 = db.createCommand(
+                            "SELECT Id FROM Users WHERE "
+                                "Name = @Name") <- [ "@Name" = user ];
 
-                            def id = command4.executeScalar() :> uint;
+                        def id = command4.executeScalar() :> uint;
 
-                            def record = auth.createPasswordRecord(password);
+                        def record = auth.createPasswordRecord(password);
 
-                            mutable command5 = db.createCommand(
-                                "INSERT INTO Auth(UserId, PwRecord, Email) "
-                                    "VALUES (@UserId, @PwRecord, @Email)") <- [
-                                "@UserId" = id,
-                                "@PwRecord" = record,
-                                "@Email" = email,
-                            ];
-                            _ = command5.executeNonQuery();
+                        mutable command5 = db.createCommand(
+                            "INSERT INTO Auth(UserId, PwRecord, Email) "
+                                "VALUES (@UserId, @PwRecord, @Email)") <- [
+                            "@UserId" = id,
+                            "@PwRecord" = record,
+                            "@Email" = email,
+                        ];
+                        _ = command5.executeNonQuery();
 
-                            def (ok, t, x) =
-                                Server.registerSessionToken(STOK.SECURE, id, db);
+                        def (ok, t, x) =
+                            Server.registerSessionToken(STOK.SECURE, id, db);
 
-                            when(ok) {
-                                token = t;
-                                expiry = x;
-                            }
-                        });
-                    }
+                        when(ok) {
+                            token = t;
+                            expiry = x;
+                        }
+                    });
 
                     Response.Cookies.add(
                         "_session", token, expiry, COOKIE.SECURE_HTTP_ONLY);

@@ -33,12 +33,11 @@ public class UsersHandler: BasePageHandler {
     public initializeSingle(): void {
         mutable page_userid;
 
-        using(db = Server.openDatabase()) {
-            def session_userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, db);
-            def user = Context.Vars["user"];
-            def command = db.createCommand(
-                "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
-            page_userid = command.executeScalar() :> uint?;
+        def session_userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, Database);
+        def user = Context.Vars["user"];
+        def command = Database.createCommand(
+            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
+        page_userid = command.executeScalar() :> uint?;
 
         def is_prefs =
             (session_userid != 0) && (page_userid != null) &&
@@ -49,7 +48,6 @@ public class UsersHandler: BasePageHandler {
             } else {
                 initializeUser(user);
             }
-        }
     }
 
     public initializeUsers(): void {
@@ -60,99 +58,95 @@ public class UsersHandler: BasePageHandler {
         mutable users: PageDataArray = array(dist);
         mutable i = 0;
 
-        using(db = Server.openDatabase()) {
-            def command = db.createCommand(
-                "SELECT Name, Level, Points, Motto FROM Users "
-                    "ORDER BY Name LIMIT @From, @To") <- [
-                    "@From" = from - 1,
-                    "@To" = to - 1,
-                ];
-
-            i = command.execute((j, reader) => {
-                when(j < dist) {
-                    def u = reader.getValue("Name");
-                    when(u != null) {
-                        def points = reader.getValue("Points", 0);
-                        def level = reader.getValue("Level", 0.0f);
-                        def motto = reader.getValue("Motto", "");
-                        users[j] = PageData() <- [
-                            "Num" = (from + j).ToString(),
-                            "Name" = u,
-                            "Points" = points.ToString(),
-                            "Level" = level.ToString("f2"),
-                            "Motto" = motto,
-                        ];
-                    }
-                }
-            });
-
-            when(i < dist) {
-                Array.Resize(ref users, i);
-            }
-
-            def prf = Server.getDefaultPrefix(Request);
-            mutable prev = null;
-            mutable next = null;
-
-            Log.d("from = {0} > 1 {1}", from, from > 1);
-            when(from > 1) {
-                def pf = Math.Max(1, from - dist);
-                def pt = pf + dist - 1;
-                prev = $"$prf/u/$pf-$pt";
-            }
-            Log.d("prev = {0}", prev);
-
-            def user_count = Server.getUserCount(db);
-            Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-            when(to < user_count) {
-                def nf = from + dist;
-                def nt = nf + dist - 1;
-                next = $"$prf/u/$nf-$nt";
-            }
-            Log.d("next = {0}", next);
-
-            // Add a marker for every fifth post (1, 6, 11...)
-            def marker_count = (i + 4) / 5;
-            def markers: PageDataArray = array(marker_count);
-            for(mutable j = 0; j < marker_count; j++) {
-                markers[j] = PageData() <- [ "Mark" = (j * 5) + from ];
-            }
-
-            _ = PageData <- [
-                "Users" = users,
-                "Prev" = prev,
-                "Next" = next,
-                "Markers" = markers,
+        def command = Database.createCommand(
+            "SELECT Name, Level, Points, Motto FROM Users "
+                "ORDER BY Name LIMIT @From, @To") <- [
+                "@From" = from - 1,
+                "@To" = to - 1,
             ];
+
+        i = command.execute((j, reader) => {
+            when(j < dist) {
+                def u = reader.getValue("Name");
+                when(u != null) {
+                    def points = reader.getValue("Points", 0);
+                    def level = reader.getValue("Level", 0.0f);
+                    def motto = reader.getValue("Motto", "");
+                    users[j] = PageData() <- [
+                        "Num" = (from + j).ToString(),
+                        "Name" = u,
+                        "Points" = points.ToString(),
+                        "Level" = level.ToString("f2"),
+                        "Motto" = motto,
+                    ];
+                }
+            }
+        });
+
+        when(i < dist) {
+            Array.Resize(ref users, i);
         }
+
+        def prf = Server.getDefaultPrefix(Request);
+        mutable prev = null;
+        mutable next = null;
+
+        Log.d("from = {0} > 1 {1}", from, from > 1);
+        when(from > 1) {
+            def pf = Math.Max(1, from - dist);
+            def pt = pf + dist - 1;
+            prev = $"$prf/u/$pf-$pt";
+        }
+        Log.d("prev = {0}", prev);
+
+        def user_count = Server.getUserCount(Database);
+        Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
+        when(to < user_count) {
+            def nf = from + dist;
+            def nt = nf + dist - 1;
+            next = $"$prf/u/$nf-$nt";
+        }
+        Log.d("next = {0}", next);
+
+        // Add a marker for every fifth post (1, 6, 11...)
+        def marker_count = (i + 4) / 5;
+        def markers: PageDataArray = array(marker_count);
+        for(mutable j = 0; j < marker_count; j++) {
+            markers[j] = PageData() <- [ "Mark" = (j * 5) + from ];
+        }
+
+        _ = PageData <- [
+            "Users" = users,
+            "Prev" = prev,
+            "Next" = next,
+            "Markers" = markers,
+        ];
     }
 
     public initializeUserCommon(user: string): void {
-        using(db = Server.openDatabase()) {
 
-            def command = db.createCommand(
-                "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
-                    "Transform, Font FROM Users WHERE Name = @Name") <- [
-                "@Name" = user
+        def command = Database.createCommand(
+            "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
+                "Transform, Font FROM Users WHERE Name = @Name") <- [
+            "@Name" = user
+        ];
+
+        command.execute(reader => {
+            def date: long = reader.getValue("JoinDate", 0L);
+            Transform = reader.getValue("Transform", "bbcode");
+            Font = reader.getValue("Font", "serif1");
+
+            _ = PageData <- [
+                "User" = reader.getValue("Name", user),
+                "Motto" = reader.getValue("Motto", ""),
+                "Location" = reader.getValue("Location", ""),
+                "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                "Points" = reader.getValue("Points", 0),
+                "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
+                "ColourId" = reader.getValue("Colour", "x360"),
+                "Font" = Font,
             ];
-
-            command.execute(reader => {
-                def date: long = reader.getValue("JoinDate", 0L);
-                Transform = reader.getValue("Transform", "bbcode");
-                Font = reader.getValue("Font", "serif1");
-
-                _ = PageData <- [
-                    "User" = reader.getValue("Name", user),
-                    "Motto" = reader.getValue("Motto", ""),
-                    "Location" = reader.getValue("Location", ""),
-                    "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
-                    "Points" = reader.getValue("Points", 0),
-                    "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
-                    "ColourId" = reader.getValue("Colour", "x360"),
-                    "Font" = Font,
-                ];
-            });
-        }
+        });
     }
 
     public initializeUser(user: string): void {
@@ -163,55 +157,53 @@ public class UsersHandler: BasePageHandler {
         mutable posts = array(10);
         mutable i;
 
-        using(db = Server.openDatabase()) {
-            def command = db.createCommand(
-                "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
-            def userid_ = command.executeScalar() :> uint?;
-            def userid = userid_ ? (userid_ :> uint) : 0;
+        def command = Database.createCommand(
+            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];
+        def userid_ = command.executeScalar() :> uint?;
+        def userid = userid_ ? (userid_ :> uint) : 0;
 
-            def command2 = db.createCommand(
-                "SELECT Id, Title, CreateDate FROM Threads WHERE "
-                    "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
-                "@UserId" = userid,
+        def command2 = Database.createCommand(
+            "SELECT Id, Title, CreateDate FROM Threads WHERE "
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+            "@UserId" = userid,
+        ];
+        i = command2.execute((j, reader) => {
+            threads[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Title" = reader.getValue("Title"),
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
-            i = command2.execute((j, reader) => {
-                threads[j] = PageData() <- [
-                    "Id" = reader.getValue("Id", 0U),
-                    "Title" = reader.getValue("Title"),
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                ];
-            });
-            Array.Resize(ref threads, i);
+        });
+        Array.Resize(ref threads, i);
 
-            def command3 = db.createCommand(
-                "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
-                    "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
-                "@UserId" = userid,
+        def command3 = Database.createCommand(
+            "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+            "@UserId" = userid,
+        ];
+        i = command3.execute((j, reader) => {
+            mutable content = reader.getValue("OutputContent");
+            when(content.Length > 100) {
+                content = content.Substring(0, 100) + "&hellip;";
+            }
+            // Use HtmlSanitizer to close any tags lost by the truncation.
+            def htmlsan = Server.
+                getModuleInterface.[ITextTransform]("HtmlSanitizer");
+            content = htmlsan.transform(content);
+
+            // Strip out <hN>, <p> and <br> tags for the post preview
+            // TODO: use a CsQuery-based module to allow proper tag replacement.
+            content = Regex(@"</?h[0-9]+>").Replace(content, "");
+            content = Regex(@"</?p>").Replace(content, "");
+            content = content.Replace("<br>", "");
+
+            posts[j] = PageData() <- [
+                "Id" = reader.getValue("Id", 0U),
+                "Content" = content,
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
-            i = command3.execute((j, reader) => {
-                mutable content = reader.getValue("OutputContent");
-                when(content.Length > 100) {
-                    content = content.Substring(0, 100) + "&hellip;";
-                }
-                // Use HtmlSanitizer to close any tags lost by the truncation.
-                def htmlsan = Server.
-                    getModuleInterface.[ITextTransform]("HtmlSanitizer");
-                content = htmlsan.transform(content);
-
-                // Strip out <hN>, <p> and <br> tags for the post preview
-                // TODO: use a CsQuery-based module to allow proper tag replacement.
-                content = Regex(@"</?h[0-9]+>").Replace(content, "");
-                content = Regex(@"</?p>").Replace(content, "");
-                content = content.Replace("<br>", "");
-
-                posts[j] = PageData() <- [
-                    "Id" = reader.getValue("Id", 0U),
-                    "Content" = content,
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                ];
-            });
-            Array.Resize(ref posts, i);
-        }
+        });
+        Array.Resize(ref posts, i);
 
         PageData["Threads"] = threads;
         PageData["Posts"] = posts;

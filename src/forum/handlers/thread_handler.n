@@ -40,280 +40,275 @@ public class ThreadHandler: BasePageHandler {
     public override initialize(): void {
         base.initialize();
 
-        using(db = Server.openDatabase()) {
+        def command = Database.createCommand(
+            "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
+                "WHERE Id = @Id") <- [ "@Id" = ThreadId ];
 
-            def command = db.createCommand(
-                "SELECT Title, UserId, CategoryId, CreateDate, Colour FROM Threads "
-                    "WHERE Id = @Id") <- [ "@Id" = ThreadId ];
+        mutable ok = false;
+        mutable uid;
+        mutable catid;
+        command.execute(reader => {
+            uid = reader.getValue("UserId", 0U);
+            catid = reader.getValue("CategoryId", 0U);
+            def is_own_thread = (uid == SignedInUserId);
+            _ = PageData <- [
+                "Title" = reader.getValue("Title"),
+                "UserId" = uid,
+                "CategoryId" = catid,
+                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                "ColourId" = reader.getValue("Colour"),
+                "IsOwnThread" = is_own_thread,
+                "OwnThreadClass" = is_own_thread ? "own-thread" : "",
+            ];
+            ok = true;
+        });
 
-            mutable ok = false;
-            mutable uid;
-            mutable catid;
-            command.execute(reader => {
-                uid = reader.getValue("UserId", 0U);
-                catid = reader.getValue("CategoryId", 0U);
-                def is_own_thread = (uid == SignedInUserId);
-                _ = PageData <- [
-                    "Title" = reader.getValue("Title"),
-                    "UserId" = uid,
-                    "CategoryId" = catid,
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
-                    "ColourId" = reader.getValue("Colour"),
-                    "IsOwnThread" = is_own_thread,
-                    "OwnThreadClass" = is_own_thread ? "own-thread" : "",
-                ];
-                ok = true;
+        PageData["Category"] = Server.getCategoryName(catid, Database);
+        PageData["UserName"] = Server.getUserName(uid, Database);
+
+        when(ok) {
+            mutable posts: PageDataArray = array(PostCount);
+            mutable i = 0;
+
+            def command2 = Database.createCommand(
+                "SELECT Id, UserId, Points, CreateDate, OutputContent, ReplyTo "
+                    "FROM Posts WHERE ThreadId = @ThreadId ORDER BY CreateDate "
+                    "LIMIT @From, @To") <- [
+                "@ThreadId" = ThreadId,
+                "@From" = From - 1,
+                "@To" = To - 1,
+            ];
+
+            i = command2.execute((j, reader) => {
+                when(j < PostCount) {
+                    def id = reader.getValue("Id", 0U);
+                    uid = reader.getValue("UserId", 0U);
+                    def points = reader.getValue("Points", 0);
+                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                    def content = reader.getValue("OutputContent");
+                    def reply_to = reader.getValue("ReplyTo"): uint?;
+                    def is_own_post = (uid == SignedInUserId);
+
+                    posts[j] = PageData() <- [
+                        "Number" = From + j,
+                        "PostId" = id,
+                        "UserId" = uid,
+                        "Points" = points,
+                        "CreateDate" = date,
+                        "Content" = content,
+                        "IsOwnPost" = is_own_post,
+                        "OwnPostClass" = is_own_post ? "own-post" : "",
+                    ];
+                    when(reply_to != null) {
+                        _ = posts[j] <- [
+                            "ReplyTo" = reply_to :> uint,
+                            "ReplyToUrl" = postUrl(reply_to :> uint),
+                        ];
+                    }
+                }
             });
-
-            PageData["Category"] = Server.getCategoryName(catid, db);
-            PageData["UserName"] = Server.getUserName(uid, db);
-
-            when(ok) {
-                mutable posts: PageDataArray = array(PostCount);
-                mutable i = 0;
-
-                def command2 = db.createCommand(
-                    "SELECT Id, UserId, Points, CreateDate, OutputContent, ReplyTo "
-                        "FROM Posts WHERE ThreadId = @ThreadId ORDER BY CreateDate "
-                        "LIMIT @From, @To") <- [
-                    "@ThreadId" = ThreadId,
-                    "@From" = From - 1,
-                    "@To" = To - 1,
-                ];
-
-                i = command2.execute((j, reader) => {
-                    when(j < PostCount) {
-                        def id = reader.getValue("Id", 0U);
-                        uid = reader.getValue("UserId", 0U);
-                        def points = reader.getValue("Points", 0);
-                        def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
-                        def content = reader.getValue("OutputContent");
-                        def reply_to = reader.getValue("ReplyTo"): uint?;
-                        def is_own_post = (uid == SignedInUserId);
-
-                        posts[j] = PageData() <- [
-                            "Number" = From + j,
-                            "PostId" = id,
-                            "UserId" = uid,
-                            "Points" = points,
-                            "CreateDate" = date,
-                            "Content" = content,
-                            "IsOwnPost" = is_own_post,
-                            "OwnPostClass" = is_own_post ? "own-post" : "",
-                        ];
-                        when(reply_to != null) {
-                            _ = posts[j] <- [
-                                "ReplyTo" = reply_to :> uint,
-                                "ReplyToUrl" = postUrl(reply_to :> uint),
-                            ];
-                        }
-                    }
-                });
-                when(i < PostCount) {
-                    Array.Resize(ref posts, i);
-                }
-                def limit = i;
-
-                for(i = 0; i < limit; i++) {
-                    posts[i]["UserName"] =
-                        Server.getUserName(posts[i]["UserId"] :> uint, db);
-                }
-
-                // Tags
-                for(i = 0; i < limit; i++) {
-                    def post_id = posts[i]["PostId"] :> uint;
-                    def tags = Server.getPostTags(post_id, db);
-                    when(tags != null) {
-                        def prf = Server.getDefaultPrefix(Request);
-                        mutable tagdata: PageDataArray = array(tags.Length);
-                        for(mutable j = 0; j < tags.Length; j++) {
-                            def url = Uri.EscapeDataString(tags[j]);
-                            tagdata[j] = PageData() <- [
-                                "Name" = tags[j],
-                                "Url" = $"$prf/tg/$url",
-                            ];
-                        }
-                        posts[i]["Tags"] = tagdata;
-                        posts[i]["HasTags"] = true;
-                    }
-                }
-
-                // Replies
-                for(i = 0; i < limit; i++) {
-                    def post_id = posts[i]["PostId"] :> uint;
-
-                    def command = db.createCommand(
-                        "SELECT Count(Id) FROM Replies WHERE ReplyTo=@ReplyTo") <- [
-                            "@ReplyTo" = post_id,
-                        ];
-                    def result = command.executeScalar() :> long?;
-                    when(result != null) {
-                        def reply_count = result :> int;
-                        when(reply_count > 0) {
-                            def replies: PageDataArray = array(reply_count);
-
-                            def command2 = db.createCommand(
-                                "SELECT PostId FROM Replies WHERE ReplyTo=@ReplyTo") <- [
-                                    "@ReplyTo" = post_id,
-                                ];
-                            _ = command2.execute((j, reader) => {
-                                def pid = reader.getValue("PostId", 0U);
-                                replies[j] = PageData() <- [
-                                    "PostId" = pid,
-                                    "PostUrl" = postUrl(pid),
-                                ];
-                            });
-
-                            posts[i]["HasReplies"] = true;
-                            def plural = reply_count > 1;
-                            posts[i]["ReplySummary"] =
-                                $<#$reply_count $(plural ? "replies" : "reply")#>; //TODO: l8n?
-                            posts[i]["Replies"] = replies;
-
-                            when(posts[i].ContainsKey("ReplyTo")) {
-                                posts[i]["ReplySep"] = true;
-                            }
-                        }
-                        posts[i]["ReplyCount"] = reply_count;
-                    }
-                }
-
-                // Thumbs markers
-                for(i = 0; i < limit; i++) {
-                    def post_id = posts[i]["PostId"] :> uint;
-
-                    def command = db.createCommand(
-                        "SELECT COUNT(Id) FROM Thumbs WHERE "
-                            "PostId = @PostId") <- [
-                        "@PostId" = post_id,
-                    ];
-                    def result = command.executeScalar() :> long;
-                    posts[i]["Thumbs"] = result :> uint;
-
-                    def command2 = db.createCommand(
-                        "SELECT COUNT(Id) FROM Thumbs WHERE "
-                            "PostId = @PostId  AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = SignedInUserId,
-                    ];
-                    def result2 = command2.executeScalar() :> long;
-                    when(result2 > 0) {
-                        posts[i]["IsOwnThumb"] = true;
-                    }
-                }
-
-                // Bookmarks markers
-                for(i = 0; i < limit; i++) {
-                    def post_id = posts[i]["PostId"] :> uint;
-
-                    def command = db.createCommand(
-                        "SELECT COUNT(Id) FROM Bookmarks WHERE "
-                            "PostId = @PostId") <- [
-                        "@PostId" = post_id,
-                    ];
-                    def result = command.executeScalar() :> long;
-                    posts[i]["Bookmarks"] = result :> uint;
-
-                    def command2 = db.createCommand(
-                        "SELECT COUNT(Id) FROM Bookmarks WHERE "
-                            "PostId = @PostId  AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = SignedInUserId,
-                    ];
-                    def result2 = command2.executeScalar() :> long;
-                    when(result2 > 0) {
-                        posts[i]["IsOwnBookmark"] = true;
-                    }
-                }
-
-                // Add a marker for every fifth post (1, 6, 11...)
-                def marker_count = (limit + 4) / 5;
-                def markers: PageDataArray = array(marker_count);
-                for(i = 0; i < marker_count; i++) {
-                    markers[i] = PageData() <- [ "Mark" = (i * 5) + From ];
-                }
-
-                _ = PageData <- [
-                    "ThreadId" = ThreadId,
-                    "From" = From,
-                    "To" = To,
-                    "Posts" = posts,
-                    "Markers" = markers,
-                ];
-
-                // prev/next
-                def prf = Server.getDefaultPrefix(Request);
-                mutable prev = null;
-                mutable next = null;
-
-                Log.d("From = {0} > 1 {1}", From, From > 1);
-                when(From > 1) {
-                    def pf = Math.Max(1, From - PostCount);
-                    def pt = pf + PostCount - 1;
-                    prev = $"$prf/th/$ThreadId/$pf-$pt";
-                }
-                Log.d("prev = {0}", prev);
-
-                def user_count = Server.getPostCount(ThreadId, db);
-                Log.d("To = {0} < {1} {2}", To, user_count, To < user_count);
-                when(To < user_count) {
-                    def nf = From + PostCount;
-                    def nt = nf + PostCount - 1;
-                    next = $"$prf/th/$ThreadId/$nf-$nt";
-                }
-                Log.d("next = {0}", next);
-
-                _ = PageData <- [
-                    "Prev" = prev,
-                    "PrevDisabled" = prev == null,
-                    "Next" = next,
-                    "NextDisabled" = next == null,
-                ];
-
-                def command3 = db.createCommand(
-                    "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
-                        "@ThreadId" = ThreadId,
-                    ];
-                def total_count = (command3.executeScalar() :> long) :> int;
-
-                def page_count = (total_count / PostCount) + 1;
-                def pages = array(page_count);
-                for(i = 0; i < page_count; i++) {
-                    def f = i * PostCount + 1;
-                    def t = (i + 1) * PostCount;
-                    pages[i] = PageData() <- [
-                        "Number" = i + 1,
-                        "Url" = (f == 1 && t == PostsPerPage) ?
-                            $"$prf/th/$ThreadId" : $"$prf/th/$ThreadId/$f-$t",
-                        "Active" = (f == From) && (t == To),
-                    ];
-                }
-                PageData["Pages"] = pages;
-
-
-                // User pref (transform)
-                def command4 = db.createCommand(
-                    "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
-                PageData["Transform"] = command4.executeScalar() :> string;
+            when(i < PostCount) {
+                Array.Resize(ref posts, i);
             }
+            def limit = i;
+
+            for(i = 0; i < limit; i++) {
+                posts[i]["UserName"] =
+                    Server.getUserName(posts[i]["UserId"] :> uint, Database);
+            }
+
+            // Tags
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+                def tags = Server.getPostTags(post_id, Database);
+                when(tags != null) {
+                    def prf = Server.getDefaultPrefix(Request);
+                    mutable tagdata: PageDataArray = array(tags.Length);
+                    for(mutable j = 0; j < tags.Length; j++) {
+                        def url = Uri.EscapeDataString(tags[j]);
+                        tagdata[j] = PageData() <- [
+                            "Name" = tags[j],
+                            "Url" = $"$prf/tg/$url",
+                        ];
+                    }
+                    posts[i]["Tags"] = tagdata;
+                    posts[i]["HasTags"] = true;
+                }
+            }
+
+            // Replies
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Database.createCommand(
+                    "SELECT Count(Id) FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                        "@ReplyTo" = post_id,
+                    ];
+                def result = command.executeScalar() :> long?;
+                when(result != null) {
+                    def reply_count = result :> int;
+                    when(reply_count > 0) {
+                        def replies: PageDataArray = array(reply_count);
+
+                        def command2 = Database.createCommand(
+                            "SELECT PostId FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                                "@ReplyTo" = post_id,
+                            ];
+                        _ = command2.execute((j, reader) => {
+                            def pid = reader.getValue("PostId", 0U);
+                            replies[j] = PageData() <- [
+                                "PostId" = pid,
+                                "PostUrl" = postUrl(pid),
+                            ];
+                        });
+
+                        posts[i]["HasReplies"] = true;
+                        def plural = reply_count > 1;
+                        posts[i]["ReplySummary"] =
+                            $<#$reply_count $(plural ? "replies" : "reply")#>; //TODO: l8n?
+                        posts[i]["Replies"] = replies;
+
+                        when(posts[i].ContainsKey("ReplyTo")) {
+                            posts[i]["ReplySep"] = true;
+                        }
+                    }
+                    posts[i]["ReplyCount"] = reply_count;
+                }
+            }
+
+            // Thumbs markers
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Database.createCommand(
+                    "SELECT COUNT(Id) FROM Thumbs WHERE "
+                        "PostId = @PostId") <- [
+                    "@PostId" = post_id,
+                ];
+                def result = command.executeScalar() :> long;
+                posts[i]["Thumbs"] = result :> uint;
+
+                def command2 = Database.createCommand(
+                    "SELECT COUNT(Id) FROM Thumbs WHERE "
+                        "PostId = @PostId  AND UserId = @UserId") <- [
+                    "@PostId" = post_id,
+                    "@UserId" = SignedInUserId,
+                ];
+                def result2 = command2.executeScalar() :> long;
+                when(result2 > 0) {
+                    posts[i]["IsOwnThumb"] = true;
+                }
+            }
+
+            // Bookmarks markers
+            for(i = 0; i < limit; i++) {
+                def post_id = posts[i]["PostId"] :> uint;
+
+                def command = Database.createCommand(
+                    "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                        "PostId = @PostId") <- [
+                    "@PostId" = post_id,
+                ];
+                def result = command.executeScalar() :> long;
+                posts[i]["Bookmarks"] = result :> uint;
+
+                def command2 = Database.createCommand(
+                    "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                        "PostId = @PostId  AND UserId = @UserId") <- [
+                    "@PostId" = post_id,
+                    "@UserId" = SignedInUserId,
+                ];
+                def result2 = command2.executeScalar() :> long;
+                when(result2 > 0) {
+                    posts[i]["IsOwnBookmark"] = true;
+                }
+            }
+
+            // Add a marker for every fifth post (1, 6, 11...)
+            def marker_count = (limit + 4) / 5;
+            def markers: PageDataArray = array(marker_count);
+            for(i = 0; i < marker_count; i++) {
+                markers[i] = PageData() <- [ "Mark" = (i * 5) + From ];
+            }
+
+            _ = PageData <- [
+                "ThreadId" = ThreadId,
+                "From" = From,
+                "To" = To,
+                "Posts" = posts,
+                "Markers" = markers,
+            ];
+
+            // prev/next
+            def prf = Server.getDefaultPrefix(Request);
+            mutable prev = null;
+            mutable next = null;
+
+            Log.d("From = {0} > 1 {1}", From, From > 1);
+            when(From > 1) {
+                def pf = Math.Max(1, From - PostCount);
+                def pt = pf + PostCount - 1;
+                prev = $"$prf/th/$ThreadId/$pf-$pt";
+            }
+            Log.d("prev = {0}", prev);
+
+            def user_count = Server.getPostCount(ThreadId, Database);
+            Log.d("To = {0} < {1} {2}", To, user_count, To < user_count);
+            when(To < user_count) {
+                def nf = From + PostCount;
+                def nt = nf + PostCount - 1;
+                next = $"$prf/th/$ThreadId/$nf-$nt";
+            }
+            Log.d("next = {0}", next);
+
+            _ = PageData <- [
+                "Prev" = prev,
+                "PrevDisabled" = prev == null,
+                "Next" = next,
+                "NextDisabled" = next == null,
+            ];
+
+            def command3 = Database.createCommand(
+                "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
+                    "@ThreadId" = ThreadId,
+                ];
+            def total_count = (command3.executeScalar() :> long) :> int;
+
+            def page_count = (total_count / PostCount) + 1;
+            def pages = array(page_count);
+            for(i = 0; i < page_count; i++) {
+                def f = i * PostCount + 1;
+                def t = (i + 1) * PostCount;
+                pages[i] = PageData() <- [
+                    "Number" = i + 1,
+                    "Url" = (f == 1 && t == PostsPerPage) ?
+                        $"$prf/th/$ThreadId" : $"$prf/th/$ThreadId/$f-$t",
+                    "Active" = (f == From) && (t == To),
+                ];
+            }
+            PageData["Pages"] = pages;
+
+
+            // User pref (transform)
+            def command4 = Database.createCommand(
+                "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
+            PageData["Transform"] = command4.executeScalar() :> string;
         }
     }
 
     populatePostIds(): void {
-        using(db = Server.openDatabase()) {
-            PostIds = array(Server.getPostCount(ThreadId, db));
-            PostIdMap = Dictionary();
+        PostIds = array(Server.getPostCount(ThreadId, Database));
+        PostIdMap = Dictionary();
 
-            def command = db.createCommand(
-                "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
-                    "@ThreadId" = ThreadId
-                ];
-            _ = command.execute((j, reader) => {
-                def pid = reader.getValue("Id", 0U);
-                PostIds[j] = pid;
-                PostIdMap[pid] = j :> uint + 1;
-            });
-        }
+        def command = Database.createCommand(
+            "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
+                "@ThreadId" = ThreadId
+            ];
+        _ = command.execute((j, reader) => {
+            def pid = reader.getValue("Id", 0U);
+            PostIds[j] = pid;
+            PostIdMap[pid] = j :> uint + 1;
+        });
     }
 
     postUrl(post_id: uint): string {

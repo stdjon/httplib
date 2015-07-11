@@ -18,8 +18,12 @@ public class BasePageHandler: BaseHandler {
     public RenderContent: bool { get; private set; }
     public SignedInUserId: uint { get; private set; }
 
+    public Database: Database { get; private set; }
+
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        Database = Server.openDatabase();
 
         SignedInUserId = 0;
 
@@ -50,6 +54,10 @@ public class BasePageHandler: BaseHandler {
         initializeSiteName();
         temporaryLoginHandling(); //
         initializeUserClasses();
+    }
+
+    public override finish(): void {
+        Database.Dispose();
     }
 
     public override renderPage(
@@ -92,17 +100,17 @@ public class BasePageHandler: BaseHandler {
             Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
         }
 
-        using(db = Server.openDatabase()) {
-            if(isession != null) {
-                def id = Server.getUserIdFromSessionToken(STOK.INSECURE, isession, db);
-                SignedInUserId = id;
+        if(isession != null) {
+            def id = Server.
+                getUserIdFromSessionToken(STOK.INSECURE, isession, Database);
+            SignedInUserId = id;
 
-                def name = (id != 0) ? Server.getUserName(id, db) : null;
-                PageData["SignedInUser"] = name;
-            } else {
-                def (_ok, t, _x) = Server.registerSessionToken(STOK.TEMPORARY, 0, db);
-                PageData["TempToken"] = t;
-            }
+            def name = (id != 0) ? Server.getUserName(id, Database) : null;
+            PageData["SignedInUser"] = name;
+        } else {
+            def (_ok, t, _x) = Server.
+                registerSessionToken(STOK.TEMPORARY, 0, Database);
+            PageData["TempToken"] = t;
         }
         Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
     }
@@ -121,16 +129,14 @@ public class BasePageHandler: BaseHandler {
     }
 
     initializeUserClasses(): void {
-        using(db = Server.openDatabase()) {
-            def command = db.createCommand(
-                "SELECT Colour, Font From Users WHERE Id=@Id") <- [
-                    "@Id" = SignedInUserId,
-                ];
-            command.execute(reader => {
-                PageData["FontClass"] = reader.getValue("Font", "serif1");
-                PageData["ColourClass"] = reader.getValue("Colour", "x360");
-            });
-        }
+        def command = Database.createCommand(
+            "SELECT Colour, Font From Users WHERE Id=@Id") <- [
+                "@Id" = SignedInUserId,
+            ];
+        command.execute(reader => {
+            PageData["FontClass"] = reader.getValue("Font", "serif1");
+            PageData["ColourClass"] = reader.getValue("Colour", "x360");
+        });
     }
 }
 

@@ -17,54 +17,51 @@ public class PostHandler: BasePageHandler {
     public override initialize(): void {
         base.initialize();
 
-        using(db = Server.openDatabase()) {
+        def pid = Int32.Parse(Context.Vars["num"]);
+        def command = Database.createCommand(
+            "SELECT UserId, ThreadId, CreateDate, Points, OutputContent FROM "
+                "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
 
-            def pid = Int32.Parse(Context.Vars["num"]);
-            def command = db.createCommand(
-                "SELECT UserId, ThreadId, CreateDate, Points, OutputContent FROM "
-                    "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
+        mutable uid;
+        mutable thid;
+        mutable date;
+        mutable points;
+        mutable content;
+        mutable ok = false;
 
-            mutable uid;
-            mutable thid;
-            mutable date;
-            mutable points;
-            mutable content;
-            mutable ok = false;
+        command.execute(reader => {
+            uid = reader.getValue("UserId", 0U);
+            thid = reader.getValue("ThreadId", 0U);
+            date = reader.getValue("CreateDate", 0L);
+            points = reader.getValue("Points", 0);
+            content = reader.getValue("OutputContent");
+            ok = true;
+        });
 
-            command.execute(reader => {
-                uid = reader.getValue("UserId", 0U);
-                thid = reader.getValue("ThreadId", 0U);
-                date = reader.getValue("CreateDate", 0L);
-                points = reader.getValue("Points", 0);
-                content = reader.getValue("OutputContent");
-                ok = true;
+        when(ok) {
+            def command2 = Database.createCommand(
+                "SELECT Name from Users WHERE Id = @Id") <- [ "@Id" = uid ];
+            def name = command2.executeScalar() :> string;
+
+            def command3 = Database.createCommand(
+                "SELECT Title, Colour from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
+
+            mutable title, colour;
+            command3.execute(reader => {
+                title = reader.getValue("Title");
+                colour = reader.getValue("Colour");
             });
 
-            when(ok) {
-                def command2 = db.createCommand(
-                    "SELECT Name from Users WHERE Id = @Id") <- [ "@Id" = uid ];
-                def name = command2.executeScalar() :> string;
-
-                def command3 = db.createCommand(
-                    "SELECT Title, Colour from Threads WHERE Id = @Id") <- [ "@Id" = thid ];
-
-                mutable title, colour;
-                command3.execute(reader => {
-                    title = reader.getValue("Title");
-                    colour = reader.getValue("Colour");
-                });
-
-                _ = PageData <- [
-                    "PostId" = pid,
-                    "User" = name,
-                    "Thread" = title,
-                    "ThreadId" = thid,
-                    "CreateDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
-                    "Points" = points,
-                    "Content" = content,
-                    "ColourId" = colour,
-                ];
-            }
+            _ = PageData <- [
+                "PostId" = pid,
+                "User" = name,
+                "Thread" = title,
+                "ThreadId" = thid,
+                "CreateDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                "Points" = points,
+                "Content" = content,
+                "ColourId" = colour,
+            ];
         }
     }
 }
