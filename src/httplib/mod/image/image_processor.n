@@ -34,7 +34,7 @@ variant Operation {
     public static make(conf: Config): Operation {
 
         def b(x: string): byte {
-            Int32.Parse(conf[x] :> string) :> byte
+            Byte.Parse(conf[x] :> string)
         }
 
         def i(x: string): int {
