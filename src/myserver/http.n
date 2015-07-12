@@ -585,6 +585,10 @@ module Test {
             my_server.route(HTTP.POST, "/ajax", my_server.ajaxResponse);
 
             my_server.route(HTTP.GET, "/check", my_server.checkUserAgentResponse);
+            my_server.route(HTTP.GET, "/dialog",   (_ctx, _req, res) => {
+                res.append(my_server.renderPage("dialog.nyml"));
+                res.Status = (200, "OK");
+            });
 
             my_server.route(HTTP.GET, "/mail",  (_ctx, req, res) => {
                 def qto = req.QueryString["to"];

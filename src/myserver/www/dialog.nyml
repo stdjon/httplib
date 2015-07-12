@@ -1,0 +1,49 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /bootstrap3-dialog-1.34.5/dist/css/bootstrap-dialog.min.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Dialogs
+Content: >
+  <div class="container">
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Dialogs</h1>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button" onclick="dialog1()">View Dialog 1 &raquo;</a></p>
+      </div>
+    </div>
+
+    <!-- Example row of columns -->
+    <div class="row">
+      <div class="col-md-4">
+        <h2>Heading</h2>
+        <p><a class="btn btn-danger" href="#" role="button" onclick="dialog2()">View Dialog 2 &raquo;</a></p>
+      </div>
+      <div class="col-md-4">
+        <h2>Heading</h2>
+        <p><a class="btn btn-warning" href="#" role="button" onclick="dialog3()">View Dialog 3 &raquo;</a></p>
+     </div>
+      <div class="col-md-4">
+        <h2>Heading</h2>
+        <p><a class="btn btn-success" href="#" role="button" onclick="dialog4()">View Dialog 4 &raquo;</a></p>
+      </div>
+    </div>
+  </div> <!-- /container -->
+
+
+  <!-- Bootstrap core JavaScript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+  <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+  <script src="/bootstrap3-dialog-1.34.5/dist/js/bootstrap-dialog.min.js"></script>
+  <script src="/dialog.js"></script>
+
