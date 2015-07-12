@@ -73,12 +73,15 @@ public class OEmbed: Module, ITextTransform {
         for(mutable i = 0; i < words.Length; i++) {
             def w = words[i];
             when(regex.IsMatch(w)) {
-                foreach(p in Providers) {
-                    when(p.isMatch(w)) {
-                        def e = p.load(w);
-                        when(e != null) {
-                            words[i] = e.transform();
-                            acted = true;
+                exit: {
+                    foreach(p in Providers) {
+                        when(p.isMatch(w)) {
+                            def e = p.load(w);
+                            when(e != null) {
+                                words[i] = e.transform();
+                                acted = true;
+                                exit();
+                            }
                         }
                     }
                 }
@@ -92,12 +95,15 @@ public class OEmbed: Module, ITextTransform {
         for(mutable i = 0; i < words.Count; i++) {
             def w = words[i];
             when(regex.IsMatch(w)) {
-                foreach(p in Providers) {
-                    when(p.isMatch(w)) {
-                        def e = p.load(w);
-                        when(e != null) {
-                            words[i] = e.transform();
-                            acted = true;
+                exit: {
+                    foreach(p in Providers) {
+                        when(p.isMatch(w)) {
+                            def e = p.load(w);
+                            when(e != null) {
+                                words[i] = e.transform();
+                                acted = true;
+                                exit();
+                            }
                         }
                     }
                 }
