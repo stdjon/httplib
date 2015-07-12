@@ -1,68 +1,156 @@
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
 
-using OEmbed.Net;
-using OEmbed.Net.Domain;
-
-
-// TODO: this is a WIP, we will probably need to check incoming URL's against a
-//   list of known providers to synthesise a request URL.
-
-namespace httplib{
-
-public variant OEMB {
-    | LINK {
-        public url: string;
-    }
-    | PHOTO {
-        public url: string;
-        public width: int;
-        public height: int;
-    }
-    | RICH {
-        public url: string;
-    }
-    | VIDEO {
-        public url: string;
-        public width: int;
-        public height: int;
-    }
-}
+using YamlDotNet.Serialization;
 
 
-public interface IOEmbed: IModuleInterface {
-
-    getEmbed(data: OEMB): string;
-}
-
-
+namespace httplib {
 namespace mod {
 
+//------------------------------------------------------------------------------
+// Input data
+
+[Record]
+public class EmbedType {
+    public Assembly: string { get; set; }
+    public Typename: string { get; set; }
+}
+
+
+public type EmbedTypes = Dictionary[string, EmbedType];
+
+
+//------------------------------------------------------------------------------
+// Module
+
 [HasLogging]
-public class OEmbed: Module, IOEmbed {
+public class OEmbed: Module, ITextTransform {
+
+    static yaml_deserializer = Deserializer();
+    static regex = Regex("^http");
 
     public override InterfaceType: Type {
-        get { typeof(IOEmbed) }
+        get { typeof(ITextTransform) }
     }
+
+    public Types: EmbedTypes { get; private set; }
+    public Providers: List[ProviderData] { get; private set; }
 
     public this(data: ModuleData = null) {
         Log.i("Starting OEmbed module... (data: {0})", data);
+        mutable probe;
+        when(data.TryGetValue("Types", out probe)) {
+            loadTypes(probe :> Dictionary[object, object]);
+        }
+        when(data.TryGetValue("Providers", out probe)) {
+            loadProviders(probe :> List[object]);
+        }
     }
 
-    public getEmbed(_: OEMB): string {
-        | LINK(_) => {
-            "" // not really sure what to do here...
+    // This is ugly at the moment: split the input into words on whitespace, and
+    // try to process each word as a URL candidate for embedding. If nothing
+    // happens, then try spliting the input up based on HTML <> tag boundaries
+    // and try to process each of those words.
+    public transform(input: string): string {
+        mutable acted = false;
+        mutable result = input;
+        try {
+            result = transform1(input, ref acted);
+            when(!acted) {
+                result = transform2(input, ref acted);
+            }
+        } catch {
+            | ex => Server.internalServerError(ex);
         }
-        | PHOTO(u, _, _) => {
-            def c = Consumer.[Photo]();
-            "<img src='" + c.GetObject(u).Url + "'></img>";
+        result;
+    }
+
+    public transform1(input: string, acted: ref bool): string {
+        def words = input.Split(array[' ', '\n', '\r', '\t']);
+        for(mutable i = 0; i < words.Length; i++) {
+            def w = words[i];
+            when(regex.IsMatch(w)) {
+                foreach(p in Providers) {
+                    when(p.isMatch(w)) {
+                        def e = p.load(w);
+                        when(e != null) {
+                            words[i] = e.transform();
+                            acted = true;
+                        }
+                    }
+                }
+            }
         }
-        | RICH(u) => {
-            def c = Consumer.[Rich]();
-            c.GetObject(u).Html;
+        String.Join(" ", words);
+    }
+
+    public transform2(input: string, acted: ref bool): string {
+        def words = tagSplit(input);
+        for(mutable i = 0; i < words.Count; i++) {
+            def w = words[i];
+            when(regex.IsMatch(w)) {
+                foreach(p in Providers) {
+                    when(p.isMatch(w)) {
+                        def e = p.load(w);
+                        when(e != null) {
+                            words[i] = e.transform();
+                            acted = true;
+                        }
+                    }
+                }
+            }
         }
-        | VIDEO(u, _, _) => {
-            def c = Consumer.[Video]();
-            c.GetObject(u).Html;
+        String.Join("", words);
+    }
+
+    public tagSplit(input: string): List[string] {
+        def words = List();
+        mutable b = StringBuilder();
+        foreach(c in input) {
+            match(c) {
+                | '>' => {
+                    _ = b.Append(c);
+                    words.Add(b.ToString());
+                    b = StringBuilder();
+                }
+                | '<' => {
+                    words.Add(b.ToString());
+                    b = StringBuilder();
+                    _ = b.Append(c);
+                }
+                | _ => _ = b.Append(c);
+            }
+
+        }
+        words.Add(b.ToString());
+        words;
+    }
+
+    public loadTypes(data: Dictionary[object, object]): void {
+        Types = Dictionary();
+        foreach(d in data) {
+            def name = d.Key :> string;
+            def type = d.Value :> Dictionary[object, object];
+            def a = type["Assembly"] :> string;
+            def t = type["Typename"] :> string;
+            Types[name] = EmbedType(a, t);
+        }
+    }
+
+    public loadProviders(data: List[object]): void {
+        Providers = List();
+        foreach(d :> Dictionary[object, object] in data) {
+            def n = d["Name"] :> string;
+            def t = d["Type"] :> string;
+            def e = d["Endpoint"] :> string;
+            def p = List();
+            foreach(x in d["Patterns"] :> List[object]) {
+                p.Add(x :> string);
+            }
+            Providers.Add(ProviderData(n, t, e, p, this));
         }
     }
 }

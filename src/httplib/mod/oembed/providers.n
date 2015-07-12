@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using System.Text.RegularExpressions;
+
+using OEmbed.Net;
+using OEmbed.Net.Domain;
+
+
+namespace httplib {
+namespace mod {
+
+//------------------------------------------------------------------------------
+// "compiled" information about providers
+
+public class ProviderData {
+
+    public Name: string { get; private set; }
+    public Type: EmbedType { get; private set; }
+    public Endpoint: string { get; private set; }
+    public Patterns: List[Regex] { get; private set; }
+
+    public this(
+        name: string, type: string,
+        endpoint: string, patterns: List[string], self: OEmbed) {
+
+        Name = name;
+        Type = self.Types[type];
+        Endpoint = endpoint;
+        Patterns = List();
+
+        foreach(p in patterns) {
+            Patterns.Add(Regex(p));
+        }
+    }
+
+    public virtual isMatch(url: string): bool {
+        mutable result = false;
+        exit: {
+            foreach(p in Patterns) {
+                when(p.IsMatch(url)) {
+                    result = true;
+                    exit();
+                }
+            }
+        }
+        result;
+    }
+
+    public load(url: string): Provider {
+        def assembly = Assembly.LoadFrom(Type.Assembly);
+        def type = assembly.GetType(Type.Typename);
+
+        Activator.CreateInstance(type, Endpoint, url) :> Provider;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// Base class for providers
+
+[HasLogging]
+public class Provider {
+
+    public Endpoint: string { get; private set; }
+    public Url: string { get; private set; }
+
+    public this(endpoint: string, url: string) {
+        Endpoint = endpoint;
+        Url = url;
+    }
+
+    public virtual transform(): string {
+        Url;
+    }
+}
+
+
+public type Providers = List[Provider];
+
+
+public class OEmbedProvider: Provider {
+
+    public this(endpoint: string, url: string) {
+        base(endpoint, url);
+        //Log.f("OEmbedUrl={0}", OEmbedUrl);
+    }
+
+    public OEmbedUrl: string {
+        get {
+            $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))&format=json"
+        }
+    }
+}
+
+
+public class OEmbedPhotoProvider: OEmbedProvider {
+
+    public this(endpoint: string, url: string) {
+        base(endpoint, url);
+    }
+
+    public override transform(): string {
+        def o = Consumer.[Photo]();
+        def d = o.GetObject(OEmbedUrl);
+        $"<img src='$(d.Url)' height='$(d.Height)' width='$(d.Width)'></img>";
+    }
+}
+
+
+public class OEmbedVideoProvider: OEmbedProvider {
+
+    public this(endpoint: string, url: string) {
+        base(endpoint, url);
+    }
+
+    public override transform(): string {
+        def o = Consumer.[Video]();
+        def d = o.GetObject(OEmbedUrl);
+        d.Html;
+    }
+}
+
+
+} // namespace mod
+} // namespace httplib

@@ -296,17 +296,20 @@ public class ForumServer: Server {
         def bbc = getModuleInterface.[ITextTransform]("BbCode");
         def txt = getModuleInterface.[ITextTransform]("Textile");
         def htm = getModuleInterface.[ITextTransform]("HtmlSanitizer");
+        def oem = getModuleInterface.[ITextTransform]("OEmbed");
         mutable ok = true;
+        mutable pipeline = htm.transform >> oem.transform;
 
-        def pre =
-            match(method) {
-                | "bbcode" => bbc.transform(text);
-                | "textile" => txt.transform(text);
-                | "htmlsan" => text;
-                | _ => { ok = false; ""; }
-            };
+        match(method) {
+            | "bbcode" => pipeline = bbc.transform >> pipeline;
+            | "textile" => pipeline = txt.transform >> pipeline;
+            | "htmlsan" => ()
+            | _ => ok = false;
+        }
 
-        (ok, htm.transform(pre));
+        def output = ok ? pipeline(text) : "";
+
+        (ok, output);
     }
 
     public filterTestResponse(

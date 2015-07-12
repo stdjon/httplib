@@ -110,6 +110,28 @@ Modules:
   OEmbed:
     Assembly: httplib.mod.oembed.dll
     Typename: httplib.mod.OEmbed
+    Data:
+      Types:
+        OEmbedPhoto:
+          Assembly: httplib.mod.oembed.dll
+          Typename: httplib.mod.OEmbedPhotoProvider
+        OEmbedVideo:
+          Assembly: httplib.mod.oembed.dll
+          Typename: httplib.mod.OEmbedVideoProvider
+      Providers:
+        - Name: Flickr
+          Type: OEmbedPhoto
+          Endpoint: "http://www.flickr.com/services/oembed"
+          Patterns:
+            - "https?://(?:www\\.)?flickr\\.com/.*"
+            - "https?://flic\\.kr/p/[a-zA-Z0-9]+"
+        - Name: YouTube
+          Type: OEmbedVideo
+          Endpoint: "http://www.youtube.com/oembed"
+          Patterns:
+            - "https?://(?:[^\\.]+\\.)?youtube\\.com/watch/?\\?(?:.+&)?v=([^&]+)"
+            - "https?://youtu\\.be/([a-zA-Z0-9_-]+)"
+#      Providers: providers_config.yml
   Textile:
     Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile
