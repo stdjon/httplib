@@ -114,6 +114,9 @@ Modules:
     Typename: httplib.mod.OEmbed
     Data:
       Types:
+        Bash:
+          Assembly: forum.mod.providers.dll
+          Typename: forum.mod.BashProvider
         OEmbedPhoto:
           Assembly: httplib.mod.oembed.dll
           Typename: httplib.mod.OEmbedPhotoProvider
@@ -124,12 +127,30 @@ Modules:
           Assembly: httplib.mod.oembed.dll
           Typename: httplib.mod.DefaultUrlProvider
       Providers:
+        - Name: Bash
+          Type: Bash
+          Patterns:
+            - "http://bash\\.org/\\?(\\d+)"
         - Name: Flickr
           Type: OEmbedPhoto
           Endpoint: "http://www.flickr.com/services/oembed"
           Patterns:
             - "https?://(?:www\\.)?flickr\\.com/.*"
             - "https?://flic\\.kr/p/[a-zA-Z0-9]+"
+        - Name: QDB
+          Type: Bash
+          Patterns:
+            - "http://(?:www\\.)?qdb.us/(\\d+)"
+        - Name: SoundCloud
+          Type: OEmbedVideo
+          Endpoint: "http://soundcloud.com/oembed"
+          Patterns:
+            - "https?://soundcloud.com/.*/.*"
+        - Name: TED
+          Type: OEmbedVideo
+          Endpoint: "http://www.ted.com/services/v1/oembed.json"
+          Patterns:
+            - "https?://www\\.ted\\.com/talks/.+"
         - Name: YouTube
           Type: OEmbedVideo
           Endpoint: "http://www.youtube.com/oembed"
@@ -139,7 +160,6 @@ Modules:
         # Default URL provider - should be last in the Providers list...
         - Name: default
           Type: DefaultUrl
-          Endpoint: ""
           Patterns:
             - "https?://.*"
   Textile:

@@ -1,0 +1,23 @@
+using System;
+
+using httplib.mod;
+
+
+namespace forum.mod {
+
+public class BashProvider: HttpQueryProvider {
+
+    public this(endpoint: string, url: string) {
+        base(endpoint, url);
+    }
+
+    public override transform(): string {
+        // this should work for both bash.org and qdb.us
+        def q = query("p.qt, span.qt");
+
+        $<#<q>$q<footer>$(makeUrl())</footer></q>#>;
+    }
+}
+
+
+} //  namespace forum.mod

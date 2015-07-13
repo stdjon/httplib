@@ -178,7 +178,7 @@ all:
 
 $(eval $(call emit_exe_rule,forum.exe, \
 	src/forum src/forum/*, \
-	forum.mod.filter.dll \
+	forum.mod.filter.dll forum.mod.providers.dll \
 	httplib.dll httplib.macros.dll \
 	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
 	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
@@ -191,6 +191,15 @@ $(eval $(call emit_exe_rule,forum.exe, \
 $(eval $(call emit_dll_rule,forum.mod.filter.dll, \
 	src/forum/mod/filter, \
 	httplib.dll httplib.macros.dll))
+
+
+# ------------------------------------------------------------------------------
+# forum.mod.providers.dll
+
+$(eval $(call emit_dll_rule,forum.mod.providers.dll, \
+	src/forum/mod/providers, \
+	httplib.dll httplib.macros.dll \
+	httplib.mod.oembed.dll))
 
 
 # ------------------------------------------------------------------------------

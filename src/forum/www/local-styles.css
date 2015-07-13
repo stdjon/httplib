@@ -243,12 +243,13 @@ blockquote {
   margin: 4px;
   padding: 4px;
 }
-q cite, blockquote cite {
+q cite, blockquote cite, q footer, blockquote footer {
   display: block;
   font-size: 90%;
   font-style: italic;
 }
 q cite:after, blockquote cite:after { content: ':' }
+q footer:before, blockquote footer:before { content: '\2014 ' }
 q {
   display: block;
   font-size: 90%;

@@ -151,11 +151,17 @@ public class OEmbed: Module, ITextTransform {
         foreach(d :> Dictionary[object, object] in data) {
             def n = d["Name"] :> string;
             def t = d["Type"] :> string;
-            def e = d["Endpoint"] :> string;
+
+            mutable e, probe;
+            when(d.TryGetValue("Endpoint", out probe)) {
+                e = probe :> string;
+            }
+
             def p = List();
             foreach(x in d["Patterns"] :> List[object]) {
                 p.Add(x :> string);
             }
+
             Providers.Add(ProviderData(n, t, e, p, this));
         }
     }

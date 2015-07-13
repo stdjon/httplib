@@ -1,19 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
+
+using CsQuery;
 
 using OEmbed.Net;
 using OEmbed.Net.Domain;
 
 
-namespace httplib {
-namespace mod {
+namespace httplib.mod {
 
 //------------------------------------------------------------------------------
 // "compiled" information about providers
 
+[HasLogging]
 public class ProviderData {
 
     public Name: string { get; private set; }
@@ -52,6 +55,8 @@ public class ProviderData {
         def assembly = Assembly.LoadFrom(Type.Assembly);
         def type = assembly.GetType(Type.Typename);
 
+        Log.d("ProviderData.load({0}): [{1}] {2}", url, type, assembly);
+
         Activator.CreateInstance(type, Endpoint, url) :> Provider;
     }
 }
@@ -74,6 +79,12 @@ public class Provider {
     public virtual transform(): string {
         Url;
     }
+
+    // Converts a bare URL to <a href="URL">URL</a>
+    public virtual makeUrl(title: string = null): string {
+        def t = title ? title : Url;
+        $"<a href='$Url' rel='nofollow'>$t</a>";
+    }
 }
 
 
@@ -81,7 +92,7 @@ public type Providers = List[Provider];
 
 
 //------------------------------------------------------------------------------
-// Default URL Provider - converts a bare URL to <a href="URL">URL</a>
+// Default URL Provider
 
 public class DefaultUrlProvider: Provider {
     public this(endpoint: string, url: string) {
@@ -89,7 +100,7 @@ public class DefaultUrlProvider: Provider {
     }
 
     public override transform(): string {
-        $"<a href='$Url' rel='nofollow'>$Url</a>";
+        makeUrl();
     }
 }
 
@@ -139,5 +150,29 @@ public class OEmbedVideoProvider: OEmbedProvider {
 }
 
 
-} // namespace mod
-} // namespace httplib
+//------------------------------------------------------------------------------
+// Makes a generic HTTP GET request and allows CsQueries on the response data.
+
+public class HttpQueryProvider: Provider {
+
+    public Query: CQ { get; private set; }
+
+    public this(endpoint: string, url: string) {
+        base(endpoint, url);
+
+        def request = WebRequest.Create(url) :> HttpWebRequest;
+        def response = request.GetResponse() :> HttpWebResponse;
+        def stream = response.GetResponseStream();
+        // The weird syntax on the next line is us telling NCC that we want to
+        // use the single-argument version of CQ.Create(stream), which for some
+        // reason, it is unable to deduce...
+        Query = (CQ.Create: Stream -> CQ)(stream);
+    }
+
+    public virtual query(selector: string): string {
+        Query.Select(selector).SelectionHtml(true);
+    }
+}
+
+
+} // namespace httplib.mod
