@@ -116,7 +116,9 @@ public class OEmbedProvider: Provider {
 
     public OEmbedUrl: string {
         get {
-            $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))&format=json"
+            $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))&format=json&"
+                //TODO: configure maxwidth/maxheight
+                "maxwidth=320&maxheight=200"
         }
     }
 }
