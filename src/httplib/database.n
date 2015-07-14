@@ -197,7 +197,9 @@ public class Command {
 
     public virtual executeScalar(): object {
         lock(ExecuteLock) {
-            Command.ExecuteScalar();
+            // Convert DBNull values to plain ol' null...
+            def v = Command.ExecuteScalar();
+            v is DBNull ? null : v;
         }
     }
 }
