@@ -130,7 +130,7 @@ Modules:
         - Name: Bash
           Type: Bash
           Patterns:
-            - "http://bash\\.org/\\?(\\d+)"
+            - "http://(?:www\\.)?bash\\.org/\\?(\\d+)"
         - Name: Flickr
           Type: OEmbedPhoto
           Endpoint: "http://www.flickr.com/services/oembed"
@@ -151,6 +151,11 @@ Modules:
           Endpoint: "http://www.ted.com/services/v1/oembed.json"
           Patterns:
             - "https?://www\\.ted\\.com/talks/.+"
+        - Name: Vimeo
+          Type: OEmbedVideo
+          Endpoint: "http://vimeo.com/api/oembed.json"
+          Patterns:
+            - "https?://(?:www\\.)?vimeo\\.com/.+"
         - Name: YouTube
           Type: OEmbedVideo
           Endpoint: "http://www.youtube.com/oembed"
