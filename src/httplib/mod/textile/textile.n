@@ -6,6 +6,38 @@ using Textile;
 
 namespace httplib.mod {
 
+/** This TextileOutput differs from the default StringBuilderTextileFormatter
+  * by using the same output for WriteLine() as for Write(). This prevents
+  * issues with double-spaced output in <pre> sections. */
+[HasLogging]
+public class TextileOutput: IOutputter {
+
+    public StringBuilder: StringBuilder { get; private set; }
+
+    public this() {
+    }
+
+    public GetFormattedText(): string {
+        StringBuilder.ToString();
+    }
+
+    public Begin(): void {
+        StringBuilder = StringBuilder();
+    }
+
+    public End(): void {
+    }
+
+    public Write(text: string): void {
+        _ = StringBuilder.Append(text);
+    }
+
+    public WriteLine(line: string): void {
+        _ = StringBuilder.Append(line);
+    }
+};
+
+
 [HasLogging]
 public class Textile: Module, ITextTransform {
 
@@ -14,11 +46,11 @@ public class Textile: Module, ITextTransform {
     }
 
     Formatter: TextileFormatter { get; private set; }
-    Output: StringBuilderTextileFormatter { get; private set; }
+    Output: TextileOutput { get; private set; }
 
     public this(data: ModuleData = null) {
         Log.i("Starting Textile module... (data: {0})", data);
-        Output = StringBuilderTextileFormatter();
+        Output = TextileOutput();
         Formatter = TextileFormatter(Output);
     }
 
