@@ -80,7 +80,7 @@ Partials:
       {{/TempToken}}
     });
   Swatches: |
-    <div class="swatches btn-group btn-group-sm" data-toggle="buttons">
+    <div class="swatches btn-group btn-group-sm" data-toggle="buttons" style="width: 100%">
       <label class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360')"><input type="radio"/>&nbsp;</label>
       <label class="btn btn-default swatch" id="x0" onclick="selectSwatch('x0')"><input type="radio"/>&nbsp;</label>
       <label class="btn btn-default swatch" id="x24" onclick="selectSwatch('x24')"><input type="radio"/>&nbsp;</label>
@@ -98,7 +98,7 @@ Partials:
       <label class="btn btn-default swatch" id="x312" onclick="selectSwatch('x312')"><input type="radio"/>&nbsp;</label>
       <label class="btn btn-default swatch" id="x336" onclick="selectSwatch('x336')"><input type="radio"/>&nbsp;</label>
     </div>
-    <div class="swatches btn-group btn-group-sm" data-toggle="buttons">
+    <div class="swatches btn-group btn-group-sm" data-toggle="buttons" style="width: 100%">
       <label class="btn btn-default swatch" id="y360" onclick="selectSwatch('y360')"><input type="radio"/>&nbsp;</label>
       <label class="btn btn-default swatch" id="y0" onclick="selectSwatch('y0')"><input type="radio"/>&nbsp;</label>
       <label class="btn btn-default swatch" id="y24" onclick="selectSwatch('y24')"><input type="radio"/>&nbsp;</label>

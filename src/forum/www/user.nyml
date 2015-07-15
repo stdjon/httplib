@@ -52,7 +52,7 @@ Partials:
       </div>
       <div class="panel-body">
         <table class="table">
-          <tr><td>Avatar:</td>
+          <tr><td style="width: 25%;">Avatar:</td>
           <td><div>
             <input type="file" accept="image/*" id="avatar-drop" style="display:none">
             </input>
@@ -64,10 +64,10 @@ Partials:
           <td>{{>Swatches}}</td></tr>
           <tr><td>Motto:</td>
           <td><input id='motto' value="{{Motto}}" placeholder='[Motto]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 100%;"></input></td></tr>
           <tr><td>Location:</td>
           <td><input id='_loc' value="{{Location}}" placeholder='[Location]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" size="60"></input></p></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 100%;"></input></p></td></tr>
           <tr><td>User since:</td><td><em>{{JoinDate}}</em></td></tr>
           <tr><td>Points:</td><td><em>{{Points}}</em></td></tr>
           <tr><td>Level:</td><td><em>{{Level}}</em></td></tr>
