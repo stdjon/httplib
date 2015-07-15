@@ -115,25 +115,7 @@ public class Server: IDisposable {
 
         // Now logging is configured, we can start using Log API...
         Log.i("Starting up...");
-/*
-        def dbc = Configuration.Databases;
-        when(dbc != null) {
-            foreach(d in dbc) {
-                def dv = d.Value;
-                mutable db = null;
-                when(dv.Assembly != null &&
-                    dv.Typename != null) {
-                    db = Database.load(dv.Assembly, dv.Typename, dv.Connection);
-                }
-                if(db != null) {
-                    Log.i("Adding a database {0} [{1}]", d.Key, dv.Typename);
-                    databases.Add(d.Key, db);
-                } else {
-                    Log.w("Database {0} not created!", d.Key);
-                }
-            }
-        }
-*/
+        def strip_port = Configuration.StripPortFromDefaultPrefixes;
 
         when(Configuration.Prefixes != null) {
             when( Configuration.Prefixes.Secure != null &&
@@ -146,7 +128,9 @@ public class Server: IDisposable {
                     }
                     Listener.Prefixes.Add(p);
                 }
-                default_secure_prefix = Regex(@"(https://.*)/").Replace(
+                def regex = strip_port ?
+                    @"(https://[^:]*)(?::\d+)?/" : @"(https://.*)/";
+                default_secure_prefix = Regex(regex).Replace(
                     Configuration.Prefixes.Secure[0], "$1");
                 Log.d("Default prefix (secure):=  {0}", DefaultSecurePrefix);
 
@@ -161,7 +145,9 @@ public class Server: IDisposable {
                     }
                     Listener.Prefixes.Add(p);
                 }
-                default_insecure_prefix = Regex(@"(http://.*)/").Replace(
+                def regex = strip_port ?
+                    @"(http://[^:]*)(?::\d+)?/" : @"(http://.*)/";
+                default_insecure_prefix = Regex(regex).Replace(
                     Configuration.Prefixes.Insecure[0], "$1");
                 Log.d("Default prefix (insecure):=  {0}", DefaultInsecurePrefix);
 

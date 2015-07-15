@@ -118,6 +118,9 @@ public class ServerConfiguration {
     public Databases: Databases { get; set; }
     /** Listener prefixes */
     public Prefixes: Prefixes { get; set; }
+    /** Flag to strip port information when building default prefixes. (This is
+     *  useful when inbound port 80/443 is redirected externally to the app.) */
+    public StripPortFromDefaultPrefixes: bool { get; set; }
     /** Filesystem roots for file serving */
     public Roots: array[string] { get; set; }
     /** Patterns to test when deciding if a file can be served */

@@ -8,6 +8,7 @@ Databases:
     Assembly: httplib.db.mysql.dll
     Typename: httplib.db.MySqlDatabase
     Connection: server=localhost;userid=forum;password=n0ts3cr3t;database=forum;charset=utf8
+StripPortFromDefaultPrefixes: false
 Prefixes:
   Secure:
     - https://127.0.0.1:8443/
