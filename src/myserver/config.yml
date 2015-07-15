@@ -128,7 +128,7 @@ Logging:
       Colours: { Debug: DarkGreen, Info: Green, Warn: DarkYellow }
     file:
       Type: FileTarget
-      Path: "${basedir}/http-${date:format=yyyyMMddHHmmss:cached=true}.log"
+      Path: "${basedir}/http-${date:format=yyyy.MM.dd-HH.mm.ss:cached=true}.log"
       Layout: "${date:format=HH\\:mm\\:ss} ${logger} ${message}"
   Rules:
     - { Source: "*", Level: Trace, Target: console }

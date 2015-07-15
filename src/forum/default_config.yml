@@ -188,7 +188,7 @@ Logging:
       Colours: { Debug: DarkGreen, Info: Green, Warn: Cyan }
     file:
       Type: FileTarget
-      Path: "${basedir}/forum-${date:format=yyyyMMddHHmmss:cached=true}.log"
+      Path: "${basedir}/forum-${date:format=yyyy.MM.dd-HH.mm.ss:cached=true}.log"
       Layout: "${date:format=HH\\:mm\\:ss} ${logger} ${message}"
   Rules:
     - { Source: "*", Level: Trace, Target: console }
