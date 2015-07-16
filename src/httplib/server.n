@@ -6,6 +6,7 @@ using System.Net;
 using System.Text.Encoding;
 using System.Text.RegularExpressions;
 
+using Nemerle.Extensions;
 using Nemerle.Utility;
 
 using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
@@ -105,6 +106,20 @@ public class Server: IDisposable {
 
     public this(config: ServerConfiguration) {
         configuration = config;
+
+#if MONO
+        // Disable SSL/force use of TLS 1.0 on Mono.
+        // TODO: Revisit when TLS 1.1/1.2 are available.
+        // (http://mono.1490590.n4.nabble.com/Disable-SSL-v2-and-v3-td4664924.html#a4664926)
+        ServicePointManager.ServerCipherSuitesCallback +=
+            (_protocol_type, _ciphers) => {
+                List() <- [
+                    "TLS_RSA_WITH_AES_256_CBC_SHA",
+                    "TLS_RSA_WITH_AES_128_CBC_SHA",
+                    "TLS_RSA_WITH_AES_3DES_EDE_CBC_SHA",
+                ];
+            };
+#endif
 
         def log = Configuration.Logging;
         when(log != null &&
