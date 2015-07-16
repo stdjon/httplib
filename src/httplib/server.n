@@ -484,14 +484,16 @@ public class Server: IDisposable {
 
     compressResponseStream(request: Request, response: Response): void {
 
-        def encodings = request["Accept-Encoding"];
+        def accept_encoding = request["Accept-Encoding"];
         mutable encoding;
 
-        exit: {
-            foreach(c in Configuration.Compression) {
-                when(encodings.Contains(c)) {
-                    encoding = c;
-                    exit();
+        when(accept_encoding != null) {
+            exit: {
+                foreach(c in Configuration.Compression) {
+                    when(accept_encoding.Contains(c)) {
+                        encoding = c;
+                        exit();
+                    }
                 }
             }
         }
