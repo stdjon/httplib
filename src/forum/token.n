@@ -29,8 +29,8 @@ public module SecureTokenExtensions {
 
     // Token duration (minutes)
     public Duration(this _: SessionTokenType): int {
-        | SECURE => 30 * 24 * 60
-        | INSECURE => 30
+        | SECURE => 360 * 24 * 60
+        | INSECURE => 30 * 24 * 60
         | TEMPORARY => 1
     }
 
