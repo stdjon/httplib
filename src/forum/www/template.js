@@ -79,7 +79,7 @@ function initPage() {
     resetScrollspyAffix();
 
     $('a, b, blockquote, div, em, h1, h2, h3, h4, h5, h6, ' +
-        'i, li, ol, p, span, strong, u, ul').hyphenate($('html').attr('lang'));
+        'i, li, ol, p, q, span, strong, u, ul').hyphenate($('html').attr('lang'));
 
     initDropCaps();
 
