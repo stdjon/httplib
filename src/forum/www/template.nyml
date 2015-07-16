@@ -45,16 +45,18 @@ Partials:
     <script>
       {{>CommonScript}}
     </script>
-  MainSpace: |
-      <div class="banner user-font">
-        <div id="banner">{{>Banner}}</div>
-        <div class="col-xs-10 body">
-          {{>Body}}
-        </div>
-        <div class="col-xs-2 guide">
-          {{>Guide}}
-        </div>
+  Layout: |
+    <div class="banner user-font">
+      <div id="banner">{{>Banner}}</div>
+      <div class="col-xs-10 body">
+        {{>Body}}
       </div>
+      <div class="col-xs-2 guide">
+        {{>Guide}}
+      </div>
+    </div>
+  MainSpace: |
+      {{>Layout}}
       <script>
       function resetProperties(_g) {
         _g.DefaultSecurePrefix = "{{DefaultSecurePrefix}}";

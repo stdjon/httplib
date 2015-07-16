@@ -1,5 +1,5 @@
 ---
-Template: template.nyml
+Template: template-1panel.nyml
 Scripts:
   - /swatches.js
 Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}"

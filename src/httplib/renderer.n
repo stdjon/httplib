@@ -21,12 +21,11 @@ public class Renderer {
         server = s;
     }
 
-    public virtual loadPage(
-        path: string, stream: Stream, use_template = true): Page {
+    public virtual loadPage(path: string, stream: Stream): Page {
 
         Log.d("Renderer.loadPage '{0}' [{1}]...", path, PageType);
 
-        Page.load(path, stream, PageType, Server, use_template);
+        Page.load(path, stream, PageType, Server);
     }
 
     /** Load a Renderer by reflection, given a DLL and type name. */

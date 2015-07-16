@@ -1,0 +1,12 @@
+# Take the general shape of template.nyml, but lose the Guide panel, and make
+# the Body panel fill the space horizonatally.
+---
+Template: template.nyml
+Partials:
+  Layout: |
+    <div class="banner user-font">
+      <div id="banner">{{>Banner}}</div>
+      <div class="col-xs-12 body">
+        {{>Body}}
+      </div>
+    </div>

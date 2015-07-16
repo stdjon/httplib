@@ -65,8 +65,8 @@ public class Page {
     [YamlIgnore] public Server: Server { get; set; }
     [YamlIgnore] public Consolidation: Consolidation { get; set; }
 
-    internal static load(path: string, stream: Stream,
-        type: Type, server: Server, use_template: bool): Page {
+    internal static load(
+        path: string, stream: Stream, type: Type, server: Server): Page {
 
         mutable result = null;
         using(reader = StreamReader(stream)) {
@@ -77,9 +77,9 @@ public class Page {
         result.Server = server;
         result.Consolidation = server.Configuration.Consolidation;
 
-        when(use_template && !String.IsNullOrEmpty(result.Template)) {
+        when(!String.IsNullOrEmpty(result.Template)) {
             def fs = server.openLocalFile(result.Template);
-            def template = load(path, fs, type, server, false);
+            def template = load(path, fs, type, server);
             result.merge(template);
         }
 
