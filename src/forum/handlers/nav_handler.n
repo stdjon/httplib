@@ -87,8 +87,9 @@ public class NavHandler: BasePageHandler {
     }
 
     public navSigninResponse(): void {
+        mutable ok = false;
 
-        if(Request.IsSecure) {
+        when(Request.IsSecure) {
             def user = Context.Vars["user"];
             def password = Context.Vars["password"];
             def auth = Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
@@ -105,11 +106,11 @@ public class NavHandler: BasePageHandler {
                 record = command2.executeScalar() :> string;
             }
 
-            def ok = !String.IsNullOrEmpty(record) &&
+            ok = !String.IsNullOrEmpty(record) &&
                 auth.validatePassword(password, record);
             Log.i("Login attempt as {0}: {1}", user, ok);
-            when(ok) {
 
+            when(ok) {
                 def (_ok2, token, expiry) =
                     Server.registerSessionToken(STOK.SECURE, id :> uint, Database);
                 def cookie_flags = Server.Configuration.ForceInsecureOperation ?
@@ -117,11 +118,11 @@ public class NavHandler: BasePageHandler {
                 Response.Cookies.add(
                     "_session", token, expiry, cookie_flags);
             }
-            Response["Location"] = CurrentUrl;
-            Response.Status = (303, "See Other");
+        }
 
+        if(ok) {
+            Response.Status = (200, "OK");
         } else {
-            Response.append("<html><body><h1>Forbidden!</h1></body></html>");
             Response.Status = (403, "Forbidden");
         }
     }

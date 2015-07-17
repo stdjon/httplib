@@ -65,9 +65,33 @@ $('#navbar').on('hidden.bs.collapse', function() {
 });
 
 
+// signin button handler
+$('#do-signin').click(function(e) {
+    e.preventDefault();
+    var u = $('#in-user').val();
+    var pw = $('#in-password').val();
+    $.ajax({
+        type: 'POST',
+        url: _g.DefaultSecurePrefix + '/nav-signin',
+        data: 'user=' + u + '&password=' + pw,
+        statusCode: {
+            200: function() {
+                // reloadPage()?
+                top.location = _g.CurrentUrl;
+            },
+            403: function() {
+                postMainWindowMessage(
+                    'warn', 'info', '', 'Invalid username or password.');
+            }
+        },
+    });
+    return false;
+});
+
+
 // signout button handler
 $('#do-signout').click(function(e) {
     e.preventDefault();
     postMainWindowMessage(
-        'warn-check', 'signout', 'Are you sure you want to sign out?');
+        'warn', 'check', 'signout', 'Are you sure you want to sign out?');
 });

@@ -66,16 +66,37 @@ addEventListener("message", function(msg) {
                 break;
             }
 
-            case 'warn-check': {
-                Dialog.confirm({
-                    size: BootstrapDialog.SIZE_LARGE,
-                    type: BootstrapDialog.TYPE_DANGER,
-                    title: 'Warning',
-                    message: cmd[2],
-                    callback:  function(x) {
-                        postIframeMessage(cmd[1], x ? 'yes' : 'no');
+            case 'warn': {
+                switch(cmd[1]) {
+                    case 'info': {
+                        Dialog.alert({
+                            size: BootstrapDialog.SIZE_LARGE,
+                            type: BootstrapDialog.TYPE_DANGER,
+                            title: 'Warning',
+                            message: cmd[3],
+                            callback:  function() {
+                                if(cmd[2]) {
+                                    postIframeMessage(cmd[2]);
+                                }
+                            }
+                        });
+                        break;
                     }
-                });
+                    case 'check': {
+                        Dialog.confirm({
+                            size: BootstrapDialog.SIZE_LARGE,
+                            type: BootstrapDialog.TYPE_DANGER,
+                            title: 'Warning',
+                            message: cmd[3],
+                            callback:  function(x) {
+                                if(cmd[2]) {
+                                    postIframeMessage(cmd[2], x ? 'yes' : 'no');
+                                }
+                            }
+                        });
+                        break;
+                    }
+                }
             }
         }
     }
