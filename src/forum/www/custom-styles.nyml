@@ -4,7 +4,8 @@ Content: |
   @import url({{CodeImport}});
 
   div.user-font,
-  div.user-font pre, div.user-font textarea {
+  div.user-font pre, div.user-font textarea,
+  div.modal-dialog {
     font-family: "{{UserFontRegular}}";
   }
   div.user-font b, div.user-font strong {
@@ -18,7 +19,9 @@ Content: |
     font-family: "{{UserFontBoldItalic}}";
   }
   div.user-font h1, div.user-font h2, div.user-font h3,
-  div.user-font h4, div.user-font h5, div.user-font h6 {
+  div.user-font h4, div.user-font h5, div.user-font h6,
+  div.bootstrap-dialog-header,
+  div.bootstrap-dialog-footer-buttons {
     font-family: "{{HeaderFontBold}}";
   }
   div.user-font h1 em, div.user-font h2 em, div.user-font h3 em,

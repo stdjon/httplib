@@ -1,4 +1,3 @@
-
 var mainWindow = null;
 
 function postMainWindowMessage() {
@@ -44,6 +43,12 @@ addEventListener("message", function(msg) {
                     },
                 });
             }
+            case 'signout': {
+                if('yes' === cmd[1]) {
+                    $('#signout-form').submit();
+                }
+                break;
+            }
         }
     }
 });
@@ -51,12 +56,18 @@ addEventListener("message", function(msg) {
 
 // tell main window about navbar collapses so it can resize the iframe...
 $('#navbar').on('show.bs.collapse', function() {
-     postMainWindowMessage('nav', 'show', navCollapseHeight);
+    postMainWindowMessage('nav', 'show', navCollapseHeight);
 });
 
 
 $('#navbar').on('hidden.bs.collapse', function() {
-     postMainWindowMessage('nav', 'hide');
+    postMainWindowMessage('nav', 'hide');
 });
 
 
+// signout button handler
+$('#do-signout').click(function(e) {
+    e.preventDefault();
+    postMainWindowMessage(
+        'warn-check', 'signout', 'Are you sure you want to sign out?');
+});

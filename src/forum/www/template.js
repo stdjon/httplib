@@ -65,6 +65,18 @@ addEventListener("message", function(msg) {
                 reloadPageContent();
                 break;
             }
+
+            case 'warn-check': {
+                Dialog.confirm({
+                    size: BootstrapDialog.SIZE_LARGE,
+                    type: BootstrapDialog.TYPE_DANGER,
+                    title: 'Warning',
+                    message: cmd[2],
+                    callback:  function(x) {
+                        postIframeMessage(cmd[1], x ? 'yes' : 'no');
+                    }
+                });
+            }
         }
     }
 });

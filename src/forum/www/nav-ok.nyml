@@ -21,8 +21,8 @@ Partials:
       <a id="uname" class="navbar-brand" href="{{DefaultInsecurePrefix}}/u/{{User}}" target="_top">[{{User}}]</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
-      <form class="navbar-form navbar-right">
-        <button type="submit" class="btn btn-danger" formaction="{{DefaultSecurePrefix}}/nav-signout?r={{CurrentUrl}}" formmethod="post" formtarget="_top">Sign out</button>
+      <form id="signout-form" class="navbar-form navbar-right" action="{{DefaultSecurePrefix}}/nav-signout?r={{CurrentUrl}}" method="post" target="_top">
+        <button id="do-signout" type="button" class="btn btn-danger">Sign out</button>
       </form>
     </div><!--/.navbar-collapse -->
 
