@@ -33,21 +33,21 @@ Partials:
         <span class="feedback" id="userfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-user fa-fw"></span></span>
-          <input name="user" id="user_id" type="text" placeholder="Username"
+          <input name="user" id="user_id" type="text" placeholder="[Username]"
             class="form-control input-sm" onkeypress="userKeypress()" onkeyup="userKeypress()" value="{{User}}">
         </div>
         <span class="input-pre">Password: </span>
         <span class="feedback" id="passwordfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
-          <input name="password" id="password_id" type="password" placeholder="Password"
+          <input name="password" id="password_id" type="password" placeholder="[Password]"
             class="form-control input-sm" onkeypress="passwordKeypress()" onkeyup="passwordKeypress()">
         </div>
         <span class="input-pre">Password (confirmation): </span>
         <span class="feedback" id="confirmfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
-          <input name="confirm" id="confirm_id" type="password" placeholder="Password"
+          <input name="confirm" id="confirm_id" type="password" placeholder="[Password]"
             class="form-control input-sm" onkeypress="confirmKeypress()" onkeyup="confirmKeypress()">
         </div>
         <div class="progress">
@@ -58,7 +58,7 @@ Partials:
         <span class="feedback" id="emailfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-envelope-o fa-fw"></span></span>
-          <input name="email" id="email_id" type="email" placeholder="Email"
+          <input name="email" id="email_id" type="email" placeholder="[Email]"
             class="form-control input-sm" onkeypress="emailKeypress()" onkeyup="emailKeypress()">
         </div>
         <br>

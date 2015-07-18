@@ -18,11 +18,11 @@ Partials:
       <form class="navbar-form navbar-right">
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-user fa-fw"></span></span>
-          <input id="in-user" name="user" type="text" placeholder="Username" class="form-control input-sm">
+          <input id="in-user" name="user" type="text" placeholder="[Username]" class="form-control input-sm">
         </div>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
-          <input id="in-password" name="password" type="password" placeholder="Password" class="form-control input-sm">
+          <input id="in-password" name="password" type="password" placeholder="[Password]" class="form-control input-sm">
         </div>
         <button id="do-signin" type="submit" class="btn btn-success">Sign in</button>
         <button type="submit" class="btn btn-info" formaction="{{DefaultSecurePrefix}}/nav-signup?r={{CurrentUrl}}" formmethod="post" formtarget="_top">Sign up</button>
