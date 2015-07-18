@@ -121,6 +121,9 @@ Modules:
         OEmbedPhoto:
           Assembly: httplib.mod.oembed.dll
           Typename: httplib.mod.OEmbedPhotoProvider
+        OEmbedRich:
+          Assembly: httplib.mod.oembed.dll
+          Typename: httplib.mod.OEmbedRichProvider
         OEmbedVideo:
           Assembly: httplib.mod.oembed.dll
           Typename: httplib.mod.OEmbedVideoProvider
@@ -152,6 +155,12 @@ Modules:
           Endpoint: "http://www.ted.com/services/v1/oembed.json"
           Patterns:
             - "https?://www\\.ted\\.com/talks/.+"
+        - Name: Twitter
+          Type: OEmbedRich
+          ExtraParams: "omit_script=1"
+          Endpoint: "https://api.twitter.com/1/statuses/oembed.json"
+          Patterns:
+            - "https?://(?:www|mobile\\.)?twitter\\.com/(?:#!/)?[^/]+/status(?:es)?/(\\d+)/?$"
         - Name: Vimeo
           Type: OEmbedVideo
           Endpoint: "http://vimeo.com/api/oembed.json"

@@ -17,20 +17,22 @@ namespace httplib.mod {
 // "compiled" information about providers
 
 [HasLogging]
-public class ProviderData {
+public class ProviderBuilder {
 
     public Name: string { get; private set; }
     public Type: EmbedType { get; private set; }
     public Endpoint: string { get; private set; }
+    public ExtraParams: string { get; private set; }
     public Patterns: List[Regex] { get; private set; }
 
     public this(
         name: string, type: string,
-        endpoint: string, patterns: List[string], self: OEmbed) {
+        endpoint: string, extra: string, patterns: List[string], self: OEmbed) {
 
         Name = name;
         Type = self.Types[type];
         Endpoint = endpoint;
+        ExtraParams = extra;
         Patterns = List();
 
         foreach(p in patterns) {
@@ -55,12 +57,23 @@ public class ProviderData {
         def assembly = Assembly.LoadFrom(Type.Assembly);
         def type = assembly.GetType(Type.Typename);
 
-        Log.d("ProviderData.load({0}): [{1}] {2}", url, type, assembly);
+        Log.d("ProviderBuilder.load({0}): [{1}] {2}", url, type, assembly);
 
-        Activator.CreateInstance(type, Endpoint, url) :> Provider;
+        def data = ProviderData(url, Endpoint, ExtraParams);
+        Activator.CreateInstance(type, data) :> Provider;
     }
 }
 
+
+//------------------------------------------------------------------------------
+
+[Record]
+public class ProviderData {
+
+    public Url: string { get; private set; }
+    public Endpoint: string { get; private set; }
+    public ExtraParams: string { get; private set; }
+}
 
 //------------------------------------------------------------------------------
 // Base class for providers
@@ -68,12 +81,14 @@ public class ProviderData {
 [HasLogging]
 public class Provider {
 
-    public Endpoint: string { get; private set; }
     public Url: string { get; private set; }
+    public Endpoint: string { get; private set; }
+    public ExtraParams: string { get; private set; }
 
-    public this(endpoint: string, url: string) {
-        Endpoint = endpoint;
-        Url = url;
+    public this(data: ProviderData) {
+        Url = data.Url;
+        Endpoint = data.Endpoint;
+        ExtraParams = data.ExtraParams
     }
 
     public virtual transform(): string {
@@ -95,8 +110,8 @@ public type Providers = List[Provider];
 // Default URL Provider
 
 public class DefaultUrlProvider: Provider {
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
+    public this(data: ProviderData) {
+        base(data);
     }
 
     public override transform(): string {
@@ -110,24 +125,30 @@ public class DefaultUrlProvider: Provider {
 
 public class OEmbedProvider: Provider {
 
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
-    }
+    public virtual OEmbedUrl: string { get; private set; }
 
-    public OEmbedUrl: string {
-        get {
-            $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))&format=json&"
-                //TODO: configure maxwidth/maxheight
-                "maxwidth=320&maxheight=200"
-        }
+    public this(data: ProviderData) {
+        base(data);
+
+        def fmt = Endpoint.Contains(".json") ?
+            "" : "&format=json";
+        def ext = String.IsNullOrEmpty(ExtraParams) ?
+            "" : $"&$ExtraParams";
+
+        //TODO: configure maxwidth/maxheight
+        OEmbedUrl =
+            $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))$fmt$ext"
+            "&maxwidth=320&maxheight=200";
+
+        Log.t("OEmbedProvider: url={0}", OEmbedUrl);
     }
 }
 
 
 public class OEmbedPhotoProvider: OEmbedProvider {
 
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
+    public this(data: ProviderData) {
+        base(data);
     }
 
     public override transform(): string {
@@ -138,10 +159,24 @@ public class OEmbedPhotoProvider: OEmbedProvider {
 }
 
 
+public class OEmbedRichProvider: OEmbedProvider {
+
+    public this(data: ProviderData) {
+        base(data);
+    }
+
+    public override transform(): string {
+        def o = Consumer.[Rich]();
+        def d = o.GetObject(OEmbedUrl);
+        d.Html;
+    }
+}
+
+
 public class OEmbedVideoProvider: OEmbedProvider {
 
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
+    public this(data: ProviderData) {
+        base(data);
     }
 
     public override transform(): string {
@@ -159,10 +194,10 @@ public class HttpQueryProvider: Provider {
 
     public Query: CQ { get; private set; }
 
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
+    public this(data: ProviderData) {
+        base(data);
 
-        def request = WebRequest.Create(url) :> HttpWebRequest;
+        def request = WebRequest.Create(Url) :> HttpWebRequest;
         def response = request.GetResponse() :> HttpWebResponse;
         def stream = response.GetResponseStream();
         // The weird syntax on the next line is us telling NCC that we want to

@@ -37,7 +37,7 @@ public class OEmbed: Module, ITextTransform {
     }
 
     public Types: EmbedTypes { get; private set; }
-    public Providers: List[ProviderData] { get; private set; }
+    public Providers: List[ProviderBuilder] { get; private set; }
 
     public this(data: ModuleData = null) {
         Log.i("Starting OEmbed module... (data: {0})", data);
@@ -152,9 +152,13 @@ public class OEmbed: Module, ITextTransform {
             def n = d["Name"] :> string;
             def t = d["Type"] :> string;
 
-            mutable e, probe;
+            mutable e, x, probe;
             when(d.TryGetValue("Endpoint", out probe)) {
                 e = probe :> string;
+            }
+
+            when(d.TryGetValue("ExtraParams", out probe)) {
+                x = probe :> string;
             }
 
             def p = List();
@@ -162,7 +166,7 @@ public class OEmbed: Module, ITextTransform {
                 p.Add(x :> string);
             }
 
-            Providers.Add(ProviderData(n, t, e, p, this));
+            Providers.Add(ProviderBuilder(n, t, e, x, p, this));
         }
     }
 }

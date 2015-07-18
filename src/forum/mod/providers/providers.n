@@ -7,8 +7,8 @@ namespace forum.mod {
 
 public class BashProvider: HttpQueryProvider {
 
-    public this(endpoint: string, url: string) {
-        base(endpoint, url);
+    public this(data: ProviderData) {
+        base(data);
     }
 
     public override transform(): string {
