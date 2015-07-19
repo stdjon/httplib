@@ -2,6 +2,7 @@ var passwordValue = '';
 var confirmValue = '';
 var userOk = false;
 var passwordOk = false;
+var passwordMatch = false;
 var emailOk = false;
 
 
@@ -61,7 +62,7 @@ function passwordKeypress() {
     var pwOkSymbol = passwordValue.match(/[ !"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]/); //"
     var pwOkLength = passwordValue.length > 7;
     var pwOkLength2 = passwordValue.length <= 60;
-    var passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkSymbol && pwOkLength && pwOkLength2;
+    passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkSymbol && pwOkLength && pwOkLength2;
     var p = [];
 
     if(!pwOkUpper) { p.push('an uppercase letter'); }
@@ -140,7 +141,7 @@ function checkPasswords() {
     var ok = passwordValue === confirmValue;
 
     $('#confirmfeedback').html(ok ? '' : "<em>Passwords don't match</em>");
-    passwordOk = ok;
+    passwordMatch = ok;
 }
 
 
@@ -158,7 +159,7 @@ function updatePasswordBar(score) {
 
 
 function checkSubmit() {
-    var cansubmit = userOk && passwordOk && emailOk;
+    var cansubmit = userOk && passwordOk && passwordMatch && emailOk;
     $('#submit').attr('disabled', cansubmit ? null : 'disabled');
 }
 
