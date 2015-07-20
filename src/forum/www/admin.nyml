@@ -1,0 +1,47 @@
+---
+Template: template-1panel.nyml
+Scripts:
+Title: "{{SiteName}} Administration"
+Partials:
+  Nav: |
+    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>Administration</h1>
+    </div>
+  Body: |
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Server Information</h4>
+      </div>
+      <div class="panel-body">
+        <table class="table">
+          <tr><td style="width: 25%;">Started at:</td><td>{{StartTime}}</td></tr>
+          <tr><td>Uptime:</td><td>{{Uptime}}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Live Error Log</h4>
+      </div>
+      <div class="panel-body">
+        <pre id="log-tail">{{LiveLog}}</pre>
+      </div>
+    </div>
+  PageScript: |
+    setInterval(function() {
+      $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/admin-update',
+        success: function(data) {
+          $('#log-tail').html(data.log);
+        }
+      });
+    }, 10000);
+
+

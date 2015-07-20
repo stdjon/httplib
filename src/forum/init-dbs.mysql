@@ -30,7 +30,8 @@ CREATE TABLE IF NOT EXISTS Users(
     Location VARCHAR(40),
     Colour VARCHAR(30),
     Transform VARCHAR(10),
-    Font VARCHAR(10)
+    Font VARCHAR(10),
+    IsAdmin BOOL
 )
     ENGINE=INNODB
     CHARACTER SET utf8;

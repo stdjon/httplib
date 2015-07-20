@@ -47,12 +47,12 @@ public class BasePageHandler: BaseHandler {
         } else {
             PageData["RenderFullPage"] = true;
         }
+        temporaryLoginHandling(); //
     }
 
     public override initialize(): void {
         base.initialize();
         initializeSiteName();
-        temporaryLoginHandling(); //
         initializeUserClasses();
     }
 

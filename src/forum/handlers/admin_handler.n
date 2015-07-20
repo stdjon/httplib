@@ -1,0 +1,167 @@
+using System;
+using System.IO;
+using System.Text;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+//------------------------------------------------------------------------------
+// AdminAuthHandler
+
+[HasHandlerFactory]
+public class AdminAuthHandler: BasePageHandler {
+
+    public IsAuthorized: bool { get; private set; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+
+        IsAuthorized = userIsAuthorized();
+    }
+
+    public override initialize(): void {
+        base.initialize();
+    }
+
+    public override renderPage(
+        renderer: Renderer, path: string, fs: Stream): string {
+
+        // If user is not authorized, pretend this page doesn't exist by faking
+        // a 404 response...
+        if(userIsAuthorized()) {
+            base.renderPage(renderer, path, fs);
+        } else {
+            Server.notFoundRespose(Context, Request, Response);
+            "";
+        }
+    }
+
+    protected userIsAuthorized(): bool {
+        mutable authorized = false;
+        when(Request.IsSecure) {
+            def command = Database.createCommand(
+                "SELECT IsAdmin FROM Users WHERE Id=@Id") <- [
+                    "@Id" = SignedInUserId
+                ];
+            def b = command.executeScalar() :> bool?;
+            when(b != null) {
+                authorized = b :> bool;
+            }
+        }
+        authorized;
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// AdminHandler
+
+[HasHandlerFactory]
+public class AdminHandler: AdminAuthHandler {
+
+    public TimeNow: long { get; private set; }
+    public Uptime: TimeSpan { get; private set; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+
+        TimeNow = Date.NowTicks;
+        Uptime = TimeSpan.FromTicks(TimeNow - Server.TimeStarted);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def start_time = Date.FromTicks(Server.TimeStarted);
+        PageData["StartTime"] = start_time.ToString();
+        PageData["Uptime"] = Uptime.ToString(@"hh\:mm\:ss");
+        PageData["LiveLog"] = Admin.tailLiveLog();
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// AdminUpdateHandler
+
+[HasHandlerFactory]
+public class AdminUpdateHandler: AdminAuthHandler {
+
+    public this(hd: HandlerData) {
+        base(hd, null);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+    }
+
+    public override callback(): void {
+
+        if(userIsAuthorized()) {
+            def json = JsonObject() <- [
+                "log" = Admin.tailLiveLog(),
+            ];
+            Response.append(json.ToString());
+            Response.Status = (200, "OK");
+        } else {
+            Server.notFoundRespose(Context, Request, Response);
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// Shared utils
+
+[HasLogging]
+public module Admin {
+
+    public tailLiveLog(): string {
+        def lines = 40; // config?
+        def eol = "\n";
+        def encoding = Encoding.Default;
+        def ch = encoding.GetByteCount(eol);
+        mutable buf = encoding.GetBytes(eol);
+        mutable result;
+
+        using(fs = FileStream("./forum-live.log",
+            FileMode.OpenOrCreate, FileAccess.Read, FileShare.ReadWrite)) {
+
+            when(fs != null) {
+                def end = fs.Length / ch;
+                mutable count = 0L;
+
+                exit: {
+                    for(mutable pos = ch; pos < end; pos += ch) {
+                        _ = fs.Seek(-pos, SeekOrigin.End);
+                        _ = fs.Read(buf, 0, buf.Length);
+                        when(encoding.GetString(buf) == eol) {
+                            count++;
+                            when(count == lines) {
+                                def tmp = array((fs.Length - fs.Position) :> int);
+                                _ = fs.Read(tmp, 0, tmp.Length);
+                                result = encoding.GetString(tmp);
+                                exit();
+                            }
+                        }
+                    }
+                }
+
+                when(result == null) {
+                    _ = fs.Seek(0, SeekOrigin.Begin);
+                    def tmp = array(fs.Length :> int);
+                    _ = fs.Read(tmp, 0, tmp.Length);
+                    result = encoding.GetString(tmp);
+                }
+            }
+        }
+
+        result;
+    }
+}
+
+
+} // namespace forum

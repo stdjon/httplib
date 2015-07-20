@@ -87,6 +87,7 @@ public class NLogLogging: Logging {
     configureFileTarget(ft: FileTarget, lt: LogTarget): Target {
        ft.Layout = lt.Layout;
        ft.FileName = lt.Path;
+       ft.DeleteOldFileOnStartup = lt.ReplaceFile;
        ft;
     }
 

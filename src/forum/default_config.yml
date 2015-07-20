@@ -205,6 +205,12 @@ Logging:
       Type: FileTarget
       Path: "${basedir}/forum-${date:format=yyyy.MM.dd-HH.mm.ss:cached=true}.log"
       Layout: "${date:format=HH\\:mm\\:ss} ${logger} ${message}"
+    live:
+      Type: FileTarget
+      Path: "forum-live.log"
+      Layout: "${date:format=yyyy.MM.dd HH\\:mm\\:ss} ${logger} ${message}"
+      ReplaceFile: true
   Rules:
     - { Source: "*", Level: Trace, Target: console }
     - { Source: "*", Level: Info, Target: file }
+    - { Source: "*", Level: Error, Target: live }

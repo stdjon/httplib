@@ -21,6 +21,7 @@ public class ForumServerConfiguration: ServerConfiguration {
 
 public class ForumServer: Server {
 
+    public TimeStarted: long { get; private set; }
     SessionToken: SessionToken { get; private set; }
 
     public new Configuration: ForumServerConfiguration {
@@ -35,6 +36,7 @@ public class ForumServer: Server {
     public this(config: ForumServerConfiguration) {
         base(config);
 
+        TimeStarted = Date.NowTicks;
         SessionToken = SessionToken(this);
 
         route([ (HTTP.GET, "/"),
@@ -93,6 +95,9 @@ public class ForumServer: Server {
 
         route(HTTP.POST, "/thumb", thumbPostResponse);
         route(HTTP.POST, "/star", starPostResponse);
+
+        route(HTTP.GET, "/admin", AdminHandler.Factory("admin.nyml"));
+        route(HTTP.POST, "/admin-update", AdminUpdateHandler.Factory());
     }
 
     public isUserResponse(

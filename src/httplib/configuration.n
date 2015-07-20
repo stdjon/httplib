@@ -17,6 +17,8 @@ public class LogTarget {
     public Layout: string { get; set; }
     /** Log target path */
     public Path: string { get; set; }
+    /** Replace existing file */
+    public ReplaceFile: bool { get; set; }
     /** Colours */
     public Colours: LogColours { get; set; }
 }
