@@ -1,0 +1,49 @@
+---
+Template: template-1panel.nyml
+Scripts:
+  - /zxcvbn-async.js
+  - /swatches.js
+  - /recover.js
+Title: Account Recovery
+Partials:
+  Nav: |
+    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-empty?r={{CurrentUrl}}"
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>Account Recovery</h1>
+    </div>
+  Body: |
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Password reset for {{RecoveryUser}}</h4>
+      </div>
+      <div class="panel-body">
+        <form class="form" role="form">
+          <span class="input-pre">Password: </span>
+          <span class="feedback" id="passwordfeedback"></span>
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
+            <input name="password" id="password_id" type="password" placeholder="[Password]"
+              class="form-control input-sm" onkeypress="passwordKeypress()" onkeyup="passwordKeypress()">
+          </div>
+          <span class="input-pre">Password (confirmation): </span>
+          <span class="feedback" id="confirmfeedback"></span>
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-key fa-fw"></span></span>
+            <input name="confirm" id="confirm_id" type="password" placeholder="[Password]"
+              class="form-control input-sm" onkeypress="confirmKeypress()" onkeyup="confirmKeypress()">
+          </div>
+          <div class="progress">
+            <div class="progress-bar progress-bar-danger" style="width: 1%;" id="password_strength"></div>
+          </div>
+          <input type="hidden" id="token" name="token" value="{{RecoveryToken}}"/>
+          <button id="submit" type="submit" disabled="disabled" class="btn btn-success"
+            onclick="submitRecoveryConfirm(); return false;">Recover</button>
+        </form>
+        <span id="result"></span>
+      </div>
+    </div>
+
+

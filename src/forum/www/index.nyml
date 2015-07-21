@@ -2,6 +2,7 @@
 Template: template-1panel.nyml
 Scripts:
   - /swatches.js
+  - /index.js
 Title: "{{SiteName}}"
 Partials:
   Nav: |
@@ -37,6 +38,50 @@ Partials:
         <p>Please feel free to <a href="{{DefaultSecurePrefix}}/signup">sign up</a>
           and make yourself at home.</p>
         {{/SignedInUser}}
+      </div>
+    </div>
+    {{^SignedInUser}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Account Recovery</h4>
+      </div>
+      <div class="panel-body">
+        <p>To initiate a password reset on your account, please enter your username
+          and your secret here. An email will be sent to you containing further
+          instructions. (If you have forgotten your secret, or you no longer have
+          access to the email account used in registration, you will need to contact
+          an administrator.)</p>
+        <form class="form-inline" role="form">
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-user fa-fw"></span></span>
+            <input id="rc-user" name="user" type="text" placeholder="[Username]" class="form-control input"
+              onkeypress="recoveryKeypress()" onkeyup="recoveryKeypress()">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
+            <input id="rc-secret" name="secret" type="text" placeholder="[Secret]" class="form-control input">
+          </div>
+          <button id="rc-submit" type="submit" class="btn btn-primary"
+            onclick="submitRecovery(); return false;" disabled="disabled">Send email</button>
+          <span id="rc-result"></span>
+        </form>
+      </div>
+    </div>
+    {{/SignedInUser}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Quick Launch</h4>
+      </div>
+      <div class="panel-body">
+        <ul class="list-group">
+          <p>Here are links to help find your way around the site:</p>
+          <li class="list-group-item">
+            <a href="{{DefaultPrefix}}/u">Users</a> &mdash;
+            <em>list of registered users; who's who.</em>
+          <li class="list-group-item">
+            <a href="{{DefaultPrefix}}/c">Categories</a> &mdash;
+            <em>overview of thread categories</em>
+        </ul>
       </div>
     </div>
     <div class="panel panel-default">

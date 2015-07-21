@@ -19,10 +19,6 @@ Partials:
       div.input-group span.input-pre { width: 150; }
       div.feedback { width: 100; }
       div.progress { margin: 0; margin-top: 4px; }
-      .form-control:focus {
-        border-color: #f00;
-        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 0, 0, .6);
-      }
       em { color: #666; }
       tt { color: #000; background-color: #ffb; font-style: normal; }
     </style>
@@ -60,6 +56,13 @@ Partials:
           <span class="input-group-addon"><span class="fa fa-envelope-o fa-fw"></span></span>
           <input name="email" id="email_id" type="email" placeholder="[Email]"
             class="form-control input-sm" onkeypress="emailKeypress()" onkeyup="emailKeypress()">
+        </div>
+        <span class="input-pre">Secret: </span>
+        <span class="feedback" id="secretfeedback"></span>
+        <div class="input-group">
+          <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
+          <input id="rc-secret" name="secret" type="text" placeholder="[Secret]"
+            class="form-control input-sm" onkeypress="secretKeypress()" onkeyup="secretKeypress()">
         </div>
         <br>
         <button id="submit" type="submit" disabled="disabled" class="btn btn-success"

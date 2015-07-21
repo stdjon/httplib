@@ -1,0 +1,194 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class RecoveryInitiateHandler: BaseHandler {
+
+    public this(hd: HandlerData) {
+        base(hd, null);
+    }
+
+    public override callback(): void {
+        def conf = Server.Configuration.AccountRecovery;
+        def smtp = Server.getModuleInterface.[ISmtp](conf.SmtpInterface);
+        def email = smtp.makeEmail();
+        def username = Context.Vars["user"];
+        def secret = Context.Vars["secret"];
+        //CORS
+        def origin = Request["Origin"];
+
+        mutable ok = false;
+        mutable secret_ok = false;
+        mutable user_id, user_secret, address;
+        when(origin != null) {
+            using(db = Server.openDatabase()) {
+                user_id = Server.getUserId(username, db);
+                //user_secret = getUserSecret(user_id, db);
+                //address = getEmailAddress(user_id, db);
+                address = "user@user.com";
+                user_secret = "";
+
+                if(user_secret.levenshtein(secret) <= conf.LevenshteinThreshold) {
+                    secret_ok = true;
+
+                    def (ok2, token, _exp) =
+                        Server.registerSessionToken(STOK.RECOVERY, user_id, db);
+
+                    when(ok2) {
+                        def url =
+                            $"$(Server.DefaultSecurePrefix)/recover/$token";
+
+                        def data = PageData() <- [
+                            "RecoverUrl" = url,
+                            "SiteName" = Server.Configuration.SiteName,
+                            "SiteUrl" = Server.DefaultInsecurePrefix,
+                            "User" = username,
+                            "RecoveryToken" = token,
+                        ];
+
+                        // Maybe abuse of the 'page' concept, but renderTitle()
+                        // and renderContent() will provide what we need here...
+                        def path = conf.EmailBody;
+                        def ext = Path.GetExtension(path).Substring(1);
+                        def renderer = Server.Renderers[ext];
+                        def stream = Server.openLocalFile(path);
+                        def text = renderer.loadPage(path, stream);
+
+                        when(text != null) {
+                            email.To = [address];
+                            email.From = conf.EmailSender;
+                            email.Subject = text.renderTitle(data);
+                            email.Html = true;
+                            email.Body = text.renderContent(data);
+                            email.send();
+                            ok = true;
+                        }
+                    }
+                } else {
+                    //XXX
+                }
+            }
+        }
+
+        mutable json = JsonObject();
+
+        json["msg"] = match(ok, secret_ok) {
+            | (true, true) =>
+                "<em>Recovery request sent&mdash;check your email!</em>"
+            | (true, false) => "<em>Secret wasn't recognized.</em>"
+            | _ =>
+                "<em>Unable to send mail, try again later or talk to an admin.</em>"
+        }
+
+        Response.append(json.toString());
+        // CORS
+        Response["Access-Control-Allow-Origin"] = origin;
+        Response["Access-Control-Allow-Credentials"] = "true";
+        Response.Status = (200, "OK");
+    }
+
+
+}
+
+
+[HasHandlerFactory]
+public class RecoveryConfirmHandler: BasePageHandler {
+
+
+    //public RecoveryUser: string { get; private set; }
+    public RecoveryUserId: uint { get; private set; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+        RecoveryUserId = 0;
+    }
+
+    public override initialize(): void {
+        when(RecoveryUserId != 0) {
+            PageData["RecoveryUser"] =
+                Server.getUserName(RecoveryUserId, Database);
+        }
+    }
+
+    public override callback(): void {
+        mutable ok = false;
+        def token = Context.Vars["token"];
+
+        when(Request.IsSecure) {
+            def user_id =
+                Server.getUserIdFromSessionToken(STOK.RECOVERY, token, Database);
+            when(user_id != 0) {
+                RecoveryUserId = user_id;
+                ok = true;
+            }
+        }
+
+        if(ok) {
+            PageData["RecoveryToken"] = token;
+            base.callback();
+        } else {
+            Server.internalServerErrorResponse(Context, Request, Response);
+        }
+    }
+}
+
+
+[HasHandlerFactory]
+public class RecoverySubmitHandler: BaseHandler {
+
+    public this(hd: HandlerData) {
+        base(hd, null);
+    }
+
+    public override callback(): void {
+        mutable ok = false;
+        when(Request.IsSecure) {
+            def pw = Context.Vars["pw"];
+            def cf = Context.Vars["cf"];
+            def token = Context.Vars["t"];
+
+            when(pw == cf && Server.validatePassword(pw)) {
+                using(db = Server.openDatabase()) {
+                    def user_id = Server.getUserIdFromSessionToken(
+                        STOK.RECOVERY, token, db);
+
+                    when(user_id != 0) {
+                        def auth =
+                            Server.getModuleInterface.[IAuth]("Pbkdf2Auth");
+                        def record = auth.createPasswordRecord(pw);
+
+                        def command = db.createCommand(
+                            "UPDATE Auth SET PwRecord=@PwRecord WHERE "
+                                "UserId=@UserId") <- [
+                                "@PwRecord" = record,
+                                "@UserId" = user_id,
+                            ];
+
+                        def ex = command.executeNonQuery();
+                        when(ex > 0) {
+                            Server.expireSessionTokens(
+                                STOK.RECOVERY, user_id, db);
+                            ok = true;
+                        }
+                    }
+                }
+            }
+        }
+        if(ok) {
+            Response.Status = (200, "OK");
+        } else {
+            Response.Status = (500, "Internal Server Error");
+        }
+    }
+}
+
+
+} // forum

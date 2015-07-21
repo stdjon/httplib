@@ -1,0 +1,25 @@
+---
+Title: "{{SiteName}}: Account recovery for {{User}}"
+Content: |
+  <html>
+  <style>
+    body { font-family: sans-serif; }
+  </style>
+  <body>
+    <p>
+      Hi, this is an automated email from <a href="{{SiteUrl}}">{{SiteName}}</a>.
+      We were asked to send a password recovery email for {{User}}.
+    </p>
+    <p>
+      If you requested this, please visit the following URL to complete the
+      process, where you will be able to enter a new password for your account.
+    </p>
+    <pre><a href="{{RecoverUrl}}">{{RecoverUrl}}</a></pre>
+    <p>
+      This URL will remain active for the next 4 hours, at which point we'll
+      assume that the account recovery is no longer required.
+    </p>
+    <p>
+      Thank you, and good luck!
+    </p>
+  </body>

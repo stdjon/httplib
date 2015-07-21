@@ -1,0 +1,27 @@
+using System;
+using System.Collections.Generic;
+
+using httplib;
+
+
+namespace forum {
+
+[YamlRecord]
+public class AccountRecovery {
+    public SmtpInterface: string { get; set; }
+    public EmailSender: string { get; set; }
+    public EmailBody: string { get; set; }
+    public LevenshteinThreshold: int { get; set; }
+};
+
+
+[YamlRecord]
+public class ForumServerConfiguration: ServerConfiguration {
+
+    public SiteName: string { get; set; }
+    public DefaultAvatarImage: string { get; set; }
+    public AccountRecovery: AccountRecovery { get; set; }
+};
+
+
+} // namespace forum

@@ -675,4 +675,43 @@ public module ExceptionExtensions {
     }
 }
 
+
+//------------------------------------------------------------------------------
+
+public module StringExtensions {
+
+    public levenshtein(this a: string, b: string): int {
+        def la = a.Length;
+        def lb = b.Length;
+        def d: array.[2][int] = array(la + 1, lb + 1);
+
+        result: {
+            when(la == 0) {
+                result(lb);
+            }
+
+            when(lb == 0) {
+                result(la);
+            }
+
+            for(mutable i = 0; i <= la; i++) { d[i, 0] = i; }
+            for(mutable j = 0; j <= lb; j++) { d[0, j] = j; }
+
+            for(mutable i = 1; i <= la; i++) {
+                for(mutable j = 1; j <= lb; j++) {
+
+                    def cost = (b[j - 1] == a[i - 1]) ? 0 : 1;
+
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            d[la, lb];
+        }
+    }
+
+}
+
+
 } // namespace httplib

@@ -23,10 +23,6 @@ Partials:
   PageLayout: |
     <style>
       body { background: none; }
-      .form-control:focus {
-        border-color: #f00;
-        box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(255, 0, 0, .6);
-      }
       .navbar .navbar-form div.input-group {
         width: 200px;
       }

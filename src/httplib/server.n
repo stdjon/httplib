@@ -69,7 +69,7 @@ public class Server: IDisposable {
     }
     file_serving: FileServingMap = Dictionary();
 
-    [Accessor(flags = Internal)]
+    [Accessor]
     renderers: Dictionary[string, Renderer] = Dictionary();
 
     [Accessor(flags = Internal)]

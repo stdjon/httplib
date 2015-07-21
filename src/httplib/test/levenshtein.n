@@ -1,0 +1,52 @@
+using System;
+
+using NUnit.Framework;
+
+
+namespace httplib.test {
+
+[TestFixture]
+public class Levenshtein {
+
+    [Test] public distances(): void {
+
+        Assert.AreEqual(3, "".levenshtein("jon"));
+        Assert.AreEqual(3, "jon".levenshtein(""));
+        Assert.AreEqual(2, "j".levenshtein("jon"));
+        Assert.AreEqual(2, "jon".levenshtein("j"));
+        Assert.AreEqual(0, "jon".levenshtein("jon"));
+        Assert.AreEqual(0, "jon".levenshtein("jon"));
+        Assert.AreEqual(1, "jon".levenshtein("jo"));
+        Assert.AreEqual(1, "jo".levenshtein("jon"));
+        Assert.AreEqual(1, "jon".levenshtein("jn"));
+        Assert.AreEqual(1, "jn".levenshtein("jon"));
+        Assert.AreEqual(1, "jon".levenshtein("jin"));
+        Assert.AreEqual(1, "jin".levenshtein("jon"));
+        Assert.AreEqual(2, "jon".levenshtein("bob"));
+        Assert.AreEqual(2, "bob".levenshtein("jon"));
+        Assert.AreEqual(2, "jon".levenshtein("jim"));
+        Assert.AreEqual(2, "jim".levenshtein("jon"));
+        Assert.AreEqual(2, "jon".levenshtein("jean"));
+        Assert.AreEqual(2, "jean".levenshtein("jon"));
+        Assert.AreEqual(2, "jon".levenshtein("jones"));
+        Assert.AreEqual(2, "jones".levenshtein("jon"));
+        Assert.AreEqual(3, "jon".levenshtein("ted"));
+        Assert.AreEqual(3, "ted".levenshtein("jon"));
+        Assert.AreEqual(3, "jon".levenshtein("aljone"));
+        Assert.AreEqual(3, "aljone".levenshtein("jon"));
+        Assert.AreEqual(4, "jon".levenshtein("neil"));
+        Assert.AreEqual(4, "neil".levenshtein("jon"));
+        Assert.AreEqual(4, "jon".levenshtein("jonbert"));
+        Assert.AreEqual(4, "jonbert".levenshtein("jon"));
+        Assert.AreEqual(5, "jon".levenshtein("terry"));
+        Assert.AreEqual(5, "terry".levenshtein("jon"));
+        Assert.AreEqual(6, "jon".levenshtein("albert"));
+        Assert.AreEqual(6, "albert".levenshtein("jon"));
+        Assert.AreEqual(6, "jon".levenshtein("jalobnert"));
+        Assert.AreEqual(6, "jalobnert".levenshtein("jon"));
+    }
+
+}
+
+
+} // namespace httplib.test

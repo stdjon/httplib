@@ -3,6 +3,11 @@
 ---
 SiteName: myforum.com
 DefaultAvatarImage: avatar-tiny.png
+AccountRecovery:
+  SmtpInterface: Smtp
+  EmailSender: nobody@example.com
+  EmailBody: recovery-email.nyml
+  LevenshteinThreshold: 3
 Databases:
   default:
     Assembly: httplib.db.mysql.dll
@@ -177,6 +182,12 @@ Modules:
           Type: DefaultUrl
           Patterns:
             - "https?://.*"
+  Smtp:
+    Assembly: httplib.mod.smtp.dll
+    Typename: httplib.mod.Smtp
+    Data:
+      Host: localhost
+      Port: 25
   Textile:
     Assembly: httplib.mod.textile.dll
     Typename: httplib.mod.Textile

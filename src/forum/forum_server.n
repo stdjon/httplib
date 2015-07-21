@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Math;
 using System.Text;
+using System.Text.RegularExpressions;
 
 using Nemerle.Extensions;
 
@@ -10,14 +11,6 @@ using httplib;
 
 
 namespace forum {
-
-[YamlRecord]
-public class ForumServerConfiguration: ServerConfiguration {
-
-    public SiteName: string { get; set; }
-    public DefaultAvatarImage: string { get; set; }
-};
-
 
 public class ForumServer: Server {
 
@@ -59,6 +52,11 @@ public class ForumServer: Server {
             UsersHandler.Factory("user.nyml", false));
 
         route(HTTP.POST, "/prefs", updatePrefsResponse);
+
+        route(HTTP.POST, "/recover", RecoveryInitiateHandler.Factory());
+        route(HTTP.GET, "/recover/{{token:.*}}",
+            RecoveryConfirmHandler.Factory("recover.nyml"));
+        route(HTTP.POST, "/recover-submit", RecoverySubmitHandler.Factory());
 
         route(HTTP.GET, "/p/{{num:[0-9]+}}", PostHandler.Factory("post.nyml"));
 
@@ -317,6 +315,20 @@ public class ForumServer: Server {
         (ok, output);
     }
 
+    public validatePassword(pw: string): bool {
+        def a = pw.Length >= 8;
+        def b = pw.Length <= 60;
+        def c = Regex("[a-z]").IsMatch(pw);
+        def d = Regex("[A-Z]").IsMatch(pw);
+        def e = Regex("[0-9]").IsMatch(pw);
+        def f = Regex(<#[ !"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]#>).IsMatch(pw);
+        def result = a && b && c && d && e && f;
+        def p(x) { x ? "T" : "F" }
+        Log.d("validatePassword(): l{0} L{1} a{2} A{3} 9{4} %{5} -> {6}",
+            p(a), p(b), p(c), p(d), p(e), p(f), result);
+        result;
+    }
+
     public filterTestResponse(
         context: Context, request: Request, response: Response): void {
 
@@ -458,6 +470,12 @@ public class ForumServer: Server {
         tok: SessionTokenType, id: uint, db: Database): bool * string * DateTime {
 
         SessionToken.register(tok, id, db);
+    }
+
+    public expireSessionTokens(
+        tok: SessionTokenType, id: uint, db: Database): void {
+
+        SessionToken.expire(tok, id, db);
     }
 
     public getUserIdFromSessionToken(

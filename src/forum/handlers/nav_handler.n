@@ -143,7 +143,16 @@ public class NavHandler: BasePageHandler {
                 Log.i("Deleted {0} session tokens (user sign out)...", rows);
             }
 
+            // Expire session cookies. Note that if the user has accessed the
+            // site over https, then it is possible that an 'insecure' session
+            // cookie was added, so we need to expire both here.
             Response.Cookies.expire("_session", COOKIE.SECURE_HTTP_ONLY);
+            Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
+
+            // And also expire any server-side session tokens.
+            Server.expireSessionTokens(STOK.SECURE, id, Database);
+            Server.expireSessionTokens(STOK.INSECURE, id, Database);
+
             Response["Location"] = CurrentUrl + "?_$signout=1";
             Response.Status = (303, "See Other");
         } else {

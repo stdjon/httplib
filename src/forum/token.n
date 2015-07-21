@@ -14,6 +14,7 @@ public enum STOK {
     | SECURE
     | INSECURE
     | TEMPORARY
+    | RECOVERY
 }
 
 
@@ -25,6 +26,7 @@ public module SecureTokenExtensions {
         | SECURE => 60
         | INSECURE => 40
         | TEMPORARY => 20
+        | RECOVERY => 30
     }
 
     // Token duration (minutes)
@@ -32,6 +34,14 @@ public module SecureTokenExtensions {
         | SECURE => 360 * 24 * 60
         | INSECURE => 30 * 24 * 60
         | TEMPORARY => 1
+        | RECOVERY => 4 * 60
+    }
+
+    public DbValue(this _: SessionTokenType): int {
+        | SECURE => 1
+        | INSECURE => 2
+        | TEMPORARY => 3
+        | RECOVERY => 4
     }
 
     public IsSecure(this _: SessionTokenType): bool {
@@ -80,12 +90,12 @@ public class SessionToken {
         mutable rows;
 
         def command = db.createCommand(
-            "INSERT INTO Sessions(UserId, Token, ExpiryTime, IsSecure) "
-                "VALUES(@UserId, @Token, @ExpiryTime, @IsSecure)") <- [
+            "INSERT INTO Sessions(UserId, Token, ExpiryTime, SessionType) "
+                "VALUES(@UserId, @Token, @ExpiryTime, @SessionType)") <- [
             "@UserId" = id,
             "@Token" = token,
             "@ExpiryTime" = expiry,
-            "@IsSecure" = tok.IsSecure(),
+            "@SessionType" = tok.DbValue(),
         ];
         rows = command.executeNonQuery();
         (rows == 1, token, Date.FromTicks(expiry));
@@ -100,14 +110,24 @@ public class SessionToken {
         Log.i("Deleted {0} expired session tokens...", rows);
     }
 
+    public expire(tok: SessionTokenType, id: uint, db: Database): void {
+        def command = db.createCommand("DELETE FROM Sessions WHERE "
+            "(UserId = @UserId AND SessionType = @SessionType)") <- [
+                "@UserId" = id,
+                "@SessionType" = tok.DbValue(),
+            ];
+        def rows = command.executeNonQuery();
+        Log.i("Deleted {0} expired session tokens...", rows);
+    }
+
     public getUserId(tok: SessionTokenType, token: string, db: Database): uint {
         expire(db);
         mutable result;
         def commmand = db.createCommand(
             "SELECT (UserId) FROM Sessions WHERE "
-                "(Token = @Token AND IsSecure = @IsSecure)") <- [
+                "(Token = @Token AND SessionType = @SessionType)") <- [
             "@Token" = token,
-            "@IsSecure" = tok.IsSecure(),
+            "@SessionType" = tok.DbValue(),
         ];
         result = commmand.executeScalar() :> uint?;
         result ? (result :> uint) : 0U;

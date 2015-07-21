@@ -1,53 +1,7 @@
 var passwordValue = '';
 var confirmValue = '';
-var userOk = false;
 var passwordOk = false;
 var passwordMatch = false;
-var emailOk = false;
-
-
-// keypresses
-function userKeypress() {
-    var ok = true;
-    var v = $('#user_id').val();
-    var msg = '';
-
-    if(!v.match(/^[A-Za-z_]/)) {
-        msg += 'Please start your username with a letter.';
-        ok = false;
-    }
-    if(v.length < 3) {
-        msg += ' Please use at least 3 characters.';
-        ok = false;
-    }
-    if(v.length > 25) {
-        msg += ' Please use 25 characters or less.';
-        ok = false;
-    }
-    if(v.match(/[ !"#$%&()*+,./:;<=>?@\[\\\]^`{|}~]/)) {
-        msg += " Please use only letters, numbers or the symbols <tt>'-_</tt>."
-        ok = false;
-    }
-
-    $('#userfeedback').html('<em>' + msg + '</em>');
-    userOk = ok;
-
-    $.ajax({
-        url: _g.DefaultSecurePrefix + '/is-user?u=' + v,
-        statusCode: {
-            200: function() {
-                $('#userexists').html('<em>Username already taken!</em>');
-                userOk = false;
-            },
-            404: function() {
-                $('#userexists').html('');
-            }
-        },
-        complete: function() {
-            checkSubmit();
-        }
-    });
-}
 
 
 function passwordKeypress() {
@@ -111,39 +65,6 @@ function confirmKeypress() {
 }
 
 
-function emailKeypress() {
-    var v = $('#email_id').val();
-    var ok = (v.length > 2) && v.match(/.@.../);
-    var msg = ok ? '' : '<em>(Is this a valid email address?)</em>';
-
-    $('#emailfeedback').html(msg);
-    emailOk = ok;
-
-    $.ajax({
-        url: _g.DefaultSecurePrefix + '/is-user?e=' + v,
-        statusCode: {
-            200: function() {
-                $('#emailexists').html('<em>Email address already in use!</em>');
-                emailOk = false;
-            },
-            404: function() {
-                $('#emailexists').html('');
-            }
-        },
-        complete: function() {
-            checkSubmit();
-        }
-    });
-}
-
-
-function secretKeypress() {
-    $('#secretfeedback').html(
-        '<em>Can be left blank, but a value entered here can be used ' +
-        ' during account recovery to prove ownership of your account.</em>');
-}
-
-
 function checkPasswords() {
     var ok = passwordValue === confirmValue;
 
@@ -166,8 +87,27 @@ function updatePasswordBar(score) {
 
 
 function checkSubmit() {
-    var cansubmit = userOk && passwordOk && passwordMatch && emailOk;
+    var cansubmit = passwordOk && passwordMatch;
     $('#submit').attr('disabled', cansubmit ? null : 'disabled');
 }
 
 
+function submitRecoveryConfirm() {
+    var pw = $('#password_id').val();
+    var cf = $('#confirm_id').val();
+    var tok = $('#token').val();
+    $.ajax({
+        type: 'POST',
+        url: _g.DefaultSecurePrefix + '/recover-submit',
+        data: 'pw=' + pw + '&cf=' + cf + '&t=' + tok,
+        statusCode: {
+            200: function() {
+                $('#result').html('<em>Password reset, signing you in!</em>');
+                top.location = _g.DefaultPrefix;
+            },
+            500: function() {
+                $('#result').html('<em>Password reset didn\'t work!</em>');
+            },
+        },
+    });
+}

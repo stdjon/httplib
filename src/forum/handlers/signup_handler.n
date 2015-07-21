@@ -63,6 +63,7 @@ public class SignupHandler: BasePageHandler {
             def password = Context.Vars["password"];
             def confirm = Context.Vars["confirm"];
             def email = Context.Vars["email"];
+            def secret = Context.Vars["secret"];
 
             mutable test1, test2;
 
@@ -79,11 +80,8 @@ public class SignupHandler: BasePageHandler {
             test1 = command1.executeScalar() :> string;
             test2 = command2.executeScalar() :> string;
 
-            if(test1 != null || test2 != null || password != confirm) {
-                // TODO: also repeat the validation checks from client side
-                //   user length (3-25), chars
-                //   password length (8-60), chars
-
+            if(test1 != null || test2 != null || password != confirm ||
+                !Server.validatePassword(password)) {
                 // error with user data.
                 // (need a more considered Response though...)
                 Response.append("<html><body><h1>Bad Request!</h1></body></html>");
@@ -114,11 +112,12 @@ public class SignupHandler: BasePageHandler {
                         def record = auth.createPasswordRecord(password);
 
                         mutable command5 = db.createCommand(
-                            "INSERT INTO Auth(UserId, PwRecord, Email) "
-                                "VALUES (@UserId, @PwRecord, @Email)") <- [
+                            "INSERT INTO Auth(UserId, PwRecord, Email, Secret) "
+                                "VALUES (@UserId, @PwRecord, @Email, @Secret)") <- [
                             "@UserId" = id,
                             "@PwRecord" = record,
                             "@Email" = email,
+                            "@Secret" = secret,
                         ];
                         _ = command5.executeNonQuery();
 
