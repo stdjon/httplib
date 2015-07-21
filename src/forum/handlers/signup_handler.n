@@ -96,8 +96,11 @@ public class SignupHandler: BasePageHandler {
 
                     Database.withTransaction(db => {
                         mutable command3 = db.createCommand(
-                            "INSERT INTO Users(Name, Level, Points, JoinDate) "
-                                "VALUES (@Name, 0, 0, @JoinDate)") <- [
+                            "INSERT INTO Users("
+                                "Name, Points, Level, JoinDate, Motto, Location, "
+                                "Colour, Transform, Font) VALUES "
+                                "(@Name, 0, 0, @JoinDate, '', '', "
+                                "'x360', 'bbcode', 'serif1')") <- [
                             "@Name" = user,
                             "@JoinDate" = now,
                         ];
