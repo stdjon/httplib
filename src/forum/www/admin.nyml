@@ -20,6 +20,11 @@ Partials:
         <table class="table">
           <tr><td style="width: 25%;">Started at:</td><td>{{StartTime}}</td></tr>
           <tr><td>Uptime:</td><td>{{Uptime}}</td></tr>
+          <tr><td>Live Update:</td><td>
+            <label>
+              <input id="update" type="checkbox" checked="checked"/>
+            </label>
+          </td></tr>
         </table>
       </div>
     </div>
@@ -33,15 +38,10 @@ Partials:
     </div>
   PageScript: |
     setInterval(function() {
-      $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        global: false,
-        url: '/admin-update',
-        success: function(data) {
-          $('#log-tail').html(data.log);
-        }
-      });
+      var upd = $('#update').prop('checked');
+      if(upd) {
+        reloadPageContent();
+      }
     }, 10000);
 
 
