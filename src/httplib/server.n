@@ -529,7 +529,6 @@ public class Server: IDisposable {
     }
 
     public openLocalFile(path: string): FileStream {
-        mutable result = null;
         exit: {
             foreach(root in Configuration.Roots) {
                 def p = canonicalPath(Path.Combine(root, path));
@@ -537,12 +536,12 @@ public class Server: IDisposable {
 
                 Log.d("File exists: \"{0}\"? {1}", p, exists);
                 when(exists) {
-                    result = FileStream(p, FileMode.Open);
-                    exit();
+                    exit( FileStream(p,
+                            FileMode.Open, FileAccess.Read, FileShare.Read) );
                 }
             }
+            null;
         }
-        result;
     }
 
     findLocalFileForRequest(request: Request): FileStream * string * Headers {
