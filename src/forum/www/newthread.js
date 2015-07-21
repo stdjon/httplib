@@ -73,6 +73,32 @@ function keyHandler(e) {
 $('#fp-text').keydown(keyHandler);
 
 
+// insert category array into the select2 object as selected options, so the tags
+// field is populated properly...
+function populateCategories(select, hl, cats) {
+    for(var i = 0; i < cats.length; i++) {
+        var opt = $('<option></option>').text(cats[i]).val(cats[i]);
+        if(hl === cats[i]) {
+            opt.attr('selected', true);
+        }
+        opt.appendTo(select);
+    }
+    select.trigger('change');
+}
+
+
+function getCategoryList(cb) {
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/categories',
+        success: function(data) {
+            cb(data.categories);
+        }
+    });
+}
+
 // install handler for (hacked) keypress events from select2 elements
 $(document).ready(function() {
     $('body').on("s2_keypress", function(_, e) {
@@ -83,5 +109,7 @@ $(document).ready(function() {
         $('#tags').val(encodeTagString(v));
     });
 
-
-})
+    getCategoryList(function(data) {
+        populateCategories('select#category', _g.Category, data);
+    });
+});

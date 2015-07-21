@@ -19,15 +19,18 @@ public class NewThreadHandler: BasePageHandler {
 
         using(db = Server.openDatabase()) {
 
-            def catid = UInt32.Parse(Context.Vars["category"]);
-            PageData["CategoryId"] = catid;
+            def cat = Context.Vars["category"];
+            when(!String.IsNullOrEmpty(cat)) {
+                def catid = UInt32.Parse(cat);
+                PageData["CategoryId"] = catid;
 
-            def command = db.createCommand(
-                "SELECT Name FROM Categories WHERE Id = @Id") <- [
-                    "@Id" = catid 
-                ];
-            def catname = command.executeScalar() :> string;
-            PageData["Category"] = catname;
+                def command = db.createCommand(
+                    "SELECT Name FROM Categories WHERE Id = @Id") <- [
+                        "@Id" = catid,
+                    ];
+                def catname = command.executeScalar() :> string;
+                PageData["Category"] = catname;
+            }
 
             def command2 = db.createCommand(
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [

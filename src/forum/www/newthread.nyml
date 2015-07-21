@@ -29,8 +29,9 @@ Partials:
     <p>&nbsp;</p>
     {{>Swatches}}
     <p>&nbsp;</p>
-    <p>A new thread in the category
-      <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>.</p>
+    <p>A new thread in the category:
+      <select id="category" name="category" data-placeholder="[Category]"
+        style="width: 50%; height: 24px"></select></p>
     <div class="checkbox">
       <label><input id="fp-cbx" name="fp" type="checkbox" checked="checked" onclick="firstPost()">
         Author the first post in the thread.</label>
@@ -67,7 +68,6 @@ Partials:
       </div>
     </div>
     <input id="colour" name="colour" type="hidden" value="x360"/>
-    <input id="category" name="category" type="hidden" value="{{CategoryId}}"/>
     <input id="tags" name="tags" type="hidden" value=""/>
     <p>&nbsp;</p>
     <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
@@ -86,8 +86,10 @@ Partials:
     </div>
     {{/Title}}
   PageScript: |
+    _g.Category = "{{Category}}";
     $(window).load(function() {
       $('#title').focus();
+      $('select#category').select2();
       $("select#fp-tags").select2({
         tags: true,
         maximumInputLength: 30,

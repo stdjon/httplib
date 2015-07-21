@@ -52,6 +52,7 @@ public class ForumServer: Server {
             UsersHandler.Factory("user.nyml", false));
 
         route(HTTP.POST, "/prefs", updatePrefsResponse);
+        route(HTTP.POST, "/categories", categoryListResponse);
 
         route(HTTP.POST, "/recover", RecoveryInitiateHandler.Factory());
         route(HTTP.GET, "/recover/{{token:.*}}",
@@ -60,7 +61,8 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/p/{{num:[0-9]+}}", PostHandler.Factory("post.nyml"));
 
-        route(HTTP.POST, "/th/new",
+        route([ (HTTP.GET, "/th/new"),
+                (HTTP.POST, "/th/new") ],
             NewThreadHandler.Factory("newthread.nyml"));
 
         route(HTTP.POST, "/createthread", CreateThreadHandler.Factory());
@@ -384,6 +386,23 @@ public class ForumServer: Server {
         }
     }
 
+    public categoryListResponse(
+        _context: Context, _request: Request, response: Response): void {
+
+        using(db = openDatabase()) {
+            def command = db.createCommand("SELECT Name FROM Categories");
+            def cats = List();
+            command.execute(reader => {
+                def c = reader.getValue("Name");
+                when(!String.IsNullOrEmpty(c)) {
+                    cats.Add(c);
+                }
+            });
+            def json = JsonObject() <- [ "categories" = cats ];
+            response.append(json.toString());
+        }
+    }
+
     public thumbPostResponse(
         context: Context, request: Request, response: Response): void {
 
@@ -458,6 +477,15 @@ public class ForumServer: Server {
         def commmand = db.createCommand(
             "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
         commmand.executeScalar() :> string;
+    }
+
+    public getCategoryId(name: string, db: Database): uint {
+        def commmand = db.createCommand(
+            "SELECT Id FROM Categories WHERE Name = @Name") <- [
+                "@Name" = name
+            ];
+        def c = commmand.executeScalar() :> uint?;
+        c ? (c :> uint) : 0;
     }
 
     public getCategoryName(cat_id: uint, db: Database): string {
