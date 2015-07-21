@@ -109,7 +109,7 @@ public class Page {
         when(Links != null) {
             foreach(l in Links) {
                 when(!String.IsNullOrEmpty(l)) {
-                    links += $"\n<link $(renderString(l, data))>";
+                    links += $"\n<link $(renderString(l, data))></link>";
                 }
             }
         }
