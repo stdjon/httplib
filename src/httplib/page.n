@@ -53,6 +53,7 @@ public class Page {
     public Path: string { get; set; }
     public Lang: string { get; set; }
     public Metas: List[string] { get; set; }
+    public Links: List[string] { get; set; }
     public Title: string { get; set; }
     public Stylesheets: List[string] { get; set; }
     public Scripts: List[string] { get; set; }
@@ -100,7 +101,15 @@ public class Page {
         when(Metas != null) {
             foreach(m in Metas) {
                 when(!String.IsNullOrEmpty(m)) {
-                    meta += $"\n<meta $(renderString(m, data))>"
+                    meta += $"\n<meta $(renderString(m, data))>";
+                }
+            }
+        }
+        mutable links = "";
+        when(Links != null) {
+            foreach(l in Links) {
+                when(!String.IsNullOrEmpty(l)) {
+                    links += $"\n<link $(renderString(l, data))>";
                 }
             }
         }
@@ -143,7 +152,7 @@ public class Page {
         def content = renderContent(data, pd);
 
         $"<!DOCTYPE html>\n<html$lang>\n"
-        $"<head>$meta$title$stylesheet\n</head>\n"
+        $"<head>$meta$title$links$stylesheet</head>\n"
         $"<body$body_attrs>\n$content</body>\n</html>";
     }
 
@@ -258,6 +267,7 @@ public class Page {
             Content = other.Content;
         }
         Metas = mergeLists(other.Metas, Metas);
+        Links = mergeLists(other.Links, Links);
         Stylesheets = mergeLists(other.Stylesheets, Stylesheets);
         Scripts = mergeLists(other.Scripts, Scripts);
         BodyAttributes = mergeLists(other.BodyAttributes, BodyAttributes);

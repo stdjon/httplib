@@ -6,6 +6,8 @@ Metas:
   - charset="utf-8"
   - http-equiv="X-UA-Compatible" content="IE=edge"
   - name="viewport" content="width=device-width, initial-scale=1"
+Links:
+  - rel='shortcut' href='/favicon.ico'
 Stylesheets:
   - /bootstrap-3.3.4-dist/css/bootstrap.css
   - /bootstrap3-dialog-1.34.5/dist/css/bootstrap-dialog.min.css
