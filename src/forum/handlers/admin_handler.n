@@ -78,7 +78,7 @@ public class AdminHandler: AdminAuthHandler {
 
         def start_time = Date.FromTicks(Server.TimeStarted);
         PageData["StartTime"] = start_time.ToString();
-        PageData["Uptime"] = Uptime.ToString(@"hh\:mm\:ss");
+        PageData["Uptime"] = Uptime.ToString(@"d\:hh\:mm\:ss");
         PageData["LiveLog"] = Admin.tailLiveLog();
     }
 }
