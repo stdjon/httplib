@@ -141,15 +141,15 @@ FORUM_DATABASE?=forum
 # $4 = additional dlls to reference (can be empty)
 # $5 = additional args to ncc (can be empty, usually set by derived emits)
 define emit_rule
-$1_TARGETS+=$(BIN)/$2
-$(BIN)/$2_SRC:=$$(foreach d,$3,$$(wildcard $$d/*.n))
-$(BIN)/$2_DLLS:=$$(foreach d,$4,$(BIN)/$$d)
+^bin:=$(strip $2)
+$1_TARGETS+=$(BIN)/$$(^bin)
+$(BIN)/$$(^bin)_SRC:=$$(foreach d,$3,$$(wildcard $$d/*.n))
+$(BIN)/$$(^bin)_DLLS:=$$(foreach d,$4,$(BIN)/$$d)
 
-$(BIN)/$2: $$($(BIN)/$2_SRC) $$($(BIN)/$2_DLLS)
+$(BIN)/$$(^bin): $$($(BIN)/$$(^bin)_SRC) $$($(BIN)/$$(^bin)_DLLS)
 	@mkdir -p $$(dir $$@)
 	$$(NCC) -o $$@ $(NCCFLAGS) $5 $$($$@_SRC) $$(refs)
 endef
-
 
 # Emit a rule for a .exe
 emit_exe_rule=$(call emit_rule,EXE,$1,$2,$3)
@@ -177,180 +177,19 @@ all:
 
 
 # ------------------------------------------------------------------------------
-# APPLICATIONS
+# INCLUDE FRAGMENTS
 
-# ------------------------------------------------------------------------------
-# forum.exe
+this_makefile=$(lastword $(MAKEFILE_LIST))
+this_dir=$(dir $(this_makefile))
 
-$(eval $(call emit_exe_rule,forum.exe, \
-	src/forum src/forum/*, \
-	forum.mod.filter.dll forum.mod.providers.dll \
-	httplib.dll httplib.macros.dll \
-	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
-	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
-	httplib.mod.imageprocessor.dll httplib.mod.oembed.dll httplib.mod.textile.dll))
+# Look for makefile fragments with .mak extension under src/ and up to three
+# levels deeper. These will contain rules for how to build specific library and
+# application targets.
+-include src/*.mak
+-include src/*/*.mak
+-include src/*/*/*.mak
+-include src/*/*/*/*.mak
 
-
-# ------------------------------------------------------------------------------
-# forum.mod.filter.dll
-
-$(eval $(call emit_dll_rule,forum.mod.filter.dll, \
-	src/forum/mod/filter, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# forum.mod.providers.dll
-
-$(eval $(call emit_dll_rule,forum.mod.providers.dll, \
-	src/forum/mod/providers, \
-	httplib.dll httplib.macros.dll \
-	httplib.mod.oembed.dll))
-
-
-# ------------------------------------------------------------------------------
-# forum-testdata.exe
-
-$(eval $(call emit_exe_rule,forum-testdata.exe, \
-	src/forum/tools/testdata, \
-	forum.exe \
-	httplib.dll httplib.macros.dll \
-	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
-	httplib.mod.auth.dll httplib.mod.bbcode.dll httplib.mod.htmlsanitize.dll \
-	httplib.mod.oembed.dll httplib.mod.textile.dll))
-
-
-# ------------------------------------------------------------------------------
-# http.exe
-
-$(eval $(call emit_exe_rule,http.exe, \
-	src/myserver, \
-	httplib.dll httplib.macros.dll \
-	httplib.db.mysql.dll httplib.page.nustache.dll httplib.log.nlog.dll \
-	httplib.mod.auth.dll httplib.mod.bbcode.dll \
-	httplib.mod.htmlsanitize.dll httplib.mod.imageprocessor.dll \
-	httplib.mod.textile.dll))
-
-
-# ------------------------------------------------------------------------------
-# HTTPLIB CORE
-
-# ------------------------------------------------------------------------------
-# httplib.dll
-
-$(eval $(call emit_dll_rule,httplib.dll, \
-	src/httplib, \
-	httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.macros.dll
-
-$(eval $(call emit_macro_dll_rule,httplib.macros.dll, \
-	src/httplib/macros))
-
-
-# ------------------------------------------------------------------------------
-# DATABASES
-
-# ------------------------------------------------------------------------------
-# httplib.db.mysql.dll
-
-$(eval $(call emit_dll_rule,httplib.db.mysql.dll, \
-	src/httplib/db/mysql, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# LOGGING
-
-# ------------------------------------------------------------------------------
-# httplib.log.nlog.dll
-
-$(eval $(call emit_dll_rule,httplib.log.nlog.dll, \
-	src/httplib/log/nlog, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# RENDERERS
-
-# ------------------------------------------------------------------------------
-# httplib.page.nustache.dll
-
-$(eval $(call emit_dll_rule,httplib.page.nustache.dll, \
-	src/httplib/page/nustache, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# MODULES
-
-# ------------------------------------------------------------------------------
-# httplib.mod.auth.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.auth.dll, \
-	src/httplib/mod/auth, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.bbcode.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.bbcode.dll, \
-	src/httplib/mod/bbcode, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.htmlsanitize.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.htmlsanitize.dll, \
-	src/httplib/mod/htmlsanitize, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.imageprocessor.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.imageprocessor.dll, \
-	src/httplib/mod/image, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.oembed.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.oembed.dll, \
-	src/httplib/mod/oembed, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.smtp.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.smtp.dll, \
-	src/httplib/mod/smtp, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# httplib.mod.textile.dll
-
-$(eval $(call emit_dll_rule,httplib.mod.textile.dll, \
-	src/httplib/mod/textile, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
-# TESTS
-
-$(eval $(call emit_dll_rule,httplib.test.dll, \
-	src/httplib/test, \
-	httplib.dll httplib.macros.dll))
-
-
-# ------------------------------------------------------------------------------
 
 # EXE_TARGETS and DLL_TARGETS should be filled out at this point
 TARGETS:=$(EXE_TARGETS) $(DLL_TARGETS)
