@@ -1,0 +1,25 @@
+---
+Title: "Welcome to {{SiteName}}!"
+Content: |
+  <html>
+  <style>
+    body { font-family: sans-serif; }
+  </style>
+  <body>
+    <p>
+      Hi {{User}}, this is an automated email from <a href="{{SiteUrl}}">{{SiteName}}</a>.
+      This mail confirms that your email address is valid and your account is
+      ready to use.
+    </p>
+    <p>
+      If you ever forget your password, you can use the <b>Account Recovery</b>
+      on the index page to send a pasword reset to this email address.
+    </p>
+    <p>
+      We hope you enjoy the time you'll spend on the site.
+    </p>
+    <p>
+      Thank you, and good luck!
+    </p>
+  </body>
+

@@ -130,6 +130,16 @@ public class SignupHandler: BasePageHandler {
                         when(ok) {
                             token = t;
                             expiry = x;
+
+                            def data = PageData() <- [
+                                "SiteName" = Server.Configuration.SiteName,
+                                "SiteUrl" = Server.DefaultInsecurePrefix,
+                                "User" = user,
+                            ];
+
+                            Server.sendEmail(
+                                Server.Configuration.DefaultEmailSender,
+                                [email], "welcome-email.nyml", data);
                         }
                     });
 

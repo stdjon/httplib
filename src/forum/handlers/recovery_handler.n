@@ -18,8 +18,6 @@ public class RecoveryInitiateHandler: BaseHandler {
 
     public override callback(): void {
         def conf = Server.Configuration.AccountRecovery;
-        def smtp = Server.getModuleInterface.[ISmtp](conf.SmtpInterface);
-        def email = smtp.makeEmail();
         def username = Context.Vars["user"];
         def secret = Context.Vars["secret"];
         //CORS
@@ -52,23 +50,9 @@ public class RecoveryInitiateHandler: BaseHandler {
                             "RecoveryToken" = token,
                         ];
 
-                        // Maybe abuse of the 'page' concept, but renderTitle()
-                        // and renderContent() will provide what we need here...
-                        def path = conf.EmailBody;
-                        def ext = Path.GetExtension(path).Substring(1);
-                        def renderer = Server.Renderers[ext];
-                        def stream = Server.openLocalFile(path);
-                        def text = renderer.loadPage(path, stream);
-
-                        when(text != null) {
-                            email.To = [address];
-                            email.From = conf.EmailSender;
-                            email.Subject = text.renderTitle(data);
-                            email.Html = true;
-                            email.Body = text.renderContent(data);
-                            email.send();
-                            ok = true;
-                        }
+                        Server.sendEmail(
+                            conf.EmailSender, [address], conf.EmailBody, data);
+                        ok = true;
                     }
                 }
             }
@@ -98,8 +82,6 @@ public class RecoveryInitiateHandler: BaseHandler {
 [HasHandlerFactory]
 public class RecoveryConfirmHandler: BasePageHandler {
 
-
-    //public RecoveryUser: string { get; private set; }
     public RecoveryUserId: uint { get; private set; }
 
     public this(hd: HandlerData, path: string) {

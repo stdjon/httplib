@@ -3,8 +3,8 @@
 ---
 SiteName: myforum.com
 DefaultAvatarImage: avatar-tiny.png
+DefaultEmailSender: webmaster@example.com
 AccountRecovery:
-  SmtpInterface: Smtp
   EmailSender: nobody@example.com
   EmailBody: recovery-email.nyml
   LevenshteinThreshold: 3

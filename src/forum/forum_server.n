@@ -882,6 +882,30 @@ public class ForumServer: Server {
         //Log.t("points {0} -> level {1}", points, level);
         level;
     }
+
+    public sendEmail(
+        from: string, to: list[string], path: string, data: PageData): void {
+
+        def smtp = getModuleInterface.[ISmtp]("Smtp");
+        def email = smtp.makeEmail();
+
+        // Maybe abuse of the 'page' concept, but renderTitle()
+        // and renderContent() will provide what we need here...
+        def ext = Path.GetExtension(path).Substring(1);
+        def renderer = Renderers[ext];
+        def stream = openLocalFile(path);
+        def text = renderer.loadPage(path, stream);
+
+        when(text != null) {
+            email.To = to;
+            email.From = from;
+            email.Subject = text.renderTitle(data);
+            email.Html = true;
+            email.Body = text.renderContent(data);
+            email.send();
+        }
+
+    }
 }
 
 
