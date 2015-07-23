@@ -31,12 +31,10 @@ public class RecoveryInitiateHandler: BaseHandler {
         when(origin != null) {
             using(db = Server.openDatabase()) {
                 user_id = Server.getUserId(username, db);
-                //user_secret = getUserSecret(user_id, db);
-                //address = getEmailAddress(user_id, db);
-                address = "user@user.com";
+                address = Server.getUserEmail(user_id, db);
                 user_secret = "";
 
-                if(user_secret.levenshtein(secret) <= conf.LevenshteinThreshold) {
+                when(user_secret.levenshtein(secret) <= conf.LevenshteinThreshold) {
                     secret_ok = true;
 
                     def (ok2, token, _exp) =
@@ -72,8 +70,6 @@ public class RecoveryInitiateHandler: BaseHandler {
                             ok = true;
                         }
                     }
-                } else {
-                    //XXX
                 }
             }
         }

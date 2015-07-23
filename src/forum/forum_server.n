@@ -479,6 +479,12 @@ public class ForumServer: Server {
         commmand.executeScalar() :> string;
     }
 
+    public getUserEmail(user_id: uint, db: Database): string {
+        def commmand = db.createCommand(
+            "SELECT Email FROM Auth WHERE UserId = @Id") <- [ "@Id" = user_id ];
+        commmand.executeScalar() :> string;
+    }
+
     public getCategoryId(name: string, db: Database): uint {
         def commmand = db.createCommand(
             "SELECT Id FROM Categories WHERE Name = @Name") <- [
