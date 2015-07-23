@@ -199,15 +199,19 @@ public class Server: IDisposable {
 
         // install default handlers for several methods...
         route(HTTP.INVALID_, ".*", internalServerErrorResponse);
-        route([
-            (HTTP.OPTIONS, ".*"),
-            (HTTP.TRACE, ".*"),
-            (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
+        route([ (HTTP.OPTIONS, ".*"),
+                (HTTP.TRACE, ".*"),
+                (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
 
         Listener.AuthenticationSchemeSelectorDelegate = req => {
             def request = Request(req);
             handleAuthentication(request);
         };
+
+        when(Configuration.Consolidation != null) {
+            // make sure cache path exists and is empty at server start time...
+            Consolidator.prepareCache(Configuration.Consolidation.CachePath);
+        }
     }
 
     public start(): void {
@@ -528,7 +532,7 @@ public class Server: IDisposable {
         result;
     }
 
-    public openLocalFile(path: string): FileStream {
+    public localFilePath(path: string): string {
         exit: {
             foreach(root in Configuration.Roots) {
                 def p = canonicalPath(Path.Combine(root, path));
@@ -536,10 +540,18 @@ public class Server: IDisposable {
 
                 Log.d("File exists: \"{0}\"? {1}", p, exists);
                 when(exists) {
-                    exit( FileStream(p,
-                            FileMode.Open, FileAccess.Read, FileShare.Read) );
+                    exit(p);
                 }
             }
+            null;
+        }
+    }
+
+    public openLocalFile(path: string): FileStream {
+        def p = localFilePath(path);
+        if(p != null) {
+            FileStream(p, FileMode.Open, FileAccess.Read, FileShare.Read);
+        } else {
             null;
         }
     }

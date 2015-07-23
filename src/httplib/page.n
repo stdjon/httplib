@@ -9,35 +9,6 @@ using YamlDotNet.Serialization;
 namespace httplib {
 
 //------------------------------------------------------------------------------
-// FileType
-
-public type FileType = FILE;
-public enum FILE {
-    | JS
-    | CSS
-}
-
-
-public type JoinType = JOIN;
-public enum JOIN {
-    | CAT
-    | MIN
-}
-
-
-public module FileTypeExtensions {
-
-    public extension(this _: FileType): string {
-        | JS => "js"
-        | CSS => "css"
-    }
-    public rename(this ft: FileType, path: string): string {
-        Path.ChangeExtension(path, ft.extension());
-    }
-}
-
-
-//------------------------------------------------------------------------------
 // Page
 
 [YamlRecord]
@@ -218,40 +189,14 @@ public class Page {
     }
 
     protected consolidateFiles(
-        ftype: FileType, _jtype: JoinType, files: List[string]): bool * List[string] {
+        ftype: FileType, jtype: JoinType, files: List[string]): bool * List[string] {
 
-        mutable ok = false;
-        mutable result = List();
         def path = Path.Replace('/', '_').Replace('\\', '_');
         def output = ftype.rename($"/_$path");
         def canonical_path = Server.canonicalPath(Consolidation.CachePath);
         def outpath = $"$canonical_path$output";
 
-        using(ostream = FileStream(outpath, FileMode.Create, FileAccess.Write)) {
-            when(ostream != null) {
-                foreach(f in files) {
-                    def p = filePath(f);
-                    if(standalone(f)) {
-                        result.Add(p);
-                    } else {
-                        def g = ('/' == p[0]) ? p.Substring(1) : p;
-                        using(istream = Server.openLocalFile(g)) {
-                            if(istream != null) {
-                                istream.CopyTo(ostream);
-                            } else {
-                                result.Add(p);
-                            }
-                        }
-                    }
-                }
-                ok = true;
-            }
-        }
-        when(ok) {
-            result.Add(output);
-        }
-
-        (ok, result);
+        Consolidator(Server, output, outpath, files, ftype, jtype).process();
     }
 
     // merging
@@ -312,10 +257,6 @@ public class Page {
 
     protected static filePath(path: string): string {
         path.Split(array['#', '*'])[0];
-    }
-
-    protected static standalone(path: string): bool {
-        path.Contains("*");
     }
 
     protected static hasId(path: string): bool {

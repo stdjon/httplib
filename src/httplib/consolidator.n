@@ -1,0 +1,175 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+
+namespace httplib {
+
+//------------------------------------------------------------------------------
+// FileType
+
+public type FileType = FILE;
+public enum FILE {
+    | JS
+    | CSS
+}
+
+
+public type JoinType = JOIN;
+public enum JOIN {
+    | CAT
+    | MIN
+}
+
+
+public module FileTypeExtensions {
+
+    public extension(this _: FileType): string {
+        | JS => "js"
+        | CSS => "css"
+    }
+    public rename(this ft: FileType, path: string): string {
+        Path.ChangeExtension(path, ft.extension());
+    }
+}
+
+
+//------------------------------------------------------------------------------
+// Consolidator
+
+[HasLogging]
+public class Consolidator {
+
+    type FA = FileAccess;
+    type FM = FileMode;
+    type FO = FileOptions;
+    type FS = FileShare;
+
+    static cache: Dictionary[string, List[string]] = Dictionary();
+
+    public Server: Server { get; private set; }
+    public Output: string { get; private set; }
+    public OutputFile: string { get; private set; }
+    public Input: List[string] { get; private set; }
+    public FileType: FileType { get; private set; }
+    public JoinType: JoinType { get; private set; }
+    public WriteTime: DateTime { get; private set; }
+
+    public static prepareCache(path: string): void {
+        def p = Server.canonicalPath(path);
+        Log.i("Consolidator cache path: '{0}'", p);
+        if(Directory.Exists(p)) {
+            Log.d("Removing files from '{0}'...", p);
+            def di = DirectoryInfo(p);
+            foreach(fi in di.GetFiles()) {
+                fi.Delete();
+            }
+        } else {
+            Log.d("Createing '{0}'...", p);
+            _ = Directory.CreateDirectory(p);
+        }
+    }
+
+    public this(
+        s: Server, o: string, f: string, i: List[string], ft: FileType, jt = JOIN.CAT) {
+
+        Server = s;
+        Output = o;
+        OutputFile = f;
+        Input = i;
+        FileType = ft;
+        JoinType = jt;
+
+        WriteTime = fileTime(OutputFile);
+    }
+
+    public virtual process(): bool * List[string] {
+        if(shouldBuild()) {
+            buildOutput();
+        } else {
+            // If output file doesn't exist here, we failed to build it, so
+            // return original list of input files. If the output _does_ exist,
+            // we should have cached the list of files to during buildOutput()...
+            if(fileTime(OutputFile) == DateTime.MinValue) {
+                (false, Input);
+            } else {
+                (true, cache[Output]);
+            }
+        }
+    }
+
+    public shouldBuild(): bool {
+        exit: {
+            foreach(i in Input) {
+                def t = fileTime(i);
+                when(t > WriteTime) {
+                    exit(true);
+                }
+            }
+            false;
+        }
+    }
+
+    public buildOutput(): bool * List[string] {
+        mutable result = List();
+        mutable ok = false;
+
+        using(ostream = FileStream(OutputFile,
+            FM.Create, FA.Write, FS.ReadWrite, 4096, FO.WriteThrough)) {
+
+            foreach(f in Input) {
+                def p = filePath(f);
+                if(standalone(f)) {
+                    result.Add(p);
+                } else {
+                    def p2 = ('/' == p[0]) ? p.Substring(1) : p;
+                    using(istream = Server.openLocalFile(p2)) {
+                        if(istream != null) {
+                            istream.CopyTo(ostream);
+                        } else {
+                            result.Add(p);
+                        }
+                    }
+                }
+            }
+            ok = true;
+        }
+
+        when(ok) {
+            result.Add(Output);
+            cache[Output] = result;
+        }
+        (ok, result);
+    }
+
+    protected static filePath(path: string): string {
+        // remove elements starting with '#' or '*' from the end of the path
+        path.Split(array['#', '*'])[0];
+    }
+
+    public fileTime(path: string): DateTime {
+        def p2 = filePath(path);
+        def p3 = ('/' == p2[0]) ? p2.Substring(1) : p2;
+        def p = Server.localFilePath(p3);
+        if(p != null) {
+            def d = File.GetLastWriteTime(p);
+            // Assume any file write time pre-1650 is due to the idiosyncratic
+            // nature of GetLastWriteTime() when given path to a a non-existant
+            // file. Replace them with DateTime.MinValue so we can compare later.
+            if(d > DateTime(1650, 1, 1)) {
+                d;
+            } else {
+                DateTime.MinValue;
+            }
+        } else {
+            DateTime.MinValue;
+        }
+    }
+
+    protected static standalone(path: string): bool {
+        path.Contains("*");
+    }
+
+}
+
+} // namespace httplib

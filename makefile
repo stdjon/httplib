@@ -213,7 +213,6 @@ test-gui: install_contrib $(BIN)/httplib.test.dll
 	$(call launch_nunit,$(BIN)/httplib.test.dll)
 
 frun: install_contrib $(BIN)/forum.exe
-	@mkdir -p bin/cache/forum
 	$(call launch_assembly,forum.exe) -R $(shell pwd)/src/forum $D
 
 fdata: $(BIN)/forum-testdata.exe
