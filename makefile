@@ -100,6 +100,7 @@ CONTRIB_LIBS:= \
 	CsQuery-1.3.4/lib/net40/CsQuery.dll \
 	HtmlSanitizer.2.0.5595.30325/lib/net40/HtmlSanitizer.dll \
 	ImageProcessor-2.2.5/lib/net45/ImageProcessor.dll \
+	Microsoft-Ajax-Minifier-5.14.5506.26196/AjaxMin.dll \
 	MySql-Connector-6.9.6/v4.5/MySql.Data.dll \
 	NDesk.Options-0.2.1.0/NDesk.Options.dll \
 	NLog-3.2.1/net45/NLog.dll \
