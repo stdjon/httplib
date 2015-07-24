@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encoding;
+
+using Microsoft.Ajax.Utilities;
 
 
 namespace httplib {
@@ -19,6 +22,7 @@ public type JoinType = JOIN;
 public enum JOIN {
     | CAT
     | MIN
+    | NONE
 }
 
 
@@ -55,6 +59,8 @@ public class Consolidator {
     public JoinType: JoinType { get; private set; }
     public WriteTime: DateTime { get; private set; }
 
+    public Minifier: Minifier { get; private set; }
+
     public static prepareCache(path: string): void {
         def p = Server.canonicalPath(path);
         Log.i("Consolidator cache path: '{0}'", p);
@@ -79,6 +85,10 @@ public class Consolidator {
         Input = i;
         FileType = ft;
         JoinType = jt;
+
+        when(JoinType == JOIN.MIN) {
+            Minifier = Minifier();
+        }
 
         WriteTime = fileTime(OutputFile);
     }
@@ -114,9 +124,58 @@ public class Consolidator {
         mutable result = List();
         mutable ok = false;
 
-        using(ostream = FileStream(OutputFile,
-            FM.Create, FA.Write, FS.ReadWrite, 4096, FO.WriteThrough)) {
+        match(JoinType) {
+            | JOIN.CAT => {
+                using(ostream = FileStream(OutputFile,
+                    FM.Create, FA.Write, FS.ReadWrite, 4096, FO.WriteThrough)) {
 
+                    (ok, result) = buildStream(ostream);
+                }
+            }
+            | JOIN.MIN => {
+                using(mstream = MemoryStream()) {
+
+                    (ok, result) = buildStream(mstream);
+                    mstream.Flush();
+
+                    def instring = UTF8.GetString(mstream.ToArray());
+
+                    def outstring: string =
+                        match(FileType) {
+                            | FILE.CSS => {
+                                Minifier.MinifyStyleSheet(instring);
+                            }
+                            | FILE.JS => {
+                                Minifier.MinifyJavaScript(instring);
+                            }
+                        };
+
+                    using(ostream = FileStream(OutputFile,
+                        FM.Create, FA.Write, FS.ReadWrite, 4096, FO.WriteThrough)) {
+
+                        def sw = StreamWriter(ostream);
+                        sw.Write(outstring);
+                        sw.Flush();
+                    }
+
+                }
+            }
+            | JOIN.NONE => {}
+        }
+
+
+        when(ok) {
+            cache[Output] = result;
+        }
+        (ok, result);
+    }
+
+
+    public buildStream(output: Stream): bool * List[string] {
+        mutable result = List();
+        mutable ok = false;
+
+        try {
             foreach(f in Input) {
                 def p = filePath(f);
                 if(standalone(f)) {
@@ -125,7 +184,7 @@ public class Consolidator {
                     def p2 = ('/' == p[0]) ? p.Substring(1) : p;
                     using(istream = Server.openLocalFile(p2)) {
                         if(istream != null) {
-                            istream.CopyTo(ostream);
+                            istream.CopyTo(output);
                         } else {
                             result.Add(p);
                         }
@@ -133,11 +192,12 @@ public class Consolidator {
                 }
             }
             ok = true;
+        } catch {
+            | ex => Server.internalServerError(ex);
         }
 
         when(ok) {
             result.Add(Output);
-            cache[Output] = result;
         }
         (ok, result);
     }

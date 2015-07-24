@@ -58,6 +58,12 @@ public class Page {
         result;
     }
 
+    joinType(_: string): JoinType {
+        | "cat" => JOIN.CAT
+        | "min" => JOIN.MIN
+        | _ => JOIN.NONE
+    }
+
     public virtual render(
         data: ObjectsType = null, parts: PartialsType = null): string {
 
@@ -89,15 +95,11 @@ public class Page {
             def conf = Consolidation.Types;
             mutable probe;
             when(conf.TryGetValue("Scripts", out probe)) {
-                when("cat" == probe) {
-                    consolidateScripts(JOIN.CAT);
-                }
+                consolidateScripts(joinType(probe));
             }
 
             when(conf.TryGetValue("Stylesheets", out probe)) {
-                when("cat" == probe) {
-                    consolidateStylesheets(JOIN.CAT);
-                }
+                consolidateStylesheets(joinType(probe));
             }
         }
 

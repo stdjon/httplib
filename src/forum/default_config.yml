@@ -30,7 +30,8 @@ Compression:
 Consolidation:
   CachePath: ../../bin/cache/forum
   Types:
-    Scripts: cat
+    Scripts: min
+    Stylesheets: min
 FileServing:
   /.*css: { Cache-Control: "public, max-age=86400" }
   /.*html: { Cache-Control: "no-cache" }
