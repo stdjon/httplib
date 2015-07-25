@@ -49,6 +49,7 @@ public class Consolidator {
     type FO = FileOptions;
     type FS = FileShare;
 
+    static cache_lock: Object = Object();
     static cache: Dictionary[string, List[string]] = Dictionary();
 
     public Server: Server { get; private set; }
@@ -103,7 +104,9 @@ public class Consolidator {
             if(fileTime(OutputFile) == DateTime.MinValue) {
                 (false, Input);
             } else {
-                (true, cache[Output]);
+                lock(cache_lock) {
+                    (true, cache[Output]);
+                }
             }
         }
     }
@@ -165,7 +168,9 @@ public class Consolidator {
 
 
         when(ok) {
-            cache[Output] = result;
+            lock(cache_lock) {
+                cache[Output] = result;
+            }
         }
         (ok, result);
     }
