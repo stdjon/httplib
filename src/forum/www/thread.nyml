@@ -8,6 +8,7 @@ Scripts:
   - /expanding-area.js
   - /tags.js
   - /thread.js
+  - /dialog.js
 Title: "{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}"
 Partials:
   Nav: |

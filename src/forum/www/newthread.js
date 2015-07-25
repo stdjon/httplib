@@ -32,6 +32,14 @@ function showPreview() {
         data: 'r=' + sel + '&t=' + encodeURIComponent(txt),
         success: function(data) {
             $('#preview').html(data);
+        },
+        error: function() {
+            Dialog.alert({
+                size: BootstrapDialog.SIZE_LARGE,
+                type: BootstrapDialog.TYPE_DANGER,
+                title: 'Warning',
+                message: 'Could not preview (server error).',
+            });
         }
     });
 }

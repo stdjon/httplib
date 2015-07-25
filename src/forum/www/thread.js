@@ -54,6 +54,14 @@ function showPreview(wnd_id) {
         data: 'r=' + sel + '&t=' + encodeURIComponent(txt),
         success: function(data) {
             $('#prv-' + wnd_id).html(data);
+        },
+        error: function() {
+            Dialog.alert({
+                size: BootstrapDialog.SIZE_LARGE,
+                type: BootstrapDialog.TYPE_DANGER,
+                title: 'Warning',
+                message: 'Could not preview (server error).',
+            });
         }
     });
 }
@@ -116,6 +124,14 @@ function submitReply(wnd_id) {
             '&p=' + pid + '&th=' + _g.ThreadId,
         success: function(data) {
             reloadPageContent();
+        },
+        error: function() {
+            Dialog.alert({
+                size: BootstrapDialog.SIZE_LARGE,
+                type: BootstrapDialog.TYPE_DANGER,
+                title: 'Warning',
+                message: 'Could not post (server error).',
+            });
         }
     });
 }
@@ -196,6 +212,14 @@ function submitEdit(wnd_id) {
             closeEdit(wnd_id);
             $('#c-' + pid).html(data.o);
             $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
+        },
+        error: function() {
+            Dialog.alert({
+                size: BootstrapDialog.SIZE_LARGE,
+                type: BootstrapDialog.TYPE_DANGER,
+                title: 'Warning',
+                message: 'Could not edit (server error).',
+            });
         }
     });
 }

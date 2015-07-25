@@ -8,6 +8,7 @@ Scripts:
   - /expanding-area.js
   - /tags.js
   - /newthread.js
+  - /dialog.js
 Title: "New Thread"
 Partials:
   Nav: |
