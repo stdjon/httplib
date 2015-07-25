@@ -38,6 +38,12 @@ public class BasePageHandler: BaseHandler {
             "CurrentUrlUnescaped" = parsed_url,
         ];
 
+        // Allow inserting of custom JS for tracking/analytics
+        def tracking = Server.Configuration.TrackingScript;
+        when(tracking != null) {
+            PageData["_TrackingScript"] = tracking;
+        }
+
         RenderContent =
             Context.Vars["_$content"] != null ||
             Request.QueryString["_$content"] != null;

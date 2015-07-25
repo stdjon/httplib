@@ -76,6 +76,7 @@ Partials:
       </script>
       {{>ReloadableContent}}
   CommonScript: |
+    {{_TrackingScript}}
     _g = {};
     resetProperties(_g);
     {{>PageScript}}

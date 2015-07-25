@@ -21,6 +21,7 @@ public class ForumServerConfiguration: ServerConfiguration {
     public DefaultAvatarImage: string { get; set; }
     public AccountRecovery: AccountRecovery { get; set; }
     public DefaultEmailSender: string { get; set; }
+    public TrackingScript: string { get; set; }
 };
 
 
