@@ -100,9 +100,12 @@ public class SignupHandler: BasePageHandler {
                                 "Name, Points, Level, JoinDate, Motto, Location, "
                                 "Colour, Transform, Font) VALUES "
                                 "(@Name, 0, 0, @JoinDate, '', '', "
-                                "'x360', 'bbcode', 'serif1')") <- [
+                                "@Colour, @Transform, @Font)") <- [
                             "@Name" = user,
                             "@JoinDate" = now,
+                            "@Colour" = Server.Configuration.DefaultColourClass,
+                            "@Transform" = Server.Configuration.DefaultTransform,
+                            "@Font" = Server.Configuration.DefaultFontClass,
                         ];
                         _ = command3.executeNonQuery();
 

@@ -58,8 +58,11 @@ function setHdrCols(cx) {
 
 
 function initHdrCols() {
-    //default to x360 (light gray)...
-    if(''==_g.ColourId) {
+    // TODO: we can probably get rid of ColourId at some point...
+    if(!_g.ColourId) {
+        _g.ColourId = _g.ColourClass;
+    }
+    if(!_g.ColourId) {
         _g.ColourId = 'x360';
     }
     setHdrCols(_g.ColourId);

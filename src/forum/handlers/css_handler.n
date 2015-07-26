@@ -57,8 +57,9 @@ public class CssHandler: BaseHandler {
                 Server.getUserIdFromCookie(Request, STOK.SECURE, db);
 
             def c = Request.QueryString["c"];
-            Font = "serif1";
-            Colour = !String.IsNullOrEmpty(c) ? c : "x360";
+            Font = Server.Configuration.DefaultFontClass;
+            Colour = !String.IsNullOrEmpty(c) ?
+                c : Server.Configuration.DefaultColourClass;
 
             def command = db.createCommand(
                 "SELECT Font FROM Users WHERE Id = @Id") <- [
@@ -66,7 +67,8 @@ public class CssHandler: BaseHandler {
                 ];
 
             command.execute(reader => {
-                Font = reader.getValue("Font", "serif1");
+                Font = reader.getValue("Font",
+                    Server.Configuration.DefaultFontClass);
             });
         }
 

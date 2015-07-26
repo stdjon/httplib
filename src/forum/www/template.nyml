@@ -70,6 +70,7 @@ Partials:
         _g.CurrentUrl = "{{CurrentUrl}}";
         _g.CurrentUrlUnescaped = "{{CurrentUrlUnescaped}}";
         _g.ColourId = "{{ColourId}}";
+        _g.ColourClass = "{{ColourClass}}";
         _g.FontClass = "{{FontClass}}";
         _g.Browser = "{{Browser}}";
       }

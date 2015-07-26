@@ -4,6 +4,9 @@
 SiteName: myforum.com
 DefaultAvatarImage: avatar-tiny.png
 DefaultEmailSender: webmaster@example.com
+DefaultFontClass: serif1
+DefaultColourClass: x360
+DefaultTransform: bbcode
 AccountRecovery:
   EmailSender: nobody@example.com
   EmailBody: recovery-email.nyml

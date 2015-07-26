@@ -133,8 +133,10 @@ public class UsersHandler: BasePageHandler {
 
         command.execute(reader => {
             def date: long = reader.getValue("JoinDate", 0L);
-            Transform = reader.getValue("Transform", "bbcode");
-            Font = reader.getValue("Font", "serif1");
+            Transform = reader.getValue("Transform",
+                Server.Configuration.DefaultTransform);
+            Font = reader.getValue("Font",
+                Server.Configuration.DefaultFontClass);
 
             _ = PageData <- [
                 "User" = reader.getValue("Name", user),
@@ -143,7 +145,8 @@ public class UsersHandler: BasePageHandler {
                 "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
                 "Points" = reader.getValue("Points", 0),
                 "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
-                "ColourId" = reader.getValue("Colour", "x360"),
+                "ColourId" = reader.getValue("Colour",
+                    Server.Configuration.DefaultColourClass),
                 "Font" = Font,
             ];
         });

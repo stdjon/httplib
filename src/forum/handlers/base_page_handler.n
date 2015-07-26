@@ -149,10 +149,20 @@ public class BasePageHandler: BaseHandler {
             "SELECT Colour, Font From Users WHERE Id=@Id") <- [
                 "@Id" = SignedInUserId,
             ];
+        mutable font = Server.Configuration.DefaultFontClass;
+        mutable colour = Server.Configuration.DefaultColourClass;
         command.execute(reader => {
-            PageData["FontClass"] = reader.getValue("Font", "serif1");
-            PageData["ColourClass"] = reader.getValue("Colour", "x360");
+            def f = reader.getValue("Font", "");
+            def c = reader.getValue("Colour", "");
+            when(!String.IsNullOrEmpty(f)) {
+                font = f;
+            }
+            when(!String.IsNullOrEmpty(c)) {
+                colour = c;
+            }
         });
+        PageData["FontClass"] = font;
+        PageData["ColourClass"] = colour;
     }
 }
 
