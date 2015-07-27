@@ -47,6 +47,7 @@ Partials:
           <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
+          {{#SignedInUser}}
           <span style="word-spacing: 15px;">
           &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
             onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
@@ -80,6 +81,14 @@ Partials:
             onclick="star(this, {{PostId}})"></span><!--
             --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
           {{/IsOwnBookmark}}
+          </span>
+          {{/SignedInUser}}
+          {{^SignedInUser}}
+          <span class="fa fa-fw fa-thumbs-o-up" title="Commend post"></span><!--
+            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+          <span class="fa fa-fw fa-star-o" title="Bookmark post"></span><!--
+            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+          {{/SignedInUser}}
           </div>
           <div class="rhs"><small>
           {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
