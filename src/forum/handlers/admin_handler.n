@@ -41,18 +41,7 @@ public class AdminAuthHandler: BasePageHandler {
     }
 
     protected userIsAuthorized(): bool {
-        mutable authorized = false;
-        when(Request.IsSecure) {
-            def command = Database.createCommand(
-                "SELECT IsAdmin FROM Users WHERE Id=@Id") <- [
-                    "@Id" = SignedInUserId
-                ];
-            def b = command.executeScalar() :> bool?;
-            when(b != null) {
-                authorized = b :> bool;
-            }
-        }
-        authorized;
+        Request.IsSecure && Server.userIsAdmin(SignedInUserId, Database);
     }
 }
 

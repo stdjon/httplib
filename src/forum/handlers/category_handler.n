@@ -62,14 +62,13 @@ public class CategoryHandler: BasePageHandler {
                 when(j < dist) {
                     def id = reader.getValue("Id", 0U);
                     uid = reader.getValue("UserId", 0U);
-                    //def _points = reader.getValue("Points", 0);
                     def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
                     def title = reader.getValue("Title");
 
                     threads[j] = PageData() <- [
                         "Number" = from + j,
                         "UserId" = uid,
-                        "CreateDate" = date,
+                        "CreateDate" = date.ToString(),
                         "Title" = title,
                         "Id" = id,
                     ];

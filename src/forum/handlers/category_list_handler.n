@@ -1,0 +1,103 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class CategoryListHandler: BasePageHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def fromstr = Context.Vars["from"];
+        def from = fromstr ? Int32.Parse(fromstr) : 1;
+        def tostr = Context.Vars["to"];
+        def to = tostr ? Int32.Parse(tostr) : 50;
+
+        def dist = to + 1 - from;
+        mutable categories: PageDataArray = array(dist);
+        mutable i = 0;
+
+        def command = Database.createCommand(
+            "SELECT Id, Name, UserId, CreateDate, Colour FROM Categories "
+                "ORDER BY Name LIMIT @From, @To") <- [
+                "@From" = from - 1,
+                "@To" = to - 1,
+            ];
+
+        i = command.execute((j, reader) => {
+            when(j < dist) {
+                def cat = reader.getValue("Name");
+                when(cat != null) {
+                    def cat_id = reader.getValue("Id", 0U);
+                    def user_id = reader.getValue("UserId", 0U);
+                    def date: long = reader.getValue("CreateDate", 0L);
+                    def colour = reader.getValue("Colour",
+                        Server.Configuration.DefaultColourClass);
+
+                    categories[j] = PageData() <- [
+                        "Id" = cat_id,
+                        "UserId" = user_id,
+                        "Num" = (from + j).ToString(),
+                        "Name" = cat,
+                        "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                        "Colour" = colour,
+                    ];
+                }
+            }
+        });
+
+        when(i < dist) {
+            Array.Resize(ref categories, i);
+        }
+
+        for(mutable j = 0; j < categories.Length; j++) {
+            def id = categories[j]["UserId"] :> uint;
+            def name = Server.getUserName(id, Database);
+            categories[j]["User"] = name;
+        }
+
+        def prf = Server.getDefaultPrefix(Request);
+        mutable prev = null;
+        mutable next = null;
+
+        when(from > 1) {
+            def pf = Math.Max(1, from - dist);
+            def pt = pf + dist - 1;
+            prev = $"$prf/c/$pf-$pt";
+        }
+
+        def category_count = Server.getCategoryCount(Database);
+        when(to < category_count) {
+            def nf = from + dist;
+            def nt = nf + dist - 1;
+            next = $"$prf/c/$nf-$nt";
+        }
+
+        // Add a marker for every fifth category (1, 6, 11...)
+        def marker_count = (i + 4) / 5;
+        def markers: PageDataArray = array(marker_count);
+        for(mutable j = 0; j < marker_count; j++) {
+            markers[j] = PageData() <- [ "Mark" = (j * 5) + from ];
+        }
+
+        _ = PageData <- [
+            "Categories" = categories,
+            "Prev" = prev,
+            "Next" = next,
+            "Markers" = markers,
+            "IsAdmin" = Server.userIsAdmin(SignedInUserId, Database),
+        ];
+    }
+}
+
+
+} // forum

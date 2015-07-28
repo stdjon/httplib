@@ -73,6 +73,10 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/tg/{{tag:.*}}", TagHandler.Factory("tag.nyml"));
 
+        route([ (HTTP.GET, "/c"),
+                (HTTP.GET, "/c/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
+            CategoryListHandler.Factory("cats.nyml"));
+
         route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
 
         route(HTTP.POST, "/preview-post", previewPostResponse);
@@ -448,6 +452,12 @@ public class ForumServer: Server {
         unchecked ex :> int;
     }
 
+    public getCategoryCount(db: Database): int {
+        def commmand = db.createCommand("SELECT COUNT(Id) FROM Categories");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
     public getPostCount(thread_id: uint, db: Database): int {
         def commmand = db.createCommand(
             "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [
@@ -498,6 +508,15 @@ public class ForumServer: Server {
         def commmand = db.createCommand(
             "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];
         commmand.executeScalar() :> string;
+    }
+
+    public userIsAdmin(user_id: uint, db: Database): bool {
+        def command = db.createCommand(
+            "SELECT IsAdmin FROM Users WHERE Id=@Id") <- [
+                "@Id" = user_id
+            ];
+        def a = command.executeScalar() :> bool?;
+        a ? (a :> bool) : false;
     }
 
     public registerSessionToken(
