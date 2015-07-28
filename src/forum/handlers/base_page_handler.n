@@ -153,13 +153,13 @@ public class BasePageHandler: BaseHandler {
         mutable colour = Server.Configuration.DefaultColourClass;
         command.execute(reader => {
             def f = reader.getValue("Font", "");
-            def c = reader.getValue("Colour", "");
+//            def c = reader.getValue("Colour", "");
             when(!String.IsNullOrEmpty(f)) {
                 font = f;
             }
-            when(!String.IsNullOrEmpty(c)) {
-                colour = c;
-            }
+//            when(!String.IsNullOrEmpty(c)) {
+//                colour = c;
+//            }
         });
         PageData["FontClass"] = font;
         PageData["ColourClass"] = colour;
