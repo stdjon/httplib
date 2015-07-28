@@ -74,12 +74,16 @@ Partials:
         _g.FontClass = "{{FontClass}}";
         _g.Browser = "{{Browser}}";
       }
+      function resetReloadableContent() {
+        {{>ReloadableScript}}
+      }
       </script>
       {{>ReloadableContent}}
   CommonScript: |
     {{_TrackingScript}}
     _g = {};
     resetProperties(_g);
+    resetReloadableContent();
     {{>PageScript}}
     // init!
     $(window).load(function() {

@@ -105,6 +105,7 @@ addEventListener("message", function(msg) {
 
 function initPage() {
     resetProperties(_g);
+    resetReloadableContent();
     normalizeLocation();
     postIframeMessage('ehlo');
     initHdrCols();

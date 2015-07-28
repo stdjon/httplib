@@ -127,7 +127,7 @@ Partials:
       </ul>
     </div>
     {{/Title}}
-  PageScript: |
+  ReloadableScript: |
     initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
   Pagination: |
     <div style="text-align: center;">
