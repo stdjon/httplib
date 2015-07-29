@@ -1,0 +1,41 @@
+using System;
+using System.IO;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class NewCategoryHandler: BasePageHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+    }
+
+    public override callback(): void {
+
+        // If user is not authorized, redirect to index page.
+        // (There is nothing which can be done here by unauthorized visitors.)
+        if(userIsAuthorized()) {
+            base.callback();
+        } else {
+            Response["Location"] = $"$(Server.getDefaultPrefix(Request))/";
+            Response.Status = (303, "See Other");
+        }
+    }
+
+    protected userIsAuthorized(): bool {
+        Server.userIsAdmin(SignedInUserId, Database);
+    }
+
+}
+
+
+} // forum.hnd

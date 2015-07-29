@@ -73,6 +73,12 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/tg/{{tag:.*}}", TagHandler.Factory("tag.nyml"));
 
+        route([ (HTTP.GET, "/c/new"),
+                (HTTP.POST, "/c/new") ],
+            NewCategoryHandler.Factory("newcat.nyml"));
+
+        route(HTTP.POST, "/createcategory", createCategoryResponse);
+
         route([ (HTTP.GET, "/c"),
                 (HTTP.GET, "/c/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             CategoryListHandler.Factory("cats.nyml"));
@@ -138,6 +144,53 @@ public class ForumServer: Server {
 
         response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
         response.Status = (303, "See Other");
+    }
+
+    public createCategoryResponse(
+        context: Context, request: Request, response: Response): void {
+
+        _ = (context, request, response);
+        def name = context.Vars["name"];
+        def colour = context.Vars["colour"];
+        mutable ok = false;
+        mutable catid = 0U;
+
+        using(db = openDatabase()) {
+            def uid = getUserIdFromCookie(request, STOK.INSECURE, db);
+            def command = db.createCommand(
+                "INSERT INTO Categories(Name, UserId, CreateDate, Colour) "
+                    "VALUES(@Name, @UserId, @CreateDate, @Colour)") <- [
+                "@Name" = name,
+                "@UserId" = uid,
+                "@CreateDate" = Date.NowTicks,
+                "@Colour" = colour,
+            ];
+            def result = command.executeNonQuery();
+            ok = (result > 0);
+
+            when(ok) {
+                def command2 = db.createCommand(
+                    "SELECT Id FROM Categories WHERE Name = @Name") <- [
+                        "@Name" = name,
+                    ];
+                def result2 = command2.executeScalar() :> uint?;
+
+                if(result2 != null) {
+                    catid = result2 :> uint;
+                } else {
+                    ok = false;
+                }
+
+            }
+
+        }
+
+        if(ok) {
+            response["Location"] = $"$(getDefaultPrefix(request))/c/$catid";
+            response.Status = (303, "See Other");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
     }
 
     public previewPostResponse(

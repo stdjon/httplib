@@ -16,7 +16,10 @@ Partials:
     <div>
       {{#IsAdmin}}
       <div>
-        <button class="btn btn-info">Create New Category</button>
+        <form>
+          <button type="submit" class="btn btn-info" formmethod="post"
+            formaction="{{DefaultPrefix}}/c/new">Create New Category</button>
+        </form>
       </div>
       {{/IsAdmin}}
       <p>
