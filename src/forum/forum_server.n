@@ -243,46 +243,18 @@ public class ForumServer: Server {
 
         mutable ok = false;
         mutable output = "";
-        mutable tags;
         mutable post_id;
+        mutable tags;
         using(fdb = openForumDatabase()) {
-            def database = fdb.Database;
             def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
                 post_id = UInt32.Parse(context.Vars["p"]);
                 def transform = context.Vars["r"];
                 def content = context.Vars["t"];
-                (ok, output) = renderPost(transform, content);
+                tags = context.Vars["tg"];
 
-                when(ok) {
-                    database.withTransaction(db => {
-                        def commmand = db.createCommand(
-                            "UPDATE Posts SET InputContent=@InputContent, "
-                                "OutputContent=@OutputContent, Transform=@Transform WHERE "
-                                "Id=@Id") <- [
-                            "@InputContent" = content,
-                            "@OutputContent" = output,
-                            "@Transform" = transform,
-                            "@Id" = post_id,
-                        ];
-
-                        def result2 = commmand.executeNonQuery();
-                        when(result2 <= 0) {
-                            ok = false;
-                        }
-
-                        when(ok) {
-                            def tg = context.Vars["tg"];
-                            tags = tagsFromTagString(tg);
-                            fdb.deleteExistingPostTags(post_id);
-                            def ids = fdb.getTagIds(tags);
-                            _ = fdb.insertPostTags(post_id, ids);
-                        }
-                    }, ex => {
-                        internalServerError(ex);
-                    });
-                }
+                (ok, output) = fdb.updatePost(post_id, transform, content, tags);
             }
         }
 
@@ -292,7 +264,7 @@ public class ForumServer: Server {
                 "o" = output,
             ];
             when(tags != null) {
-                json["tg"] = encodeTags(tags);
+                json["tg"] = tags;
             }
             response.append(json.toString());
             response.Status = (200, "OK");

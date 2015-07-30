@@ -229,7 +229,7 @@ public class ForumDatabase: IDisposable {
 
     public createPost(user_id: uint, thread_id: uint,
         reply_to: uint?, transform: string, input: string,
-        tag_string: string = null): (uint * string * long) {
+        tag_string: string = null): uint * string * long {
 
         mutable post_id = 0U;
         mutable output = "";
@@ -308,6 +308,40 @@ public class ForumDatabase: IDisposable {
         } else {
             (0U, "", 0L);
         }
+    }
+
+    public updatePost(post_id: uint, transform: string,
+        input: string, tag_string: string = null): bool * string {
+
+        mutable ok = false;
+        def (render_ok, output) = Server.renderPost(transform, input);
+
+        when(render_ok) {
+            Database.withTransaction(db => {
+                def commmand = db.createCommand(
+                    "UPDATE Posts SET InputContent = @InputContent, "
+                        "OutputContent = @OutputContent, "
+                        "Transform = @Transform WHERE Id=@Id") <- [
+                    "@InputContent" = input,
+                    "@OutputContent" = output,
+                    "@Transform" = transform,
+                    "@Id" = post_id,
+                ];
+
+                def result2 = commmand.executeNonQuery();
+                ok = (result2 > 0);
+
+                when(ok) {
+                    def tags = Server.tagsFromTagString(tag_string);
+                    deleteExistingPostTags(post_id);
+                    def ids = getTagIds(tags);
+                    _ = insertPostTags(post_id, ids);
+                }
+            }, ex => {
+                Server.internalServerError(ex);
+            });
+        }
+        (ok, output);
     }
 
     public thumbPost(post_id: uint, user_id: uint, on: bool): void {
