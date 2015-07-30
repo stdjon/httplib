@@ -137,9 +137,11 @@ Partials:
     </div>
     {{/User}}
     </div>
-  PageScript: |
+  ReloadableScript: |
     setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{Font}}");
-    $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');
-    loadAllFonts = true;
+    loadAllFonts = {{IsUserPrefs}};
+    if(loadAllFonts) {
+      $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');
+    }
 
 

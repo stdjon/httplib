@@ -48,6 +48,8 @@ public class UsersHandler: BasePageHandler {
             } else {
                 initializeUser(user);
             }
+
+        PageData["IsUserPrefs"] = is_prefs ? "true" : "false";
     }
 
     public initializeUsers(): void {

@@ -86,7 +86,7 @@ Partials:
       </ul>
     </div>
     {{/Title}}
-  PageScript: |
+  ReloadableScript: |
     _g.Category = "{{Category}}";
     $(window).load(function() {
       $('#title').focus();
