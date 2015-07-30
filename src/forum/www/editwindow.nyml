@@ -26,8 +26,8 @@ Content: |
         <label id="rnd-{{id}}-textile" class="btn btn-xs btn-default btn-info">
           <input id="btn-{{id}}-tx" type="radio" name="renderer" value="textile" /> Textile
         </label>
-        <label id="btn-{{id}}-hs" class="btn btn-xs btn-default btn-info">
-          <input type="radio" name="renderer" value="htmlsan" /> HTML
+        <label id="rnd-{{id}}-htmlsan" class="btn btn-xs btn-default btn-info">
+          <input id="btn-{{id}}-hs" type="radio" name="renderer" value="htmlsan" /> HTML
         </label>
       </div>
     </div>
