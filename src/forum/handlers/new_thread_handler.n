@@ -14,6 +14,22 @@ public class NewThreadHandler: BasePageHandler {
         base(hd, path);
     }
 
+    public override callback(): void {
+
+        // If user is not authorized, redirect to index page.
+        // (There is nothing which can be done here by unauthorized visitors.)
+        if(userIsAuthorized()) {
+            base.callback();
+        } else {
+            Response["Location"] = $"$(Server.getDefaultPrefix(Request))/";
+            Response.Status = (303, "See Other");
+        }
+    }
+
+    protected userIsAuthorized(): bool {
+        SignedInUserId > 0;
+    }
+
     public override initialize(): void {
         base.initialize();
 
