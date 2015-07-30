@@ -52,7 +52,7 @@ public class NavHandler: BasePageHandler {
             mutable id = 0U;
 
             when(!String.IsNullOrEmpty(session)) {
-                id = Server.getUserIdFromSessionToken(STOK.SECURE, session, Database);
+                id = ForumDatabase.getUserIdFromSessionToken(STOK.SECURE, session);
             }
 
             if(id > 0) {
@@ -112,7 +112,7 @@ public class NavHandler: BasePageHandler {
 
             when(ok) {
                 def (_ok2, token, expiry) =
-                    Server.registerSessionToken(STOK.SECURE, id :> uint, Database);
+                    ForumDatabase.registerSessionToken(STOK.SECURE, id :> uint);
                 def cookie_flags = Server.Configuration.ForceInsecureOperation ?
                     COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
                 Response.Cookies.add(
@@ -132,7 +132,7 @@ public class NavHandler: BasePageHandler {
         if(Request.IsSecure) {
             def cookies = Request.Cookies;
             def session = cookies ? cookies["_session"] : null;
-            def id = Server.getUserIdFromSessionToken(STOK.SECURE, session, Database);
+            def id = ForumDatabase.getUserIdFromSessionToken(STOK.SECURE, session);
 
             when(!String.IsNullOrEmpty(session)) {
                 def command = Database.createCommand(
@@ -150,8 +150,8 @@ public class NavHandler: BasePageHandler {
             Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
 
             // And also expire any server-side session tokens.
-            Server.expireSessionTokens(STOK.SECURE, id, Database);
-            Server.expireSessionTokens(STOK.INSECURE, id, Database);
+            ForumDatabase.expireSessionTokens(STOK.SECURE, id);
+            ForumDatabase.expireSessionTokens(STOK.INSECURE, id);
 
             Response["Location"] = CurrentUrl + "?_$signout=1";
             Response.Status = (303, "See Other");

@@ -128,7 +128,7 @@ public class SignupHandler: BasePageHandler {
                         _ = command5.executeNonQuery();
 
                         def (ok, t, x) =
-                            Server.registerSessionToken(STOK.SECURE, id, db);
+                            ForumDatabase.registerSessionToken(STOK.SECURE, id);
 
                         when(ok) {
                             token = t;

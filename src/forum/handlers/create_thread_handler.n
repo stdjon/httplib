@@ -30,7 +30,7 @@ public class CreateThreadHandler: BaseHandler {
             def category = Context.Vars["category"];
             def catid = fdb.getCategoryId(category);
             def utc_now = Date.NowTicks;
-            def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, database);
+            def userid = fdb.getUserIdFromCookie(Request, STOK.INSECURE);
 
             when(String.IsNullOrEmpty(renderer)) {
                 def command = database.createCommand(

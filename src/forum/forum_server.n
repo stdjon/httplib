@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Math;
-using System.Text;
 using System.Text.RegularExpressions;
 
 using Nemerle.Extensions;
@@ -15,7 +13,6 @@ namespace forum {
 public class ForumServer: Server {
 
     public TimeStarted: long { get; private set; }
-    SessionToken: SessionToken { get; private set; }
 
     public new Configuration: ForumServerConfiguration {
         get { base.Configuration :> ForumServerConfiguration }
@@ -30,7 +27,6 @@ public class ForumServer: Server {
         base(config);
 
         TimeStarted = Date.NowTicks;
-        SessionToken = SessionToken(this);
 
         route([ (HTTP.GET, "/"),
                 (HTTP.GET, "/index") ], IndexHandler.Factory("index.nyml"));
@@ -154,8 +150,9 @@ public class ForumServer: Server {
         mutable ok = false;
         mutable catid = 0U;
 
-        using(db = openDatabase()) {
-            def uid = getUserIdFromCookie(request, STOK.INSECURE, db);
+        using(fdb = openForumDatabase()) {
+            def db = fdb.Database;
+            def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
             def command = db.createCommand(
                 "INSERT INTO Categories(Name, UserId, CreateDate, Colour) "
                     "VALUES(@Name, @UserId, @CreateDate, @Colour)") <- [
@@ -213,8 +210,7 @@ public class ForumServer: Server {
         mutable post_id, thid;
         mutable utc_now;
         using(fdb = openForumDatabase()) {
-            def userid =
-                getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
+            def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
                 def reply_to = UInt32.Parse(context.Vars["p"]);
@@ -251,8 +247,7 @@ public class ForumServer: Server {
         mutable post_id;
         using(fdb = openForumDatabase()) {
             def database = fdb.Database;
-            def userid =
-                getUserIdFromCookie(request, STOK.INSECURE, database);
+            def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
                 post_id = UInt32.Parse(context.Vars["p"]);
@@ -315,7 +310,7 @@ public class ForumServer: Server {
         mutable tags = null;
         using(fdb = openForumDatabase()) {
             def db = fdb.Database;
-            def userid = getUserIdFromCookie(request, STOK.INSECURE, db);
+            def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
                 post_id = UInt32.Parse(context.Vars["p"]);
@@ -416,8 +411,9 @@ public class ForumServer: Server {
         def r = context.Vars["r"];
         def f = context.Vars["f"];
         mutable ok = false;
-        using(db = openDatabase()) {
-            def userid = getUserIdFromCookie(request, STOK.INSECURE, db);
+        using(fdb = openForumDatabase()) {
+            def db = fdb.Database;
+            def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
                 def command = db.createCommand(
@@ -467,7 +463,7 @@ public class ForumServer: Server {
         def pid = UInt32.Parse(context.Vars["p"]);
 
         using(fdb = openForumDatabase()) {
-            def uid = getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
+            def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
             fdb.thumbPost(pid, uid, on);
         }
         response.Status = (200, "OK");
@@ -480,7 +476,7 @@ public class ForumServer: Server {
         def pid = UInt32.Parse(context.Vars["p"]);
 
         using(fdb = openForumDatabase()) {
-            def uid = getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
+            def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             fdb.starPost(pid, uid, on);
         }
@@ -498,36 +494,6 @@ public class ForumServer: Server {
         } else {
             DefaultInsecurePrefix
         }
-    }
-
-    public registerSessionToken(
-        tok: SessionTokenType, id: uint, db: Database): bool * string * DateTime {
-
-        SessionToken.register(tok, id, db);
-    }
-
-    public expireSessionTokens(
-        tok: SessionTokenType, id: uint, db: Database): void {
-
-        SessionToken.expire(tok, id, db);
-    }
-
-    public getUserIdFromSessionToken(
-        tok: SessionTokenType, token: string, db: Database): uint {
-
-        SessionToken.getUserId(tok, token, db);
-    }
-
-    public getUserIdFromCookie(
-        request: Request, tok: SessionTokenType, db: Database): uint {
-        def cookiename = match(tok) {
-            | INSECURE => "_isession"
-            | SECURE => "_session"
-            | _ => null
-        };
-        def cookies = request.Cookies;
-        def cookie = cookies ? cookies[cookiename] : null;
-        cookie ? getUserIdFromSessionToken(tok, cookie, db) : 0U;
     }
 
     public tagsFromTagString(tag_string: string): array[string] {

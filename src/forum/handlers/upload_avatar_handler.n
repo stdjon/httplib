@@ -20,8 +20,8 @@ public class UploadAvatarHandler: BaseHandler {
 
     public override callback(): void {
         mutable json;
-        using(db = Server.openDatabase()) {
-            def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, db);
+        using(fdb = Server.openForumDatabase()) {
+            def userid = fdb.getUserIdFromCookie(Request, STOK.INSECURE);
             def f = Context.Vars["f"];
             when(userid > 0 && !String.IsNullOrEmpty(f)) {
                 def b64 = Regex.Match(f,

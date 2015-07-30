@@ -33,7 +33,8 @@ public class UsersHandler: BasePageHandler {
     public initializeSingle(): void {
         mutable page_userid;
 
-        def session_userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, Database);
+        def session_userid = ForumDatabase.
+            getUserIdFromCookie(Request, STOK.INSECURE);
         def user = Context.Vars["user"];
         def command = Database.createCommand(
             "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = user ];

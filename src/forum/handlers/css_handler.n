@@ -51,10 +51,11 @@ public class CssHandler: BaseHandler {
     public this(hd: HandlerData, path: string, data: string) {
         base(hd, path);
 
-        using(db = Server.openDatabase()) {
-            def iuid = Server.getUserIdFromCookie(Request, STOK.INSECURE, db);
+        using(fdb = Server.openForumDatabase()) {
+            def db = fdb.Database;
+            def iuid = fdb.getUserIdFromCookie(Request, STOK.INSECURE);
             def userid = (iuid != 0) ? iuid :
-                Server.getUserIdFromCookie(Request, STOK.SECURE, db);
+                fdb.getUserIdFromCookie(Request, STOK.SECURE);
 
             def c = Request.QueryString["c"];
             Font = Server.Configuration.DefaultFontClass;

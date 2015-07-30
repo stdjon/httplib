@@ -119,15 +119,15 @@ public class BasePageHandler: BaseHandler {
         }
 
         if(isession != null) {
-            def id = Server.
-                getUserIdFromSessionToken(STOK.INSECURE, isession, Database);
+            def id = ForumDatabase.
+                getUserIdFromSessionToken(STOK.INSECURE, isession);
             SignedInUserId = id;
 
             def name = (id != 0) ? ForumDatabase.getUserName(id) : null;
             PageData["SignedInUser"] = name;
         } else {
-            def (_ok, t, _x) = Server.
-                registerSessionToken(STOK.TEMPORARY, 0, Database);
+            def (_ok, t, _x) = ForumDatabase.
+                registerSessionToken(STOK.TEMPORARY, 0);
             PageData["TempToken"] = t;
         }
         PageData["IsSignedIn"] = (SignedInUserId > 0) ? "true" : "false";

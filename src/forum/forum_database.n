@@ -13,14 +13,46 @@ public class ForumDatabase: IDisposable {
 
     public Server: ForumServer { get; private set; }
     public Database: Database { get; private set; }
+    SessionToken: SessionToken { get; private set; }
 
     public this(server: ForumServer, name = "default") {
         Server = server;
         Database = Server.openDatabase(name);
+        SessionToken = SessionToken(Server);
     }
 
     public Dispose(): void {
         Database.Dispose();
+    }
+
+    public registerSessionToken(
+        tok: SessionTokenType, id: uint): bool * string * DateTime {
+
+        SessionToken.register(tok, id, Database);
+    }
+
+    public expireSessionTokens(
+        tok: SessionTokenType, id: uint): void {
+
+        SessionToken.expire(tok, id, Database);
+    }
+
+    public getUserIdFromSessionToken(
+        tok: SessionTokenType, token: string): uint {
+
+        SessionToken.getUserId(tok, token, Database);
+    }
+
+    public getUserIdFromCookie(
+        request: Request, tok: SessionTokenType): uint {
+        def cookiename = match(tok) {
+            | INSECURE => "_isession"
+            | SECURE => "_session"
+            | _ => null
+        };
+        def cookies = request.Cookies;
+        def cookie = cookies ? cookies[cookiename] : null;
+        cookie ? getUserIdFromSessionToken(tok, cookie) : 0U;
     }
 
     public getUserCount(): int {

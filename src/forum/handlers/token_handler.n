@@ -39,14 +39,14 @@ public class TokenHandler: BasePageHandler {
         if(Request.IsSecure) {
             def t = Context.Vars["t"];
 
-            def tmp = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t, Database);
+            def tmp = ForumDatabase.getUserIdFromSessionToken(STOK.TEMPORARY, t);
             def chk = (tmp == 0);
-            def id = Server.getUserIdFromCookie(Request, STOK.SECURE, Database);
+            def id = ForumDatabase.getUserIdFromCookie(Request, STOK.SECURE);
             mutable ok = false;
 
             when(chk && id != 0) {
                 def (ok2, t, _x) =
-                    Server.registerSessionToken(STOK.TEMPORARY, id, Database);
+                    ForumDatabase.registerSessionToken(STOK.TEMPORARY, id);
 
                 when(ok2) {
                     Response.append(t);
@@ -67,10 +67,10 @@ public class TokenHandler: BasePageHandler {
 
         mutable ok = false;
         def t = Context.Vars["t"];
-        def id = Server.getUserIdFromSessionToken(STOK.TEMPORARY, t, Database);
+        def id = ForumDatabase.getUserIdFromSessionToken(STOK.TEMPORARY, t);
 
         when(id > 0) {
-            def (ok2, t, x) = Server.registerSessionToken(STOK.INSECURE, id, Database);
+            def (ok2, t, x) = ForumDatabase.registerSessionToken(STOK.INSECURE, id);
 
             when(ok2) {
                 Response.Cookies.add("_isession", t, x, COOKIE.HTTP_ONLY);

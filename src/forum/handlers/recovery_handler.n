@@ -36,7 +36,7 @@ public class RecoveryInitiateHandler: BaseHandler {
                     secret_ok = true;
 
                     def (ok2, token, _exp) =
-                        Server.registerSessionToken(STOK.RECOVERY, user_id, fdb.Database);
+                        fdb.registerSessionToken(STOK.RECOVERY, user_id);
 
                     when(ok2) {
                         def url =
@@ -102,7 +102,7 @@ public class RecoveryConfirmHandler: BasePageHandler {
 
         when(Request.IsSecure) {
             def user_id =
-                Server.getUserIdFromSessionToken(STOK.RECOVERY, token, Database);
+                ForumDatabase.getUserIdFromSessionToken(STOK.RECOVERY, token);
             when(user_id != 0) {
                 RecoveryUserId = user_id;
                 ok = true;
@@ -134,9 +134,10 @@ public class RecoverySubmitHandler: BaseHandler {
             def token = Context.Vars["t"];
 
             when(pw == cf && Server.validatePassword(pw)) {
-                using(db = Server.openDatabase()) {
-                    def user_id = Server.getUserIdFromSessionToken(
-                        STOK.RECOVERY, token, db);
+                using(fdb = Server.openForumDatabase()) {
+                    def db = fdb.Database;
+                    def user_id =
+                        fdb.getUserIdFromSessionToken(STOK.RECOVERY, token);
 
                     when(user_id != 0) {
                         def auth =
@@ -152,8 +153,7 @@ public class RecoverySubmitHandler: BaseHandler {
 
                         def ex = command.executeNonQuery();
                         when(ex > 0) {
-                            Server.expireSessionTokens(
-                                STOK.RECOVERY, user_id, db);
+                            fdb.expireSessionTokens(STOK.RECOVERY, user_id);
                             ok = true;
                         }
                     }
