@@ -29,12 +29,10 @@ Partials:
       <ul class="list-group">
       {{#Categories}}
         <li class="list-group-item"><div id="{{Num}}" class="anchor">
-          <br>
-          <div>
+          <div style="padding: 5px 0;">
             <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
             created by <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a> on {{Date}}
           </div>
-          <br>
         </li>
       {{/Categories}}
       </ul>
