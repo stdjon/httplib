@@ -149,7 +149,6 @@ public class ForumServer: Server {
     public createCategoryResponse(
         context: Context, request: Request, response: Response): void {
 
-        _ = (context, request, response);
         def name = context.Vars["name"];
         def colour = context.Vars["colour"];
         mutable ok = false;
@@ -180,9 +179,7 @@ public class ForumServer: Server {
                 } else {
                     ok = false;
                 }
-
             }
-
         }
 
         if(ok) {
@@ -215,8 +212,9 @@ public class ForumServer: Server {
         mutable output = "";
         mutable post_id, thid;
         mutable utc_now;
-        using(db = openDatabase()) {
-            def userid = getUserIdFromCookie(request, STOK.INSECURE, db);
+        using(fdb = openForumDatabase()) {
+            def userid =
+                getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
 
             when(userid != 0) {
                 def reply_to = UInt32.Parse(context.Vars["p"]);
@@ -226,7 +224,7 @@ public class ForumServer: Server {
                 def tags = context.Vars["tg"];
 
                 (post_id, output, utc_now) =
-                    createPost(db, userid, thid, reply_to, transform, content, tags);
+                    fdb.createPost(userid, thid, reply_to, transform, content, tags);
                 ok = (post_id > 0);
             }
         }
@@ -251,7 +249,8 @@ public class ForumServer: Server {
         mutable output = "";
         mutable tags;
         mutable post_id;
-        using(database = openDatabase()) {
+        using(fdb = openForumDatabase()) {
+            def database = fdb.Database;
             def userid =
                 getUserIdFromCookie(request, STOK.INSECURE, database);
 
@@ -281,9 +280,9 @@ public class ForumServer: Server {
                         when(ok) {
                             def tg = context.Vars["tg"];
                             tags = tagsFromTagString(tg);
-                            deleteExistingPostTags(post_id, db);
-                            def ids = getTagIds(tags, db);
-                            _ = insertPostTags(post_id, ids, db);
+                            fdb.deleteExistingPostTags(post_id);
+                            def ids = fdb.getTagIds(tags);
+                            _ = fdb.insertPostTags(post_id, ids);
                         }
                     }, ex => {
                         internalServerError(ex);
@@ -314,7 +313,8 @@ public class ForumServer: Server {
         mutable input = "", output = "", transform = "";
         mutable post_id;
         mutable tags = null;
-        using(db = openDatabase()) {
+        using(fdb = openForumDatabase()) {
+            def db = fdb.Database;
             def userid = getUserIdFromCookie(request, STOK.INSECURE, db);
 
             when(userid != 0) {
@@ -331,7 +331,7 @@ public class ForumServer: Server {
                     transform = reader.getValue("Transform");
                 });
 
-                tags = getPostTags(post_id, db);
+                tags = fdb.getPostTags(post_id);
 
                 ok = true;
             }
@@ -465,10 +465,10 @@ public class ForumServer: Server {
 
         def on = !String.IsNullOrEmpty(context.Vars["on"]);
         def pid = UInt32.Parse(context.Vars["p"]);
-        using(db = openDatabase()) {
-            def uid = getUserIdFromCookie(request, STOK.INSECURE, db);
 
-            thumbPost(pid, uid, on, db);
+        using(fdb = openForumDatabase()) {
+            def uid = getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
+            fdb.thumbPost(pid, uid, on);
         }
         response.Status = (200, "OK");
     }
@@ -478,10 +478,11 @@ public class ForumServer: Server {
 
         def on = !String.IsNullOrEmpty(context.Vars["on"]);
         def pid = UInt32.Parse(context.Vars["p"]);
-        using(db = openDatabase()) {
-            def uid = getUserIdFromCookie(request, STOK.INSECURE, db);
 
-            starPost(pid, uid, on, db);
+        using(fdb = openForumDatabase()) {
+            def uid = getUserIdFromCookie(request, STOK.INSECURE, fdb.Database);
+
+            fdb.starPost(pid, uid, on);
         }
         response.Status = (200, "OK");
     }
@@ -497,79 +498,6 @@ public class ForumServer: Server {
         } else {
             DefaultInsecurePrefix
         }
-    }
-
-    public getUserCount(db: Database): int {
-        def commmand = db.createCommand("SELECT COUNT(Name) FROM Users");
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
-    }
-
-    public getCategoryCount(db: Database): int {
-        def commmand = db.createCommand("SELECT COUNT(Id) FROM Categories");
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
-    }
-
-    public getPostCount(thread_id: uint, db: Database): int {
-        def commmand = db.createCommand(
-            "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [
-                "@ThreadId" = thread_id,
-            ];
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
-    }
-
-    public getThreadCount(cat_id: uint, db: Database): int {
-        def commmand = db.createCommand(
-            "SELECT COUNT(Id) FROM Threads WHERE CategoryId = @CategoryId") <- [
-                "@CategoryId" = cat_id,
-            ];
-        def ex = commmand.executeScalar() :> long;
-        unchecked ex :> int;
-    }
-
-    public getUserId(name: string, db: Database): uint {
-        def commmand = db.createCommand(
-            "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = name ];
-        def u = commmand.executeScalar() :> uint?;
-        u ? (u :> uint) : 0;
-    }
-
-    public getUserName(user_id: uint, db: Database): string {
-        def commmand = db.createCommand(
-            "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
-        commmand.executeScalar() :> string;
-    }
-
-    public getUserEmail(user_id: uint, db: Database): string {
-        def commmand = db.createCommand(
-            "SELECT Email FROM Auth WHERE UserId = @Id") <- [ "@Id" = user_id ];
-        commmand.executeScalar() :> string;
-    }
-
-    public getCategoryId(name: string, db: Database): uint {
-        def commmand = db.createCommand(
-            "SELECT Id FROM Categories WHERE Name = @Name") <- [
-                "@Name" = name
-            ];
-        def c = commmand.executeScalar() :> uint?;
-        c ? (c :> uint) : 0;
-    }
-
-    public getCategoryName(cat_id: uint, db: Database): string {
-        def commmand = db.createCommand(
-            "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];
-        commmand.executeScalar() :> string;
-    }
-
-    public userIsAdmin(user_id: uint, db: Database): bool {
-        def command = db.createCommand(
-            "SELECT IsAdmin FROM Users WHERE Id=@Id") <- [
-                "@Id" = user_id
-            ];
-        def a = command.executeScalar() :> bool?;
-        a ? (a :> bool) : false;
     }
 
     public registerSessionToken(
@@ -624,105 +552,6 @@ public class ForumServer: Server {
         tags;
     }
 
-    public getExistingTagId(tag: string, db: Database): uint? {
-        def command = db.createCommand(
-            "SELECT Id From Tags WHERE Name=@Name") <- [ "@Name" = tag ];
-        command.executeScalar() :> uint?;
-    }
-
-    public getExistingTag(tag_id: uint, db: Database): string {
-        mutable result = null;
-        when(tag_id > 0) {
-            result = (db.createCommand(
-                "SELECT Name From Tags WHERE Id=@Id") <- [ "@Id" = tag_id ]).
-                executeScalar() :> string;
-        }
-        result;
-    }
-
-    public getTagIds(tags: array[string], db: Database): array[uint] {
-
-        mutable result = array((tags != null) ? tags.Length : 0);
-        when(tags != null) {
-            db.withTransaction(db => {
-                mutable i = 0;
-                foreach(t in tags) {
-                    def id = getExistingTagId(t, db);
-                    if(id != null) {
-                        result[i] = id :> uint;
-                    } else {
-                        def commmand2 = db.createCommand("INSERT Into Tags(Name) "
-                            "VALUES(@Name)") <- [ "@Name" = t ];
-                        def result2 = commmand2.executeNonQuery();
-                        when(result2 > 0) {
-                            def id = getExistingTagId(t, db);
-                            if(id != null) {
-                                result[i] = id :> uint;
-                            } else {
-                                Log.e("Could not insert Tag '{0}'!", t);
-                            }
-                        }
-                    }
-                    i++;
-                }
-            }, ex => {
-                internalServerError(ex);
-            });
-        }
-        result;
-    }
-
-    public deleteExistingPostTags(post_id: uint, db: Database): void {
-        def command = db.createCommand(
-            "DELETE FROM PostTags WHERE (PostId = @PostId)") <- [
-                "@PostId" = post_id
-            ];
-        _ = command.executeNonQuery();
-    }
-
-    public insertPostTags(post_id: uint, tag_ids: array[uint], db: Database): bool {
-        mutable result = true;
-        foreach(id in tag_ids) {
-            def command = db.createCommand(
-                "INSERT INTO PostTags(PostId, TagId) VALUES(@PostId, @TagId)") <- [
-                    "@PostId" = post_id,
-                    "@TagId" = id,
-                ];
-            def result2 = command.executeNonQuery();
-            when(result2 <= 0) {
-                Log.e("Could not insert PostTags({0}, {1})", post_id, id);
-                result = false;
-            }
-        }
-        result;
-    }
-
-    public getPostTags(post_id: uint, db: Database): array[string] {
-        mutable tags = array(5);
-        def tag_ids = array(5);
-        def command = db.createCommand(
-            "SELECT TagId FROM PostTags WHERE PostId=@PostId") <- [
-                "@PostId" = post_id,
-            ];
-        _ = command.execute((j, reader) => {
-            tag_ids[j] = reader.getValue("TagId", 0U);
-        });
-        mutable k = 0;
-        for(mutable j = 0; j < tag_ids.Length; j++) {
-            def t = getExistingTag(tag_ids[j], db);
-            when(t != null) {
-                tags[k] = t;
-                k++;
-            }
-        }
-        if(k > 0) {
-            Array.Resize(ref tags, k);
-            tags;
-        } else {
-            null;
-        }
-    }
-
     public encodeTags(tags: array[string]): string {
         mutable esc = array(5);
         when(tags != null) {
@@ -739,220 +568,6 @@ public class ForumServer: Server {
             | 0 => null
             | _ => Uri.EscapeDataString(String.Join("\0", esc))
         }
-    }
-
-    public createPost(database: Database, user_id: uint, thread_id: uint,
-        reply_to: uint?, transform: string, input: string,
-        tag_string: string = null): (uint * string * long) {
-
-        mutable post_id = 0U;
-        mutable output = "";
-        mutable utc_now = Date.NowTicks;
-        mutable ok = false;
-        mutable render_ok = false;
-
-        when(user_id > 0) {
-            (render_ok, output) = renderPost(transform, input);
-        }
-        when(render_ok) {
-            database.withTransaction(db => {
-                def commmand = db.createCommand(
-                    "INSERT INTO Posts(InputContent, OutputContent, "
-                        "Transform, UserId, ThreadId, CreateDate) VALUES("
-                        "@InputContent, @OutputContent, "
-                        "@Transform, @UserId, @ThreadId, @CreateDate)") <- [
-                    "@InputContent" = input,
-                    "@OutputContent" = output,
-                    "@Transform" = transform,
-                    "@UserId" = user_id,
-                    "@ThreadId" = thread_id,
-                    "@CreateDate" = utc_now,
-                ];
-
-                def result = commmand.executeNonQuery();
-                when(result > 0) {
-                    def commmand2 = db.createCommand(
-                        "SELECT Id FROM Posts WHERE "
-                            "UserId=@UserId AND CreateDate=@CreateDate") <- [
-                        "@UserId" = user_id,
-                        "@CreateDate" = utc_now,
-                    ];
-                    def result2 = commmand2.executeScalar() :> uint?;
-                    post_id = result2 ? (result2 :> uint) : 0U;
-
-                    when(post_id > 0U) {
-                        if(reply_to != null) {
-                            def commmand3 = db.createCommand(
-                                "INSERT INTO Replies(PostId, ReplyTo) VALUES("
-                                    "@PostId, @ReplyTo)") <- [
-                                "@PostId" = post_id,
-                                "@ReplyTo" = reply_to :> uint,
-                            ];
-                            def result3 = commmand3.executeNonQuery();
-                            when(result3 > 0) {
-                                def command4 = db.createCommand(
-                                    "UPDATE Posts SET ReplyTo=@ReplyTo "
-                                        "WHERE Id=@Id") <- [
-                                    "@ReplyTo" = reply_to :> uint,
-                                    "@Id" = post_id,
-                                ];
-                                def result4 = command4.executeNonQuery();
-                                when(result4 > 0) {
-                                    ok = true;
-                                }
-                            }
-                        } else {
-                            ok = true;
-                        }
-                    }
-
-                    when(ok) {
-                        def tags = tagsFromTagString(tag_string);
-                        def ids = getTagIds(tags, db);
-                        _ = insertPostTags(post_id, ids, db);
-                    }
-                }
-            }, ex => {
-                internalServerError(ex);
-            });
-        }
-
-        if(ok) {
-            (post_id, output, utc_now);
-        } else {
-            (0U, "", 0L);
-        }
-    }
-
-    public thumbPost(post_id: uint, user_id: uint, on: bool, database: Database): void {
-
-        Log.d("thumbPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
-        database.withTransaction(db => {
-            def check = isThumbPost(post_id, user_id, db);
-            when(on != check) {
-                def command = if(on) {
-                    db.createCommand(
-                        "INSERT INTO Thumbs(PostId, UserId) "
-                            "VALUES (@PostId, @UserId)") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                } else {
-                    db.createCommand(
-                        "DELETE FROM Thumbs WHERE "
-                            "PostId = @PostId AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                }
-                def _result = command.executeNonQuery();
-                Log.d("thumbPost {0} -> {1}", (on ? "insert" : "delete"), _result);
-                def command2 = db.createCommand(
-                    "SELECT UserId From Posts WHERE Id = @Id") <- [
-                        "@Id" = post_id,
-                    ];
-                def uid = command2.executeScalar() :> uint;
-                when(uid != user_id) {
-                    addPointsToUser(uid, on ? 5 : -5, db);
-                }
-            }
-        }, ex => {
-            internalServerError(ex);
-        });
-    }
-
-    public isThumbPost(post_id: uint, user_id: uint, db: Database): bool {
-        mutable result;
-        def command = db.createCommand(
-            "SELECT COUNT(Id) FROM Thumbs WHERE "
-                "PostId=@PostId AND UserId=@UserId") <- [
-            "@PostId" = post_id,
-            "@UserId" = user_id,
-        ];
-        result = command.executeScalar() :> long;
-        result > 0;
-    }
-
-    public starPost(post_id: uint, user_id: uint, on: bool, database: Database): void {
-
-        Log.d("starPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
-        database.withTransaction(db => {
-            def check = isStarPost(post_id, user_id, db);
-            when(on != check) {
-                def command = if(on) {
-                    db.createCommand(
-                        "INSERT INTO Bookmarks(PostId, UserId) "
-                            "VALUES (@PostId, @UserId)") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                } else {
-                    db.createCommand(
-                        "DELETE FROM Bookmarks WHERE "
-                            "PostId = @PostId AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                }
-                def _result = command.executeNonQuery();
-                Log.d("starPost {0} -> {1}", (on ? "insert" : "delete"), _result);
-                def command2 = db.createCommand(
-                    "SELECT UserId From Posts WHERE Id = @Id") <- [
-                        "@Id" = post_id,
-                    ];
-                def uid = command2.executeScalar() :> uint;
-                when(uid != user_id) {
-                    addPointsToUser(uid, on ? 2 : -2, db);
-                }
-            }
-        }, ex => {
-            internalServerError(ex);
-        });
-    }
-
-    public isStarPost(post_id: uint, user_id: uint, db: Database): bool {
-        mutable result;
-        def command = db.createCommand(
-            "SELECT COUNT(Id) FROM Bookmarks WHERE "
-                "PostId=@PostId AND UserId=@UserId") <- [
-            "@PostId" = post_id,
-            "@UserId" = user_id,
-        ];
-        result = command.executeScalar() :> long;
-        result > 0;
-    }
-
-    public addPointsToUser(user_id: uint, points: int, database: Database): void {
-
-        database.withTransaction(db => {
-            def command = db.createCommand(
-                "SELECT Points FROM Users WHERE Id = @Id") <- [
-                    "@Id" = user_id,
-                ];
-            mutable user_points = command.executeScalar() :> int;
-            user_points += points;
-            def level = pointsToLevel(user_points);
-
-            def command2 = db.createCommand(
-                "UPDATE Users SET Points = @Points, Level = @Level WHERE "
-                    "Id = @Id") <- [
-                "@Points" = user_points,
-                "@Level" = level,
-                "@Id" = user_id,
-            ];
-            _ = command2.executeNonQuery();
-
-        }, ex => {
-            internalServerError(ex);
-        });
-    }
-
-    public pointsToLevel(points: int): float {
-        def bias = 25.0f; //TODO: config
-        def scale = 3.0f; //TODO: config
-        def level = Max(0.0f, Log(points / bias, scale) :> float + 1.0f);
-        //Log.t("points {0} -> level {1}", points, level);
-        level;
     }
 
     public sendEmail(
@@ -976,7 +591,10 @@ public class ForumServer: Server {
             email.Body = text.renderContent(data);
             email.send();
         }
+    }
 
+    public openForumDatabase(name = "default"): ForumDatabase {
+        ForumDatabase(this, name);
     }
 }
 

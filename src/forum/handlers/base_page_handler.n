@@ -18,12 +18,14 @@ public class BasePageHandler: BaseHandler {
     public RenderContent: bool { get; private set; }
     public SignedInUserId: uint { get; private set; }
 
+    public ForumDatabase: ForumDatabase { get; private set; }
     public Database: Database { get; private set; }
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
 
-        Database = Server.openDatabase();
+        ForumDatabase = Server.openForumDatabase();
+        Database = ForumDatabase.Database;
 
         SignedInUserId = 0;
 
@@ -63,7 +65,7 @@ public class BasePageHandler: BaseHandler {
     }
 
     public override finish(): void {
-        Database.Dispose();
+        ForumDatabase.Dispose();
     }
 
     public override renderPage(
@@ -121,7 +123,7 @@ public class BasePageHandler: BaseHandler {
                 getUserIdFromSessionToken(STOK.INSECURE, isession, Database);
             SignedInUserId = id;
 
-            def name = (id != 0) ? Server.getUserName(id, Database) : null;
+            def name = (id != 0) ? ForumDatabase.getUserName(id) : null;
             PageData["SignedInUser"] = name;
         } else {
             def (_ok, t, _x) = Server.

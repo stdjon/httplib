@@ -89,7 +89,7 @@ public class TagHandler: BasePageHandler {
                     });
                 }
                 for(mutable j = 0; j < c; j++) {
-                    posts[j]["User"] = Server.getUserName(users[j], Database);
+                    posts[j]["User"] = ForumDatabase.getUserName(users[j]);
                 }
                 PageData["Posts"] = posts;
             }

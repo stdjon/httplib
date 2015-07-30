@@ -61,7 +61,7 @@ public class CategoryListHandler: BasePageHandler {
 
         for(mutable j = 0; j < categories.Length; j++) {
             def id = categories[j]["UserId"] :> uint;
-            def name = Server.getUserName(id, Database);
+            def name = ForumDatabase.getUserName(id);
             categories[j]["User"] = name;
         }
 
@@ -75,7 +75,7 @@ public class CategoryListHandler: BasePageHandler {
             prev = $"$prf/c/$pf-$pt";
         }
 
-        def category_count = Server.getCategoryCount(Database);
+        def category_count = ForumDatabase.getCategoryCount();
         when(to < category_count) {
             def nf = from + dist;
             def nt = nf + dist - 1;
@@ -94,7 +94,7 @@ public class CategoryListHandler: BasePageHandler {
             "Prev" = prev,
             "Next" = next,
             "Markers" = markers,
-            "IsAdmin" = Server.userIsAdmin(SignedInUserId, Database),
+            "IsAdmin" = ForumDatabase.userIsAdmin(SignedInUserId),
         ];
     }
 }

@@ -186,7 +186,8 @@ public class TestData {
         def tid = Random.Next(ThreadCount) :> uint + 1;
         def tags = array(Random.Next(Random.Next(6)));
 
-        using(db = server.openDatabase()) {
+        using(fdb = server.openForumDatabase()) {
+            def db = fdb.Database;
             for(mutable i = 0; i < tags.Length; i++) {
                 tags[i] = Tags[Random.Next(Tags.Length)];
             }
@@ -210,7 +211,7 @@ public class TestData {
                 result;
             };
 
-            def (pid, _o, _d) = server.createPost(db,
+            def (pid, _o, _d) = fdb.createPost(
                 uid, tid, replyto, "bbcode", content, tag_string);
 
             if(pid != 0) {

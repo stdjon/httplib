@@ -41,7 +41,7 @@ public class AdminAuthHandler: BasePageHandler {
     }
 
     protected userIsAuthorized(): bool {
-        Request.IsSecure && Server.userIsAdmin(SignedInUserId, Database);
+        Request.IsSecure && ForumDatabase.userIsAdmin(SignedInUserId);
     }
 }
 

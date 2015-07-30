@@ -101,7 +101,7 @@ public class UsersHandler: BasePageHandler {
         }
         Log.d("prev = {0}", prev);
 
-        def user_count = Server.getUserCount(Database);
+        def user_count = ForumDatabase.getUserCount();
         Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
         when(to < user_count) {
             def nf = from + dist;

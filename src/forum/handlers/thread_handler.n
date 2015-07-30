@@ -63,8 +63,8 @@ public class ThreadHandler: BasePageHandler {
             ok = true;
         });
 
-        PageData["Category"] = Server.getCategoryName(catid, Database);
-        PageData["UserName"] = Server.getUserName(uid, Database);
+        PageData["Category"] = ForumDatabase.getCategoryName(catid);
+        PageData["UserName"] = ForumDatabase.getUserName(uid);
 
         when(ok) {
             mutable posts: PageDataArray = array(PostCount);
@@ -114,13 +114,13 @@ public class ThreadHandler: BasePageHandler {
 
             for(i = 0; i < limit; i++) {
                 posts[i]["UserName"] =
-                    Server.getUserName(posts[i]["UserId"] :> uint, Database);
+                    ForumDatabase.getUserName(posts[i]["UserId"] :> uint);
             }
 
             // Tags
             for(i = 0; i < limit; i++) {
                 def post_id = posts[i]["PostId"] :> uint;
-                def tags = Server.getPostTags(post_id, Database);
+                def tags = ForumDatabase.getPostTags(post_id);
                 when(tags != null) {
                     def prf = Server.getDefaultPrefix(Request);
                     mutable tagdata: PageDataArray = array(tags.Length);
@@ -252,7 +252,7 @@ public class ThreadHandler: BasePageHandler {
             }
             Log.d("prev = {0}", prev);
 
-            def user_count = Server.getPostCount(ThreadId, Database);
+            def user_count = ForumDatabase.getPostCount(ThreadId);
             Log.d("To = {0} < {1} {2}", To, user_count, To < user_count);
             when(To < user_count) {
                 def nf = From + PostCount;
@@ -297,7 +297,7 @@ public class ThreadHandler: BasePageHandler {
     }
 
     populatePostIds(): void {
-        PostIds = array(Server.getPostCount(ThreadId, Database));
+        PostIds = array(ForumDatabase.getPostCount(ThreadId));
         PostIdMap = Dictionary();
 
         def command = Database.createCommand(

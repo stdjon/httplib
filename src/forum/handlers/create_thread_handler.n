@@ -19,7 +19,8 @@ public class CreateThreadHandler: BaseHandler {
 
         mutable ok = false;
             mutable thid = 0U;
-        using(database = Server.openDatabase()) {
+        using(fdb = Server.openForumDatabase()) {
+            def database = fdb.Database;
             def title = Context.Vars["title"];
             def colour = Context.Vars["colour"];
             def fp = Context.Vars["fp"];
@@ -27,7 +28,7 @@ public class CreateThreadHandler: BaseHandler {
             mutable renderer = Context.Vars["renderer"];
             def tagstring = Uri.UnescapeDataString(Context.Vars["tags"]);
             def category = Context.Vars["category"];
-            def catid = Server.getCategoryId(category, database);
+            def catid = fdb.getCategoryId(category);
             def utc_now = Date.NowTicks;
             def userid = Server.getUserIdFromCookie(Request, STOK.INSECURE, database);
 
@@ -74,8 +75,8 @@ public class CreateThreadHandler: BaseHandler {
                     when(thid > 0) {
                         if(fp == "on") {
 
-                            def (post_id, _, _) = Server.createPost(
-                                db, userid, thid, null, renderer, content, tagstring);
+                            def (post_id, _, _) = fdb.createPost(
+                                userid, thid, null, renderer, content, tagstring);
 
                             ok = post_id > 0;
 

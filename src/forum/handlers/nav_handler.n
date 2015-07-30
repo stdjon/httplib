@@ -58,7 +58,7 @@ public class NavHandler: BasePageHandler {
             if(id > 0) {
                 _ = PageData <- [
                     "Id" = id,
-                    "User" = Server.getUserName(id, Database),
+                    "User" = ForumDatabase.getUserName(id),
                     "Session" = session,
                 ];
 

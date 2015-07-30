@@ -29,9 +29,10 @@ public class AvatarImageHandler: BaseHandler {
 
         Size = UInt32.Parse(Context.Vars["size"]);
         def user = Context.Vars["user"];
+
         when(!String.IsNullOrEmpty(user)) {
-            using(db = Server.openDatabase()) {
-                UserId = Server.getUserId(user, db);
+            using(fdb = Server.openForumDatabase()) {
+                UserId = fdb.getUserId(user);
             }
         }
     }

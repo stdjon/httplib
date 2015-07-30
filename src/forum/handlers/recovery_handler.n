@@ -27,16 +27,16 @@ public class RecoveryInitiateHandler: BaseHandler {
         mutable secret_ok = false;
         mutable user_id, user_secret, address;
         when(origin != null) {
-            using(db = Server.openDatabase()) {
-                user_id = Server.getUserId(username, db);
-                address = Server.getUserEmail(user_id, db);
+            using(fdb = Server.openForumDatabase()) {
+                user_id = fdb.getUserId(username);
+                address = fdb.getUserEmail(user_id);
                 user_secret = "";
 
                 when(user_secret.levenshtein(secret) <= conf.LevenshteinThreshold) {
                     secret_ok = true;
 
                     def (ok2, token, _exp) =
-                        Server.registerSessionToken(STOK.RECOVERY, user_id, db);
+                        Server.registerSessionToken(STOK.RECOVERY, user_id, fdb.Database);
 
                     when(ok2) {
                         def url =
@@ -92,7 +92,7 @@ public class RecoveryConfirmHandler: BasePageHandler {
     public override initialize(): void {
         when(RecoveryUserId != 0) {
             PageData["RecoveryUser"] =
-                Server.getUserName(RecoveryUserId, Database);
+                ForumDatabase.getUserName(RecoveryUserId);
         }
     }
 

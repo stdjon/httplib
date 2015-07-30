@@ -32,9 +32,8 @@ public class NewCategoryHandler: BasePageHandler {
     }
 
     protected userIsAuthorized(): bool {
-        Server.userIsAdmin(SignedInUserId, Database);
+        ForumDatabase.userIsAdmin(SignedInUserId);
     }
-
 }
 
 

@@ -43,7 +43,7 @@ public class CategoryHandler: BasePageHandler {
             ok = true;
         });
 
-        PageData["UserName"] = Server.getUserName(uid, Database);
+        PageData["UserName"] = ForumDatabase.getUserName(uid);
 
         when(ok) {
             mutable threads: PageDataArray = array(dist);
@@ -81,9 +81,9 @@ public class CategoryHandler: BasePageHandler {
 
             for(i = 0; i < limit; i++) {
                 threads[i]["UserName"] =
-                    Server.getUserName(threads[i]["UserId"] :> uint, Database);
+                    ForumDatabase.getUserName(threads[i]["UserId"] :> uint);
                 threads[i]["PostCount"] =
-                    Server.getPostCount(threads[i]["Id"] :> uint, Database);
+                    ForumDatabase.getPostCount(threads[i]["Id"] :> uint);
             }
 
             // Add a marker for every fifth thread (1, 6, 11...)
@@ -113,7 +113,7 @@ public class CategoryHandler: BasePageHandler {
             }
             Log.d("prev = {0}", prev);
 
-            def user_count = Server.getThreadCount(catid, Database);
+            def user_count = ForumDatabase.getThreadCount(catid);
             Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
             when(to < user_count) {
                 def nf = from + dist;
