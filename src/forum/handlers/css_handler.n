@@ -110,7 +110,7 @@ public class CssHandler: BaseHandler {
         page.renderContent(PageData);
     }
 
-    bgFromColourId(id: string): string {
+    public static bgFromColourId(id: string): string {
         def x = id[0];
         def v = Int32.Parse(id.Substring(1));
         def (h, s, l) = match(x, v) {

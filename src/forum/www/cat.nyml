@@ -33,7 +33,7 @@ Partials:
     <ol start="{{From}}" class='list-group'>
     {{#Threads}}
       <li class="list-group-item">
-        <div style="padding: 5px 0">
+        <div class="inlist">
           <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
           by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
           at {{CreateDate}} ({{PostCount}})
@@ -41,7 +41,11 @@ Partials:
       </li>
     {{/Threads}}
     {{^Threads}}
-      <li class="list-group-item">(empty category)</li>
+      <li class="list-group-item">
+        <div class="inlist">
+          (empty category)
+        </div>
+      </li>
     {{/Threads}}
     </ol>
     {{^Name}}

@@ -62,7 +62,7 @@ public class UsersHandler: BasePageHandler {
         mutable i = 0;
 
         def command = Database.createCommand(
-            "SELECT Name, Level, Points, Motto FROM Users "
+            "SELECT Name, Level, Points, Motto, Colour FROM Users "
                 "ORDER BY Name LIMIT @From, @To") <- [
                 "@From" = from - 1,
                 "@To" = to - 1,
@@ -75,12 +75,15 @@ public class UsersHandler: BasePageHandler {
                     def points = reader.getValue("Points", 0);
                     def level = reader.getValue("Level", 0.0f);
                     def motto = reader.getValue("Motto", "");
+                    def colour = reader.getValue("Colour",
+                        Server.Configuration.DefaultColourClass);
                     users[j] = PageData() <- [
                         "Num" = (from + j).ToString(),
                         "Name" = u,
                         "Points" = points.ToString(),
                         "Level" = level.ToString("f2"),
                         "Motto" = motto,
+                        "ColourHsl" = CssHandler.bgFromColourId(colour),
                     ];
                 }
             }

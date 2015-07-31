@@ -185,6 +185,12 @@ div.panel {
 div.panel-heading, .panel-title {
   background-color: #ffb !important;
 }
+div.inlist {
+  margin: 0;
+  padding: 5px 10px;
+  border-left: 5px solid #ffc;
+  background-color: #ffd;
+}
 ul.list-group, li.list-group-item {
   background-color: #ffe;
 }
@@ -292,8 +298,6 @@ select, .select2-search, .select2-search__field, .select2-search--inline,
     border-radius: 0 !important;
     background-color: #fff !important;
 }
-
-
 /* Colour swatches */
 /*.swatches {
   text-align: center;

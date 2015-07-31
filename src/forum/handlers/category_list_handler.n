@@ -50,6 +50,7 @@ public class CategoryListHandler: BasePageHandler {
                         "Name" = cat,
                         "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
                         "Colour" = colour,
+                        "ColourHsl" = CssHandler.bgFromColourId(colour),
                     ];
                 }
             }
