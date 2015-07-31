@@ -1,5 +1,5 @@
 ---
-Template: template.nyml
+Template: template-1panel.nyml
 Stylesheets:
   - /expanding-area.css
 Scripts:
@@ -26,56 +26,58 @@ Partials:
   Body: |
     <style>
       .concealed { display: none; }
+      div.alignment { padding: 25px 50px; }
     </style>
-    <p>&nbsp;</p>
-    {{>Swatches}}
-    <p>&nbsp;</p>
-    <p>A new thread in the category:
-      <select id="category" name="category" data-placeholder="[Category]"
-        style="width: 50%; height: 24px"></select></p>
-    <div class="checkbox">
-      <label><input id="fp-cbx" name="fp" type="checkbox" checked="checked" onclick="firstPost()">
-        Author the first post in the thread.</label>
+    <div class="alignment">
+      {{>Swatches}}
+      <p></p>
+      <p>
+        <table style="width: 100%;"><tr><td>A new thread in the category:</td>
+        <td style="width: 80%;"><select id="category" name="category" data-placeholder="[Category]"
+          style="width: 100%; height: 24px"></select></td></tr></table></p>
+      <div class="checkbox">
+        <label><input id="fp-cbx" name="fp" type="checkbox" checked="checked" onclick="firstPost()">
+          Author the first post in the thread.</label>
+      </div>
+      <div id="fp-controls">
+        <div id="fp-area" class="expanding-area expanding-p-area">
+          <pre><span></span><br></pre>
+          <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
+        </div>
+        <div class="tags">
+          <small><table style="width: 100%;"><tr><td>
+            Tags:</td><td style="width: 92.5%;"><select id="fp-tags" autofocus multiple="true" data-placeholder="[Tags]"
+              style="width: 100%; height: 24px">
+          </td></tr></table></small>
+        </div>
+        <br>
+        <button id="fp-preview" class="btn btn-warning" value="Preview"
+          onclick="showPreview(); return false;">Preview</button>
+        <div id="fp-render" class="btn-group" data-toggle="buttons">
+          <label class="btn btn-default btn-info {{BbCodeActive}}">
+            <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
+          </label>
+          <label class="btn btn-default btn-info {{TextileActive}}">
+            <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
+          </label>
+          <label class="btn btn-default btn-info {{HtmlSanActive}}">
+            <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
+          </label>
+        </div>
+        <br>
+        <div class="preview-window">
+          <span id="preview"><br></span>
+        </div>
+      </div>
+      <input id="colour" name="colour" type="hidden" value="x360"/>
+      <input id="tags" name="tags" type="hidden" value=""/>
+      <p>&nbsp;</p>
+      <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
+        formmethod="post" formtarget="_top">Create thread</button>
+      <button id="fp-cancel" type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
+        formmethod="get" formtarget="_top">Abandon thread</button>
+      </form>
     </div>
-    <div id="fp-controls">
-      <div id="fp-area" class="expanding-area expanding-p-area">
-        <pre><span></span><br></pre>
-        <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
-      </div>
-      <div class="tags">
-        <small><table style="width: 100%;"><tr><td>
-          Tags:</td><td style="width: 92.5%;">
-          <select id="fp-tags" autofocus multiple="true" data-placeholder="[Tags]"
-            style="width: 100%; height: 24px">
-        </td></tr></table></small>
-      </div>
-      <br>
-      <button id="fp-preview" class="btn btn-warning" value="Preview"
-        onclick="showPreview(); return false;">Preview</button>
-      <div id="fp-render" class="btn-group" data-toggle="buttons">
-        <label class="btn btn-default btn-info {{BbCodeActive}}">
-          <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
-        </label>
-        <label class="btn btn-default btn-info {{TextileActive}}">
-          <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
-        </label>
-        <label class="btn btn-default btn-info {{HtmlSanActive}}">
-          <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
-        </label>
-      </div>
-      <br>
-      <div class="preview-window">
-        <span id="preview"><br></span>
-      </div>
-    </div>
-    <input id="colour" name="colour" type="hidden" value="x360"/>
-    <input id="tags" name="tags" type="hidden" value=""/>
-    <p>&nbsp;</p>
-    <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
-      formmethod="post" formtarget="_top">Create thread</button>
-    <button id="fp-cancel" type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
-      formmethod="get" formtarget="_top">Abandon thread</button>
-    </form>
   Guide: |
     {{#Title}}
     <div id="scrollspy">
