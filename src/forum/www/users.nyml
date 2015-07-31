@@ -21,11 +21,13 @@ Partials:
       <ul class="list-group">
       {{#Users}}
         <li class="list-group-item"><div id="{{Num}}" class="anchor">
-          <div class="inlist" style="border-left: 5px solid {{ColourHsl}};">
+          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
             <a href="{{DefaultPrefix}}/u/{{Name}}">
             <img src="{{DefaultPrefix}}/avatar/120/{{Name}}" height="40" width="40"></img></a>
             <a href="{{DefaultPrefix}}/u/{{Name}}">{{Name}}</a>
-            [{{Level}}/{{Points}}] <em><small>{{Motto}}</small></em>
+            <small><em>{{Motto}}</em></small>
+            <span class="badge" style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};">
+              <big>{{Level}}</big><small> / {{Points}}</small></span>
           </div>
         </div></li>
       {{/Users}}

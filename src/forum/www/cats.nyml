@@ -33,7 +33,7 @@ Partials:
             <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
             created by <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a> on {{Date}}
           </div>
-        </li>
+        </div></li>
       {{/Categories}}
       </ul>
       <p>

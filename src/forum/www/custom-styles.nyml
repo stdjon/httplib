@@ -55,6 +55,10 @@ Content: |
   nav.navbar {
     border-left-color: {{BackgroundColour}};
   }
+  span.badge {
+    color: {{HighlightColour}};
+    background-color: {{BackgroundColour}};
+  }
   {{^ChromeBrowser}}
   div[id='1'] div.post div.content::first-letter {
     font-size: 2.8em;

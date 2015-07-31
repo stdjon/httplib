@@ -32,13 +32,13 @@ Partials:
     {{/Name}}
     <ol start="{{From}}" class='list-group'>
     {{#Threads}}
-      <li class="list-group-item">
+      <li class="list-group-item"><div id="{{Number}}" class="anchor">
         <div class="inlist">
           <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
           by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
-          at {{CreateDate}} ({{PostCount}})
+          at {{CreateDate}} <span class="badge"><big>{{PostCount}}</big></badge>
         </div>
-      </li>
+      </div></li>
     {{/Threads}}
     {{^Threads}}
       <li class="list-group-item">

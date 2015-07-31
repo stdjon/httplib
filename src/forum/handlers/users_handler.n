@@ -83,7 +83,8 @@ public class UsersHandler: BasePageHandler {
                         "Points" = points.ToString(),
                         "Level" = level.ToString("f2"),
                         "Motto" = motto,
-                        "ColourHsl" = CssHandler.bgFromColourId(colour),
+                        "ColourBgHsl" = CssHandler.bgFromColourId(colour),
+                        "ColourFgHsl" = CssHandler.fgFromColourId(colour),
                     ];
                 }
             }
