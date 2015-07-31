@@ -14,7 +14,13 @@ Partials:
     </div>
   Body: |
     {{#SignedInUser}}
-      <p>You are <a href="{{DefaultPrefix}}/u/{{SignedInUser}}">{{SignedInUser}}</a>.</p>
+    <form>
+    <p><button type="submit" class="btn btn-info"
+      formaction="{{DefaultPrefix}}/th/new" formmethod="post">
+      Create New Thread</button> in this category.
+      (<a href="{{DefaultPrefix}}/c">See all categories.</a>)</p>
+      <input type="hidden" name="category" value="{{Id}}"/>
+    </form>
     {{/SignedInUser}}
     {{#Name}}
       <p>Category created by
@@ -26,8 +32,13 @@ Partials:
     {{/Name}}
     <ol start="{{From}}" class='list-group'>
     {{#Threads}}
-      <li class="list-group-item">#{{Number}}. <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
-      by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> on {{CreateDate}} ({{PostCount}})</li>
+      <li class="list-group-item">
+        <div style="padding: 5px 0">
+          <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
+          by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          at {{CreateDate}} ({{PostCount}})
+        </div>
+      </li>
     {{/Threads}}
     {{^Threads}}
       <li class="list-group-item">(empty category)</li>
@@ -42,14 +53,6 @@ Partials:
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
       </p>
     {{/Name}}
-    {{#SignedInUser}}
-    <form>
-    <p><button type="submit" class="btn btn-info"
-      formaction="{{DefaultPrefix}}/th/new" formmethod="post">
-      Create a new thread</button> in this category.</p>
-      <input type="hidden" name="category" value="{{Id}}"/>
-    </form>
-    {{/SignedInUser}}
   Guide: |
     {{#Name}}
     <div id="scrollspy">
