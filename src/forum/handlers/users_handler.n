@@ -55,8 +55,10 @@ public class UsersHandler: BasePageHandler {
 
     public initializeUsers(): void {
 
-        def from = Int32.Parse(Context.Vars["from"]);
-        def to = Int32.Parse(Context.Vars["to"]);
+        def fromstr = Context.Vars["from"];
+        def from = fromstr ? Int32.Parse(fromstr) : 1;
+        def tostr = Context.Vars["to"];
+        def to = tostr ? Int32.Parse(tostr) : 25;
         def dist = to + 1 - from;
         mutable users: PageDataArray = array(dist);
         mutable i = 0;

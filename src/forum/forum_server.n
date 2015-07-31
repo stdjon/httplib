@@ -41,8 +41,7 @@ public class ForumServer: Server {
         route(HTTP.GET, "/is-user", isUserResponse);
 
         route([ (HTTP.GET, "/u"),
-                (HTTP.GET, "/u/{{num:[0-9]+}}") ], usersRedirectPageResponse);
-        route(HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}",
+                (HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             UsersHandler.Factory("users.nyml", true));
         route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}",
             UsersHandler.Factory("user.nyml", false));
@@ -129,17 +128,6 @@ public class ForumServer: Server {
             }
         }
         response.Status = ok ? (200, "OK") : (404, "Not Found");
-    }
-
-    public usersRedirectPageResponse(
-        context: Context, request: Request, response: Response): void {
-
-        def num = context.Vars["num"];
-        def from = !String.IsNullOrEmpty(num) ? Int32.Parse(num) : 1;
-        def to = from + 24; //TODO: configurable?
-
-        response["Location"] = $"$(getDefaultPrefix(request))/u/$from-$to";
-        response.Status = (303, "See Other");
     }
 
     public createCategoryResponse(
