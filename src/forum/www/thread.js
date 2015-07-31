@@ -471,6 +471,21 @@ function keyHandler(wnd_id, suppress_open_close) {
 }
 
 
+function replyFirst() {
+    openWindow('#0', 'r0', 'reply', undefined, function() {
+        $('#0').remove();
+        $('#rnd-r0 label').removeClass('active');
+        $('#rnd-r0-' + _g.Transform).addClass('active');
+        _d.windows['r0'] = {
+            btn_id: '',
+            num: '#0',
+            pid: 'X',
+        }
+        delaySetFocus('r0');
+    });
+}
+
+
 // install handler for (hacked) keypress events from select2 elements
 $(document).ready(function() {
     $('body').on("s2_keypress", function(_, e) {

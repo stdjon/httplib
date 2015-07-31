@@ -106,7 +106,10 @@ Partials:
       {{#Title}}
         <p>This thread has no posts at present.</p>
         {{#SignedInUser}}
-          <p><input type="button" class="btn btn-info" value="Be the first"></input> to post here!</p>
+          <div class="anchor" id="0">
+            <input type="button" class="btn btn-info" value="Be the first"
+              onclick="replyFirst()"></input> to post here!
+          </div>
         {{/SignedInUser}}
       {{/Title}}
       {{^Title}}

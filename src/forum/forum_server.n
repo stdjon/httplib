@@ -201,7 +201,12 @@ public class ForumServer: Server {
             def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
             when(userid != 0) {
-                def reply_to = UInt32.Parse(context.Vars["p"]);
+                //we send p=X to imply that a post is not a reply.
+                def reply_to =
+                    match(context.Vars["p"]) {
+                        | "X" => null
+                        | n => UInt32.Parse(n)
+                    };
                 thid = UInt32.Parse(context.Vars["th"]);
                 def transform = context.Vars["r"];
                 def content = context.Vars["t"];
