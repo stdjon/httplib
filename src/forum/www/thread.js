@@ -20,7 +20,7 @@ var _copy = {
 };
 
 
-function openWindow(num, wnd_id, text, btn_id, next) {
+function openWindow(num, wnd_id, text, next) {
     var w = _w[text];
 
     $.ajax({
@@ -30,13 +30,11 @@ function openWindow(num, wnd_id, text, btn_id, next) {
         url: '/window',
         data: 'id=' + wnd_id + 
             '&submit=' + w.submit + '&cancel=' + w.cancel + '&text=' + w.text,
+
         success: function(data) {
             $(data).insertAfter(num);
-
             initalizeExpandingAreas();
-
             $('#te-' + wnd_id).keydown(keyHandler(wnd_id, false));
-
             next();
         }
     });
@@ -52,6 +50,7 @@ function showPreview(wnd_id) {
         global: false,
         url: '/preview-post',
         data: 'r=' + sel + '&t=' + encodeURIComponent(txt),
+
         success: function(data) {
             $('#prv-' + wnd_id).html(data);
         },
@@ -87,7 +86,7 @@ function reply(btn, num, pid) {
         closeReply(wnd_id);
 
     } else {
-        openWindow(num, wnd_id, 'reply', btn_id, function() {
+        openWindow(num, wnd_id, 'reply', function() {
             $('#rnd-' + wnd_id + ' label').removeClass('active');
             $('#rnd-' + wnd_id + '-' + _g.Transform).addClass('active');
             _d.windows[wnd_id] = {
@@ -122,6 +121,7 @@ function submitReply(wnd_id) {
         url: '/createpost',
         data: 'r=' + sel + '&t=' + txt + '&tg=' + tags +
             '&p=' + pid + '&th=' + _g.ThreadId,
+
         success: function(data) {
             reloadPageContent();
         },
@@ -149,7 +149,7 @@ function edit(btn, num, pid) {
         closeEdit(wnd_id);
 
     } else {
-        openWindow(num, wnd_id, 'edit', btn_id, function() {
+        openWindow(num, wnd_id, 'edit', function() {
             populateEditData(pid);
             $('#te-' + wnd_id).focus();
             _d.windows[wnd_id] = {
@@ -180,6 +180,7 @@ function populateEditData(pid) {
         global: false,
         url: '/get-post',
         data: 'p=' + pid,
+
         success: function(data) {
             $('#te-' + wnd_id).html(data.i);
             $('#prv-' + wnd_id).html(data.o);
@@ -206,6 +207,7 @@ function submitEdit(wnd_id) {
         global: false,
         url: '/update-post',
         data: 'p=' + pid + '&r=' + sel + '&t=' + txt + '&tg=' + tags,
+
         success: function(data) {
             var d = _d.windows[wnd_id];
 
@@ -312,6 +314,7 @@ function thumbsup(btn, pid) {
             global: false,
             url: '/thumb',
             data: 'p=' + pid,
+
             success: function(data) {
                 $(btn).data('thumbed', false).
                     css('color', $(btn).data('old-color')).
@@ -328,6 +331,7 @@ function thumbsup(btn, pid) {
             global: false,
             url: '/thumb',
             data: 'p=' + pid + '&on=true',
+
             success: function(data) {
                 $(btn).data('thumbed', true).
                     data('old-color', $(btn).css('color')).
@@ -351,6 +355,7 @@ function star(btn, pid) {
             global: false,
             url: '/star',
             data: 'p=' + pid,
+
             success: function(data) {
                 $(btn).data('starred', false).
                     css('color', $(btn).data('old-color')).
@@ -367,6 +372,7 @@ function star(btn, pid) {
             global: false,
             url: '/star',
             data: 'p=' + pid + '&on=true',
+
             success: function(data) {
                 $(btn).data('starred', true).
                     data('old-color', $(btn).css('color')).
@@ -472,7 +478,7 @@ function keyHandler(wnd_id, suppress_open_close) {
 
 
 function replyFirst() {
-    openWindow('#0', 'r0', 'reply', undefined, function() {
+    openWindow('#0', 'r0', 'reply', function() {
         $('#0').remove();
         $('#rnd-r0 label').removeClass('active');
         $('#rnd-r0-' + _g.Transform).addClass('active');
