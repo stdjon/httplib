@@ -6,10 +6,7 @@ Scripts:
   - /recover.js
 Title: Account Recovery
 Partials:
-  Nav: |
-    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-empty?r={{CurrentUrl}}"
-      width='100%' height='50px' frameborder='0' allowtransparency='true'
-      style='position: fixed; z-index: 100;'></iframe>
+  Nav: "{{>NavEmpty}}"
   Banner: |
     <div class="jumbotron anchor">
       <h1>Account Recovery</h1>

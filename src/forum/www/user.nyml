@@ -5,10 +5,7 @@ Scripts:
   - /prefs.js
 Title: "{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}"
 Partials:
-  Nav: |
-    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
-      width='100%' height='50px' frameborder='0' allowtransparency='true'
-      style='position: fixed; z-index: 100;'></iframe>
+  Nav: "{{>NavLogin}}"
   Banner: |
     <div class="jumbotron anchor">
       <h1>{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}</h1>

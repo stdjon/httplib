@@ -92,6 +92,14 @@ Partials:
       postIframeMessage('tokTmp', encodeURIComponent("{{TempToken}}"));
       {{/TempToken}}
     });
+  NavEmpty: |
+    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-empty?r={{CurrentUrl}}"
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
+  NavLogin: |
+    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
+      width='100%' height='50px' frameborder='0' allowtransparency='true'
+      style='position: fixed; z-index: 100;'></iframe>
   Swatches: |
     <div class="swatches btn-group btn-group-sm" data-toggle="buttons" style="width: 100%">
       <label class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360')"><input type="radio"/>&nbsp;</label>

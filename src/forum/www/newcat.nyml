@@ -10,10 +10,7 @@ Scripts:
   - /dialog.js
 Title: "New Category"
 Partials:
-  Nav: |
-    <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
-      width='100%' height='50px' frameborder='0' allowtransparency='true'
-      style='position: fixed; z-index: 100;'></iframe>
+  Nav: "{{>NavLogin}}"
   Banner: |
     <form>
     <div class="jumbotron anchor">
