@@ -372,21 +372,17 @@ public class ForumDatabase: IDisposable {
         Database.withTransaction(db => {
             def check = isThumbPost(post_id, user_id);
             when(on != check) {
-                def command = if(on) {
-                    db.createCommand(
-                        "INSERT INTO Thumbs(PostId, UserId) "
-                            "VALUES (@PostId, @UserId)") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                } else {
-                    db.createCommand(
-                        "DELETE FROM Thumbs WHERE "
-                            "PostId = @PostId AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                }
+                def cmdstr = on ?
+                    ("INSERT INTO Thumbs(PostId, UserId) "
+                        "VALUES (@PostId, @UserId)") :
+                    ("DELETE FROM Thumbs WHERE "
+                        "PostId = @PostId AND UserId = @UserId");
+
+                def command = db.createCommand(cmdstr) <- [
+                    "@PostId" = post_id,
+                    "@UserId" = user_id,
+                ];
+
                 def _result = command.executeNonQuery();
                 Log.d("thumbPost {0} -> {1}", (on ? "insert" : "delete"), _result);
                 def command2 = db.createCommand(
@@ -421,21 +417,17 @@ public class ForumDatabase: IDisposable {
         Database.withTransaction(db => {
             def check = isStarPost(post_id, user_id);
             when(on != check) {
-                def command = if(on) {
-                    db.createCommand(
-                        "INSERT INTO Bookmarks(PostId, UserId) "
-                            "VALUES (@PostId, @UserId)") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                } else {
-                    db.createCommand(
-                        "DELETE FROM Bookmarks WHERE "
-                            "PostId = @PostId AND UserId = @UserId") <- [
-                        "@PostId" = post_id,
-                        "@UserId" = user_id,
-                    ];
-                }
+                def cmdstr = on ?
+                    ("INSERT INTO Bookmarks(PostId, UserId) "
+                            "VALUES (@PostId, @UserId)") :
+                    ("DELETE FROM Bookmarks WHERE "
+                            "PostId = @PostId AND UserId = @UserId");
+
+                def command = db.createCommand(cmdstr) <- [
+                    "@PostId" = post_id,
+                    "@UserId" = user_id,
+                ];
+
                 def _result = command.executeNonQuery();
                 Log.d("starPost {0} -> {1}", (on ? "insert" : "delete"), _result);
                 def command2 = db.createCommand(
