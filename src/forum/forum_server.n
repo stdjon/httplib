@@ -461,28 +461,6 @@ public class ForumServer: Server {
         }
     }
 
-    public tagsFromTagString(tag_string: string): array[string] {
-        def tag_input = tag_string ?
-            tag_string.Split(array['\0'], 5,
-                StringSplitOptions.RemoveEmptyEntries) : array(0);
-
-        mutable tags = array(5);
-        mutable i = 0;
-
-        foreach(t in tag_input) {
-            mutable u = t.Split(array['\0'], 2)[0];
-            u = Uri.UnescapeDataString(u);
-            when(u.Length > 30) {
-                u = u.Substring(0, 30);
-            }
-            tags[i] = u.Trim();
-            i++;
-        }
-
-        Array.Resize(ref tags, i);
-        tags;
-    }
-
     public encodeTags(tags: array[string]): string {
         mutable esc = array(5);
         when(tags != null) {

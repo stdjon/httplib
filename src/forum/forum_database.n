@@ -227,6 +227,28 @@ public class ForumDatabase: IDisposable {
         }
     }
 
+    public static tagsFromTagString(tag_string: string): array[string] {
+        def tag_input = tag_string ?
+            tag_string.Split(array['\0'], 5,
+                StringSplitOptions.RemoveEmptyEntries) : array(0);
+
+        mutable tags = array(5);
+        mutable i = 0;
+
+        foreach(t in tag_input) {
+            mutable u = t.Split(array['\0'], 2)[0];
+            u = Uri.UnescapeDataString(u);
+            when(u.Length > 30) {
+                u = u.Substring(0, 30);
+            }
+            tags[i] = u.Trim();
+            i++;
+        }
+
+        Array.Resize(ref tags, i);
+        tags;
+    }
+
     public createPost(user_id: uint, thread_id: uint,
         reply_to: uint?, transform: string, input: string,
         tag_string: string = null): uint * string * long {
@@ -293,7 +315,7 @@ public class ForumDatabase: IDisposable {
                     }
 
                     when(ok) {
-                        def tags = Server.tagsFromTagString(tag_string);
+                        def tags = tagsFromTagString(tag_string);
                         def ids = getTagIds(tags);
                         _ = insertPostTags(post_id, ids);
                     }
@@ -332,7 +354,7 @@ public class ForumDatabase: IDisposable {
                 ok = (result2 > 0);
 
                 when(ok) {
-                    def tags = Server.tagsFromTagString(tag_string);
+                    def tags = tagsFromTagString(tag_string);
                     deleteExistingPostTags(post_id);
                     def ids = getTagIds(tags);
                     _ = insertPostTags(post_id, ids);
