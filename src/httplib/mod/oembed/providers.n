@@ -121,6 +121,20 @@ public class DefaultUrlProvider: Provider {
 
 
 //------------------------------------------------------------------------------
+// Image URL Provider
+
+public class ImageUrlProvider: Provider {
+    public this(data: ProviderData) {
+        base(data);
+    }
+
+    public override transform(): string {
+        makeUrl($"<img src='$Url' style='max-width: 320px; max-height: 240px'/>");
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // OEmbed providers (photo, video)
 
 public class OEmbedProvider: Provider {
@@ -138,7 +152,7 @@ public class OEmbedProvider: Provider {
         //TODO: configure maxwidth/maxheight
         OEmbedUrl =
             $"$(Endpoint)?url=$(Uri.EscapeDataString(Url))$fmt$ext"
-            "&maxwidth=320&maxheight=200";
+            "&maxwidth=320&maxheight=240";
 
         Log.t("OEmbedProvider: url={0}", OEmbedUrl);
     }
