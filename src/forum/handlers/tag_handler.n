@@ -11,12 +11,15 @@ namespace forum {
 [HasHandlerFactory]
 public class TagHandler: BasePageHandler {
 
+    public TagsPerPage: int { get; }
     public Tag: string { get; private set; }
     public TagId: uint { get; private set; }
     public PostCount: int { get; private set; }
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        TagsPerPage = Server.Configuration.Limits.TagsPerPage;
     }
 
     public override initialize(): void {
@@ -43,11 +46,12 @@ public class TagHandler: BasePageHandler {
             PostCount = count ? (count :> int) : 0;
 
             when(PostCount > 0) {
-                mutable post_ids = array(25);
+                mutable post_ids = array(TagsPerPage);
                 def command3 = Database.createCommand(
                     "SELECT PostId FROM PostTags WHERE "
-                    "TagId=@TagId LIMIT 0,24") <- [
-                        "@TagId" = TagId
+                    "TagId=@TagId LIMIT 0,@To") <- [
+                        "@TagId" = TagId,
+                        "@To" = TagsPerPage - 1,
                     ];
                 def c = command3.execute((i, reader) => {
                     post_ids[i] = reader.getValue("PostId", 0U);

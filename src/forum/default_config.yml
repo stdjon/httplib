@@ -2,6 +2,12 @@
 # Example forum.exe configuration
 ---
 SiteName: myforum.com
+Limits:
+  CategoriesPerPage: 50
+  PostsPerPage: 50
+  UsersPerPage: 25
+  TagsPerPage: 25
+  ThreadsPerPage: 50
 DefaultAvatarImage: avatar-tiny.png
 DefaultEmailSender: webmaster@example.com
 DefaultFontClass: serif1

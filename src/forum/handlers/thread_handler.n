@@ -11,7 +11,7 @@ namespace forum {
 [HasHandlerFactory]
 public class ThreadHandler: BasePageHandler {
 
-    static PostsPerPage: int { get { 50 } }   //TODO: configurable?
+    public PostsPerPage: int { get; }
 
     public ThreadId: uint { get; private set; }
     public From: int { get; private set; }
@@ -22,6 +22,8 @@ public class ThreadHandler: BasePageHandler {
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        PostsPerPage = Server.Configuration.Limits.PostsPerPage;
 
         ThreadId = UInt32.Parse(Context.Vars["id"]);
 

@@ -11,6 +11,7 @@ namespace forum {
 [HasHandlerFactory]
 public class UsersHandler: BasePageHandler {
 
+    public UsersPerPage: int { get; }
     public IsPlural: bool { get; }
     public Transform: string { get; private set; }
     public Font: string { get; private set; }
@@ -18,6 +19,7 @@ public class UsersHandler: BasePageHandler {
     public this(hd: HandlerData, path: string, plural: bool) {
         base(hd, path);
         IsPlural = plural;
+        UsersPerPage = Server.Configuration.Limits.UsersPerPage;
     }
 
 
@@ -58,7 +60,7 @@ public class UsersHandler: BasePageHandler {
         def fromstr = Context.Vars["from"];
         def from = fromstr ? Int32.Parse(fromstr) : 1;
         def tostr = Context.Vars["to"];
-        def to = tostr ? Int32.Parse(tostr) : 25;
+        def to = tostr ? Int32.Parse(tostr) : UsersPerPage;
         def dist = to + 1 - from;
         mutable users: PageDataArray = array(dist);
         mutable i = 0;

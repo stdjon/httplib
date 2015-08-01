@@ -10,18 +10,27 @@ namespace forum {
 [HasHandlerFactory]
 public class CategoryHandler: BasePageHandler {
 
+    public ThreadsPerPage: int { get; }
+
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        ThreadsPerPage = Server.Configuration.Limits.ThreadsPerPage;
     }
 
     public override initialize(): void {
         base.initialize();
 
         def catid = UInt32.Parse(Context.Vars["id"]);
-        def fr_st = Context.Vars["from"];
-        def from = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
-        def to_st = Context.Vars["to"];
-        def to = !String.IsNullOrEmpty(to_st) ? Int32.Parse(to_st) : (from + 24);  //TODO: configurable?
+
+        def fromstr = Context.Vars["from"];
+        def from = !String.IsNullOrEmpty(fromstr) ? Int32.Parse(fromstr) : 1;
+
+        def tostr = Context.Vars["to"];
+        def to = !String.IsNullOrEmpty(tostr) ?
+            Int32.Parse(tostr) :
+            (from + ThreadsPerPage - 1);
+
         def dist = to + 1 - from;
 
         mutable ok = false;

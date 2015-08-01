@@ -10,8 +10,12 @@ namespace forum {
 [HasHandlerFactory]
 public class CategoryListHandler: BasePageHandler {
 
+    public CategoriesPerPage: int { get; }
+
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+
+        CategoriesPerPage = Server.Configuration.Limits.CategoriesPerPage;
     }
 
     public override initialize(): void {
@@ -20,7 +24,7 @@ public class CategoryListHandler: BasePageHandler {
         def fromstr = Context.Vars["from"];
         def from = fromstr ? Int32.Parse(fromstr) : 1;
         def tostr = Context.Vars["to"];
-        def to = tostr ? Int32.Parse(tostr) : 50;
+        def to = tostr ? Int32.Parse(tostr) : CategoriesPerPage;
 
         def dist = to + 1 - from;
         mutable categories: PageDataArray = array(dist);

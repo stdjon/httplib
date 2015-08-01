@@ -15,11 +15,22 @@ public class AccountRecovery {
 
 
 [YamlRecord]
+public class Limits {
+    public CategoriesPerPage: int { get; set; }
+    public PostsPerPage: int { get; set; }
+    public UsersPerPage: int { get; set; }
+    public TagsPerPage: int { get; set; }
+    public ThreadsPerPage: int { get; set; }
+};
+
+
+[YamlRecord]
 public class ForumServerConfiguration: ServerConfiguration {
 
     public SiteName: string { get; set; }
     public DefaultAvatarImage: string { get; set; }
     public AccountRecovery: AccountRecovery { get; set; }
+    public Limits: Limits { get; set; }
     public DefaultEmailSender: string { get; set; }
     public DefaultFontClass: string { get; set; }
     public DefaultColourClass: string { get; set; }
