@@ -58,8 +58,8 @@ Partials:
             <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
             <input id="rc-secret" name="secret" type="text" placeholder="[Secret]" class="form-control input">
           </div>
-          <button id="rc-submit" type="submit" class="btn btn-primary"
-            onclick="submitRecovery(); return false;" disabled="disabled">Send email</button>
+          <input id="rc-submit" type="submit" class="btn btn-primary"
+            onclick="submitRecovery(); return false;" disabled="disabled" value="Send email">
           <span id="rc-result"></span>
         </form>
       </div>

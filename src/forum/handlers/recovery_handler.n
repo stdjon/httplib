@@ -60,13 +60,16 @@ public class RecoveryInitiateHandler: BaseHandler {
 
         mutable json = JsonObject();
 
-        json["msg"] = match(ok, secret_ok) {
-            | (true, true) =>
-                "<em>Recovery request sent&mdash;check your email!</em>"
-            | (true, false) => "<em>Secret wasn't recognized.</em>"
-            | _ =>
-                "<em>Unable to send mail, try again later or talk to an admin.</em>"
-        }
+        json["msg"] =
+            match(secret_ok) {
+                | true => match(ok) {
+                    | true => "<em>Recovery request sent&mdash;"
+                        "check your email!</em>"
+                    | _ => "<em>Unable to send mail, "
+                        "try again later or talk to an admin.</em>"
+                }
+                | _ => "<em>Secret wasn't recognized.</em>"
+            };
 
         Response.append(json.toString());
         // CORS
