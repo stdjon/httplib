@@ -110,6 +110,13 @@ function closeReply(wnd_id) {
 
 function submitReply(wnd_id) {
 
+    var $wnd = $('#' + wnd_id)
+
+    if($wnd.data('replying')) {
+        return;
+    }
+    $wnd.data('replying', true);
+
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
     var txt = encodeURIComponent($('#' + wnd_id + ' textarea').val());
     var tags = encodeTagString($('#tags-' + wnd_id).val());
@@ -126,6 +133,7 @@ function submitReply(wnd_id) {
             reloadPageContent();
         },
         error: function() {
+            $wnd.data('replying', false);
             Dialog.alert({
                 size: BootstrapDialog.SIZE_LARGE,
                 type: BootstrapDialog.TYPE_DANGER,
