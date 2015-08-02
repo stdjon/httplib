@@ -49,9 +49,9 @@ public class TagHandler: BasePageHandler {
                 mutable post_ids = array(TagsPerPage);
                 def command3 = Database.createCommand(
                     "SELECT PostId FROM PostTags WHERE "
-                    "TagId=@TagId LIMIT 0,@To") <- [
+                    "TagId=@TagId LIMIT 0,@Count") <- [
                         "@TagId" = TagId,
-                        "@To" = TagsPerPage - 1,
+                        "@Count" = TagsPerPage,
                     ];
                 def c = command3.execute((i, reader) => {
                     post_ids[i] = reader.getValue("PostId", 0U);

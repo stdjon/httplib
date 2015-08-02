@@ -32,31 +32,29 @@ public class CategoryListHandler: BasePageHandler {
 
         def command = Database.createCommand(
             "SELECT Id, Name, UserId, CreateDate, Colour FROM Categories "
-                "ORDER BY Name LIMIT @From, @To") <- [
+                "ORDER BY Name LIMIT @From, @Count") <- [
                 "@From" = from - 1,
-                "@To" = to - 1,
+                "@Count" = dist,
             ];
 
         i = command.execute((j, reader) => {
-            when(j < dist) {
-                def cat = reader.getValue("Name");
-                when(cat != null) {
-                    def cat_id = reader.getValue("Id", 0U);
-                    def user_id = reader.getValue("UserId", 0U);
-                    def date: long = reader.getValue("CreateDate", 0L);
-                    def colour = reader.getValue("Colour",
-                        Server.Configuration.DefaultColourClass);
+            def cat = reader.getValue("Name");
+            when(cat != null) {
+                def cat_id = reader.getValue("Id", 0U);
+                def user_id = reader.getValue("UserId", 0U);
+                def date: long = reader.getValue("CreateDate", 0L);
+                def colour = reader.getValue("Colour",
+                    Server.Configuration.DefaultColourClass);
 
-                    categories[j] = PageData() <- [
-                        "Id" = cat_id,
-                        "UserId" = user_id,
-                        "Num" = (from + j).ToString(),
-                        "Name" = cat,
-                        "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
-                        "Colour" = colour,
-                        "ColourHsl" = CssHandler.bgFromColourId(colour),
-                    ];
-                }
+                categories[j] = PageData() <- [
+                    "Id" = cat_id,
+                    "UserId" = user_id,
+                    "Num" = (from + j).ToString(),
+                    "Name" = cat,
+                    "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                    "Colour" = colour,
+                    "ColourHsl" = CssHandler.bgFromColourId(colour),
+                ];
             }
         });
 

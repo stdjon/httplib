@@ -75,38 +75,36 @@ public class ThreadHandler: BasePageHandler {
             def command2 = Database.createCommand(
                 "SELECT Id, UserId, Points, CreateDate, OutputContent, ReplyTo "
                     "FROM Posts WHERE ThreadId = @ThreadId ORDER BY CreateDate "
-                    "LIMIT @From, @To") <- [
+                    "LIMIT @From, @Count") <- [
                 "@ThreadId" = ThreadId,
                 "@From" = From - 1,
-                "@To" = To - 1,
+                "@Count" = PostCount,
             ];
 
             i = command2.execute((j, reader) => {
-                when(j < PostCount) {
-                    def id = reader.getValue("Id", 0U);
-                    uid = reader.getValue("UserId", 0U);
-                    def points = reader.getValue("Points", 0);
-                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
-                    def content = reader.getValue("OutputContent");
-                    def reply_to = reader.getValue("ReplyTo"): uint?;
-                    def is_own_post = (uid == SignedInUserId);
+                def id = reader.getValue("Id", 0U);
+                uid = reader.getValue("UserId", 0U);
+                def points = reader.getValue("Points", 0);
+                def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                def content = reader.getValue("OutputContent");
+                def reply_to = reader.getValue("ReplyTo"): uint?;
+                def is_own_post = (uid == SignedInUserId);
 
-                    posts[j] = PageData() <- [
-                        "Number" = From + j,
-                        "PostId" = id,
-                        "UserId" = uid,
-                        "Points" = points,
-                        "CreateDate" = date,
-                        "Content" = content,
-                        "IsOwnPost" = is_own_post,
-                        "OwnPostClass" = is_own_post ? "own-post" : "",
+                posts[j] = PageData() <- [
+                    "Number" = From + j,
+                    "PostId" = id,
+                    "UserId" = uid,
+                    "Points" = points,
+                    "CreateDate" = date,
+                    "Content" = content,
+                    "IsOwnPost" = is_own_post,
+                    "OwnPostClass" = is_own_post ? "own-post" : "",
+                ];
+                when(reply_to != null) {
+                    _ = posts[j] <- [
+                        "ReplyTo" = reply_to :> uint,
+                        "ReplyToUrl" = postUrl(reply_to :> uint),
                     ];
-                    when(reply_to != null) {
-                        _ = posts[j] <- [
-                            "ReplyTo" = reply_to :> uint,
-                            "ReplyToUrl" = postUrl(reply_to :> uint),
-                        ];
-                    }
                 }
             });
             when(i < PostCount) {

@@ -202,7 +202,7 @@ public class TestData {
                 def count = commmand1.executeScalar() :> long?;
                 when(count != null) {
                     def commmand2 = db.createCommand("SELECT Id FROM Posts WHERE "
-                        "ThreadId=@ThreadId LIMIT @N, @N") <- [
+                        "ThreadId=@ThreadId LIMIT @N, 1") <- [
                             "@ThreadId" = tid,
                             "@N" = Random.Next(count :> int),
                         ];

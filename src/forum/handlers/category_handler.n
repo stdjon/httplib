@@ -61,27 +61,25 @@ public class CategoryHandler: BasePageHandler {
 
             def command2 = Database.createCommand(
                 "SELECT Id, UserId, Title, CreateDate FROM Threads WHERE "
-                    "CategoryId = @CategoryId ORDER BY CreateDate LIMIT @From, @To") <- [
+                    "CategoryId = @CategoryId ORDER BY CreateDate LIMIT @From, @Count") <- [
                 "@CategoryId" = catid,
                 "@From" = from - 1,
-                "@To" = to - 1,
+                "@Count" = dist,
             ];
 
             i = command2.execute((j, reader) => {
-                when(j < dist) {
-                    def id = reader.getValue("Id", 0U);
-                    uid = reader.getValue("UserId", 0U);
-                    def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
-                    def title = reader.getValue("Title");
+                def id = reader.getValue("Id", 0U);
+                uid = reader.getValue("UserId", 0U);
+                def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                def title = reader.getValue("Title");
 
-                    threads[j] = PageData() <- [
-                        "Number" = from + j,
-                        "UserId" = uid,
-                        "CreateDate" = date.ToString(),
-                        "Title" = title,
-                        "Id" = id,
-                    ];
-                }
+                threads[j] = PageData() <- [
+                    "Number" = from + j,
+                    "UserId" = uid,
+                    "CreateDate" = date.ToString(),
+                    "Title" = title,
+                    "Id" = id,
+                ];
             });
             when(i < dist) {
                 Array.Resize(ref threads, i);
