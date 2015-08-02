@@ -66,6 +66,10 @@ public class ForumServer: Server {
                 (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
 
+        route([ (HTTP.GET, "/tg"),
+                (HTTP.GET, "/tg/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
+            TagListHandler.Factory("tags.nyml"));
+
         route(HTTP.GET, "/tg/{{tag:.*}}", TagHandler.Factory("tag.nyml"));
 
         route([ (HTTP.GET, "/c/new"),

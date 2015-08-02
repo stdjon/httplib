@@ -67,6 +67,12 @@ public class ForumDatabase: IDisposable {
         unchecked ex :> int;
     }
 
+    public getTagCount(): int {
+        def commmand = Database.createCommand("SELECT COUNT(Id) FROM Tags");
+        def ex = commmand.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
     public getPostCount(thread_id: uint): int {
         def commmand = Database.createCommand(
             "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [

@@ -1,0 +1,52 @@
+---
+Template: template.nyml
+Title: Tags
+Partials:
+  Nav: "{{>NavLogin}}"
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>Tags</h1>
+    </div>
+  Body: |
+    <style>
+      h4.panel-title { font-size: 20px; font-weight: bold; }
+    </style>
+    {{#List}}
+      <p>
+        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
+        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
+      </p>
+    {{/List}}
+    <ol start="{{From}}" class='list-group'>
+    {{#Tags}}
+      <li class="list-group-item">
+        <div class="anchor" id="{{Num}}">
+          <a href="{{DefaultPrefix}}/tg/{{Name}}">{{Name}}</a>
+        </div>
+      </li>
+    {{/Tags}}
+    {{^Tags}}
+      <li class="list-group-item">(empty list)</li>
+    {{/Tags}}
+    </ol>
+    {{^Tags}}
+      <p>Something seems to have gone awry here...</p>
+    {{/Tags}}
+    {{#List}}
+      <p>
+        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
+        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
+      </p>
+    {{/List}}
+  Guide: |
+    {{#List}}
+    <div id="scrollspy">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="0">
+      {{#Markers}}
+        <li><a href="#{{Mark}}">{{Mark}}</a></li>
+      {{/Markers}}
+      </ul>
+    </div>
+    {{/List}}
+
+

@@ -1,0 +1,91 @@
+using System;
+using System.Text.RegularExpressions;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class TagListHandler: BasePageHandler {
+
+    public TagsPerPage: int { get; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+
+        TagsPerPage = Server.Configuration.Limits.TagsPerPage;
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def fromstr = Context.Vars["from"];
+        def from = fromstr ? Int32.Parse(fromstr) : 1;
+        def tostr = Context.Vars["to"];
+        def to = tostr ? Int32.Parse(tostr) : TagsPerPage;
+
+        def dist = to + 1 - from;
+
+        mutable ok = false;
+        mutable tags = array(dist);
+
+        def command = Database.createCommand(
+            "SELECT Name FROM Tags ORDER BY Name LIMIT @From, @Count") <- [
+                "@From" = from - 1,
+                "@Count" = dist,
+            ];
+
+        Log.f("from={0}, to={1}", from, to);
+        def i = command.execute((j, reader) => {
+            Log.f("j={0}, dist={1}", j, dist);
+            tags[j] = PageData() <- [
+                "Name" = reader.getValue("Name"),
+                "Num" = j + 1,
+            ];
+            ok = true;
+        });
+
+        when(i < tags.Length) {
+            Array.Resize(ref tags, i);
+        }
+
+        def prf = Server.getDefaultPrefix(Request);
+        mutable prev = null;
+        mutable next = null;
+
+        when(from > 1) {
+            def pf = Math.Max(1, from - dist);
+            def pt = pf + dist - 1;
+            prev = $"$prf/tg/$pf-$pt";
+        }
+
+        def category_count = ForumDatabase.getTagCount();
+        when(to < category_count) {
+            def nf = from + dist;
+            def nt = nf + dist - 1;
+            next = $"$prf/tg/$nf-$nt";
+        }
+
+        // Add a marker for every fifth category (1, 6, 11...)
+        def marker_count = (i + 4) / 5;
+        def markers: PageDataArray = array(marker_count);
+        for(mutable j = 0; j < marker_count; j++) {
+            markers[j] = PageData() <- [ "Mark" = (j * 5) + from ];
+        }
+
+        _ = PageData <- [
+            "Tags" = tags,
+            "List" = ok,
+            "Prev" = prev,
+            "Next" = next,
+            "Markers" = markers,
+            "IsAdmin" = ForumDatabase.userIsAdmin(SignedInUserId),
+        ];
+    }
+}
+
+
+} // forum.hnd
