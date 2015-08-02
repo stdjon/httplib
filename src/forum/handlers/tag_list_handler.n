@@ -38,9 +38,7 @@ public class TagListHandler: BasePageHandler {
                 "@Count" = dist,
             ];
 
-        Log.f("from={0}, to={1}", from, to);
         def i = command.execute((j, reader) => {
-            Log.f("j={0}, dist={1}", j, dist);
             tags[j] = PageData() <- [
                 "Name" = reader.getValue("Name"),
                 "Num" = j + 1,
