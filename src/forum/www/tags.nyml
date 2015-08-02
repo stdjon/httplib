@@ -1,6 +1,8 @@
 ---
 Template: template.nyml
 Title: Tags
+Scripts:
+  - /swatches.js
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |

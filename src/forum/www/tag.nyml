@@ -1,6 +1,8 @@
 ---
 Template: template.nyml
 Title: "{{#Name}}{{Name}}{{/Name}}{{^Name}}No such tag{{/Name}}"
+Scripts:
+  - /swatches.js
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |

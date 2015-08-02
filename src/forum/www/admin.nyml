@@ -1,6 +1,7 @@
 ---
 Template: template-1panel.nyml
 Scripts:
+  - /swatches.js
 Title: "{{SiteName}} Administration"
 Partials:
   Nav: "{{>NavLogin}}"
