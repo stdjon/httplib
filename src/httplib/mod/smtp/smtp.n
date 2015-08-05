@@ -55,7 +55,7 @@ public class Smtp: Module, ISmtp {
 
         mutable probe;
         when(data.TryGetValue("Ssl", out probe)) {
-            ssl = probe :> bool;
+            ssl = Boolean.Parse(probe :> string);
         }
         when(data.TryGetValue("User", out probe)) {
             username = probe :> string;
