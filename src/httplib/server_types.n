@@ -351,6 +351,7 @@ public class Context {
 //------------------------------------------------------------------------------
 // Request
 
+[HasLogging]
 public class Request {
 
     [Accessor] http_method: Method;
@@ -378,7 +379,7 @@ public class Request {
         get { Headers[key] }
     }
 
-    public this(req: HttpListenerRequest, force_insecure: bool = false) {
+    public this(req: HttpListenerRequest, server: Server) {
 
         http_method = req.HttpMethod.methodType();
         url = req.Url;
@@ -394,7 +395,7 @@ public class Request {
         raw_path = makeRawPath(Path);
         user_agent = req.UserAgent;
         is_authenticated = req.IsAuthenticated;
-        is_secure = req.IsSecureConnection || force_insecure;
+        is_secure = isSecure(req, server);
         is_web_socket = req.IsWebSocketRequest;
         http_version = makeHttpVersion(req.ProtocolVersion);
         extension = makeExtension(Path);
@@ -443,6 +444,35 @@ public class Request {
 
     makeHttpVersion(version: Version): int {
         (version.Major) + 10 + (version.Minor);
+    }
+
+    isSecure(req: HttpListenerRequest, server: Server): bool {
+
+        if( req.IsSecureConnection ||
+            server.Configuration.ForceInsecureOperation ) {
+
+            true;
+
+        } else {
+            exit: {
+                when(server.Configuration.BehindHttpsProxy) {
+                    def u = req.Url;
+                    def p = if(u.IsDefaultPort) {
+                        $"$(u.Scheme)://$(u.Host)/"
+                    } else {
+                        $"$(u.Scheme)://$(u.Host):$(u.Port)/"
+                    }
+
+                    foreach(sp in server.SecurePrefixesBehindHttpsProxy) {
+                        when(sp == p) {
+                            exit(true);
+                        }
+                    }
+                }
+
+                false;
+            }
+        }
     }
 }
 

@@ -146,6 +146,9 @@ public class ServerConfiguration {
     /** Force server to treat DefaultSecurePrefix as an alias for
      *  DefaultSecurePrefix (insecure, bypass HTTPS for testing only). */
     public ForceInsecureOperation: bool { get; set; }
+    /** Allow 'secure' connections via HTTP, assuming a proxing is responsible
+     *  for HTTPS encryption/decryption. */
+    public BehindHttpsProxy: bool { get; set; }
 }
 
 

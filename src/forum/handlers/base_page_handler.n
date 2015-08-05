@@ -30,7 +30,7 @@ public class BasePageHandler: BaseHandler {
         SignedInUserId = 0;
 
         // remove QS components starting with _$
-        def parsed_url = parseUrl(Request.Url);
+        def parsed_url = parseUrl();
 
         _ = PageData <- [
             "DefaultSecurePrefix" = Server.DefaultSecurePrefix,
@@ -80,7 +80,8 @@ public class BasePageHandler: BaseHandler {
         }
     }
 
-    parseUrl(url: Uri): string {
+    parseUrl(): string {
+        def url = Request.Url;
         def coll = HttpUtility.ParseQueryString(url.Query);
         mutable qs = "";
         foreach(x in coll.AllKeys) {
@@ -90,18 +91,9 @@ public class BasePageHandler: BaseHandler {
             }
         }
 
-        // TODO: this probably prevents use of prefixes with multiple ports from
-        //   the same Server if StripPortFromDefaultPrefixes is true. How big of
-        //   a problem this is, not sure. (We may want to look into sending CORS
-        //   response headers from the server if the ports don't match, or if
-        //   withCredentials was used from an AJAX request...)
-        def use_port =
-            !url.IsDefaultPort &&
-            !Server.Configuration.StripPortFromDefaultPrefixes;
+        def prefix = Server.getDefaultPrefix(Request);
 
-        def port_spec = use_port ? $":$(url.Port)": "";
-        def result = url.Scheme + "://" +
-            url.Host + port_spec + url.AbsolutePath + qs + url.Fragment;
+        def result = prefix + url.AbsolutePath + qs + url.Fragment;
         Log.d("parseUrl: {0} -> {1}", url, result);
         result;
     }

@@ -75,8 +75,10 @@ public class Server: IDisposable {
     [Accessor(flags = Internal)]
     module_cache: ModuleCache = ModuleCache();
 
-    [Accessor] public default_secure_prefix: string;
-    [Accessor] public default_insecure_prefix: string;
+    [Accessor] default_secure_prefix: string;
+    [Accessor] default_insecure_prefix: string;
+
+    [Accessor] secure_prefixes_behind_https_proxy: List[string];
 
     public static canonicalPath(path: string): string {
         def have_root = !String.IsNullOrEmpty(CanonicalRoot);
@@ -131,6 +133,11 @@ public class Server: IDisposable {
         // Now logging is configured, we can start using Log API...
         Log.i("Starting up...");
         def strip_port = Configuration.StripPortFromDefaultPrefixes;
+        def behind_https = Configuration.BehindHttpsProxy;
+
+        when(behind_https) {
+            secure_prefixes_behind_https_proxy = List();
+        }
 
         when(Configuration.Prefixes != null) {
             when( Configuration.Prefixes.Secure != null &&
@@ -138,13 +145,32 @@ public class Server: IDisposable {
                 foreach(p in Configuration.Prefixes.Secure) {
                     Log.d("Adding prefix \"{0}\"...", p);
                     when(!Regex(@"^https://").IsMatch(p)) {
-                        throw Exception(
-                            "Secure prefix must start 'https://...'");
+                        if(behind_https) {
+                            when(!Regex(@"^http://").IsMatch(p)) {
+                                throw Exception(
+                                    "Secure prefix must start 'http://...'"
+                                    "or 'https://...' when behind HTTPS proxy");
+                            }
+                        } else {
+                            throw Exception(
+                                "Secure prefix must start 'https://...'");
+                        }
                     }
                     Listener.Prefixes.Add(p);
+
+                    when(behind_https) {
+                        SecurePrefixesBehindHttpsProxy.Add(p);
+                    }
                 }
-                def regex = strip_port ?
-                    @"(https://[^:]*)(?::\d+)?/" : @"(https://.*)/";
+
+                def regex = match(strip_port, behind_https) {
+                    | (true, true) => @"(https?://[^:]*)(?::\d+)?/"
+                    | (false, true) => @"(https?://.*)/"
+                    | (true, false) => @"(https://[^:]*)(?::\d+)?/"
+                    | (false, false) => @"(https://.*)/"
+
+                }
+
                 default_secure_prefix = Regex(regex).Replace(
                     Configuration.Prefixes.Secure[0], "$1");
                 Log.d("Default prefix (secure):=  {0}", DefaultSecurePrefix);
@@ -204,7 +230,7 @@ public class Server: IDisposable {
                 (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
 
         Listener.AuthenticationSchemeSelectorDelegate = req => {
-            def request = Request(req);
+            def request = Request(req, this);
             handleAuthentication(request);
         };
 
@@ -425,8 +451,7 @@ public class Server: IDisposable {
         mutable context, request, response;
         try {
             context = Context();
-            request = Request(http_ctx.Request,
-                Configuration.ForceInsecureOperation);
+            request = Request(http_ctx.Request, this);
             response = Response(http_ctx.Response, Configuration.OutputLength);
             setResponseHeaders(response);
 
