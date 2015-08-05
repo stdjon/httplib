@@ -114,12 +114,7 @@ public class NavHandler: BasePageHandler {
                 def (_ok2, token, expiry) =
                     ForumDatabase.registerSessionToken(STOK.SECURE, id :> uint);
 
-                //TODO: See if we can remove BehindHttpsProxy here, with suitable
-                //  proxy strategy to remove/rewrite the cookie's secure flag on
-                //  the way in/out...
-                def cookie_flags =
-                    (Server.Configuration.ForceInsecureOperation ||
-                    Server.Configuration.BehindHttpsProxy) ?
+                def cookie_flags = Server.Configuration.ForceInsecureOperation ?
                     COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
                 Response.Cookies.add(
                     "_session", token, expiry, cookie_flags);
