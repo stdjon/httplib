@@ -298,6 +298,29 @@ select, .select2-search, .select2-search__field, .select2-search--inline,
     border-radius: 0 !important;
     background-color: #fff !important;
 }
+/* modal */
+.modal-body,
+.bootstrap-dialog-footer-buttons .btn-default {
+  background-color: #ffd;
+}
+.modal-footer {
+  background-color: #ffb;
+  /* not sure why this is necessary... */
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.modal.type-danger .bootstrap-dialog-title,
+.bootstrap-dialog-footer-buttons .btn-danger,
+.modal.type-info .bootstrap-dialog-title,
+.bootstrap-dialog-footer-buttons .btn-info,
+.modal.type-primary .bootstrap-dialog-title,
+.bootstrap-dialog-footer-buttons .btn-primary,
+.modal.type-success .bootstrap-dialog-title,
+.bootstrap-dialog-footer-buttons .btn-success,
+.modal.type-warning .bootstrap-dialog-title,
+.bootstrap-dialog-footer-buttons .btn-warning {
+  color: #ffe;
+}
 /* Colour swatches */
 /*.swatches {
   text-align: center;
