@@ -123,6 +123,7 @@ public class BasePageHandler: BaseHandler {
             PageData["TempToken"] = t;
         }
         PageData["IsSignedIn"] = (SignedInUserId > 0) ? "true" : "false";
+        PageData["IsAdmin"] = ForumDatabase.userIsAdmin(SignedInUserId);
         Log.t("isession = {0}, SignedInUserId = {1}", isession, SignedInUserId);
     }
 

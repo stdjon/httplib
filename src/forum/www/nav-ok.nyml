@@ -5,7 +5,7 @@ Partials:
     var navCollapseHeight = '120px';
   NavContent: |
     <style>
-      a.navbar-brand#uname {
+      a.navbar-brand.navbar-2ry {
         font-weight: 100;
       }
     </style>
@@ -18,7 +18,10 @@ Partials:
       </button>
       <a id="pagename" class="navbar-brand" href="{{DefaultPrefix}}/" target="_top">
        <span class="fa fa-diamond"></span> {{SiteName}}</a>
-      <a id="uname" class="navbar-brand" href="{{DefaultPrefix}}/u/{{User}}" target="_top">[{{User}}]</a>
+      <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/u/{{User}}" target="_top">[{{User}}]</a>
+      {{#IsAdmin}}
+      <a class="navbar-brand navbar-2ry" href="{{DefaultSecurePrefix}}/admin" target="_top">[admin]</a>
+      {{/IsAdmin}}
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <form id="signout-form" class="navbar-form navbar-right" action="{{DefaultSecurePrefix}}/nav-signout?r={{CurrentUrl}}" method="post" target="_top">

@@ -97,7 +97,6 @@ public class CategoryListHandler: BasePageHandler {
             "Prev" = prev,
             "Next" = next,
             "Markers" = markers,
-            "IsAdmin" = ForumDatabase.userIsAdmin(SignedInUserId),
         ];
     }
 }

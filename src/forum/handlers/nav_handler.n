@@ -17,18 +17,20 @@ public class NavHandler: BasePageHandler {
     public this(hd: HandlerData, method: HTTP) {
         base(hd, null);
 
+        mutable is_secure = false;
         Method = method;
         CurrentUrl = Request.QueryString["r"];
 
         PageData["IsNav"] = true;
+
         when(CurrentUrl != null) {
             PageData["CurrentUrl"] = CurrentUrl;
+            is_secure = Regex("^https").IsMatch(CurrentUrl);
         }
 
-        PageData["DefaultPrefix"] =
-            Regex("^https").IsMatch(CurrentUrl) ?
-                Server.DefaultSecurePrefix :
-                Server.DefaultInsecurePrefix;
+        PageData["DefaultPrefix"] = is_secure ?
+            Server.DefaultSecurePrefix :
+            Server.DefaultInsecurePrefix;
 
         initializeSiteName();
     }
@@ -187,3 +189,4 @@ public class NavHandler: BasePageHandler {
 
 
 } // forum
+
