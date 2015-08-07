@@ -56,6 +56,10 @@ Partials:
           {{/IsOwnPost}}
           <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
             style="color: #ccc" ></span>
+          {{#IsOwnPost}}
+          <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs" style="color: #ccc"></span><!--
+            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+          {{/IsOwnPost}}
           {{^IsOwnPost}}
           {{#IsOwnThumb}}
           <span class="ptr fa fa-fw fa-thumbs-up" title="Commend post"
