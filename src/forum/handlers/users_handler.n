@@ -167,6 +167,7 @@ public class UsersHandler: BasePageHandler {
 
         mutable threads = array(10);
         mutable posts = array(10);
+        mutable stars = array(10);
         mutable i;
 
         def command = Database.createCommand(
@@ -176,7 +177,7 @@ public class UsersHandler: BasePageHandler {
 
         def command2 = Database.createCommand(
             "SELECT Id, Title, CreateDate FROM Threads WHERE "
-                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 10") <- [
             "@UserId" = userid,
         ];
         i = command2.execute((j, reader) => {
@@ -190,35 +191,62 @@ public class UsersHandler: BasePageHandler {
 
         def command3 = Database.createCommand(
             "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
-                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 9") <- [
+                "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 10") <- [
             "@UserId" = userid,
         ];
         i = command3.execute((j, reader) => {
-            mutable content = reader.getValue("OutputContent");
-            when(content.Length > 100) {
-                content = content.Substring(0, 100) + "&hellip;";
-            }
-            // Use HtmlSanitizer to close any tags lost by the truncation.
-            def htmlsan = Server.
-                getModuleInterface.[ITextTransform]("HtmlSanitizer");
-            content = htmlsan.transform(content);
-
-            // Strip out <hN>, <p> and <br> tags for the post preview
-            // TODO: use a CsQuery-based module to allow proper tag replacement.
-            content = Regex(@"</?h[0-9]+>").Replace(content, "");
-            content = Regex(@"</?p>").Replace(content, "");
-            content = content.Replace("<br>", "");
+            def content = reader.getValue("OutputContent");
 
             posts[j] = PageData() <- [
                 "Id" = reader.getValue("Id", 0U),
-                "Content" = content,
+                "Content" = summarizePost(content),
                 "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref posts, i);
 
-        PageData["Threads"] = threads;
-        PageData["Posts"] = posts;
+        mutable s = array(10);
+        def command4 = Database.createCommand(
+            "SELECT PostId FROM Bookmarks WHERE UserId = @UserId "
+                "ORDER BY Id DESC LIMIT 0, 10") <- [
+            "@UserId" = userid,
+        ];
+        i = command4.execute((j, reader) => {
+            s[j] = reader.getValue("PostId", 0U);
+        });
+
+        for(mutable j = 0; j < s.Length; j++) {
+            def command5 = Database.createCommand(
+                "SELECT UserId, OutputContent, CreateDate FROM Posts WHERE "
+                    "Id = @Id") <- [
+                "@Id" = s[j],
+            ];
+
+            command5.execute(reader => {
+                def content = reader.getValue("OutputContent");
+
+                stars[j] = PageData() <- [
+                    "Id" = s[j],
+                    "UserId" = reader.getValue("UserId", 0U),
+                    "Content" = summarizePost(content),
+                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                ];
+            });
+
+            when(stars[j] != null) {
+                def command6 = Database.createCommand(
+                    "SELECT Name FROM Users WHERE Id = @Id") <- [
+                        "@Id" = stars[j]["UserId"],
+                    ];
+                stars[j]["User"] = command6.executeScalar() :> string;
+            }
+        }
+
+        _ = PageData <- [
+            "Threads" = threads,
+            "Posts" = posts,
+            "Stars" = stars,
+        ];
     }
 
     public initializePrefs(userid :uint, user: string): void {
@@ -245,6 +273,28 @@ public class UsersHandler: BasePageHandler {
             "IsPrefs" = true,
             "Id" = userid,
         ];
+    }
+
+    summarizePost(content: string): string {
+
+        mutable result = content;
+
+        when(result.Length > 100) {
+            result = result.Substring(0, 100) + "&hellip;";
+        }
+
+        // Use HtmlSanitizer to close any tags lost by the truncation.
+        def htmlsan = Server.
+            getModuleInterface.[ITextTransform]("HtmlSanitizer");
+        result = htmlsan.transform(result);
+
+        // Strip out <hN>, <p> and <br> tags for the post preview
+        // TODO: use a CsQuery-based module to allow proper tag replacement.
+        result = Regex(@"</?h[0-9]+>").Replace(result, "");
+        result = Regex(@"</?p>").Replace(result, "");
+        result = result.Replace("<br>", "");
+
+        result;
     }
 }
 

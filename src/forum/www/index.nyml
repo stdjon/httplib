@@ -73,11 +73,14 @@ Partials:
         <ul class="list-group">
           <p>Here are links to help find your way around the site:</p>
           <li class="list-group-item">
+            <a href="{{DefaultPrefix}}/c">Categories</a> &mdash;
+            <em>overview of thread categories.</em>
+          <li class="list-group-item">
             <a href="{{DefaultPrefix}}/u">Users</a> &mdash;
             <em>list of registered users; who's who.</em>
           <li class="list-group-item">
-            <a href="{{DefaultPrefix}}/c">Categories</a> &mdash;
-            <em>overview of thread categories</em>
+            <a href="{{DefaultPrefix}}/tg">Tags</a> &mdash;
+            <em>list of post tags.</em>
         </ul>
       </div>
     </div>
