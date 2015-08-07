@@ -214,6 +214,8 @@ public class UsersHandler: BasePageHandler {
         i = command4.execute((j, reader) => {
             s[j] = reader.getValue("PostId", 0U);
         });
+        Array.Resize(ref s, i);
+        Array.Resize(ref stars, i);
 
         for(mutable j = 0; j < s.Length; j++) {
             def command5 = Database.createCommand(
