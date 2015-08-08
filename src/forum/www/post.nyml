@@ -10,14 +10,30 @@ Partials:
       <h1>{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}</h1>
     </div>
   Body: |
+    <style>
+      div.alignment1 { padding: 0px 25px; }
+      div.alignment2 { padding: 0px 75px; }
+      div.alignment3 { padding: 0px 100px; text-align: right; }
+    </style>
     <div>
     {{#PostId}}
-      <em><div id="1"><div class="post">{{{Content}}}</div></div></em>
+      <div class="alignment2">
+        <p>Posted in thread <em><a href="{{DefaultPrefix}}/th/{{ThreadId}}">{{Thread}}</a></em>:</p>
+      </div>
+      <div id="1" class="alignment1">
+        <div class="post">
+          <a href="{{DefaultPrefix}}/u/{{User}}">
+            <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{User}}" width="40" height="40"/>
+          </a>
+          {{{Content}}}<br>
+          <div class="alignment3">
+            &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a> {{CreateDate}}
+            <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs"></span><small>({{Thumbs}})</small>
+            <span class="fa fa-fw fa-star-o" title="Stars"></span><small>({{Bookmarks}})</small>
+          </div>
+        </div>
+      </div>
       <br>
-      <p>Thread: <em><a href="{{DefaultPrefix}}/th/{{ThreadId}}">{{Thread}}</a></em></p>
-      <p>User: <em><a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a></em></p>
-      <p>Posted on: <em>{{CreateDate}}</em></p>
-      <p>Points: <em>{{Points}}</em></p>
     {{/PostId}}
     </div>
 

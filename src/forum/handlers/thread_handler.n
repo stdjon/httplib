@@ -180,12 +180,7 @@ public class ThreadHandler: BasePageHandler {
             for(i = 0; i < limit; i++) {
                 def post_id = posts[i]["PostId"] :> uint;
 
-                def command = Database.createCommand(
-                    "SELECT COUNT(Id) FROM Thumbs WHERE "
-                        "PostId = @PostId") <- [
-                    "@PostId" = post_id,
-                ];
-                def result = command.executeScalar() :> long;
+                def result = ForumDatabase.getPostThumbs(post_id);
                 posts[i]["Thumbs"] = result :> uint;
 
                 def command2 = Database.createCommand(
@@ -204,12 +199,7 @@ public class ThreadHandler: BasePageHandler {
             for(i = 0; i < limit; i++) {
                 def post_id = posts[i]["PostId"] :> uint;
 
-                def command = Database.createCommand(
-                    "SELECT COUNT(Id) FROM Bookmarks WHERE "
-                        "PostId = @PostId") <- [
-                    "@PostId" = post_id,
-                ];
-                def result = command.executeScalar() :> long;
+                def result = ForumDatabase.getPostBoomarks(post_id);
                 posts[i]["Bookmarks"] = result :> uint;
 
                 def command2 = Database.createCommand(

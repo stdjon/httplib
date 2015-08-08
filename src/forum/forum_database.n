@@ -82,6 +82,26 @@ public class ForumDatabase: IDisposable {
         unchecked ex :> int;
     }
 
+    public getPostThumbs(post_id: uint): int {
+        def command = Database.createCommand(
+            "SELECT COUNT(Id) FROM Thumbs WHERE "
+                "PostId = @PostId") <- [
+            "@PostId" = post_id,
+        ];
+        def result = command.executeScalar() :> long;
+        unchecked result :> int;
+    }
+
+    public getPostBoomarks(post_id: uint): int {
+        def command = Database.createCommand(
+            "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                "PostId = @PostId") <- [
+            "@PostId" = post_id,
+        ];
+        def result = command.executeScalar() :> long;
+        unchecked result :> int;
+    }
+
     public getThreadCount(cat_id: uint): int {
         def commmand = Database.createCommand(
             "SELECT COUNT(Id) FROM Threads WHERE CategoryId = @CategoryId") <- [
