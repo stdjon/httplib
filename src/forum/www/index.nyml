@@ -28,9 +28,10 @@ Partials:
       </div>
       <div class="panel-body">
         <p class="welcome">Welcome to <em><a href="{{DefaultPrefix}}/">{{SiteName}}</a></em>,
-          on online community for software, technology and online culture.
-          We're open to anyone who would like talk about programming, the internet,
-          or any aspect of  life in the the 21<sup>st</sup> century.</p>
+          a community for computing and online culture.
+          We're open to anyone who'd like talk about hardware, software,
+          programming, technology, the internet, or any aspects of modern life in
+          the 21<sup>st</sup> century.</p>
         {{^SignedInUser}}
         <p>Please feel free to <a href="{{DefaultSecurePrefix}}/signup">sign up</a>
           and make yourself at home.</p>
