@@ -60,6 +60,7 @@ public class CssHandler: BaseHandler {
 
             def c = Request.QueryString["c"];
             Font = Server.Configuration.DefaultFontClass;
+            MonoFont = Server.Configuration.DefaultMonoFontClass;
             Colour = !String.IsNullOrEmpty(c) ?
                 c : Server.Configuration.DefaultColourClass;
 
