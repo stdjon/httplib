@@ -17,7 +17,7 @@ addEventListener("message", function(msg) {
                 break;
             }
             case 'font': {
-                setFonts(cmd[1], true);
+                setFonts(cmd[1], cmd[2], true);
                 break;
             }
             case 'ehlo': {

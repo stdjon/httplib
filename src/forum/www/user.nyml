@@ -70,29 +70,38 @@ Partials:
           <tr><td>Level:</td><td><em>{{Level}}</em></td></tr>
           <tr><td>Default post format:</td><td>
             <div id="transform" class="btn-group" data-toggle="buttons">
-              <label class="btn btn-default btn-info {{BbCodeActive}}" onclick="onRadio(false)">
+              <label class="btn btn-default btn-primary {{BbCodeActive}}" onclick="onRadio(false)">
                 <input type="radio" id="bb-rb" name="renderer" value="bbcode"/> BBCode
               </label>
-              <label class="btn btn-default btn-info {{TextileActive}}" onclick="onRadio(false)">
+              <label class="btn btn-default btn-primary {{TextileActive}}" onclick="onRadio(false)">
                 <input type="radio" id="tx-rb" name="renderer" value="textile" /> Textile
               </label>
-              <label class="btn btn-default btn-info {{HtmlSanActive}}" onclick="onRadio(false)">
+              <label class="btn btn-default btn-primary {{HtmlSanActive}}" onclick="onRadio(false)">
                 <input type="radio" id="hs-rb" name="renderer" value="htmlsan" /> HTML
               </label>
             </div></td></tr>
           <tr><td>Font:</td>
           <td><div id="font" class="btn-group" data-toggle="buttons">
             <label class="btn btn-default btn-warning {{Serif1Active}}" onclick="onRadio(true)">
-              <input type="radio" id="sf1-rb" name="renderer" value="serif1"/> Serif 1
+              <input type="radio" id="sf1-rb" name="font" value="serif1"/> Serif 1
             </label>
             <label class="btn btn-default btn-warning {{Serif2Active}}" onclick="onRadio(true)">
-              <input type="radio" id="sf2-rb" name="renderer" value="serif2" /> Serif 2
+              <input type="radio" id="sf2-rb" name="font" value="serif2" /> Serif 2
             </label>
             <label class="btn btn-default btn-warning {{Sans1Active}}" onclick="onRadio(true)">
-              <input type="radio" id="ss1-rb" name="renderer" value="sans1" /> Sans 1
+              <input type="radio" id="ss1-rb" name="font" value="sans1" /> Sans 1
             </label>
             <label class="btn btn-default btn-warning {{Sans2Active}}" onclick="onRadio(true)">
-              <input type="radio" id="ss2-rb" name="renderer" value="sans2" /> Sans 2
+              <input type="radio" id="ss2-rb" name="font" value="sans2" /> Sans 2
+            </label>
+          </div></td></tr>
+          <tr><td><tt>Mono Font:</tt></td>
+          <td><div id="mono" class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default btn-primary {{Mono1Active}}" onclick="onRadio(true)">
+              <input type="radio" id="mf1-rb" name="mono_font" value="mono1"/> Mono 1
+            </label>
+            <label class="btn btn-default btn-primary {{Mono2Active}}" onclick="onRadio(true)">
+              <input type="radio" id="mf2-rb" name="mono_font" value="mono2" /> Mono 2
             </label>
           </div></td></tr>
           <tr><td></td><td><button id='update' type="submit" disabled="disabled" class="btn btn-success"
@@ -148,7 +157,7 @@ Partials:
     {{/User}}
     </div>
   ReloadableScript: |
-    setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{Font}}");
+    setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{Font}}", "{{MonoFontClass}}");
     loadAllFonts = {{IsUserPrefs}};
     if(loadAllFonts) {
       $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');

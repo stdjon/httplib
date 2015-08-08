@@ -4,15 +4,17 @@ var prf = {
     col_id: '',
     trans: '',
     font: '',
+    monoFont: '',
 };
 
 
-function setPrefs(m, l, c, t, f) {
+function setPrefs(m, l, c, t, f, mf) {
     _g.Motto = prf.motto = m;
     _g.Location = prf._loc = l;
     _g.ColourId = prf.col_id = c;
     _g.Transform = prf.trans = t;
     _g.Font = prf.font = f;
+    _g.MonoFontClass = prf.monoFont = mf;
     $('span#' + c).addClass('selected');
 
     _reinitHooks.push(enableAvatarDragDrop);
@@ -24,12 +26,14 @@ function onKeypress() {
     prf._loc = $('#_loc').val();
     prf.trans = $('#transform label.active input').val();
     prf.font = $('#font label.active input').val();
+    prf.monoFont = $('#mono label.active input').val();
     var ok1 = (prf.motto !== _g.Motto);
     var ok2 = (prf._loc !== _g.Location);
     var ok3 = (prf.col_id !== _g.ColourId);
     var ok4 = (prf.trans !== _g.Transform);
     var ok5 = (prf.font !== _g.Font);
-    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5;
+    var ok6 = (prf.monoFont !== _g.MonoFontClass);
+    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6;
     $('#update').attr('disabled', canupdate ? null : 'disabled');
     $('#notify').html('');
 }
@@ -40,7 +44,7 @@ function onRadio(font) {
     setTimeout(function() {
         onKeypress();
         if(font) {
-            setFonts(prf.font);
+            setFonts(prf.font, prf.monoFont);
         }
     }, 250);
 }
@@ -56,11 +60,12 @@ function update() {
             '&l=' + encodeURIComponent(prf._loc) +
             '&c=' + prf.col_id +
             '&r=' + prf.trans +
-            '&f=' + prf.font,
+            '&f=' + prf.font +
+            '&mf=' + prf.monoFont,
         success: function() {
             $('#update').attr('disabled', 'disabled');
             $('#notify').html('Preferences updated!');
-            setPrefs(prf.motto, prf._loc, prf.col_id, prf.trans, prf.font);
+            setPrefs(prf.motto, prf._loc, prf.col_id, prf.trans, prf.font, prf.monoFont);
         },
         error: function() {
             $('#notify').html('Unable to update the prefences!');

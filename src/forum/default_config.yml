@@ -11,6 +11,7 @@ Limits:
 DefaultAvatarImage: avatar-tiny.png
 DefaultEmailSender: webmaster@example.com
 DefaultFontClass: serif1
+DefaultMonoFontClass: mono1
 DefaultColourClass: x360
 DefaultTransform: bbcode
 AccountRecovery:

@@ -142,22 +142,28 @@ public class BasePageHandler: BaseHandler {
 
     initializeUserClasses(): void {
         def command = Database.createCommand(
-            "SELECT Colour, Font From Users WHERE Id=@Id") <- [
+            "SELECT Colour, Font, MonoFont FROM Users WHERE Id=@Id") <- [
                 "@Id" = SignedInUserId,
             ];
         mutable font = Server.Configuration.DefaultFontClass;
+        mutable mono_font = Server.Configuration.DefaultMonoFontClass;
         mutable colour = Server.Configuration.DefaultColourClass;
         command.execute(reader => {
             def f = reader.getValue("Font", "");
+            def mf = reader.getValue("MonoFont", "");
 //            def c = reader.getValue("Colour", "");
             when(!String.IsNullOrEmpty(f)) {
                 font = f;
+            }
+            when(!String.IsNullOrEmpty(mf)) {
+                mono_font = mf;
             }
 //            when(!String.IsNullOrEmpty(c)) {
 //                colour = c;
 //            }
         });
         PageData["FontClass"] = font;
+        PageData["MonoFontClass"] = mono_font;
         PageData["ColourClass"] = colour;
     }
 }

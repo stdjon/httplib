@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS Users(
     Colour VARCHAR(30),
     Transform VARCHAR(10),
     Font VARCHAR(10),
+    MonoFont VARCHAR(10),
     IsAdmin BOOL
 )
     ENGINE=INNODB
@@ -213,8 +214,8 @@ CREATE TABLE IF NOT EXISTS Uploads(
 /* UserId = 1, no valid PwRecord, so impossible to log in. */
 
 INSERT INTO Users(
-    Name, Level, Points, JoinDate, Motto, Location, Colour, Transform, Font) VALUES(
-    'guest', 0, 0, null, 'I am just a guest.', 'anywhere', 'y360', 'bbcode', 'serif1');
+    Name, Level, Points, JoinDate, Motto, Location, Colour, Transform, Font, MonoFont) VALUES(
+    'guest', 0, 0, null, 'I am just a guest.', 'anywhere', 'y360', 'bbcode', 'serif1', 'mono1');
 
 SET @guest_id = (SELECT Id FROM Users WHERE  Name = 'guest');
 INSERT INTO Auth(UserId, PwRecord, Email) VALUES(@guest_id, '', '');

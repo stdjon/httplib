@@ -15,6 +15,7 @@ public class UsersHandler: BasePageHandler {
     public IsPlural: bool { get; }
     public Transform: string { get; private set; }
     public Font: string { get; private set; }
+    public MonoFont: string { get; private set; }
 
     public this(hd: HandlerData, path: string, plural: bool) {
         base(hd, path);
@@ -136,7 +137,7 @@ public class UsersHandler: BasePageHandler {
 
         def command = Database.createCommand(
             "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
-                "Transform, Font FROM Users WHERE Name = @Name") <- [
+                "Transform, Font, MonoFont FROM Users WHERE Name = @Name") <- [
             "@Name" = user
         ];
 
@@ -146,6 +147,8 @@ public class UsersHandler: BasePageHandler {
                 Server.Configuration.DefaultTransform);
             Font = reader.getValue("Font",
                 Server.Configuration.DefaultFontClass);
+            MonoFont = reader.getValue("MonoFont",
+                Server.Configuration.DefaultMonoFontClass);
 
             _ = PageData <- [
                 "User" = reader.getValue("Name", user),
@@ -157,6 +160,7 @@ public class UsersHandler: BasePageHandler {
                 "ColourId" = reader.getValue("Colour",
                     Server.Configuration.DefaultColourClass),
                 "Font" = Font,
+                "MonoFont" = MonoFont,
             ];
         });
     }
@@ -267,6 +271,12 @@ public class UsersHandler: BasePageHandler {
             | "serif2" => PageData["Serif2Active"] = "active"
             | "sans1" => PageData["Sans1Active"] = "active"
             | "sans2" => PageData["Sans2Active"] = "active"
+            | _ => {}
+        }
+
+        match(MonoFont) {
+            | "mono1" => PageData["Mono1Active"] = "active"
+            | "mono2" => PageData["Mono2Active"] = "active"
             | _ => {}
         }
 

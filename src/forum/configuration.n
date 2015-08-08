@@ -33,6 +33,7 @@ public class ForumServerConfiguration: ServerConfiguration {
     public Limits: Limits { get; set; }
     public DefaultEmailSender: string { get; set; }
     public DefaultFontClass: string { get; set; }
+    public DefaultMonoFontClass: string { get; set; }
     public DefaultColourClass: string { get; set; }
     public DefaultTransform: string { get; set; }
     public TrackingScript: string { get; set; }

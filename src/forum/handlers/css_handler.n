@@ -46,6 +46,7 @@ public class CssHandler: BaseHandler {
     public override ContentType: string { get { "text/css" } }
 
     public Font: string { get; private set; }
+    public MonoFont: string { get; private set; }
     public Colour: string { get; private set; }
 
     public this(hd: HandlerData, path: string, data: string) {
@@ -63,13 +64,15 @@ public class CssHandler: BaseHandler {
                 c : Server.Configuration.DefaultColourClass;
 
             def command = db.createCommand(
-                "SELECT Font FROM Users WHERE Id = @Id") <- [
+                "SELECT Font, MonoFont FROM Users WHERE Id = @Id") <- [
                     "@Id" = userid,
                 ];
 
             command.execute(reader => {
                 Font = reader.getValue("Font",
                     Server.Configuration.DefaultFontClass);
+                MonoFont = reader.getValue("MonoFont",
+                    Server.Configuration.DefaultMonoFontClass);
             });
         }
 
@@ -90,8 +93,8 @@ public class CssHandler: BaseHandler {
             PageData["HeaderFontBold"] = fonts[map[Font].h].bold;
             PageData["HeaderFontItalic"] = fonts[map[Font].h].italic;
             PageData["HeaderFontBoldItalic"] = fonts[map[Font].h].bolditalic;
-            PageData["CodeImport"] = fonts["office_code_pro_dmedium"].import;
-            PageData["CodeFontRegular"] = fonts["office_code_pro_dmedium"].regular;
+            PageData["CodeImport"] = fonts[map[MonoFont].p].import;
+            PageData["CodeFontRegular"] = fonts[map[MonoFont].p].regular;
             PageData["BackgroundColour"] = bgFromColourId(Colour);
             PageData["HighlightColour"] = fgFromColourId(Colour);
 

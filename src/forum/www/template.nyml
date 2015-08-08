@@ -72,6 +72,7 @@ Partials:
         _g.ColourId = "{{ColourId}}";
         _g.ColourClass = "{{ColourClass}}";
         _g.FontClass = "{{FontClass}}";
+        _g.MonoFontClass = "{{MonoFontClass}}";
         _g.Browser = "{{Browser}}";
       }
       function resetReloadableContent() {
