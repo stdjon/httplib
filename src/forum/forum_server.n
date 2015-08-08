@@ -39,6 +39,8 @@ public class ForumServer: Server {
         route(HTTP.POST, "/signup-submit", SignupHandler.Factory(true));
 
         route(HTTP.GET, "/is-user", isUserResponse);
+        route(HTTP.POST, "/get-email", getEmailResponse);
+        route(HTTP.POST, "/test-email", testEmailResponse);
 
         route([ (HTTP.GET, "/u"),
                 (HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
@@ -129,6 +131,44 @@ public class ForumServer: Server {
                         "@Email" = e,
                     ];
                 ok = command.executeScalar() :> string;
+            }
+        }
+        response.Status = ok ? (200, "OK") : (404, "Not Found");
+    }
+
+    public getEmailResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        mutable email;
+        using(fdb = openForumDatabase()) {
+            def db = fdb.Database;
+            def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
+            def command = db.createCommand(
+                "SELECT Email From Auth WHERE UserId = @UserId") <- [
+                    "@UserId" = uid,
+                ];
+            email = command.executeScalar() :> string;
+            response.append(email);
+        }
+        response.Status = email ? (200, "OK") : (404, "Not Found");
+    }
+
+    public testEmailResponse(
+        context: Context, request: Request, response: Response): void {
+
+        def e = context.Vars["e"];
+        mutable ok = false;
+        using(fdb = openForumDatabase()) {
+            def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
+            when(e != null && uid > 0) {
+                def data = PageData() <- [
+                    "SiteName" = Configuration.SiteName,
+                    "SiteUrl" = DefaultInsecurePrefix,
+                    "User" = fdb.getUserName(uid),
+                ];
+                sendEmail(
+                    Configuration.DefaultEmailSender,
+                    [e], "test-email.nyml", data);
             }
         }
         response.Status = ok ? (200, "OK") : (404, "Not Found");
@@ -376,11 +416,13 @@ public class ForumServer: Server {
 
         def m = context.Vars["m"];
         def l = context.Vars["l"];
+        def e = context.Vars["e"];
         def c = context.Vars["c"];
         def r = context.Vars["r"];
         def f = context.Vars["f"];
         def mf = context.Vars["mf"];
         mutable ok = false;
+
         using(fdb = openForumDatabase()) {
             def db = fdb.Database;
             def userid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
@@ -400,6 +442,17 @@ public class ForumServer: Server {
                 ];
                 def x = command.executeNonQuery();
                 ok = (1 == x);
+
+                when(ok) {
+                    def command2 = db.createCommand(
+                        "UPDATE Auth SET Email = @Email WHERE "
+                            "UserId = @UserId") <- [
+                        "@Email" = e,
+                        "@UserId" = userid,
+                    ];
+                    def x = command2.executeNonQuery();
+                    ok = (1 == x);
+                }
             }
         }
 

@@ -1,0 +1,20 @@
+---
+Title: "{{SiteName}}: Email test {{User}}"
+Content: |
+  <html>
+  <style>
+    body { font-family: sans-serif; }
+  </style>
+  <body>
+    <p>
+      Hi, this is an automated email from <a href="{{SiteUrl}}">{{SiteName}}</a>.
+      We were asked to send a test email for {{User}} to this email address.
+    </p>
+    <p>
+      If you received this email, you can assume all is well with your email
+      settings!
+    </p>
+    <p>
+      Thank you, and good luck!
+    </p>
+  </body>

@@ -1,6 +1,7 @@
 var prf = {
     motto: '',
     _loc: '',
+    email: '',
     col_id: '',
     trans: '',
     font: '',
@@ -18,22 +19,37 @@ function setPrefs(m, l, c, t, f, mf) {
     $('span#' + c).addClass('selected');
 
     _reinitHooks.push(enableAvatarDragDrop);
+
+    $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/get-email',
+        success: function(e) {
+            _g.Email = prf.email = e;
+            $('#email').val(e);
+        },
+        error: function() {
+        }
+    });
 }
 
 
 function onKeypress() {
     prf.motto = $('#motto').val();
     prf._loc = $('#_loc').val();
+    prf.email = $('#email').val();
     prf.trans = $('#transform label.active input').val();
     prf.font = $('#font label.active input').val();
     prf.monoFont = $('#mono label.active input').val();
     var ok1 = (prf.motto !== _g.Motto);
     var ok2 = (prf._loc !== _g.Location);
-    var ok3 = (prf.col_id !== _g.ColourId);
-    var ok4 = (prf.trans !== _g.Transform);
-    var ok5 = (prf.font !== _g.Font);
-    var ok6 = (prf.monoFont !== _g.MonoFontClass);
-    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6;
+    var ok3 = (prf.email !== _g.Email);
+    var ok4 = (prf.col_id !== _g.ColourId);
+    var ok5 = (prf.trans !== _g.Transform);
+    var ok6 = (prf.font !== _g.Font);
+    var ok7 = (prf.monoFont !== _g.MonoFontClass);
+    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7;
     $('#update').attr('disabled', canupdate ? null : 'disabled');
     $('#notify').html('');
 }
@@ -51,6 +67,7 @@ function onRadio(font) {
 
 
 function update() {
+    prf.email = $('#email').val(); //due to /get-email
     $.ajax({
         type: 'POST',
         dataType: 'text',
@@ -58,6 +75,7 @@ function update() {
         url: '/prefs',
         data: 'm=' + encodeURIComponent(prf.motto) +
             '&l=' + encodeURIComponent(prf._loc) +
+            '&e=' + encodeURIComponent(prf.email) +
             '&c=' + prf.col_id +
             '&r=' + prf.trans +
             '&f=' + prf.font +
@@ -81,6 +99,29 @@ function selectSwatch(col_id) {
     prf.col_id = col_id;
     onKeypress();
 }
+
+
+function testEmail() {
+    var email = $('#email').val();
+    $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/test-email',
+        data: 'e=' + encodeURIComponent(email),
+        complete: function() {
+            var msg = '<em>Sent an email to <tt>' + email + '</tt>. You may ' +
+                'want to check your spam settings if the email doesn\'t arrive ' +
+                'soon.';
+            if(email != _g.Email) {
+                msg += ' Don\'t forget to hit Update to save this new address!';
+            }
+            msg += '</em>';
+            $('#email-fb').html(msg);
+        }
+    });
+}
+
 
 
 function enableAvatarDragDrop() {
