@@ -68,7 +68,7 @@ Partials:
           <tr><td>Email:</td>
           <td><input id='email' value="{{Email}}" placeholder='[Email]'
             onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 80%;"></input>
-            <button class="btn btn-success" onclick="testEmail()">Test</button><br>
+            <button class="btn btn-success" onclick="testEmail()">Test Email</button><br>
             <span id="email-fb"></span></td></tr>
           <tr><td>User since:</td><td><em>{{JoinDate}}</em></td></tr>
           <tr><td>Points:</td><td><em>{{Points}}</em></td></tr>
