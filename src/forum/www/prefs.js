@@ -20,18 +20,20 @@ function setPrefs(m, l, c, t, f, mf) {
 
     _reinitHooks.push(enableAvatarDragDrop);
 
-    $.ajax({
-        type: 'POST',
-        dataType: 'text',
-        global: false,
-        url: '/get-email',
-        success: function(e) {
-            _g.Email = prf.email = e;
-            $('#email').val(e);
-        },
-        error: function() {
-        }
-    });
+    if($('#email').length > 0) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            global: false,
+            url: '/get-email',
+            success: function(e) {
+                _g.Email = prf.email = e;
+                $('#email').val(e);
+            },
+            error: function() {
+            }
+        });
+    }
 }
 
 
