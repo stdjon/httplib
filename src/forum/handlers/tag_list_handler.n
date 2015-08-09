@@ -41,7 +41,7 @@ public class TagListHandler: BasePageHandler {
         def i = command.execute((j, reader) => {
             tags[j] = PageData() <- [
                 "Name" = reader.getValue("Name"),
-                "Num" = j + 1,
+                "Num" = j + from,
             ];
             ok = true;
         });
