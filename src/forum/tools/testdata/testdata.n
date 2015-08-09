@@ -27,6 +27,7 @@ public class TestData {
     [Accessor] mutable user_count: int = 0;
     [Accessor] mutable category_count: int = 0;
     [Accessor] mutable thread_count: int = 0;
+    [Accessor] mutable post_count: int = 0;
 
     public this(fs: ForumServer) {
         Log.i("Generating test data...");
@@ -63,10 +64,21 @@ public class TestData {
             tags[i] = generateTagName();
         }
 
-        thread_count = getThreadCount();
         Log.i("Generating {0} posts...", args.Posts);
         for(mutable i = 0; i < args.Posts; i++) {
             generatePost();
+        }
+
+        post_count = getPostCount();
+
+        Log.i("Generating {0} thumbs...", args.Thumbs);
+        for(mutable i = 0; i < args.Thumbs; i++) {
+            generateThumb();
+        }
+
+        Log.i("Generating {0} thumbs...", args.Stars);
+        for(mutable i = 0; i < args.Stars; i++) {
+            generateStar();
         }
     }
 
@@ -224,6 +236,34 @@ public class TestData {
         }
     }
 
+    generateThumb(): void {
+        def uid = Random.Next(UserCount) :> uint + 1;
+        def pid = Random.Next(PostCount) :> uint + 1;
+
+        using(fdb = server.openForumDatabase()) {
+            if(!fdb.isThumbPost(pid, uid)) {
+                fdb.thumbPost(pid, uid, true);
+                Log.d("User {0} thumbed post {1}", uid, pid);
+            } else {
+                Log.w("(User {0} already thumbed post {1}, ignoring)", uid, pid);
+            }
+        }
+    }
+
+    generateStar(): void {
+        def uid = Random.Next(UserCount) :> uint + 1;
+        def pid = Random.Next(PostCount) :> uint + 1;
+
+        using(fdb = server.openForumDatabase()) {
+            if(!fdb.isStarPost(pid, uid)) {
+                fdb.starPost(pid, uid, true);
+                Log.d("User {0} starred post {1}", uid, pid);
+            } else {
+                Log.w("(User {0} already starred post {1}, ignoring)", uid, pid);
+            }
+        }
+    }
+
     generateUserName(): string {
         mutable result = "";
         mutable disallow_last = 12;
@@ -336,6 +376,15 @@ public class TestData {
         mutable result;
         using(db = server.openDatabase()) {
             def commmand = db.createCommand("SELECT COUNT(Title) FROM Threads");
+            result = commmand.executeScalar() :> long;
+        }
+        unchecked result :> int;
+    }
+
+    getPostCount(): int {
+        mutable result;
+        using(db = server.openDatabase()) {
+            def commmand = db.createCommand("SELECT COUNT(Id) FROM Posts");
             result = commmand.executeScalar() :> long;
         }
         unchecked result :> int;

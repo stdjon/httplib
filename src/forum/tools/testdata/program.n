@@ -22,6 +22,8 @@ public module Program {
             Threads = 120;
             Tags = 100;
             Posts = 1000;
+            Thumbs = 1000;
+            Stars = 500;
         }
         public ShowHelp: bool { get; set; }
         public Config: string { get; set; }
@@ -31,6 +33,8 @@ public module Program {
         public Threads: int { get; set; }
         public Tags: int { get; set; }
         public Posts: int { get; set; }
+        public Thumbs: int { get; set; }
+        public Stars: int { get; set; }
     }
 
     public Main(args: array[string]): void {
@@ -68,7 +72,11 @@ public module Program {
             Add("T|tags=", "Number of tags.",
                 v => { arguments.Tags = v }).
             Add("p|posts=", "Number of posts.",
-                v => { arguments.Posts = v });
+                v => { arguments.Posts = v }).
+            Add("m|thumbs=", "Number of thumbs.",
+                v => { arguments.Thumbs = v }).
+            Add("s|stars=", "Number of stars.",
+                v => { arguments.Stars = v });
     }
 
     showHelp(options: OptionSet): void {
