@@ -1,0 +1,22 @@
+---
+Template: template-1panel.nyml
+Scripts:
+  - /swatches.js
+Title: "{{SiteName}}: {{ErrorDescription}}"
+Partials:
+  Nav: "{{>NavLogin}}"
+  Banner: |
+    <div class="jumbotron anchor">
+      <h1>{{ErrorDescription}}</h1>
+    </div>
+  Body: |
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Oh no!</h4>
+      </div>
+      <div class="panel-body">
+        <p>An error has occurred processing <tt>{{CurrentUrlUnescaped}}</tt>.</p>
+      </div>
+    </div>
+
+

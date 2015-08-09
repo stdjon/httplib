@@ -663,27 +663,31 @@ public class Server: IDisposable {
     // stock request handlers (can be overridden by clients).
 
     public virtual internalServerErrorResponse(
-        _context: Context, _request: Request, response: Response): void {
+        context: Context, request: Request, response: Response): void {
 
-        response.append(
-            "<html><body><h1>500 Internal Server Error</h1></body><html>");
-        response.Status = (500, "Internal Server Error");
+        error(context, request, response, (500, "Internal Server Error"));
     }
 
     public virtual methodNotAllowedResponse(
-        _context: Context, _request: Request, response: Response): void {
+        context: Context, request: Request, response: Response): void {
 
-        response.append(
-            "<html><body><h1>405 Method Not Allowed</h1></body><html>");
-        response.Status = (405, "Method Not Allowed");
+        error(context, request, response, (405, "Method Not Allowed"));
     }
 
     public virtual notFoundRespose(
-        _context: Context, _request: Request, response: Response): void {
+        context: Context, request: Request, response: Response): void {
 
+        error(context, request, response, (404, "Not Found"));
+    }
+
+    public virtual error(
+        _context: Context, _request: Request, response: Response,
+        status: int * string): void {
+
+        def (s, d) = status;
         response.append(
-            "<html><body><h1>404 Not Found</h1></body><html>");
-        response.Status = (404, "Not Found");
+            $"<html><body><h1>$s $d</h1></body><html>");
+        response.Status = status;
     }
 
     public virtual serveFileResponse(

@@ -1,0 +1,30 @@
+using System;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class ErrorHandler: BasePageHandler {
+
+    public override Status: int * string { get; private set; }
+
+    public this(hd: HandlerData, path: string, status: int * string) {
+        base(hd, path);
+        Status = status;
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def (s, d) = Status;
+        PageData["ErrorDescription"] = $"$s $d";
+        PageData["ColourId"] = "y0";
+    }
+}
+
+
+} // forum.hnd

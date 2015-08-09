@@ -111,6 +111,17 @@ public class ForumServer: Server {
         route(HTTP.POST, "/admin-update", AdminUpdateHandler.Factory());
     }
 
+    public override error(
+        context: Context, request: Request, response: Response,
+        status: int * string): void {
+
+        def ehf = ErrorHandler.Factory("error.nyml", status);
+        def hd = HandlerData(context, request, response, this);
+        def eh = ehf.makeHandler(hd);
+
+        eh.callback();
+    }
+
     public isUserResponse(
         _context: Context, request: Request, response: Response): void {
 
