@@ -94,18 +94,11 @@ public class CategoryHandler: BasePageHandler {
                     ForumDatabase.getPostCount(threads[i]["Id"] :> uint);
             }
 
-            // Add a marker for every fifth thread (1, 6, 11...)
-            def marker_count = (limit + 4) / 5;
-            def markers: PageDataArray = array(marker_count);
-            for(i = 0; i < marker_count; i++) {
-                markers[i] = PageData() <- [ "Mark" = (i * 5) + from ];
-            }
-
             _ = PageData <- [
                 "Threads" = threads,
-                "Markers" = markers,
                 "From" = from,
                 "To" = to,
+                "Markers" = buildMarkerList(from, limit),
             ];
 
             // prev/next

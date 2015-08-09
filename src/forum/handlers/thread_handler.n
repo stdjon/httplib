@@ -217,19 +217,12 @@ public class ThreadHandler: BasePageHandler {
                 }
             }
 
-            // Add a marker for every fifth post (1, 6, 11...)
-            def marker_count = (limit + 4) / 5;
-            def markers: PageDataArray = array(marker_count);
-            for(i = 0; i < marker_count; i++) {
-                markers[i] = PageData() <- [ "Mark" = (i * 5) + From ];
-            }
-
             _ = PageData <- [
                 "ThreadId" = ThreadId,
                 "From" = From,
                 "To" = To,
                 "Posts" = posts,
-                "Markers" = markers,
+                "Markers" = buildMarkerList(From, limit),
             ];
 
             // prev/next

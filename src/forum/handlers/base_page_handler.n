@@ -90,6 +90,15 @@ public class BasePageHandler: BaseHandler {
         }
     }
 
+    public buildMarkerList(from: int, count: int, step = 5): PageDataArray {
+        def marker_count = (count + (step - 1)) / step;
+        def result = array(marker_count);
+
+        for(mutable i = 0; i < marker_count; i++) {
+            result[i] = PageData() <- [ "Mark" = (i * step) + from ];
+        }
+        result;
+    }
 
     parseUrl(): string {
         def url = Request.Url;

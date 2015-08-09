@@ -124,18 +124,11 @@ public class UsersHandler: BasePageHandler {
         }
         Log.d("next = {0}", next);
 
-        // Add a marker for every fifth post (1, 6, 11...)
-        def marker_count = (i + 4) / 5;
-        def markers: PageDataArray = array(marker_count);
-        for(mutable j = 0; j < marker_count; j++) {
-            markers[j] = PageData() <- [ "Mark" = (j * 5) + from ];
-        }
-
         _ = PageData <- [
             "Users" = users,
             "Prev" = prev,
             "Next" = next,
-            "Markers" = markers,
+            "Markers" = buildMarkerList(from, i),
         ];
     }
 
