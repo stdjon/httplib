@@ -94,6 +94,7 @@ public class TagHandler: BasePageHandler {
                 }
                 for(mutable j = 0; j < c; j++) {
                     posts[j]["User"] = ForumDatabase.getUserName(users[j]);
+                    posts[j]["UserDisplay"] = userDisplayName(users[j]);
                 }
                 PageData["Posts"] = posts;
             }

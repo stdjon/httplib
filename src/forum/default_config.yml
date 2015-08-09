@@ -8,6 +8,7 @@ Limits:
   UsersPerPage: 25
   TagsPerPage: 25
   ThreadsPerPage: 50
+AdminDisplay: "<span style='font-size: 85%' title='User is an admin' class='fa fa-cube'></span>"
 DefaultAvatarImage: avatar-tiny.png
 DefaultEmailSender: webmaster@example.com
 DefaultFontClass: serif1

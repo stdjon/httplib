@@ -58,6 +58,7 @@ public class PostHandler: BasePageHandler {
             _ = PageData <- [
                 "PostId" = pid,
                 "User" = name,
+                "UserDisplay" = userDisplayName(uid),
                 "Thread" = title,
                 "ThreadId" = thid,
                 "CreateDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",

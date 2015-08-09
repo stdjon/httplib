@@ -67,7 +67,7 @@ public class UsersHandler: BasePageHandler {
         mutable i = 0;
 
         def command = Database.createCommand(
-            "SELECT Name, Level, Points, Motto, Colour FROM Users "
+            "SELECT Id, Name, Level, Points, Motto, Colour FROM Users "
                 "ORDER BY Name LIMIT @From, @Count") <- [
                 "@From" = from - 1,
                 "@Count" = dist,
@@ -76,12 +76,14 @@ public class UsersHandler: BasePageHandler {
         i = command.execute((j, reader) => {
             def u = reader.getValue("Name");
             when(u != null) {
+                def id = reader.getValue("Id", 0U);
                 def points = reader.getValue("Points", 0);
                 def level = reader.getValue("Level", 0.0f);
                 def motto = reader.getValue("Motto", "");
                 def colour = reader.getValue("Colour",
                     Server.Configuration.DefaultColourClass);
                 users[j] = PageData() <- [
+                    "Id" = id,
                     "Num" = (from + j).ToString(),
                     "Name" = u,
                     "Points" = points.ToString(),
@@ -95,6 +97,10 @@ public class UsersHandler: BasePageHandler {
 
         when(i < dist) {
             Array.Resize(ref users, i);
+        }
+
+        for(mutable j = 0; j < users.Length; j++) {
+            users[j]["Display"] = userDisplayName(users[j]["Id"] :> uint);
         }
 
         def prf = Server.getDefaultPrefix(Request);
@@ -240,15 +246,18 @@ public class UsersHandler: BasePageHandler {
             });
 
             when(stars[j] != null) {
+                def id = stars[j]["UserId"] :> uint;
                 def command6 = Database.createCommand(
                     "SELECT Name FROM Users WHERE Id = @Id") <- [
-                        "@Id" = stars[j]["UserId"],
+                        "@Id" = id,
                     ];
                 stars[j]["User"] = command6.executeScalar() :> string;
+                stars[j]["UserDisplay"] = userDisplayName(id);
             }
         }
 
         _ = PageData <- [
+            "UserDisplay" = userDisplayName(userid),
             "Threads" = threads,
             "Posts" = posts,
             "Stars" = stars,

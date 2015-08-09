@@ -67,6 +67,7 @@ public class ThreadHandler: BasePageHandler {
 
         PageData["Category"] = ForumDatabase.getCategoryName(catid);
         PageData["UserName"] = ForumDatabase.getUserName(uid);
+        PageData["UserDisplay"] = userDisplayName(uid);
 
         when(ok) {
             mutable posts: PageDataArray = array(PostCount);
@@ -113,8 +114,10 @@ public class ThreadHandler: BasePageHandler {
             def limit = i;
 
             for(i = 0; i < limit; i++) {
+                def id = posts[i]["UserId"] :> uint;
                 posts[i]["UserName"] =
-                    ForumDatabase.getUserName(posts[i]["UserId"] :> uint);
+                    ForumDatabase.getUserName(id);
+                posts[i]["UserDisplay"] = userDisplayName(id);
             }
 
             // Tags

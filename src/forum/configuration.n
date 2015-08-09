@@ -31,6 +31,7 @@ public class ForumServerConfiguration: ServerConfiguration {
     public DefaultAvatarImage: string { get; set; }
     public AccountRecovery: AccountRecovery { get; set; }
     public Limits: Limits { get; set; }
+    public AdminDisplay: string { get; set; }
     public DefaultEmailSender: string { get; set; }
     public DefaultFontClass: string { get; set; }
     public DefaultMonoFontClass: string { get; set; }

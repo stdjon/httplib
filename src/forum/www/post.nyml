@@ -27,7 +27,7 @@ Partials:
           </a>
           {{{Content}}}<br>
           <div class="alignment3">
-            &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a> {{CreateDate}}
+            &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> {{CreateDate}}
             <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs"></span><small>({{Thumbs}})</small>
             <span class="fa fa-fw fa-star-o" title="Stars"></span><small>({{Bookmarks}})</small>
           </div>

@@ -28,7 +28,7 @@ Partials:
         <li class="list-group-item"><div id="{{Num}}" class="anchor">
           <div class="inlist" style="border-left: 5px solid {{ColourHsl}};">
             <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
-            created by <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a> on {{Date}}
+            created by <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> on {{Date}}
           </div>
         </div></li>
       {{/Categories}}

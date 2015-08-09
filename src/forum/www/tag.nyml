@@ -29,7 +29,7 @@ Partials:
         <li class="list-group-item">
           <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
           <em>{{{Content}}}</em>
-          &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a>
+          &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a>
           </li>
       {{/Posts}}
       {{^Posts}}

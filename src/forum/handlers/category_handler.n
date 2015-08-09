@@ -53,6 +53,7 @@ public class CategoryHandler: BasePageHandler {
         });
 
         PageData["UserName"] = ForumDatabase.getUserName(uid);
+        PageData["UserDisplay"] = userDisplayName(uid);
 
         when(ok) {
             mutable threads: PageDataArray = array(dist);

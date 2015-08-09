@@ -28,7 +28,7 @@ Partials:
     </style>
     {{#Title}}
       <p>Thread started in <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>
-      by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
+      by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a> at {{CreateDate}}.</p>
     {{>Pagination}}
     {{/Title}}
     {{#Posts}}
@@ -43,7 +43,7 @@ Partials:
               {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
             </span>
           </small></div>
-          <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small>
           {{#SignedInUser}}

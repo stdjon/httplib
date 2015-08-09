@@ -80,6 +80,17 @@ public class BasePageHandler: BaseHandler {
         }
     }
 
+    public userDisplayName(user_id: uint): string {
+        def admin = ForumDatabase.userIsAdmin(user_id);
+        def name = ForumDatabase.getUserName(user_id);
+        if(admin) {
+            $"$name $(Server.Configuration.AdminDisplay)"
+        } else {
+            name
+        }
+    }
+
+
     parseUrl(): string {
         def url = Request.Url;
         def coll = HttpUtility.ParseQueryString(url.Query);

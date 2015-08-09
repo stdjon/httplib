@@ -8,7 +8,7 @@ Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
     <div class="jumbotron anchor">
-      <h1>{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}</h1>
+      <h1>{{#User}}{{{UserDisplay}}}{{/User}}{{^User}}No such user{{/User}}</h1>
     </div>
   Body: |
     <style>
@@ -153,7 +153,7 @@ Partials:
       {{#Stars}}
         <li class="list-group-item">
           <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
-          <em>{{{Content}}}</em> &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{User}}</a>
+          <em>{{{Content}}}</em> &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a>
         </li>
       {{/Stars}}
       </ul>

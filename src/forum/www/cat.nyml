@@ -21,7 +21,7 @@ Partials:
     {{/SignedInUser}}
     {{#Name}}
       <p>Category created by
-      <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a> at {{CreateDate}}.</p>
+      <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a> at {{CreateDate}}.</p>
       <p>
         {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
         {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
@@ -32,7 +32,7 @@ Partials:
       <li class="list-group-item"><div id="{{Number}}" class="anchor">
         <div class="inlist">
           <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
-          by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{UserName}}</a>
+          by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
           at {{CreateDate}} <span class="badge"><big>{{PostCount}}</big></badge>
         </div>
       </div></li>
