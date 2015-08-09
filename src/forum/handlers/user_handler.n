@@ -9,31 +9,25 @@ using httplib;
 namespace forum {
 
 [HasHandlerFactory]
-public class UsersHandler: BasePageHandler {
+public class UserHandler: BasePageHandler {
 
     public UsersPerPage: int { get; }
-    public IsPlural: bool { get; }
     public Transform: string { get; private set; }
     public Font: string { get; private set; }
     public MonoFont: string { get; private set; }
 
-    public this(hd: HandlerData, path: string, plural: bool) {
+    public this(hd: HandlerData, path: string) {
         base(hd, path);
-        IsPlural = plural;
         UsersPerPage = Server.Configuration.Limits.UsersPerPage;
     }
 
 
     public override initialize(): void {
         base.initialize();
-        if(IsPlural) {
-            initializeUsers();
-        } else {
-            initializeSingle();
-        }
+        initializeSingle();
     }
 
-    public initializeSingle(): void {
+    initializeSingle(): void {
         mutable page_userid;
 
         def session_userid = ForumDatabase.
@@ -56,83 +50,7 @@ public class UsersHandler: BasePageHandler {
         PageData["IsUserPrefs"] = is_prefs ? "true" : "false";
     }
 
-    public initializeUsers(): void {
-
-        def fromstr = Context.Vars["from"];
-        def from = fromstr ? Int32.Parse(fromstr) : 1;
-        def tostr = Context.Vars["to"];
-        def to = tostr ? Int32.Parse(tostr) : UsersPerPage;
-        def dist = to + 1 - from;
-        mutable users: PageDataArray = array(dist);
-        mutable i = 0;
-
-        def command = Database.createCommand(
-            "SELECT Id, Name, Level, Points, Motto, Colour FROM Users "
-                "ORDER BY Name LIMIT @From, @Count") <- [
-                "@From" = from - 1,
-                "@Count" = dist,
-            ];
-
-        i = command.execute((j, reader) => {
-            def u = reader.getValue("Name");
-            when(u != null) {
-                def id = reader.getValue("Id", 0U);
-                def points = reader.getValue("Points", 0);
-                def level = reader.getValue("Level", 0.0f);
-                def motto = reader.getValue("Motto", "");
-                def colour = reader.getValue("Colour",
-                    Server.Configuration.DefaultColourClass);
-                users[j] = PageData() <- [
-                    "Id" = id,
-                    "Num" = (from + j).ToString(),
-                    "Name" = u,
-                    "Points" = points.ToString(),
-                    "Level" = level.ToString("f2"),
-                    "Motto" = motto,
-                    "ColourBgHsl" = CssHandler.bgFromColourId(colour),
-                    "ColourFgHsl" = CssHandler.fgFromColourId(colour),
-                ];
-            }
-        });
-
-        when(i < dist) {
-            Array.Resize(ref users, i);
-        }
-
-        for(mutable j = 0; j < users.Length; j++) {
-            users[j]["Display"] = userDisplayName(users[j]["Id"] :> uint);
-        }
-
-        def prf = Server.getDefaultPrefix(Request);
-        mutable prev = null;
-        mutable next = null;
-
-        Log.d("from = {0} > 1 {1}", from, from > 1);
-        when(from > 1) {
-            def pf = Math.Max(1, from - dist);
-            def pt = pf + dist - 1;
-            prev = $"$prf/u/$pf-$pt";
-        }
-        Log.d("prev = {0}", prev);
-
-        def user_count = ForumDatabase.getUserCount();
-        Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-        when(to < user_count) {
-            def nf = from + dist;
-            def nt = nf + dist - 1;
-            next = $"$prf/u/$nf-$nt";
-        }
-        Log.d("next = {0}", next);
-
-        _ = PageData <- [
-            "Users" = users,
-            "Prev" = prev,
-            "Next" = next,
-            "Markers" = buildMarkerList(from, i),
-        ];
-    }
-
-    public initializeUserCommon(user: string): void {
+    initializeUserCommon(user: string): void {
 
         def command = Database.createCommand(
             "SELECT Name, Motto, Location, JoinDate, Points, Level, Colour, "
@@ -164,7 +82,7 @@ public class UsersHandler: BasePageHandler {
         });
     }
 
-    public initializeUser(user: string): void {
+    initializeUser(user: string): void {
 
         initializeUserCommon(user);
 
@@ -257,7 +175,7 @@ public class UsersHandler: BasePageHandler {
         ];
     }
 
-    public initializePrefs(userid :uint, user: string): void {
+    initializePrefs(userid :uint, user: string): void {
 
         initializeUser(user);
 
