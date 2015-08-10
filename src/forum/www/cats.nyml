@@ -19,10 +19,7 @@ Partials:
         </form>
       </div>
       {{/IsAdmin}}
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+      {{>Pagination}}
       <ul class="list-group">
       {{#Categories}}
         <li class="list-group-item"><div id="{{Num}}" class="anchor">
@@ -33,10 +30,7 @@ Partials:
         </div></li>
       {{/Categories}}
       </ul>
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+      {{>Pagination}}
     </div>
   Guide: |
     <div id="scrollspy">

@@ -75,30 +75,14 @@ public class UserListHandler: BasePageHandler {
         }
 
         def prf = Server.getDefaultPrefix(Request);
-        mutable prev = null;
-        mutable next = null;
-
-        Log.d("from = {0} > 1 {1}", from, from > 1);
-        when(from > 1) {
-            def pf = Math.Max(1, from - dist);
-            def pt = pf + dist - 1;
-            prev = $"$prf/u/$pf-$pt";
-        }
-        Log.d("prev = {0}", prev);
-
         def user_count = ForumDatabase.getUserCount();
-        Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-        when(to < user_count) {
-            def nf = from + dist;
-            def nt = nf + dist - 1;
-            next = $"$prf/u/$nf-$nt";
-        }
-        Log.d("next = {0}", next);
+
+        addPagination(PageData,
+            user_count, dist, UsersPerPage,
+            from, to, $"$prf/u");
 
         _ = PageData <- [
             "Users" = users,
-            "Prev" = prev,
-            "Next" = next,
             "Markers" = buildMarkerList(from, i),
         ];
     }

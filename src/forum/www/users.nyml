@@ -11,10 +11,7 @@ Partials:
     </div>
   Body: |
     <div>
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+      {{>Pagination}}
       <ul class="list-group">
       {{#Users}}
         <li class="list-group-item"><div id="{{Num}}" class="anchor">
@@ -29,10 +26,7 @@ Partials:
         </div></li>
       {{/Users}}
       </ul>
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+      {{>Pagination}}
     </div>
   Guide: |
     <div id="scrollspy">

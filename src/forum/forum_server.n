@@ -87,7 +87,9 @@ public class ForumServer: Server {
                 (HTTP.GET, "/c/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             CategoryListHandler.Factory("cats.nyml"));
 
-        route(HTTP.GET, "/c/{{id:[0-9]+}}", CategoryHandler.Factory("cat.nyml"));
+        route([ (HTTP.GET, "/c/{{id:[0-9]+}}"),
+                (HTTP.GET, "/c/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
+            CategoryHandler.Factory("cat.nyml"));
 
         route(HTTP.POST, "/preview-post", previewPostResponse);
         route(HTTP.POST, "/createpost", createPostResponse);

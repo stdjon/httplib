@@ -70,26 +70,14 @@ public class CategoryListHandler: BasePageHandler {
         }
 
         def prf = Server.getDefaultPrefix(Request);
-        mutable prev = null;
-        mutable next = null;
-
-        when(from > 1) {
-            def pf = Math.Max(1, from - dist);
-            def pt = pf + dist - 1;
-            prev = $"$prf/c/$pf-$pt";
-        }
-
         def category_count = ForumDatabase.getCategoryCount();
-        when(to < category_count) {
-            def nf = from + dist;
-            def nt = nf + dist - 1;
-            next = $"$prf/c/$nf-$nt";
-        }
+
+        addPagination(PageData,
+            category_count, dist, CategoriesPerPage,
+            from, to, $"$prf/c");
 
         _ = PageData <- [
             "Categories" = categories,
-            "Prev" = prev,
-            "Next" = next,
             "Markers" = buildMarkerList(from, i),
         ];
     }

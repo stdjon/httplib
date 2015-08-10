@@ -135,13 +135,5 @@ Partials:
     {{/Title}}
   ReloadableScript: |
     initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}});
-  Pagination: |
-    <div style="text-align: center;">
-    <ul class="pagination">
-      <li {{#PrevDisabled}}class="disabled"{{/PrevDisabled}}><a href="{{Prev}}">&laquo;</a></li>
-      {{#Pages}}<li {{#Active}}class="active"{{/Active}}><a href="{{Url}}">{{Number}}</a></li>{{/Pages}}
-      <li {{#NextDisabled}}class="disabled"{{/NextDisabled}}><a href="{{Next}}">&raquo;</a></li>
-    </ul>
-    </div>
 
 

@@ -14,10 +14,7 @@ Partials:
       h4.panel-title { font-size: 20px; font-weight: bold; }
     </style>
     {{#List}}
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/List}}
     <ol start="{{From}}" class='list-group'>
     {{#Tags}}
@@ -35,10 +32,7 @@ Partials:
       <p>Something seems to have gone awry here...</p>
     {{/Tags}}
     {{#List}}
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/List}}
   Guide: |
     {{#List}}

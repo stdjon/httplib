@@ -51,27 +51,15 @@ public class TagListHandler: BasePageHandler {
         }
 
         def prf = Server.getDefaultPrefix(Request);
-        mutable prev = null;
-        mutable next = null;
+        def tag_count = ForumDatabase.getTagCount();
 
-        when(from > 1) {
-            def pf = Math.Max(1, from - dist);
-            def pt = pf + dist - 1;
-            prev = $"$prf/tg/$pf-$pt";
-        }
-
-        def category_count = ForumDatabase.getTagCount();
-        when(to < category_count) {
-            def nf = from + dist;
-            def nt = nf + dist - 1;
-            next = $"$prf/tg/$nf-$nt";
-        }
+        addPagination(PageData,
+            tag_count, dist, TagsPerPage,
+            from, to, $"$prf/tg");
 
         _ = PageData <- [
             "Tags" = tags,
             "List" = ok,
-            "Prev" = prev,
-            "Next" = next,
             "Markers" = buildMarkerList(from, i),
         ];
     }

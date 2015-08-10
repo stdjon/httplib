@@ -100,6 +100,63 @@ public class BasePageHandler: BaseHandler {
         result;
     }
 
+    public addPagination(data: PageData, item_count: int,
+        per_page: int, default_per_page: int,
+        from: int, to: int, url: string): void {
+
+        addPagePrevNext(data,
+            item_count, per_page, default_per_page, from, to, url);
+        data["Pages"] = buildPageList(
+            item_count, per_page, default_per_page, from, to, url);
+    }
+
+    public buildPageList(item_count: int,
+        per_page: int, default_per_page: int,
+        from: int, to: int, url: string): PageDataArray {
+
+        def page_count = (item_count + per_page - 1) / per_page;
+        def result = array(page_count);
+        for(mutable i = 0; i < page_count; i++) {
+            def f = i * per_page + 1;
+            def t = (i + 1) * per_page;
+            result[i] = PageData() <- [
+                "Number" = i + 1,
+                "Url" = (f == 1 && t == default_per_page) ?
+                    url : $"$url/$f-$t",
+                "Active" = (f == from) && (t == to),
+            ];
+        }
+        result;
+    }
+
+    public addPagePrevNext(data: PageData, item_count: int,
+        per_page: int, default_per_page: int,
+        from: int, to: int, url: string): void {
+
+        mutable prev = null;
+        mutable next = null;
+
+        when(from > 1) {
+            def pf = Math.Max(1, from - per_page);
+            def pt = pf + per_page - 1;
+            prev = (pf == 1 && pt == default_per_page) ?
+                url : $"$url/$pf-$pt";
+        }
+
+        when(to < item_count) {
+            def nf = from + per_page;
+            def nt = nf + per_page - 1;
+            next = $"$url/$nf-$nt";
+        }
+
+        _ = data <- [
+            "Prev" = prev,
+            "PrevDisabled" = prev == null,
+            "Next" = next,
+            "NextDisabled" = next == null,
+        ];
+    }
+
     parseUrl(): string {
         def url = Request.Url;
         def coll = HttpUtility.ParseQueryString(url.Query);

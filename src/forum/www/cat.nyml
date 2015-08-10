@@ -22,10 +22,7 @@ Partials:
     {{#Name}}
       <p>Category created by
       <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a> at {{CreateDate}}.</p>
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/Name}}
     <ol start="{{From}}" class='list-group'>
     {{#Threads}}
@@ -49,10 +46,7 @@ Partials:
       <p>Something seems to have gone awry here...</p>
     {{/Name}}
     {{#Name}}
-      <p>
-        {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-        {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-      </p>
+    {{>Pagination}}
     {{/Name}}
   Guide: |
     {{#Name}}

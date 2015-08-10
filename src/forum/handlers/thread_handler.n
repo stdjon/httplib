@@ -225,55 +225,12 @@ public class ThreadHandler: BasePageHandler {
                 "Markers" = buildMarkerList(From, limit),
             ];
 
-            // prev/next
             def prf = Server.getDefaultPrefix(Request);
-            mutable prev = null;
-            mutable next = null;
+            def total_count = ForumDatabase.getPostCount(ThreadId);
 
-            Log.d("From = {0} > 1 {1}", From, From > 1);
-            when(From > 1) {
-                def pf = Math.Max(1, From - PostCount);
-                def pt = pf + PostCount - 1;
-                prev = $"$prf/th/$ThreadId/$pf-$pt";
-            }
-            Log.d("prev = {0}", prev);
-
-            def user_count = ForumDatabase.getPostCount(ThreadId);
-            Log.d("To = {0} < {1} {2}", To, user_count, To < user_count);
-            when(To < user_count) {
-                def nf = From + PostCount;
-                def nt = nf + PostCount - 1;
-                next = $"$prf/th/$ThreadId/$nf-$nt";
-            }
-            Log.d("next = {0}", next);
-
-            _ = PageData <- [
-                "Prev" = prev,
-                "PrevDisabled" = prev == null,
-                "Next" = next,
-                "NextDisabled" = next == null,
-            ];
-
-            def command3 = Database.createCommand(
-                "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
-                    "@ThreadId" = ThreadId,
-                ];
-            def total_count = (command3.executeScalar() :> long) :> int;
-
-            def page_count = (total_count / PostCount) + 1;
-            def pages = array(page_count);
-            for(i = 0; i < page_count; i++) {
-                def f = i * PostCount + 1;
-                def t = (i + 1) * PostCount;
-                pages[i] = PageData() <- [
-                    "Number" = i + 1,
-                    "Url" = (f == 1 && t == PostsPerPage) ?
-                        $"$prf/th/$ThreadId" : $"$prf/th/$ThreadId/$f-$t",
-                    "Active" = (f == From) && (t == To),
-                ];
-            }
-            PageData["Pages"] = pages;
-
+            addPagination(PageData,
+                total_count, PostCount, PostsPerPage,
+                From, To, $"$prf/th/$ThreadId");
 
             // User pref (transform)
             def command4 = Database.createCommand(

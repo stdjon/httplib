@@ -93,6 +93,14 @@ Partials:
       postIframeMessage('tokTmp', encodeURIComponent("{{TempToken}}"));
       {{/TempToken}}
     });
+  Pagination: |
+    <div style="text-align: center;">
+    <ul class="pagination">
+      <li {{#PrevDisabled}}class="disabled"{{/PrevDisabled}}><a href="{{Prev}}">&laquo;</a></li>
+      {{#Pages}}<li {{#Active}}class="active"{{/Active}}><a href="{{Url}}">{{Number}}</a></li>{{/Pages}}
+      <li {{#NextDisabled}}class="disabled"{{/NextDisabled}}><a href="{{Next}}">&raquo;</a></li>
+    </ul>
+    </div>
   NavEmpty: |
     <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-empty?r={{CurrentUrl}}"
       width='100%' height='50px' frameborder='0' allowtransparency='true'

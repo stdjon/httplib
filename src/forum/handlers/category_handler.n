@@ -101,32 +101,12 @@ public class CategoryHandler: BasePageHandler {
                 "Markers" = buildMarkerList(from, limit),
             ];
 
-            // prev/next
             def prf = Server.getDefaultPrefix(Request);
-            mutable prev = null;
-            mutable next = null;
+            def thread_count = ForumDatabase.getThreadCount(catid);
 
-            Log.d("from = {0} > 1 {1}", from, from > 1);
-            when(from > 1) {
-                def pf = Math.Max(1, from - dist);
-                def pt = pf + dist - 1;
-                prev = $"$prf/th/$catid/$pf-$pt";
-            }
-            Log.d("prev = {0}", prev);
-
-            def user_count = ForumDatabase.getThreadCount(catid);
-            Log.d("to = {0} < {1} {2}", to, user_count, to < user_count);
-            when(to < user_count) {
-                def nf = from + dist;
-                def nt = nf + dist - 1;
-                next = $"$prf/th/$catid/$nf-$nt";
-            }
-            Log.d("next = {0}", next);
-
-            _ = PageData <- [
-                "Prev" = prev,
-                "Next" = next,
-            ];
+            addPagination(PageData,
+                thread_count, dist, ThreadsPerPage,
+                from, to, $"$prf/c/$catid");
         }
     }
 }
