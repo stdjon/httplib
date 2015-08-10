@@ -42,7 +42,7 @@ public class HtmlSanitizer: Module, ITextTransform {
 
     public transform(input: string): string {
         if(Sanitizer != null) {
-            quickProfile(input, x => Sanitizer.Sanitize(x) )
+            Sanitizer.Sanitize(input)
         } else {
             input
         }
@@ -65,25 +65,6 @@ public class HtmlSanitizer: Module, ITextTransform {
                 result[k] = null;
             }
         }
-
-        result;
-    }
-
-    // Keep tabs on Sanitizer's performance for the time being. (This code might
-    // get repurposed into something more general later...)
-    quickProfile(input: string, lambda: string -> string): string {
-#if DEBUG
-        def sw = Diagnostics.Stopwatch();
-        sw.Start();
-#endif // DEBUG
-
-        def result = lambda(input);
-
-#if DEBUG
-        sw.Stop();
-        def time = sw.ElapsedMilliseconds;
-        Log.d("Sanitize() -> {0}ms", time);
-#endif // DEBUG
 
         result;
     }
