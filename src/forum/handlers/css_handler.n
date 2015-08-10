@@ -84,20 +84,22 @@ public class CssHandler: BaseHandler {
             def map = data.Map;
             def fonts = data.Fonts;
 
-            PageData["UserImport"] = fonts[map[Font].p].import;
-            PageData["UserFontRegular"] = fonts[map[Font].p].regular;
-            PageData["UserFontBold"] = fonts[map[Font].p].bold;
-            PageData["UserFontItalic"] = fonts[map[Font].p].italic;
-            PageData["UserFontBoldItalic"] = fonts[map[Font].p].bolditalic;
-            PageData["HeaderImport"] = fonts[map[Font].h].import;
-            PageData["HeaderFontRegular"] = fonts[map[Font].h].regular;
-            PageData["HeaderFontBold"] = fonts[map[Font].h].bold;
-            PageData["HeaderFontItalic"] = fonts[map[Font].h].italic;
-            PageData["HeaderFontBoldItalic"] = fonts[map[Font].h].bolditalic;
-            PageData["CodeImport"] = fonts[map[MonoFont].p].import;
-            PageData["CodeFontRegular"] = fonts[map[MonoFont].p].regular;
-            PageData["BackgroundColour"] = bgFromColourId(Colour);
-            PageData["HighlightColour"] = fgFromColourId(Colour);
+            _ = PageData <- [
+                "UserImport" = fonts[map[Font].p].import,
+                "UserFontRegular" = fonts[map[Font].p].regular,
+                "UserFontBold" = fonts[map[Font].p].bold,
+                "UserFontItalic" = fonts[map[Font].p].italic,
+                "UserFontBoldItalic" = fonts[map[Font].p].bolditalic,
+                "HeaderImport" = fonts[map[Font].h].import,
+                "HeaderFontRegular" = fonts[map[Font].h].regular,
+                "HeaderFontBold" = fonts[map[Font].h].bold,
+                "HeaderFontItalic" = fonts[map[Font].h].italic,
+                "HeaderFontBoldItalic" = fonts[map[Font].h].bolditalic,
+                "CodeImport" = fonts[map[MonoFont].p].import,
+                "CodeFontRegular" = fonts[map[MonoFont].p].regular,
+                "BackgroundColour" = bgFromColourId(Colour),
+                "HighlightColour" = fgFromColourId(Colour),
+            ];
 
         }
     }
