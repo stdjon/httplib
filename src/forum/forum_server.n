@@ -45,8 +45,11 @@ public class ForumServer: Server {
         route([ (HTTP.GET, "/u"),
                 (HTTP.GET, "/u/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             UserListHandler.Factory("users.nyml"));
+
+        route(HTTP.GET, @"/u/{{user:[A-Za-z_].*}}.x",
+            UserHandler.Factory("user.nyml", true));
         route(HTTP.GET, "/u/{{user:[A-Za-z_].*}}",
-            UserHandler.Factory("user.nyml"));
+            UserHandler.Factory("user.nyml", false));
 
         route(HTTP.POST, "/prefs", updatePrefsResponse);
         route(HTTP.POST, "/categories", categoryListResponse);

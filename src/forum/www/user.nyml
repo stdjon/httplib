@@ -7,14 +7,14 @@ Title: "{{#User}}{{User}}{{/User}}{{^User}}No such user{{/User}}"
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <h1>{{#User}}{{{UserDisplay}}}{{/User}}{{^User}}No such user{{/User}}</h1>
     </div>
   Body: |
     <style>
       h4.panel-title { font-size: 20px; font-weight: bold; }
       .hover { background-color: #9f9; }
-      img#avatar-show { padding: 4px; }
+      img#avatar-show { padding: 4px; cursor: pointer; }
     </style>
     <div>
     <p>&nbsp;</p>

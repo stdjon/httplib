@@ -11,13 +11,15 @@ namespace forum {
 [HasHandlerFactory]
 public class UserHandler: BasePageHandler {
 
+    public IsExternal: bool { get; private set; }
     public UsersPerPage: int { get; }
     public Transform: string { get; private set; }
     public Font: string { get; private set; }
     public MonoFont: string { get; private set; }
 
-    public this(hd: HandlerData, path: string) {
+    public this(hd: HandlerData, path: string, ext: bool) {
         base(hd, path);
+        IsExternal = ext;
         UsersPerPage = Server.Configuration.Limits.UsersPerPage;
     }
 
@@ -38,6 +40,7 @@ public class UserHandler: BasePageHandler {
         page_userid = command.executeScalar() :> uint?;
 
         def is_prefs =
+            !IsExternal &&
             (session_userid != 0) && (page_userid != null) &&
             (session_userid == page_userid);
 

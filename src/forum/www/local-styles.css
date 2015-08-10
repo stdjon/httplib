@@ -51,7 +51,7 @@ div.banner {
   padding-top: 50px;
   background-color: #ff7;
 }
-div.outside .anchor {
+div.outside .anchor, div.outside .fake-anchor {
   margin-top: -55px;
   padding-top: 55px;
   margin-bottom: 0px;
