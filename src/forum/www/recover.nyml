@@ -8,7 +8,7 @@ Title: Account Recovery
 Partials:
   Nav: "{{>NavEmpty}}"
   Banner: |
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <h1>Account Recovery</h1>
     </div>
   Body: |

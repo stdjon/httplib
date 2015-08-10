@@ -7,7 +7,7 @@ Title: "{{SiteName}}"
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <h1>{{SiteName}}</h1>
     </div>
   Body: |

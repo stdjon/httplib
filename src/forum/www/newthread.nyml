@@ -14,7 +14,7 @@ Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
     <form>
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <div class="expanding-area expanding-h1-area">
         <pre><span></span><br></pre>
         <textarea id="title" maxlength="80" placeholder="[New Thread]" name="title"></textarea>

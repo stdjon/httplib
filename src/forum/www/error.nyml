@@ -6,7 +6,7 @@ Title: "{{SiteName}}: {{ErrorDescription}}"
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <h1>{{ErrorDescription}}</h1>
     </div>
   Body: |

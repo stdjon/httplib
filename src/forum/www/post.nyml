@@ -6,7 +6,7 @@ Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
-    <div class="jumbotron anchor">
+    <div class="jumbotron fake-anchor">
       <h1>{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}</h1>
     </div>
   Body: |
