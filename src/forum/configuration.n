@@ -17,6 +17,7 @@ public class AccountRecovery {
 [YamlRecord]
 public class Limits {
     public CategoriesPerPage: int { get; set; }
+    public NotificationsPerPage: int { get; set; }
     public PostsPerPage: int { get; set; }
     public UsersPerPage: int { get; set; }
     public TagsPerPage: int { get; set; }

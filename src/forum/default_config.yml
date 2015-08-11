@@ -4,6 +4,7 @@
 SiteName: myforum.com
 Limits:
   CategoriesPerPage: 50
+  NotificationsPerPage: 50
   PostsPerPage: 50
   UsersPerPage: 25
   TagsPerPage: 25

@@ -243,12 +243,7 @@ public class ThreadHandler: BasePageHandler {
         PostIds = array(ForumDatabase.getPostCount(ThreadId));
         PostIdMap = Dictionary();
 
-        def command = Database.createCommand(
-            "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
-                "@ThreadId" = ThreadId
-            ];
-        _ = command.execute((j, reader) => {
-            def pid = reader.getValue("Id", 0U);
+        ForumDatabase.forEachPostInThread(ThreadId, (j, pid) => {
             PostIds[j] = pid;
             PostIdMap[pid] = j :> uint + 1;
         });

@@ -1,0 +1,149 @@
+using System;
+using System.Collections.Generic;
+
+using Nemerle.Extensions;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class NotificationHandler: BasePageHandler {
+
+    public NotificationsPerPage: int { get; }
+    public PostsPerPage: int { get; }
+    public PostUrlMap: Dictionary[uint, string] { get; private set; }
+    public PostThreadMap: Dictionary[uint, uint] { get; private set; }
+    public ThreadIdMap: Dictionary[uint, Dictionary[uint, int]] { get; private set; }
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+
+        NotificationsPerPage = Server.Configuration.Limits.NotificationsPerPage;
+        PostsPerPage = Server.Configuration.Limits.PostsPerPage;
+        PostUrlMap = Dictionary();
+        PostThreadMap = Dictionary();
+        ThreadIdMap = Dictionary();
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        when(SignedInUserId > 0) {
+            def fromstr = Context.Vars["from"];
+            def from = fromstr ? Int32.Parse(fromstr) : 1;
+            def tostr = Context.Vars["to"];
+            def to = tostr ? Int32.Parse(tostr) : NotificationsPerPage;
+
+            def dist = to + 1 - from;
+
+            mutable ok = false;
+            mutable notifies = array(dist);
+            def prf = Server.getDefaultPrefix(Request);
+
+            def command = Database.createCommand(
+                "SELECT FromUserId, ThreadId, PostId, NotifyType, CreateDate "
+                    "FROM Notifications WHERE @UserId = UserId "
+                    "ORDER BY CreateDate DESC LIMIT @From, @Count") <- [
+                "@UserId" = SignedInUserId,
+                "@From" = from - 1,
+                "@Count" = dist,
+            ];
+
+            def i = command.execute((j, reader) => {
+                def date = reader.getValue("CreateDate", 0L);
+                def thread_id = reader.getValue("ThreadId", 0U);
+                notifies[j] = PageData() <- [
+                    "Num" = j + from,
+                    "UserId" = reader.getValue("FromUserId", 0U),
+                    "ThreadId" = thread_id,
+                    "PostId" = reader.getValue("PostId", 0U),
+                    "NotifyType" = reader.getValue("NotifyType", 0U),
+                    "Date" = Date.FromTicks(date),
+                ];
+                ok = true;
+            });
+
+            when(i < notifies.Length) {
+                Array.Resize(ref notifies, i);
+            }
+
+            for(mutable j = 0; j < i; j++) {
+                def n = notifies[j];
+
+                def thread_id = n["ThreadId"] :> uint;
+                def post_id = n["PostId"] :> uint;
+
+                populatePostIds(thread_id);
+
+                def username = ForumDatabase.getUserName(n["UserId"] :> uint);
+                def title = ForumDatabase.getThreadTitle(n["ThreadId"] :> uint);
+                def nt = (n["NotifyType"] :> uint).toNotifyType();
+                def msg = String.Format(nt.format(),
+                    $<#<a href="$prf/u/$username">$username</a>#>,
+                    $<#<a href="$prf/th/$thread_id">$title</a>#>);
+
+                _ = n <- [
+                    "UserName" = username,
+                    "ThreadTitle" = title,
+                    "Symbol" = nt.symbol(),
+                    "Message" = msg,
+                    "PostUrl" = $"$prf/p/$post_id",
+                    "PostThreadUrl" = buildPostUrl(post_id),
+                ];
+            }
+
+            def notify_count = ForumDatabase.getNotificationCount(SignedInUserId);
+
+            addPagination(PageData,
+                notify_count, dist, NotificationsPerPage,
+                from, to, $"$prf/n");
+
+            def command2 = Database.createCommand(
+                "SELECT Colour FROM Users WHERE Id = @Id") <- [
+                    "@Id" = SignedInUserId
+                ];
+            def colour_id = command2.executeScalar() :> string;
+
+            _ = PageData <- [
+                "UserSignedIn" = true,
+                "User" = ForumDatabase.getUserName(SignedInUserId),
+                "Notifications" = notifies,
+                "Markers" = buildMarkerList(from, i),
+                "ColourId" = colour_id,
+            ];
+        }
+    }
+
+    public populatePostIds(thread_id: uint): void {
+        when(!ThreadIdMap.ContainsKey(thread_id)) {
+            def d = Dictionary();
+            ForumDatabase.forEachPostInThread(thread_id, (j, pid) => {
+                d[pid] = j + 1;
+                PostThreadMap[pid] = thread_id;
+            });
+            ThreadIdMap[thread_id] = d;
+        }
+    }
+
+    public buildPostUrl(post_id: uint): string {
+
+        def thread_id = PostThreadMap[post_id];
+        def d = ThreadIdMap[thread_id];
+        def post_number = d[post_id];
+        def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
+        def to = from + (PostsPerPage - 1);
+        def prefix = Server.getDefaultPrefix(Request);
+
+        if(1 == from && PostsPerPage == to) {
+            // special-case URL for first page of the thread
+            $"$prefix/th/$thread_id#$post_number"
+        } else {
+            $"$prefix/th/$thread_id/$from-$to#$post_number"
+        }
+    }
+}
+
+
+} // forum.hnd

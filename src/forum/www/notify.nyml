@@ -1,0 +1,48 @@
+---
+Template: template.nyml
+Scripts:
+  - /swatches.js
+Title: Notifications
+Partials:
+  Nav: "{{>NavLogin}}"
+  Banner: |
+    <div class="jumbotron anchor">
+      {{#UserSignedIn}}
+        <h1>{{SignedInUser}}'s Notifications</h1>
+      {{/UserSignedIn}}
+      {{^UserSignedIn}}
+        <h1>Notifications</h1>
+      {{/UserSignedIn}}
+    </div>
+  Body: |
+    <div>
+      {{#UserSignedIn}}
+      {{>Pagination}}
+      <ul class="list-group">
+      {{#Notifications}}
+        <li class="list-group-item"><div id="{{Num}}" class="anchor">
+          <div class="inlist">
+            <a href="{{PostThreadUrl}}">{{{Symbol}}}</a>
+            [<a href="{{PostUrl}}">#{{PostId}}</a>] {{Date}} {{{Message}}}
+          </div>
+        </div></li>
+      {{/Notifications}}
+      </ul>
+      {{>Pagination}}
+      {{/UserSignedIn}}
+      {{^UserSignedIn}}
+      <ul class="list-group">
+        <li class="list-group-item"><div>(You aren't signed in...)<div></li>
+      </ul>
+      {{/UserSignedIn}}
+    </div>
+  Guide: |
+    <div id="scrollspy">
+      <ul class="nav nav-tabs nav-stacked affix-top" data-spy="affix" data-offset-top="0">
+      {{#Markers}}
+        <li><a href="#{{Mark}}">{{Mark}}</a></li>
+      {{/Markers}}
+      </ul>
+    </div>
+
+

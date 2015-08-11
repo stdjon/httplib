@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Math;
+using System.Text.RegularExpressions;
 
 using Nemerle.Extensions;
 
@@ -7,6 +9,38 @@ using httplib;
 
 
 namespace forum {
+
+public type NotifyType = NT;
+public enum NT {
+    | REPLY = 1
+    | POST = 2
+    | MENTION = 3
+}
+
+
+public module NotifyTypeExtensions {
+
+    public toNotifyType(this _: uint): NotifyType {
+        | 1 => REPLY
+        | 2 => POST
+        | 3 => MENTION
+        | _ => throw Exception("bad Db value")
+    }
+
+    public symbol(this _: NotifyType): string {
+        | REPLY => "<span class='fa fa-reply'></span>"
+        | POST => "<span class='fa fa-envelope-o'></span>"
+        | MENTION => "<span class='fa fa-at'></span>"
+    }
+
+    // TODO: config? l10n?
+    public format(this _: NotifyType): string {
+        | REPLY => "{0} replied to you in thread {1}"
+        | POST => "{0} posted in your thread {1}"
+        | MENTION => "{0} mentioned you in thread {1}"
+    }
+}
+
 
 [HasLogging]
 public class ForumDatabase: IDisposable {
@@ -61,6 +95,15 @@ public class ForumDatabase: IDisposable {
         unchecked ex :> int;
     }
 
+    public getNotificationCount(user_id: uint): int {
+        def command = Database.createCommand(
+            "SELECT COUNT(Id) FROM Notifications WHERE UserId = @UserId") <- [
+                "@UserId" = user_id,
+            ];
+        def ex = command.executeScalar() :> long;
+        unchecked ex :> int;
+    }
+
     public getCategoryCount(): int {
         def command = Database.createCommand("SELECT COUNT(Id) FROM Categories");
         def ex = command.executeScalar() :> long;
@@ -109,6 +152,23 @@ public class ForumDatabase: IDisposable {
             ];
         def ex = command.executeScalar() :> long;
         unchecked ex :> int;
+    }
+
+    public getThreadTitle(thread_id: uint): string {
+        def command = Database.createCommand(
+            "SELECT Title FROM Threads WHERE Id = @Id") <- [ "@Id" = thread_id ];
+        command.executeScalar() :> string;
+    }
+
+    public forEachPostInThread(thread_id: uint, lambda: int * uint -> void): void {
+        def command = Database.createCommand(
+            "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
+                "@ThreadId" = thread_id
+            ];
+        _ = command.execute((j, reader) => {
+            def pid = reader.getValue("Id", 0U);
+            lambda(j, pid);
+        });
     }
 
     public getUserId(name: string): uint {
@@ -281,13 +341,15 @@ public class ForumDatabase: IDisposable {
 
         mutable post_id = 0U;
         mutable output = "";
+        mutable mentions = List();
         mutable utc_now = Date.NowTicks;
         mutable ok = false;
         mutable render_ok = false;
 
         when(user_id > 0) {
-            (render_ok, output) = Server.renderPost(transform, input);
+            (render_ok, output) = Server.renderPost(transform, input, mentions);
         }
+
         when(render_ok) {
             Database.withTransaction(db => {
                 def command = db.createCommand(
@@ -352,6 +414,27 @@ public class ForumDatabase: IDisposable {
         }
 
         if(ok) {
+            def command = Database.createCommand(
+                "SELECT UserId FROM Threads WHERE Id = @Id") <- [
+                    "@Id" = thread_id,
+                ];
+            def thread_user = command.executeScalar() :> uint;
+            createNotification(thread_user, user_id, thread_id, post_id, NT.POST);
+
+            when(reply_to != null) {
+                def command2 = Database.createCommand(
+                    "SELECT UserId From Posts WHERE Id = @Id") <- [
+                        "@Id" = reply_to,
+                    ];
+                def replied_to = command2.executeScalar() :> uint;
+                createNotification(
+                    replied_to, user_id, thread_id, post_id, NT.REPLY);
+            }
+
+            foreach(m in mentions) {
+                createNotification(m, user_id, thread_id, post_id, NT.MENTION);
+            }
+
             (post_id, output, utc_now);
         } else {
             (0U, "", 0L);
@@ -423,6 +506,27 @@ public class ForumDatabase: IDisposable {
         }, ex => {
             Server.internalServerError(ex);
         });
+    }
+
+    public createNotification(user_id: uint, from_user_id: uint,
+        thread_id: uint, post_id: uint, type: NotifyType): void {
+
+        when(user_id != from_user_id) {
+            def command = Database.createCommand(
+                "INSERT INTO Notifications("
+                    "UserId, FromUserId, "
+                    "ThreadId, PostId, NotifyType, CreateDate) VALUES("
+                    "@UserId, @FromUserId, "
+                    "@ThreadId, @PostId, @NotifyType, @CreateDate)") <- [
+                "@UserId" = user_id,
+                "@FromUserId" = from_user_id,
+                "@ThreadId" = thread_id,
+                "@PostId" = post_id,
+                "@NotifyType" = type,
+                "@CreateDate" = Date.NowTicks,
+            ];
+            _ = command.executeNonQuery();
+        }
     }
 
     public isThumbPost(post_id: uint, user_id: uint): bool {
@@ -513,6 +617,27 @@ public class ForumDatabase: IDisposable {
         def level = Max(0.0f, Log(points / bias, scale) :> float + 1.0f);
         //Log.t("points {0} -> level {1}", points, level);
         level;
+    }
+
+    public parseOutputForMentions(output: ref string, mentions: List[uint]): void {
+
+        output = Regex("(@[a-zA-Z_][a-zA-Z0-9_'-]+)").Replace(output, m => {
+            def matched = m.Groups[0].ToString();
+            def name = matched.Substring(1);
+            def user_id = getUserId(name);
+            def prefix = Server.DefaultInsecurePrefix;
+
+            if(user_id > 0) {
+                when(mentions != null && !mentions.Contains(user_id)) {
+                    mentions.Add(user_id);
+                }
+                def n = getUserName(user_id);
+                $<#<a href="$prefix/u/$n">@$n</a>#>
+            } else {
+                matched;
+            }
+
+        });
     }
 }
 

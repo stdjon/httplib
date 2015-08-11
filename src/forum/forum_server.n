@@ -91,6 +91,10 @@ public class ForumServer: Server {
                 (HTTP.GET, "/c/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             CategoryHandler.Factory("cat.nyml"));
 
+        route([ (HTTP.GET, "/n"),
+                (HTTP.GET, "/n/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
+            NotificationHandler.Factory("notify.nyml"));
+
         route(HTTP.POST, "/preview-post", previewPostResponse);
         route(HTTP.POST, "/createpost", createPostResponse);
         route(HTTP.POST, "/update-post", updatePostResponse);
@@ -374,12 +378,15 @@ public class ForumServer: Server {
         }
     }
 
-    public renderPost(method: string, text: string): bool * string {
+    public renderPost(method: string, text: string,
+        mentions: List[uint] = null): bool * string {
+
         def bbc = getModuleInterface.[ITextTransform]("BbCode");
         def txt = getModuleInterface.[ITextTransform]("Textile");
         def htm = getModuleInterface.[ITextTransform]("HtmlSanitizer");
         def oem = getModuleInterface.[ITextTransform]("OEmbed");
         mutable ok = true;
+        mutable output = "";
         mutable pipeline = htm.transform >> oem.transform;
 
         match(method) {
@@ -389,8 +396,15 @@ public class ForumServer: Server {
             | _ => ok = false;
         }
 
-        def output = ok ? pipeline(text) : "";
+        when(ok) {
+            output = text;
 
+            using(fdb = openForumDatabase()) {
+                fdb.parseOutputForMentions(ref output, mentions);
+            }
+
+            output = pipeline(output);
+        }
         (ok, output);
     }
 
