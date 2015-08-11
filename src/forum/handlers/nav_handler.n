@@ -70,6 +70,9 @@ public class NavHandler: BasePageHandler {
                     "User" = ForumDatabase.getUserName(id),
                     "Session" = session,
                 ];
+                // IsAdmin from BasePageHandler is determined from _isession; we
+                // need to make sure that it is set from _session for the nav...
+                PageData["IsAdmin"] = ForumDatabase.userIsAdmin(id);
 
                 Response.append(Server.renderPage("nav-ok.nyml", PageData));
                 Response.Status = (200, "OK");

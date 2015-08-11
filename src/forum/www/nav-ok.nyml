@@ -21,7 +21,7 @@ Partials:
       <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/u/{{User}}" target="_top">[{{User}}]</a>
       <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/n" target="_top">[<span class="fa fa-envelope-o"></span>]</a>
       {{#IsAdmin}}
-      <a class="navbar-brand navbar-2ry" href="{{DefaultSecurePrefix}}/admin" target="_top">[admin]</a>
+      <a class="navbar-brand navbar-2ry" href="{{DefaultSecurePrefix}}/admin" target="_top">[<span class="fa fa-cube"></span>]</a>
       {{/IsAdmin}}
     </div>
     <div id="navbar" class="navbar-collapse collapse">
