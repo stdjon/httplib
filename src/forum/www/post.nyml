@@ -13,7 +13,6 @@ Partials:
     <style>
       div.alignment1 { padding: 0px 25px; }
       div.alignment2 { padding: 0px 75px; }
-      div.alignment3 { padding: 0px 100px; text-align: right; }
     </style>
     <div>
     {{#PostId}}
@@ -26,7 +25,11 @@ Partials:
             <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{User}}" width="40" height="40"/>
           </a>
           {{{Content}}}<br>
-          <div class="alignment3">
+          <div>
+            <small>
+              {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
+            </small>
+          <div class="alignment1 rhs">
             &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> {{CreateDate}}
             <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs"></span><small>({{Thumbs}})</small>
             <span class="fa fa-fw fa-star-o" title="Stars"></span><small>({{Bookmarks}})</small>

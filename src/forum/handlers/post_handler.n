@@ -77,6 +77,24 @@ public class PostHandler: BasePageHandler {
                 "Content" = content,
                 "ColourId" = colour,
             ];
+
+            // Tags
+            def tags = ForumDatabase.getPostTags(pid);
+            when(tags != null) {
+                def prf = Server.getDefaultPrefix(Request);
+                mutable tagdata: PageDataArray = array(tags.Length);
+                for(mutable j = 0; j < tags.Length; j++) {
+                    def url = Uri.EscapeDataString(tags[j]);
+                    tagdata[j] = PageData() <- [
+                        "Name" = tags[j],
+                        "Url" = $"$prf/tg/$url",
+                    ];
+                }
+                _ = PageData <- [
+                    "Tags" = tagdata,
+                    "HasTags" = true,
+                ];
+            }
         }
     }
 
