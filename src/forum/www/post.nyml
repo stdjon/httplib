@@ -18,7 +18,7 @@ Partials:
     <div>
     {{#PostId}}
       <div class="alignment2">
-        <p>Posted in thread <em><a href="{{DefaultPrefix}}/th/{{ThreadId}}">{{Thread}}</a></em>:</p>
+        <p>Posted in thread <em><a href="{{PostUrl}}">{{Thread}}</a></em>:</p>
       </div>
       <div id="1" class="alignment1">
         <div class="post">

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using Nemerle.Extensions;
 
@@ -10,8 +11,13 @@ namespace forum {
 [HasHandlerFactory]
 public class PostHandler: BasePageHandler {
 
+    public PostsPerPage: int { get; }
+    public PostIdMap: Dictionary[uint, int] { get; private set; }
+
     public this(hd: HandlerData, path: string) {
         base(hd, path);
+        PostsPerPage = Server.Configuration.Limits.PostsPerPage;
+        PostIdMap = Dictionary();
     }
 
     public override initialize(): void {
@@ -39,6 +45,8 @@ public class PostHandler: BasePageHandler {
         });
 
         when(ok) {
+            populatePostIds(thid);
+
             def thumbs = ForumDatabase.getPostThumbs(pid);
             def bookmarks = ForumDatabase.getPostBoomarks(pid);
 
@@ -57,6 +65,7 @@ public class PostHandler: BasePageHandler {
 
             _ = PageData <- [
                 "PostId" = pid,
+                "PostUrl" = buildPostUrl(pid, thid),
                 "User" = name,
                 "UserDisplay" = userDisplayName(uid),
                 "Thread" = title,
@@ -70,6 +79,30 @@ public class PostHandler: BasePageHandler {
             ];
         }
     }
+
+    populatePostIds(thread_id: uint): void {
+        PostIdMap = Dictionary();
+
+        ForumDatabase.forEachPostInThread(thread_id, (j, pid) => {
+            PostIdMap[pid] = j + 1;
+        });
+    }
+
+    public buildPostUrl(post_id: uint, thread_id: uint): string {
+
+        def post_number = PostIdMap[post_id];
+        def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
+        def to = from + (PostsPerPage - 1);
+        def prefix = Server.getDefaultPrefix(Request);
+
+        if(1 == from && PostsPerPage == to) {
+            // special-case URL for first page of the thread
+            $"$prefix/th/$thread_id#$post_number"
+        } else {
+            $"$prefix/th/$thread_id/$from-$to#$post_number"
+        }
+    }
+
 }
 
 
