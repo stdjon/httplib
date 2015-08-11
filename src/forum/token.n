@@ -123,13 +123,13 @@ public class SessionToken {
     public getUserId(tok: SessionTokenType, token: string, db: Database): uint {
         expire(db);
         mutable result;
-        def commmand = db.createCommand(
+        def command = db.createCommand(
             "SELECT (UserId) FROM Sessions WHERE "
                 "(Token = @Token AND SessionType = @SessionType)") <- [
             "@Token" = token,
             "@SessionType" = tok.DbValue(),
         ];
-        result = commmand.executeScalar() :> uint?;
+        result = command.executeScalar() :> uint?;
         result ? (result :> uint) : 0U;
     }
 }

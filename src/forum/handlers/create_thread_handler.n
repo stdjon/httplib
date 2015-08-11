@@ -44,7 +44,7 @@ public class CreateThreadHandler: BaseHandler {
                 category, catid, userid, renderer, utc_now, fp, tagstring);
 
             database.withTransaction(db => {
-                def commmand = db.createCommand(
+                def command = db.createCommand(
                     "INSERT INTO Threads("
                         "Title, UserId, CategoryId, CreateDate, Colour) VALUES("
                         "@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
@@ -54,18 +54,18 @@ public class CreateThreadHandler: BaseHandler {
                     "@CreateDate" = utc_now,
                     "@Colour" = colour
                 ];
-                def result = commmand.executeNonQuery();
+                def result = command.executeNonQuery();
                 Log.t("result={0}", result);
 
                 when(result > 0) {
-                    def commmand2 = db.createCommand(
+                    def command2 = db.createCommand(
                         "SELECT Id From Threads WHERE Title=@Title AND "
                             "UserId=@UserId AND CreateDate=@CreateDate") <- [
                         "@Title" = title,
                         "@UserId" = userid,
                         "@CreateDate" = utc_now,
                     ];
-                    def thid_ = commmand2.executeScalar() :> uint?;
+                    def thid_ = command2.executeScalar() :> uint?;
 
                     when(thid_ != null) {
                         thid = thid_ :> uint;

@@ -339,13 +339,13 @@ public class ForumServer: Server {
 
             when(userid != 0) {
                 post_id = UInt32.Parse(context.Vars["p"]);
-                def commmand = db.createCommand(
+                def command = db.createCommand(
                     "SELECT InputContent, OutputContent, Transform FROM Posts WHERE "
                         "Id=@Id") <- [
                     "@Id" = post_id,
                 ];
 
-                commmand.execute(reader => {
+                command.execute(reader => {
                     input = reader.getValue("InputContent");
                     output = reader.getValue("OutputContent");
                     transform = reader.getValue("Transform");

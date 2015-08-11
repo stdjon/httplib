@@ -56,29 +56,29 @@ public class ForumDatabase: IDisposable {
     }
 
     public getUserCount(): int {
-        def commmand = Database.createCommand("SELECT COUNT(Name) FROM Users");
-        def ex = commmand.executeScalar() :> long;
+        def command = Database.createCommand("SELECT COUNT(Name) FROM Users");
+        def ex = command.executeScalar() :> long;
         unchecked ex :> int;
     }
 
     public getCategoryCount(): int {
-        def commmand = Database.createCommand("SELECT COUNT(Id) FROM Categories");
-        def ex = commmand.executeScalar() :> long;
+        def command = Database.createCommand("SELECT COUNT(Id) FROM Categories");
+        def ex = command.executeScalar() :> long;
         unchecked ex :> int;
     }
 
     public getTagCount(): int {
-        def commmand = Database.createCommand("SELECT COUNT(Id) FROM Tags");
-        def ex = commmand.executeScalar() :> long;
+        def command = Database.createCommand("SELECT COUNT(Id) FROM Tags");
+        def ex = command.executeScalar() :> long;
         unchecked ex :> int;
     }
 
     public getPostCount(thread_id: uint): int {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT COUNT(Id) FROM Posts WHERE ThreadId = @ThreadId") <- [
                 "@ThreadId" = thread_id,
             ];
-        def ex = commmand.executeScalar() :> long;
+        def ex = command.executeScalar() :> long;
         unchecked ex :> int;
     }
 
@@ -103,46 +103,46 @@ public class ForumDatabase: IDisposable {
     }
 
     public getThreadCount(cat_id: uint): int {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT COUNT(Id) FROM Threads WHERE CategoryId = @CategoryId") <- [
                 "@CategoryId" = cat_id,
             ];
-        def ex = commmand.executeScalar() :> long;
+        def ex = command.executeScalar() :> long;
         unchecked ex :> int;
     }
 
     public getUserId(name: string): uint {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT Id FROM Users WHERE Name = @Name") <- [ "@Name" = name ];
-        def u = commmand.executeScalar() :> uint?;
+        def u = command.executeScalar() :> uint?;
         u ? (u :> uint) : 0;
     }
 
     public getUserName(user_id: uint): string {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT Name FROM Users WHERE Id = @Id") <- [ "@Id" = user_id ];
-        commmand.executeScalar() :> string;
+        command.executeScalar() :> string;
     }
 
     public getUserEmail(user_id: uint): string {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT Email FROM Auth WHERE UserId = @Id") <- [ "@Id" = user_id ];
-        commmand.executeScalar() :> string;
+        command.executeScalar() :> string;
     }
 
     public getCategoryId(name: string): uint {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT Id FROM Categories WHERE Name = @Name") <- [
                 "@Name" = name
             ];
-        def c = commmand.executeScalar() :> uint?;
+        def c = command.executeScalar() :> uint?;
         c ? (c :> uint) : 0;
     }
 
     public getCategoryName(cat_id: uint): string {
-        def commmand = Database.createCommand(
+        def command = Database.createCommand(
             "SELECT Name FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];
-        commmand.executeScalar() :> string;
+        command.executeScalar() :> string;
     }
 
     public userIsAdmin(user_id: uint): bool {
@@ -181,9 +181,9 @@ public class ForumDatabase: IDisposable {
                     if(id != null) {
                         result[i] = id :> uint;
                     } else {
-                        def commmand2 = db.createCommand("INSERT Into Tags(Name) "
+                        def command2 = db.createCommand("INSERT Into Tags(Name) "
                             "VALUES(@Name)") <- [ "@Name" = t ];
-                        def result2 = commmand2.executeNonQuery();
+                        def result2 = command2.executeNonQuery();
                         when(result2 > 0) {
                             def id = getExistingTagId(t);
                             if(id != null) {
@@ -290,7 +290,7 @@ public class ForumDatabase: IDisposable {
         }
         when(render_ok) {
             Database.withTransaction(db => {
-                def commmand = db.createCommand(
+                def command = db.createCommand(
                     "INSERT INTO Posts(InputContent, OutputContent, "
                         "Transform, UserId, ThreadId, CreateDate) VALUES("
                         "@InputContent, @OutputContent, "
@@ -303,26 +303,26 @@ public class ForumDatabase: IDisposable {
                     "@CreateDate" = utc_now,
                 ];
 
-                def result = commmand.executeNonQuery();
+                def result = command.executeNonQuery();
                 when(result > 0) {
-                    def commmand2 = db.createCommand(
+                    def command2 = db.createCommand(
                         "SELECT Id FROM Posts WHERE "
                             "UserId=@UserId AND CreateDate=@CreateDate") <- [
                         "@UserId" = user_id,
                         "@CreateDate" = utc_now,
                     ];
-                    def result2 = commmand2.executeScalar() :> uint?;
+                    def result2 = command2.executeScalar() :> uint?;
                     post_id = result2 ? (result2 :> uint) : 0U;
 
                     when(post_id > 0U) {
                         if(reply_to != null) {
-                            def commmand3 = db.createCommand(
+                            def command3 = db.createCommand(
                                 "INSERT INTO Replies(PostId, ReplyTo) VALUES("
                                     "@PostId, @ReplyTo)") <- [
                                 "@PostId" = post_id,
                                 "@ReplyTo" = reply_to :> uint,
                             ];
-                            def result3 = commmand3.executeNonQuery();
+                            def result3 = command3.executeNonQuery();
                             when(result3 > 0) {
                                 def command4 = db.createCommand(
                                     "UPDATE Posts SET ReplyTo=@ReplyTo "
@@ -366,7 +366,7 @@ public class ForumDatabase: IDisposable {
 
         when(render_ok) {
             Database.withTransaction(db => {
-                def commmand = db.createCommand(
+                def command = db.createCommand(
                     "UPDATE Posts SET InputContent = @InputContent, "
                         "OutputContent = @OutputContent, "
                         "Transform = @Transform WHERE Id=@Id") <- [
@@ -376,7 +376,7 @@ public class ForumDatabase: IDisposable {
                     "@Id" = post_id,
                 ];
 
-                def result2 = commmand.executeNonQuery();
+                def result2 = command.executeNonQuery();
                 ok = (result2 > 0);
 
                 when(ok) {

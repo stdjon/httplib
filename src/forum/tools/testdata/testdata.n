@@ -207,18 +207,18 @@ public class TestData {
 
             def replyto = (Random.Next(5) < 2) ? null : {
                 mutable result: uint? = null;
-                def commmand1 = db.createCommand(
+                def command1 = db.createCommand(
                     "SELECT COUNT(Id) FROM Posts WHERE ThreadId=@ThreadId") <- [
                         "@ThreadId" = tid,
                     ];
-                def count = commmand1.executeScalar() :> long?;
+                def count = command1.executeScalar() :> long?;
                 when(count != null) {
-                    def commmand2 = db.createCommand("SELECT Id FROM Posts WHERE "
+                    def command2 = db.createCommand("SELECT Id FROM Posts WHERE "
                         "ThreadId=@ThreadId LIMIT @N, 1") <- [
                             "@ThreadId" = tid,
                             "@N" = Random.Next(count :> int),
                         ];
-                    result = commmand2.executeScalar() :> uint?;
+                    result = command2.executeScalar() :> uint?;
                 }
                 result;
             };
@@ -357,8 +357,8 @@ public class TestData {
     getUserCount(): int {
         mutable result;
         using(db = server.openDatabase()) {
-            def commmand = db.createCommand("SELECT COUNT(Name) FROM Users");
-            result = commmand.executeScalar() :> long;
+            def command = db.createCommand("SELECT COUNT(Name) FROM Users");
+            result = command.executeScalar() :> long;
         }
         unchecked result :> int;
     }
@@ -366,8 +366,8 @@ public class TestData {
     getCategoryCount(): int {
         mutable result;
         using(db = server.openDatabase()) {
-            def commmand = db.createCommand("SELECT COUNT(Name) FROM Categories");
-            result = commmand.executeScalar() :> long;
+            def command = db.createCommand("SELECT COUNT(Name) FROM Categories");
+            result = command.executeScalar() :> long;
         }
         unchecked result :> int;
     }
@@ -375,8 +375,8 @@ public class TestData {
     getThreadCount(): int {
         mutable result;
         using(db = server.openDatabase()) {
-            def commmand = db.createCommand("SELECT COUNT(Title) FROM Threads");
-            result = commmand.executeScalar() :> long;
+            def command = db.createCommand("SELECT COUNT(Title) FROM Threads");
+            result = command.executeScalar() :> long;
         }
         unchecked result :> int;
     }
@@ -384,8 +384,8 @@ public class TestData {
     getPostCount(): int {
         mutable result;
         using(db = server.openDatabase()) {
-            def commmand = db.createCommand("SELECT COUNT(Id) FROM Posts");
-            result = commmand.executeScalar() :> long;
+            def command = db.createCommand("SELECT COUNT(Id) FROM Posts");
+            result = command.executeScalar() :> long;
         }
         unchecked result :> int;
     }
