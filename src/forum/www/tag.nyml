@@ -14,37 +14,34 @@ Partials:
       h4.panel-title { font-size: 20px; font-weight: bold; }
     </style>
     {{#Name}}
+    {{>Pagination}}
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h4 class="panel-title">Posts tagged with <em><u>'{{Name}}'</u></em></h4>
+        <h4 class="panel-title">{{PostCount}} posts tagged with <em><u>'{{Name}}'</u></em></h4>
       </div>
       <div class="panel-body">
-        <p>
-          {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-          {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-        </p>
-      {{/Name}}
-      <ol start="{{From}}" class='list-group'>
-      {{#Posts}}
-        <li class="list-group-item">
-          <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
-          <em>{{{Content}}}</em>
-          &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a>
+        {{/Name}}
+        <ol start="{{From}}" class='list-group'>
+        {{#Posts}}
+          <li class="list-group-item">
+            <div class="anchor" id="{{Num}}">
+              [<a href="{{DefaultPrefix}}/p/{{Id}}">#{{Id}}</a>] {{CreateDate}} &mdash;
+              <em>{{{Content}}}</em>
+              &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a>
+            </div>
           </li>
-      {{/Posts}}
-      {{^Posts}}
-        <li class="list-group-item">(empty list)</li>
-      {{/Posts}}
-      </ol>
-      {{^Name}}
-        <p>Something seems to have gone awry here...</p>
-      {{/Name}}
-      {{#Name}}
-        <p>
-          {{#Prev}}<a href="{{Prev}}">&laquo; Prev</a>{{/Prev}}
-          {{#Next}}<a href="{{Next}}">Next &raquo;</a>{{/Next}}
-        </p>
+        {{/Posts}}
+        {{^Posts}}
+          <li class="list-group-item">(empty list)</li>
+        {{/Posts}}
+        </ol>
+        {{^Name}}
+          <p>Something seems to have gone awry here...</p>
+        {{/Name}}
+        {{#Name}}
       </div>
+    </div>
+    {{>Pagination}}
     {{/Name}}
   Guide: |
     {{#Name}}

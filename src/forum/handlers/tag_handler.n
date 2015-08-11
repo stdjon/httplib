@@ -11,6 +11,7 @@ namespace forum {
 [HasHandlerFactory]
 public class TagHandler: BasePageHandler {
 
+    public PostsPerPage: int { get; }
     public TagsPerPage: int { get; }
     public Tag: string { get; private set; }
     public TagId: uint { get; private set; }
@@ -19,17 +20,24 @@ public class TagHandler: BasePageHandler {
     public this(hd: HandlerData, path: string) {
         base(hd, path);
 
+        PostsPerPage = Server.Configuration.Limits.PostsPerPage;
         TagsPerPage = Server.Configuration.Limits.TagsPerPage;
     }
 
     public override initialize(): void {
         base.initialize();
 
+        def fromstr = Context.Vars["from"];
+        def from = fromstr ? Int32.Parse(fromstr) : 1;
+        def tostr = Context.Vars["to"];
+        def to = tostr ? Int32.Parse(tostr) : PostsPerPage;
+        def dist = to + 1 - from;
+
         Tag = Context.Vars["tag"];
         PageData["Name"] = Tag;
 
         def command = Database.createCommand(
-            "SELECT Id FROM Tags WHERE Name=@Name") <- [ "@Name" = Tag ];
+            "SELECT Id FROM Tags WHERE Name = @Name") <- [ "@Name" = Tag ];
 
         def tag_id = command.executeScalar() :> uint?;
 
@@ -37,22 +45,23 @@ public class TagHandler: BasePageHandler {
             TagId = tag_id :> uint;
 
             def command2 = Database.createCommand(
-                "SELECT COUNT(Id) FROM PostTags WHERE TagId=@TagId") <- [
+                "SELECT COUNT(Id) FROM PostTags WHERE TagId = @TagId") <- [
                     "@TagId" = TagId
                 ];
 
-            def count = command2.executeScalar() :> long?;
+            def post_count = (command2.executeScalar() :> long?) :> int;
 
-            PostCount = count ? (count :> int) : 0;
+            PostCount = dist;
 
             when(PostCount > 0) {
-                mutable post_ids = array(TagsPerPage);
+                mutable post_ids = array(dist);
                 def command3 = Database.createCommand(
-                    "SELECT PostId FROM PostTags WHERE "
-                    "TagId=@TagId LIMIT 0,@Count") <- [
-                        "@TagId" = TagId,
-                        "@Count" = TagsPerPage,
-                    ];
+                    "SELECT PostId FROM PostTags WHERE TagId = @TagId "
+                        "ORDER BY PostId DESC LIMIT @From, @Count") <- [
+                    "@TagId" = TagId,
+                    "@From" = from - 1,
+                    "@Count" = dist,
+                ];
                 def c = command3.execute((i, reader) => {
                     post_ids[i] = reader.getValue("PostId", 0U);
                 });
@@ -84,6 +93,7 @@ public class TagHandler: BasePageHandler {
                         content = content.Replace("<br>", "");
 
                         posts[i] = PageData() <- [
+                            "Num" = from + i,
                             "Id" = pid,
                             "Content" = content,
                             "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
@@ -92,11 +102,24 @@ public class TagHandler: BasePageHandler {
                         i++;
                     });
                 }
+
                 for(mutable j = 0; j < c; j++) {
-                    posts[j]["User"] = ForumDatabase.getUserName(users[j]);
-                    posts[j]["UserDisplay"] = userDisplayName(users[j]);
+                    _ = posts[j] <-[
+                        "User" = ForumDatabase.getUserName(users[j]),
+                        "UserDisplay" = userDisplayName(users[j]),
+                    ];
                 }
-                PageData["Posts"] = posts;
+
+                _ = PageData <- [
+                    "PostCount" = post_count,
+                    "Posts" = posts,
+                    "Markers" = buildMarkerList(from, c),
+                ];
+
+                def prf = Server.getDefaultPrefix(Request);
+                addPagination(PageData,
+                    post_count, dist, PostsPerPage,
+                    from, to, $"$prf/tg/$Tag");
             }
         }
     }
