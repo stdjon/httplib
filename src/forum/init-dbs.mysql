@@ -14,7 +14,7 @@
 
 DROP TABLE IF EXISTS
     Uploads, Bookmarks, Thumbs, PostsRead, Drafts, Replies, PostTags, Tags,
-    Posts, Threads, Categories, Sessions, Avatars, Auth, Users;
+    Notifications, Posts, Threads, Categories, Sessions, Avatars, Auth, Users;
 
 
 /*----------------------------------------------------------------------------*/
