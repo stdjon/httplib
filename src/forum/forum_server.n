@@ -534,7 +534,20 @@ public class ForumServer: Server {
         using(fdb = openForumDatabase()) {
             def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
 
-            fdb.starPost(pid, uid, on);
+            mutable thid, puid;
+
+            when(on) {
+                def command = fdb.Database.createCommand(
+                    "SELECT ThreadId, UserId FROM Posts WHERE Id = @Id") <- [
+                        "@Id" = pid,
+                    ];
+                command.execute(reader => {
+                    thid = reader.getValue("ThreadId", 0U);
+                    puid = reader.getValue("UserId", 0U);
+                });
+            }
+
+            fdb.starPost(pid, uid, on, puid, thid);
         }
         response.Status = (200, "OK");
     }

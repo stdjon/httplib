@@ -15,6 +15,7 @@ public enum NT {
     | REPLY = 1
     | POST = 2
     | MENTION = 3
+    | STAR = 4
 }
 
 
@@ -24,6 +25,7 @@ public module NotifyTypeExtensions {
         | 1 => REPLY
         | 2 => POST
         | 3 => MENTION
+        | 4 => STAR
         | _ => throw Exception("bad Db value")
     }
 
@@ -31,6 +33,7 @@ public module NotifyTypeExtensions {
         | REPLY => "<span class='fa fa-reply'></span>"
         | POST => "<span class='fa fa-envelope-o'></span>"
         | MENTION => "<span class='fa fa-at'></span>"
+        | STAR => "<span class='fa fa-star'></span>"
     }
 
     // TODO: config? l10n?
@@ -38,6 +41,7 @@ public module NotifyTypeExtensions {
         | REPLY => "{0} replied to you in thread {1}"
         | POST => "{0} posted in your thread {1}"
         | MENTION => "{0} mentioned you in thread {1}"
+        | STAR => "{0} starred your post in thread {1}"
     }
 }
 
@@ -512,20 +516,35 @@ public class ForumDatabase: IDisposable {
         thread_id: uint, post_id: uint, type: NotifyType): void {
 
         when(user_id != from_user_id) {
+
             def command = Database.createCommand(
-                "INSERT INTO Notifications("
-                    "UserId, FromUserId, "
-                    "ThreadId, PostId, NotifyType, CreateDate) VALUES("
-                    "@UserId, @FromUserId, "
-                    "@ThreadId, @PostId, @NotifyType, @CreateDate)") <- [
+                "SELECT COUNT(Id) FROM Notifications WHERE UserId = @UserId AND "
+                    "FromUserId = @FromUserId AND ThreadId = @ThreadId AND "
+                    "PostId = @PostId AND NotifyType = @NotifyType") <- [
                 "@UserId" = user_id,
                 "@FromUserId" = from_user_id,
                 "@ThreadId" = thread_id,
                 "@PostId" = post_id,
                 "@NotifyType" = type,
-                "@CreateDate" = Date.NowTicks,
             ];
-            _ = command.executeNonQuery();
+            def result = (command.executeScalar() :> long?) :> int;
+
+            when(result < 1) {
+                def command2 = Database.createCommand(
+                    "INSERT INTO Notifications("
+                        "UserId, FromUserId, "
+                        "ThreadId, PostId, NotifyType, CreateDate) VALUES("
+                        "@UserId, @FromUserId, "
+                        "@ThreadId, @PostId, @NotifyType, @CreateDate)") <- [
+                    "@UserId" = user_id,
+                    "@FromUserId" = from_user_id,
+                    "@ThreadId" = thread_id,
+                    "@PostId" = post_id,
+                    "@NotifyType" = type,
+                    "@CreateDate" = Date.NowTicks,
+                ];
+                _ = command2.executeNonQuery();
+            }
         }
     }
 
@@ -541,7 +560,8 @@ public class ForumDatabase: IDisposable {
         result > 0;
     }
 
-    public starPost(post_id: uint, user_id: uint, on: bool): void {
+    public starPost(post_id: uint, user_id: uint, on: bool,
+        post_user_id: uint?, thread_id: uint?): void {
 
         Log.d("starPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
         Database.withTransaction(db => {
@@ -567,6 +587,10 @@ public class ForumDatabase: IDisposable {
                 def uid = command2.executeScalar() :> uint;
                 when(uid != user_id) {
                     addPointsToUser(uid, on ? 2 : -2);
+                }
+                when(on) {
+                    createNotification(post_user_id :> uint,
+                        user_id, thread_id :> uint, post_id, NT.STAR);
                 }
             }
         }, ex => {
