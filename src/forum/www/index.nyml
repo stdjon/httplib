@@ -112,6 +112,20 @@ Partials:
       {{/Posts}}
       </ul>
       </div>
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Recent Stars</h4>
+      </div>
+      <div class="panel-body">
+      <ul class="list-group">
+      {{#Stars}}
+        <li class="list-group-item">
+          <a href="{{DefaultPrefix}}/p/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+          <em>{{{Content}}}</em> &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a>
+        </li>
+      {{/Stars}}
+      </ul>
+      </div>
     </div>
   PageScript: |
     {{#ChromeBrowser}}

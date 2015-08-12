@@ -1,5 +1,4 @@
 using System;
-using System.Text.RegularExpressions;
 
 using Nemerle.Extensions;
 
@@ -208,28 +207,6 @@ public class UserHandler: BasePageHandler {
             "IsPrefs" = true,
             "Id" = userid,
         ];
-    }
-
-    summarizePost(content: string): string {
-
-        mutable result = content;
-
-        when(result.Length > 100) {
-            result = result.Substring(0, 100) + "&hellip;";
-        }
-
-        // Use HtmlSanitizer to close any tags lost by the truncation.
-        def htmlsan = Server.
-            getModuleInterface.[ITextTransform]("HtmlSanitizer");
-        result = htmlsan.transform(result);
-
-        // Strip out <hN>, <p> and <br> tags for the post preview
-        // TODO: use a CsQuery-based module to allow proper tag replacement.
-        result = Regex(@"</?h[0-9]+>").Replace(result, "");
-        result = Regex(@"</?p>").Replace(result, "");
-        result = result.Replace("<br>", "");
-
-        result;
     }
 }
 

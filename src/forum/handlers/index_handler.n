@@ -20,11 +20,12 @@ public class IndexHandler: BasePageHandler {
 
         mutable threads = array(10);
         mutable posts = array(10);
+        mutable stars = array(10);
         mutable i;
 
         def command = Database.createCommand(
             "SELECT Id, Title, CreateDate FROM Threads "
-                " ORDER BY CreateDate DESC LIMIT 0, 9");
+                " ORDER BY CreateDate DESC LIMIT 0, 10");
 
         i = command.execute((j, reader) => {
             threads[j] = PageData() <- [
@@ -37,34 +38,62 @@ public class IndexHandler: BasePageHandler {
 
         def command2 = Database.createCommand(
             "SELECT Id, OutputContent, CreateDate FROM Posts "
-                "ORDER BY CreateDate DESC LIMIT 0, 9");
+                "ORDER BY CreateDate DESC LIMIT 0, 10");
 
         i = command2.execute((j, reader) => {
             mutable content = reader.getValue("OutputContent");
-            when(content.Length > 100) {
-                content = content.Substring(0, 100) + "&hellip;";
-            }
-            // Use HtmlSanitizer to close any tags lost by the truncation.
-            def htmlsan = Server.
-                getModuleInterface.[ITextTransform]("HtmlSanitizer");
-            content = htmlsan.transform(content);
-
-            // Strip out <hN>, <p> and <br> tags for the post preview
-            // TODO: use a CsQuery-based module to allow proper tag replacement.
-            content = Regex(@"</?h[0-9]+>").Replace(content, "");
-            content = Regex(@"</?p>").Replace(content, "");
-            content = content.Replace("<br>", "");
 
             posts[j] = PageData() <- [
                 "Id" = reader.getValue("Id", 0U),
-                "Content" = content,
+                "Content" = summarizePost(content),
                 "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref posts, i);
 
-        PageData["Threads"] = threads;
-        PageData["Posts"] = posts;
+        mutable s = array(10);
+        def command4 = Database.createCommand(
+            "SELECT PostId FROM Bookmarks ORDER BY Id DESC LIMIT 0, 10");
+        i = command4.execute((j, reader) => {
+            s[j] = reader.getValue("PostId", 0U);
+        });
+        Array.Resize(ref s, i);
+        Array.Resize(ref stars, i);
+
+        for(mutable j = 0; j < s.Length; j++) {
+            def command5 = Database.createCommand(
+                "SELECT UserId, OutputContent, CreateDate FROM Posts WHERE "
+                    "Id = @Id") <- [
+                "@Id" = s[j],
+            ];
+
+            command5.execute(reader => {
+                def content = reader.getValue("OutputContent");
+
+                stars[j] = PageData() <- [
+                    "Id" = s[j],
+                    "UserId" = reader.getValue("UserId", 0U),
+                    "Content" = summarizePost(content),
+                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                ];
+            });
+
+            when(stars[j] != null) {
+                def id = stars[j]["UserId"] :> uint;
+                def command6 = Database.createCommand(
+                    "SELECT Name FROM Users WHERE Id = @Id") <- [
+                        "@Id" = id,
+                    ];
+                stars[j]["User"] = command6.executeScalar() :> string;
+                stars[j]["UserDisplay"] = userDisplayName(id);
+            }
+        }
+
+        _ = PageData <- [
+            "Threads" = threads,
+            "Posts" = posts,
+            "Stars" = stars,
+        ];
     }
 }
 
