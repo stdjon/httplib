@@ -45,7 +45,7 @@ Partials:
           </small></div>
           <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
-          {{CreateDate}}</small>
+          {{CreateDate}}</small><br class="visible-xs"><!--TODO: visible-xs on portrait only?-->
           {{#SignedInUser}}
           <span style="word-spacing: 15px;">
           &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"

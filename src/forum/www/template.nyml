@@ -53,10 +53,10 @@ Partials:
   Layout: |
     <div class="banner user-font">
       <div id="banner">{{>Banner}}</div>
-      <div class="col-xs-10 body">
+      <div class="col-xs-12 col-sm-10 body">
         {{>Body}}
       </div>
-      <div class="col-xs-2 guide">
+      <div class="col-xs-2 hidden-xs guide">
         {{>Guide}}
       </div>
     </div>

@@ -19,8 +19,10 @@ Partials:
       <a id="pagename" class="navbar-brand" href="{{DefaultPrefix}}/"
         title="Home page" target="_top">
        <span class="fa fa-diamond"></span> {{SiteName}}</a>
-      <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/u/{{User}}"
+      <a class="navbar-brand navbar-2ry hidden-xs" href="{{DefaultPrefix}}/u/{{User}}"
         title="User page" target="_top">[{{User}}]</a>
+      <a class="navbar-brand navbar-2ry visible-xs" href="{{DefaultPrefix}}/u/{{User}}"
+        title="User page" target="_top">[<span class="fa fa-user"></span>]</a>
       <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/n"
         title="Notifications" target="_top">[<span class="fa fa-envelope-o"></span>]</a>
       {{#IsAdmin}}
