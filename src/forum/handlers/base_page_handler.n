@@ -210,14 +210,15 @@ public class BasePageHandler: BaseHandler {
             Response.Cookies.expire("_isession", COOKIE.HTTP_ONLY);
         }
 
-        if(isession != null) {
+        when(isession != null) {
             def id = ForumDatabase.
                 getUserIdFromSessionToken(STOK.INSECURE, isession);
             SignedInUserId = id;
 
             def name = (id != 0) ? ForumDatabase.getUserName(id) : null;
             PageData["SignedInUser"] = name;
-        } else {
+        }
+        when(SignedInUserId == 0) {
             def (_ok, t, _x) = ForumDatabase.
                 registerSessionToken(STOK.TEMPORARY, 0);
             PageData["TempToken"] = t;
