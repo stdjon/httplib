@@ -162,7 +162,7 @@ Partials:
     {{/User}}
     </div>
   ReloadableScript: |
-    setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{Font}}", "{{MonoFontClass}}");
+    setPrefs("{{Motto}}", "{{Location}}", "{{ColourId}}", "{{Transform}}", "{{FontClass}}", "{{MonoFontClass}}");
     loadAllFonts = {{IsUserPrefs}};
     if(loadAllFonts) {
       $('head').append('<link rel="stylesheet" type="text/css" href="/custom-fonts.css">');

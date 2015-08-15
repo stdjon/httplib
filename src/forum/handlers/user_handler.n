@@ -78,8 +78,6 @@ public class UserHandler: BasePageHandler {
                 "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
                 "ColourId" = reader.getValue("Colour",
                     Server.Configuration.DefaultColourClass),
-                "Font" = Font,
-                "MonoFont" = MonoFont,
             ];
         });
     }

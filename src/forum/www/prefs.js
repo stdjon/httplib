@@ -14,7 +14,7 @@ function setPrefs(m, l, c, t, f, mf) {
     _g.Location = prf._loc = l;
     _g.ColourId = prf.col_id = c;
     _g.Transform = prf.trans = t;
-    _g.Font = prf.font = f;
+    _g.FontClass = prf.font = f;
     _g.MonoFontClass = prf.monoFont = mf;
     $('span#' + c).addClass('selected');
 
@@ -49,7 +49,7 @@ function onKeypress() {
     var ok3 = (prf.email !== _g.Email);
     var ok4 = (prf.col_id !== _g.ColourId);
     var ok5 = (prf.trans !== _g.Transform);
-    var ok6 = (prf.font !== _g.Font);
+    var ok6 = (prf.font !== _g.FontClass);
     var ok7 = (prf.monoFont !== _g.MonoFontClass);
     var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7;
     $('#update').attr('disabled', canupdate ? null : 'disabled');
