@@ -27,6 +27,13 @@ Partials:
           </div>
         </div></li>
       {{/Notifications}}
+      {{^Notifications}}
+        <li class="list-group-item"><div class="fake-anchor">
+          <div class="inlist">
+            (You don't have any notifications yet...)
+          </div>
+        </div></li>
+      {{/Notifications}}
       </ul>
       {{>Pagination}}
       {{/UserSignedIn}}
