@@ -24,7 +24,7 @@ Partials:
       <a class="navbar-brand navbar-2ry visible-xs" href="{{DefaultPrefix}}/u/{{User}}"
         title="User page" target="_top">[<span class="fa fa-user"></span>]</a>
       <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/n"
-        title="Notifications" target="_top">[<span class="fa fa-envelope-o"></span>]</a>
+        title="Notifications" target="_top">[<span class="fa fa-comments-o"></span>]</a>
       {{#IsAdmin}}
       <a class="navbar-brand navbar-2ry" href="{{DefaultSecurePrefix}}/admin"
         title="Administration" target="_top">[<span class="fa fa-cube"></span>]</a>
