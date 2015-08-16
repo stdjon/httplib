@@ -512,6 +512,26 @@ class MyServer: Server {
         response.Status = (200, "OK");
     }
 
+    public sseSourceResponse(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.asEventSource(() => {
+            for(mutable i = 0; i < 40; i++) {
+
+                def json = (JsonObject() <- [
+                    "value" = i,
+                    "other" = i * 3
+                ]).toString();
+
+                response.append($"id: $i\n");
+                response.append("event: test\n");
+                response.append($"data: $json\n\n");
+                Thread.Sleep(2500);
+            }
+            response.Status = (200, "OK");
+        })
+    }
+
     public override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
@@ -605,10 +625,11 @@ module Test {
                 res.Status = (200, "OK");
             });
 
+            my_server.route(HTTP.GET, "/sse-source", my_server.sseSourceResponse);
+
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 
             my_server.start();
-
 
             while(my_server.Running) {
                 my_server.update();

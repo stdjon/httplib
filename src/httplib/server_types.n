@@ -508,6 +508,12 @@ public class Response {
         set { (StatusCode, StatusDescription) = value; }
     }
 
+    // Configure Response for SSE-style streaming output.
+    public IsStream: bool {
+        get { is_stream }
+        set { response.SendChunked = value; is_stream = value; }
+    }
+
     // Convenience wrapper for headers
     public Item[key: string]: string {
         get { response.Headers[key] }
@@ -520,6 +526,7 @@ public class Response {
 
     mutable response: HttpListenerResponse;
     mutable output: array[byte];
+    mutable is_stream: bool;
 
     public this(res: HttpListenerResponse, output_length = 1024) {
 
@@ -539,27 +546,57 @@ public class Response {
         writeToOutput(data);
     }
 
-    writeToOutput(data: array[byte]): void {
-        def new_length = ContentLength + data.Length;
+    // For a streaming HTTP Response suitable for an EventSource on the client:
+    // set up the IsStream/ContentType appropriately, and also handle losing the
+    // network connection gracefully - if the client is uncleanly shut down, we
+    // get a HttpListenerException with ErrorCode == 1229 (ERROR_CONNECTION_INVALID).
+    // (See https://msdn.microsoft.com/en-us/library/ms681383(v=vs.85).aspx)
+    public asEventSource(lambda: void -> void): void {
+        IsStream = true;
+        ContentType = "text/event-stream";
 
-        when(output.Length < new_length) {
-            def size = output.Length * 3 / 2;
-            def resize = (size > new_length) ? size : new_length :> int;
-            Array.Resize(ref output, resize);
+        try {
+            lambda();
+            Status = (200, "OK");
+        } catch {
+            | ex is HttpListenerException => {
+                match(ex.ErrorCode) {
+                    | 1229 => Status = (200, "OK");
+                    | _ => throw ex;
+                }
+            }
         }
+    }
 
-        data.CopyTo(output, ContentLength);
-        ContentLength = new_length;
+    writeToOutput(data: array[byte]): void {
+        if(is_stream) {
+            response.OutputStream.Write(data, 0, data.Length);
+        } else {
+            def new_length = ContentLength + data.Length;
+
+            when(output.Length < new_length) {
+                def size = output.Length * 3 / 2;
+                def resize = (size > new_length) ? size : new_length :> int;
+                Array.Resize(ref output, resize);
+            }
+
+            data.CopyTo(output, ContentLength);
+            ContentLength = new_length;
+        }
     }
 
     internal complete(): void {
         def os = response.OutputStream;
-        os.Write(output, 0, ContentLength :> int);
-        os.Close();
+        if(is_stream) {
+            os.Flush();
+        } else {
+            os.Write(output, 0, ContentLength :> int);
+            os.Close();
+        }
     }
 
     internal encode(encoding: string): void {
-        when(encoding != null) {
+        when(!is_stream && encoding != null) {
             Array.Resize(ref output, ContentLength :> int);
             using(ms = MemoryStream()) {
                 using(str = match(encoding) {

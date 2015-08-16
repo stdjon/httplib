@@ -1,0 +1,34 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: SSE Test
+Content: >
+  <script src="jquery-1.11.2/jquery-1.11.2.js"></script>
+  <script src="bootstrap-3.3.4-dist/js/bootstrap.js"></script>
+  <script src="EventSource-0.0.6/eventsource.js"></script>
+
+  <div class="container">
+    <h1>SSE Test</h1>
+    <p><pre><span id="output"></span></pre></p>
+  </div>
+  <script>
+    var source = new EventSource("/sse-source");
+    source.addEventListener('test', function(e) {
+      var f = JSON.parse(e.data);
+      $('#output').append(JSON.stringify(f) + '\n');
+
+      // To stop IE from reconnecting...
+      if(f.value == 39) {
+        source.close();
+      }
+    });
+  </script>
+Partials:
+Objects:
