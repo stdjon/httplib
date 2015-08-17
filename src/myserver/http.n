@@ -205,6 +205,34 @@ public class MyTestModule: Module, IMyTestModule {
 
 
 //------------------------------------------------------------------------------
+// MyTimeEventListener
+
+class MyTimeEventListener: ServerEventListener {
+
+    public Response: Response { get; private set; }
+    public Id: int { get; private set; }
+
+    public this(src: ServerEventSource, channel: string, res: Response) {
+        base(src, channel);
+        Response = res;
+        Id = 0;
+    }
+
+    public override onEvent(json: JsonObject): void {
+        def ok = NetworkLoss.handle(() => {
+            Response.append($"id: $Id\n");
+            Response.append("event: time\n");
+            Response.append($"data: $json\n\n");
+            Id++;
+        });
+        when(!ok) {
+            Dispose();
+        }
+    }
+}
+
+
+//------------------------------------------------------------------------------
 // MyServer
 
 class MyServer: Server {
@@ -532,9 +560,30 @@ class MyServer: Server {
         })
     }
 
+    public timeSourceResponse(
+        _context: Context, _request: Request, response: Response): void {
+
+        response.asEventSource(() => {
+            using(lst = MyTimeEventListener(EventSource, "time", response)) {
+                while(!lst.IsDisposed) {
+                    Thread.Sleep(1000);
+                }
+                response.Status = (200, "OK");
+            }
+        });
+    }
+
     public override internalServerError(ex: Exception): void {
         Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
             ex.Message, ex.GetExtendedStackTrace());
+    }
+
+    public override update(): void {
+        base.update();
+
+        EventSource.sendEvent("time", JsonObject() <- [
+            "time" = DateTime.UtcNow.ToString("r"),
+        ]);
     }
 }
 
@@ -626,6 +675,7 @@ module Test {
             });
 
             my_server.route(HTTP.GET, "/sse-source", my_server.sseSourceResponse);
+            my_server.route(HTTP.GET, "/time-source", my_server.timeSourceResponse);
 
             my_server.context(HTTP.GET, ".*", PageData() <- [ "MAGIC" = 1 ]);
 

@@ -19,47 +19,52 @@ class ServerEventHolder {
 }
 
 
+[HasLogging]
 public class ServerEventSource {
 
-    OnEvents: Dictionary[string, ServerEventHolder] { get; private set; }
+    Events: Dictionary[string, ServerEventHolder] { get; private set; }
 
     public this() {
-        OnEvents = Dictionary();
+        Events = Dictionary();
     }
 
     public sendEvent(channel: string, j: JsonObject): void {
         mutable probe;
-        when(OnEvents.TryGetValue(channel, out probe)) {
+        when(Events.TryGetValue(channel, out probe)) {
             probe.call(j);
         }
     }
 
     public addListener(channel: string, lst: ServerEventListener): void {
-        when(!OnEvents.ContainsKey(channel)) {
-            OnEvents[channel] = ServerEventHolder();
+        when(!Events.ContainsKey(channel)) {
+            Events[channel] = ServerEventHolder();
         }
-        OnEvents[channel].OnEvent += lst.onEvent;
+        Events[channel].OnEvent += lst.onEvent;
     }
 
     public removeListener(channel: string, lst: ServerEventListener): void {
-        OnEvents[channel].OnEvent -= lst.onEvent;
+        Events[channel].OnEvent -= lst.onEvent;
     }
 }
 
 
+[HasLogging]
 public class ServerEventListener: IDisposable {
 
     public Source: ServerEventSource { get; private set; }
     public Channel: string { get; private set; }
+    public IsDisposed: bool { get; private set; }
 
     public this(src: ServerEventSource, channel: string) {
         Source = src;
         Channel = channel;
+        IsDisposed = false;
         Source.addListener(Channel, this);
     }
 
     public Dispose(): void {
         Source.removeListener(Channel, this);
+        IsDisposed = true;
     }
 
     public virtual onEvent(_j: JsonObject): void {

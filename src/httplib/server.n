@@ -75,6 +75,10 @@ public class Server: IDisposable {
     [Accessor(flags = Internal)]
     module_cache: ModuleCache = ModuleCache();
 
+    [Accessor]
+    event_source: ServerEventSource = ServerEventSource();
+
+
     [Accessor] default_secure_prefix: string;
     [Accessor] default_insecure_prefix: string;
 
@@ -322,7 +326,7 @@ public class Server: IDisposable {
         }
     }
 
-    public update(): void {
+    public virtual update(): void {
         when(Running) {
             if(WillClose) {
                 shutdown();

@@ -548,24 +548,15 @@ public class Response {
 
     // For a streaming HTTP Response suitable for an EventSource on the client:
     // set up the IsStream/ContentType appropriately, and also handle losing the
-    // network connection gracefully - if the client is uncleanly shut down, we
-    // get a HttpListenerException with ErrorCode == 1229 (ERROR_CONNECTION_INVALID).
-    // (See https://msdn.microsoft.com/en-us/library/ms681383(v=vs.85).aspx)
+    // network connection gracefully (see NetworkLoss.handle())
     public asEventSource(lambda: void -> void): void {
+
         IsStream = true;
         ContentType = "text/event-stream";
-
-        try {
-            lambda();
-            Status = (200, "OK");
-        } catch {
-            | ex is HttpListenerException => {
-                match(ex.ErrorCode) {
-                    | 1229 => Status = (200, "OK");
-                    | _ => throw ex;
-                }
-            }
-        }
+        def ok = NetworkLoss.handle(lambda);
+        Status = ok ?
+            (200, "OK") :
+            (500, "Internal Server Error");
     }
 
     writeToOutput(data: array[byte]): void {
@@ -696,7 +687,33 @@ public module Date {
     public NowTicks: long {
         get { DateTime.UtcNow.Ticks; }
     }
-};
+}
+
+
+//------------------------------------------------------------------------------
+
+public module NetworkLoss {
+
+    // Handle losing a network connection gracefully - if the client (e.g. of an
+    // EventSource) is uncleanly shut down, we get a HttpListenerException with
+    // ErrorCode == 1229 (ERROR_CONNECTION_INVALID).
+    // (See https://msdn.microsoft.com/en-us/library/ms681383(v=vs.85).aspx)
+    public handle(lambda: void -> void): bool {
+        mutable result = false;
+        try {
+            lambda();
+            result = true;
+        } catch {
+            | ex is HttpListenerException => {
+                match(ex.ErrorCode) {
+                    | 1229 => ();
+                    | _ => throw ex;
+                }
+            }
+        }
+        result;
+    }
+}
 
 
 //------------------------------------------------------------------------------
