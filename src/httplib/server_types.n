@@ -510,8 +510,8 @@ public class Response {
 
     // Configure Response for SSE-style streaming output.
     public IsStream: bool {
-        get { is_stream }
-        set { response.SendChunked = value; is_stream = value; }
+        get { response.SendChunked }
+        set { response.SendChunked = value; }
     }
 
     // Convenience wrapper for headers
@@ -526,7 +526,6 @@ public class Response {
 
     mutable response: HttpListenerResponse;
     mutable output: array[byte];
-    mutable is_stream: bool;
 
     public this(res: HttpListenerResponse, output_length = 1024) {
 
@@ -580,7 +579,7 @@ public class Response {
     }
 
     writeToOutput(data: array[byte]): void {
-        if(is_stream) {
+        if(IsStream) {
             response.OutputStream.Write(data, 0, data.Length);
         } else {
             def new_length = ContentLength + data.Length;
@@ -598,7 +597,7 @@ public class Response {
 
     internal complete(): void {
         def os = response.OutputStream;
-        if(is_stream) {
+        if(IsStream) {
             os.Flush();
         } else {
             os.Write(output, 0, ContentLength :> int);
@@ -607,7 +606,7 @@ public class Response {
     }
 
     internal encode(encoding: string): void {
-        when(!is_stream && encoding != null) {
+        when(!IsStream && encoding != null) {
             Array.Resize(ref output, ContentLength :> int);
             using(ms = MemoryStream()) {
                 using(str = match(encoding) {
