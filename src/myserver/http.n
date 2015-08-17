@@ -219,7 +219,7 @@ class MyTimeEventListener: ServerEventListener {
     }
 
     public override onEvent(json: JsonObject): void {
-        def ok = NetworkLoss.handle(() => {
+        def ok = Response.withNetworkLoss(() => {
             Response.append($"id: $Id\nevent: time\ndata: $json\n\n");
             Id++;
         });
