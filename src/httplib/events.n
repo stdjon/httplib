@@ -1,0 +1,71 @@
+using System;
+using System.Collections.Generic;
+
+
+namespace httplib {
+
+public delegate ServerEvent(j: JsonObject): void;
+
+
+// TODO: This class seems somewhat unnecessary - is it possible to store a .NET
+// event in a Dictionary directly?
+class ServerEventHolder {
+
+    public event OnEvent: ServerEvent;
+
+    public call(j: JsonObject): void {
+        OnEvent ? OnEvent(j) : ();
+    }
+}
+
+
+public class ServerEventSource {
+
+    OnEvents: Dictionary[string, ServerEventHolder] { get; private set; }
+
+    public this() {
+        OnEvents = Dictionary();
+    }
+
+    public sendEvent(channel: string, j: JsonObject): void {
+        mutable probe;
+        when(OnEvents.TryGetValue(channel, out probe)) {
+            probe.call(j);
+        }
+    }
+
+    public addListener(channel: string, lst: ServerEventListener): void {
+        when(!OnEvents.ContainsKey(channel)) {
+            OnEvents[channel] = ServerEventHolder();
+        }
+        OnEvents[channel].OnEvent += lst.onEvent;
+    }
+
+    public removeListener(channel: string, lst: ServerEventListener): void {
+        OnEvents[channel].OnEvent -= lst.onEvent;
+    }
+}
+
+
+public class ServerEventListener: IDisposable {
+
+    public Source: ServerEventSource { get; private set; }
+    public Channel: string { get; private set; }
+
+    public this(src: ServerEventSource, channel: string) {
+        Source = src;
+        Channel = channel;
+        Source.addListener(Channel, this);
+    }
+
+    public Dispose(): void {
+        Source.removeListener(Channel, this);
+    }
+
+    public virtual onEvent(_j: JsonObject): void {
+        // do stuff with _j...
+    }
+}
+
+
+} // namespace httplib

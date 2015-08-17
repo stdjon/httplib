@@ -1,0 +1,102 @@
+using System;
+
+using Nemerle.Extensions;
+
+using NUnit.Framework;
+
+
+namespace httplib.test {
+
+public class TestEventBasicListener: ServerEventListener {
+
+    public Ok: bool { get; set; }
+
+    public this(src: ServerEventSource, channel: string) {
+        base(src, channel);
+        Ok = false
+    }
+
+    public override onEvent(j: JsonObject): void {
+        when(j["ok"] != null) {
+            Ok = j["ok"] :> bool;
+        }
+    }
+}
+
+
+[TestFixture]
+public class Events {
+
+    [Test] public testEventBasic(): void {
+
+        def json = JsonObject() <- [
+            "ok" = true
+        ];
+        def src = ServerEventSource();
+        def lst = TestEventBasicListener(src, "test1");
+
+        Assert.IsFalse(lst.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsFalse(lst.Ok);
+
+        src.sendEvent("test1", json);
+        Assert.IsTrue(lst.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsTrue(lst.Ok);
+    }
+
+    [Test] public testEventBasic2(): void {
+
+        def json = JsonObject() <- [
+            "ok" = true
+        ];
+        def src = ServerEventSource();
+        def lst1 = TestEventBasicListener(src, "test1");
+        def lst2 = TestEventBasicListener(src, "test2");
+
+        Assert.IsFalse(lst1.Ok);
+        Assert.IsFalse(lst2.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsFalse(lst1.Ok);
+        Assert.IsTrue(lst2.Ok);
+
+        src.sendEvent("test1", json);
+        Assert.IsTrue(lst1.Ok);
+        Assert.IsTrue(lst2.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsTrue(lst1.Ok);
+        Assert.IsTrue(lst2.Ok);
+    }
+
+    [Test] public testEventBasic3(): void {
+
+        def json = JsonObject() <- [
+            "ok" = true
+        ];
+        def src = ServerEventSource();
+        def lst1 = TestEventBasicListener(src, "test1");
+        def lst2 = TestEventBasicListener(src, "test1");
+
+        Assert.IsFalse(lst1.Ok);
+        Assert.IsFalse(lst2.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsFalse(lst1.Ok);
+        Assert.IsFalse(lst2.Ok);
+
+        src.sendEvent("test1", json);
+        Assert.IsTrue(lst1.Ok);
+        Assert.IsTrue(lst2.Ok);
+
+        src.sendEvent("test2", json);
+        Assert.IsTrue(lst1.Ok);
+        Assert.IsTrue(lst2.Ok);
+    }
+}
+
+
+} // namespace httplib.test
