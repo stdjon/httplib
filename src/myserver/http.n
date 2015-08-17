@@ -220,9 +220,7 @@ class MyTimeEventListener: ServerEventListener {
 
     public override onEvent(json: JsonObject): void {
         def ok = NetworkLoss.handle(() => {
-            Response.append($"id: $Id\n");
-            Response.append("event: time\n");
-            Response.append($"data: $json\n\n");
+            Response.append($"id: $Id\nevent: time\ndata: $json\n\n");
             Id++;
         });
         when(!ok) {
@@ -240,6 +238,8 @@ class MyServer: Server {
     [Accessor(flags = WantSetter)] mutable edit_text: string = "";
     [Accessor(flags = WantSetter)] mutable encoded_text: string = "";
     [Accessor(flags = WantSetter)] mutable edit_mode: string = "bbcode";
+
+    public LastTimeString: string { get; private set; }
 
     public new Configuration: MyServerConfiguration {
         get { base.Configuration :> MyServerConfiguration }
@@ -551,9 +551,7 @@ class MyServer: Server {
                     "other" = i * 3
                 ]).toString();
 
-                response.append($"id: $i\n");
-                response.append("event: test\n");
-                response.append($"data: $json\n\n");
+                response.append($"id: $i\nevent: test\ndata: $json\n\n");
                 Thread.Sleep(2500);
             }
             response.Status = (200, "OK");
@@ -581,9 +579,13 @@ class MyServer: Server {
     public override update(): void {
         base.update();
 
-        EventSource.sendEvent("time", JsonObject() <- [
-            "time" = DateTime.UtcNow.ToString("r"),
-        ]);
+        def now = DateTime.UtcNow.ToString("r");
+        when(LastTimeString != now) {
+            EventSource.sendEvent("time", JsonObject() <- [
+                "time" = now,
+            ]);
+            LastTimeString = now;
+        }
     }
 }
 
@@ -683,7 +685,7 @@ module Test {
 
             while(my_server.Running) {
                 my_server.update();
-                Thread.Sleep(1000);
+                Thread.Sleep(400);
             }
         }
     }

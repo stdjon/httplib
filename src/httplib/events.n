@@ -63,8 +63,10 @@ public class ServerEventListener: IDisposable {
     }
 
     public Dispose(): void {
-        Source.removeListener(Channel, this);
-        IsDisposed = true;
+        when(!IsDisposed) {
+            Source.removeListener(Channel, this);
+            IsDisposed = true;
+        }
     }
 
     public virtual onEvent(_j: JsonObject): void {
