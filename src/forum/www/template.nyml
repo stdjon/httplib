@@ -19,6 +19,7 @@ Scripts:
   - /jquery-1.11.2/jquery-1.11.2.min.js*
   - /bootstrap-3.3.4-dist/js/bootstrap.min.js*
   - /bootstrap3-dialog-1.34.5/dist/js/bootstrap-dialog.min.js*
+  - /EventSource-0.0.6/eventsource.min.js*
   - /hypher-0.2.3/dist/jquery.hypher.js
   - /hyphenation-patterns-0.2.1/dist/browser/en-gb.js
   - /dialog.js

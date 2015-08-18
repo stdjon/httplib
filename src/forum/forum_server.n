@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 using Nemerle.Extensions;
 
@@ -120,6 +121,8 @@ public class ForumServer: Server {
 
         route(HTTP.GET, "/admin", AdminHandler.Factory("admin.nyml"));
         route(HTTP.POST, "/admin-update", AdminUpdateHandler.Factory());
+
+        route(HTTP.GET, "/updates", updateSourceResponse);
     }
 
     public override error(
@@ -364,12 +367,22 @@ public class ForumServer: Server {
         }
 
         if(ok) {
+            mutable full = false;
+            try {
+                full = Boolean.Parse(context.Vars["f"]);
+            } catch {
+                | _ => {}
+            }
             def json = JsonObject() <- [
                 "p" = post_id,
                 "o" = output,
-                "i" = input,
-                "t" = transform,
             ];
+            when(full) {
+                _ = json <- [
+                    "i" = input,
+                    "t" = transform,
+                ];
+            }
             when(tags != null) {
                 json["tg"] = encodeTags(tags);
             }
@@ -550,6 +563,31 @@ public class ForumServer: Server {
             fdb.starPost(pid, uid, on, puid, thid);
         }
         response.Status = (200, "OK");
+    }
+
+    public updateSourceResponse(
+        _context: Context, request: Request, response: Response): void {
+
+        using(fdb = openForumDatabase()) {
+            def user_id = fdb.getUserIdFromCookie(request, STOK.INSECURE);
+
+            response.asEventSource(() => {
+                using(lst = ForumEventListener(
+                    EventSource, "update", user_id, response)) {
+
+                    while(!lst.IsDisposed) {
+                        lst.update();
+                        Thread.Sleep(1000);
+                        //throw Exception("showme");
+                    }
+                    response.Status = (200, "OK");
+                }
+            });
+        }
+    }
+
+    public sendUpdate(json: JsonObject): void {
+        EventSource.sendEvent("update", json);
     }
 
     public override internalServerError(ex: Exception): void {

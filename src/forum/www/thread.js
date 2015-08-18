@@ -187,7 +187,7 @@ function populateEditData(pid) {
         dataType: 'json',
         global: false,
         url: '/get-post',
-        data: 'p=' + pid,
+        data: 'p=' + pid + '&f=true',
 
         success: function(data) {
             $('#te-' + wnd_id).html(data.i);

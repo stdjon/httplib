@@ -63,6 +63,10 @@ public class ForumDatabase: IDisposable {
         Database.Dispose();
     }
 
+    public sendUpdate(json: JsonObject): void {
+        Server.sendUpdate(json);
+    }
+
     public registerSessionToken(
         tok: SessionTokenType, id: uint): bool * string * DateTime {
 
@@ -410,6 +414,12 @@ public class ForumDatabase: IDisposable {
                         def tags = tagsFromTagString(tag_string);
                         def ids = getTagIds(tags);
                         _ = insertPostTags(post_id, ids);
+
+                        sendUpdate(JsonObject() <- [
+                            "type" = "post",
+                            "action" = "create",
+                            "post_id" = post_id,
+                        ]);
                     }
                 }
             }, ex => {
@@ -471,6 +481,12 @@ public class ForumDatabase: IDisposable {
                     deleteExistingPostTags(post_id);
                     def ids = getTagIds(tags);
                     _ = insertPostTags(post_id, ids);
+
+                    sendUpdate(JsonObject() <- [
+                        "type" = "post",
+                        "action" = "update",
+                        "post_id" = post_id,
+                    ]);
                 }
             }, ex => {
                 Server.internalServerError(ex);

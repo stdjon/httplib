@@ -1,0 +1,38 @@
+using System;
+
+using httplib;
+
+
+namespace forum {
+
+public class ForumEventListener: ServerEventListener {
+
+    public Response: Response { get; private set; }
+    public Id: int { get; private set; }
+    public UserId: uint { get; private set; }
+
+    public this(
+        src: ServerEventSource, channel: string, user_id: uint, res: Response) {
+
+        base(src, channel);
+        UserId = user_id;
+        Response = res;
+        Id = 0;
+    }
+
+    public override onEvent(json: JsonObject): void {
+
+        json["time"] = Date.NowTicks.ToString();
+
+        def ok = Response.withNetworkLoss(() => {
+            Response.append($"id: $Id\nevent: $Channel\ndata: $json\n\n");
+            Id++;
+        });
+        when(!ok) {
+            Dispose();
+        }
+    }
+}
+
+
+}

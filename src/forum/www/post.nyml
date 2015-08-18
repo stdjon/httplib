@@ -2,6 +2,7 @@
 Template: template-1panel.nyml
 Scripts:
   - /swatches.js
+  - /post.js
 Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}"
 Partials:
   Nav: "{{>NavLogin}}"
@@ -24,7 +25,7 @@ Partials:
           <a href="{{DefaultPrefix}}/u/{{User}}">
             <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{User}}" width="40" height="40"/>
           </a>
-          {{{Content}}}<br>
+          <span id="post-content">{{{Content}}}</span><br>
           <div>
             <small>
               {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
@@ -39,5 +40,7 @@ Partials:
       <br>
     {{/PostId}}
     </div>
+  ReloadableScript: |
+    initPostPage({{PostId}});
 
 
