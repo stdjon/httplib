@@ -40,11 +40,11 @@ public class ServerEventSource {
         when(!Events.ContainsKey(channel)) {
             Events[channel] = ServerEventHolder();
         }
-        Events[channel].OnEvent += lst.onEvent;
+        Events[channel].OnEvent += lst.pushQueue;
     }
 
     public removeListener(channel: string, lst: ServerEventListener): void {
-        Events[channel].OnEvent -= lst.onEvent;
+        Events[channel].OnEvent -= lst.pushQueue;
     }
 }
 
