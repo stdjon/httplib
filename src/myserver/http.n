@@ -564,6 +564,7 @@ class MyServer: Server {
         response.asEventSource(() => {
             using(lst = MyTimeEventListener(EventSource, "time", response)) {
                 while(!lst.IsDisposed) {
+                    lst.update();
                     Thread.Sleep(1000);
                 }
                 response.Status = (200, "OK");

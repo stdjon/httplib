@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 
@@ -54,11 +55,13 @@ public class ServerEventListener: IDisposable {
     public Source: ServerEventSource { get; private set; }
     public Channel: string { get; private set; }
     public IsDisposed: bool { get; private set; }
+    public Queue: ConcurrentQueue[JsonObject] { get; private set; }
 
     public this(src: ServerEventSource, channel: string) {
         Source = src;
         Channel = channel;
         IsDisposed = false;
+        Queue = ConcurrentQueue();
         Source.addListener(Channel, this);
     }
 
@@ -66,6 +69,17 @@ public class ServerEventListener: IDisposable {
         when(!IsDisposed) {
             Source.removeListener(Channel, this);
             IsDisposed = true;
+        }
+    }
+
+    public pushQueue(j: JsonObject): void {
+        Queue.Enqueue(j);
+    }
+
+    public update(): void {
+        mutable probe;
+        while(Queue.TryDequeue(out probe)) {
+            onEvent(probe);
         }
     }
 
