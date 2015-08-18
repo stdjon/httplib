@@ -19,6 +19,42 @@ var _copy = {
     user: undefined,
 };
 
+var _source;
+
+
+function initEventSource() {
+
+    if(!_source) {
+        _source = new EventSource('/updates');
+        _source.addEventListener('update', function(e) {
+
+            var d = JSON.parse(e.data);
+
+            if(d.type === 'post') {
+                if( (d.action === 'create') &&
+                    (d.thread_id === _g.ThreadId) ) {
+
+                    reloadPageContent();
+
+                } else if( (d.action === 'update') &&
+                    (_g.Posts.indexOf(d.post_id) >= 0) ) {
+
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        global: false,
+                        url: '/get-post',
+                        data: 'p=' + d.post_id,
+                        success: function(data) {
+                            $('#c-' + d.post_id).html(data.o);
+                        }
+                    });
+                }
+            }
+        });
+    }
+}
+
 
 function openWindow(num, wnd_id, text, next) {
     var w = _w[text];
@@ -395,11 +431,12 @@ function star(btn, pid) {
 }
 
 
-function initThreadPage(thid, transform, from, to) {
+function initThreadPage(thid, transform, from, to, posts) {
     _g.ThreadId = thid;
     _g.Transform = transform;
     _g.From = from;
     _g.To = to;
+    _g.Posts = posts;
 
     switch(transform) {
         case 'bbcode': {
@@ -419,6 +456,8 @@ function initThreadPage(thid, transform, from, to) {
     $('span[data-thumbed="true"], span[data-starred="true"]').each(function () {
         $(this).css('color', colFromId(_g.ColourId));
     });
+
+    initEventSource();
 }
 
 

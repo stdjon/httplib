@@ -419,6 +419,7 @@ public class ForumDatabase: IDisposable {
                             "type" = "post",
                             "action" = "create",
                             "post_id" = post_id,
+                            "thread_id" = thread_id,
                         ]);
                     }
                 }
