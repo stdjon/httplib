@@ -380,7 +380,7 @@ public class Request {
         get { Headers[key] }
     }
 
-    public this(req: HttpListenerRequest, server: Server) {
+    public this(server: Server, req: HttpListenerRequest) {
 
         http_method = req.HttpMethod.methodType();
         url = req.Url;
@@ -524,13 +524,15 @@ public class Response {
     }
 
     public Cookies: CookieSetter { get; private set; }
+    public Server: Server { get; private set; }
 
     mutable response: HttpListenerResponse;
     mutable output: array[byte];
 
-    public this(res: HttpListenerResponse, output_length = 1024) {
+    public this(server: Server, res: HttpListenerResponse, output_length = 1024) {
 
         Cookies = CookieSetter(res);
+        Server = server;
         response = res;
         output = array(output_length);
     }
@@ -553,22 +555,22 @@ public class Response {
 
         IsStream = true;
         ContentType = "text/event-stream";
+        // This header is required to run SSE behind a proxy (e.g. nginx)
+        this["X-Accel-Buffering"] = "no";
 
         // As the event source is a long-running task, make a new thread to run
         // it in. (HttpListener.BeginGetContext() will sometimes try to run tasks
         // on the main thread, which causes instant deadlock...)
         Thread(() => {
-            def ok = withNetworkLoss(lambda);
-            Status = ok ?
-                (200, "OK") :
-                (500, "Internal Server Error");
+            _ = withNetworkLoss(lambda);
         }).Start();
     }
 
     // Handle losing a network connection gracefully - if the client (e.g. of an
-    // EventSource) is uncleanly shut down, we get a HttpListenerException with
-    // ErrorCode == 1229 (ERROR_CONNECTION_INVALID).
-    // (See https://msdn.microsoft.com/en-us/library/ms681383(v=vs.85).aspx)
+    // EventSource) is uncleanly shut down, we could get some exceptions which
+    // we'd consider 'normal' (e.g a HttpListenerException with ErrorCode 1229
+    // ERROR_CONNECTION_INVALID), and will completely suppress. The res will be
+    // passed to Server for normal handling.
     public withNetworkLoss(lambda: void -> void): bool {
         mutable result = false;
         try {
@@ -578,9 +580,9 @@ public class Response {
             | ex is HttpListenerException => {
                 match(ex.ErrorCode) {
                     | 1229 => ();
-                    | _ => throw ex;
+                    | _ => Server.internalServerError(ex);
                 }
-            }
+            | ex => Server.internalServerError(ex);
         }
         result;
     }

@@ -554,7 +554,6 @@ class MyServer: Server {
                 response.append($"id: $i\nevent: test\ndata: $json\n\n");
                 Thread.Sleep(2500);
             }
-            response.Status = (200, "OK");
         })
     }
 

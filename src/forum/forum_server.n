@@ -578,9 +578,7 @@ public class ForumServer: Server {
                     while(!lst.IsDisposed) {
                         lst.update();
                         Thread.Sleep(1000);
-                        //throw Exception("showme");
                     }
-                    response.Status = (200, "OK");
                 }
             });
         }
@@ -591,8 +589,8 @@ public class ForumServer: Server {
     }
 
     public override internalServerError(ex: Exception): void {
-        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}",
-            ex.Message, ex.GetExtendedStackTrace());
+        Log.e("INTERNAL SERVER ERROR!\n{0}\n{1}\n{2}",
+            ex.GetType(), ex.Message, ex.GetExtendedStackTrace());
     }
 
     public getDefaultPrefix(request: Request): string {

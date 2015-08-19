@@ -234,7 +234,7 @@ public class Server: IDisposable {
                 (HTTP.CONNECT, ".*") ], methodNotAllowedResponse);
 
         Listener.AuthenticationSchemeSelectorDelegate = req => {
-            def request = Request(req, this);
+            def request = Request(this, req);
             handleAuthentication(request);
         };
 
@@ -455,8 +455,8 @@ public class Server: IDisposable {
         mutable context, request, response;
         try {
             context = Context();
-            request = Request(http_ctx.Request, this);
-            response = Response(http_ctx.Response, Configuration.OutputLength);
+            request = Request(this, http_ctx.Request);
+            response = Response(this, http_ctx.Response, Configuration.OutputLength);
             setResponseHeaders(response);
 
             Log.w("Requesting: \"/{0}\" (referrer={1}, endpoint={2})...",
