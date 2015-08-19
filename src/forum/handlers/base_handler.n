@@ -39,16 +39,18 @@ public class BaseHandler: ComplexHandler {
     public checkBrowser(): void {
 
         def agent = Request["User-Agent"];
-        mutable browser = "unknown";
+        mutable browser = "Unknown";
 
-        when(Regex(".*Chrome.*").IsMatch(agent)) {
-            browser = "Chrome";
-        }
-        when(Regex(".*Firefox.*").IsMatch(agent)) {
-            browser = "Firefox";
-        }
-        when(Regex(".*Trident.*").IsMatch(agent)) {
-            browser = "IE";
+        when(agent != null) {
+            when(Regex(".*Chrome.*").IsMatch(agent)) {
+                browser = "Chrome";
+            }
+            when(Regex(".*Firefox.*").IsMatch(agent)) {
+                browser = "Firefox";
+            }
+            when(Regex(".*Trident.*").IsMatch(agent)) {
+                browser = "IE";
+            }
         }
 
         PageData[$"$(browser)Browser"] = true;
