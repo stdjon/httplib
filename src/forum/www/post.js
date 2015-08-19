@@ -19,6 +19,7 @@ function initEventSource() {
                     data: 'p=' + _g.PostId,
                     success: function(data) {
                         $('#post-content').html(data.o);
+                        $('#post-tags').html(tagsHtml(decodeTagString(data.tg)));
                     }
                 });
             }

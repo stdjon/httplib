@@ -2,6 +2,7 @@
 Template: template-1panel.nyml
 Scripts:
   - /swatches.js
+  - /tags.js
   - /post.js
 Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}"
 Partials:
@@ -28,7 +29,9 @@ Partials:
           <span id="post-content">{{{Content}}}</span><br>
           <div>
             <small>
-              {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
+              <div id="post-tags">
+                {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
+              </div>
             </small>
           <div class="alignment1 rhs">
             &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> {{CreateDate}}
