@@ -619,11 +619,13 @@ public class Response {
         when(!IsStream && encoding != null) {
             Array.Resize(ref output, ContentLength :> int);
             using(ms = MemoryStream()) {
-                using(str = match(encoding) {
-                    | "gzip" => GZipStream(ms, CompressionMode.Compress)
-                    | "deflate" => DeflateStream(ms, CompressionMode.Compress)
-                    | _ => null }) {
-
+                def zip_ctor: Stream * CompressionMode -> Stream =
+                    match(encoding) {
+                        | "gzip" => GZipStream
+                        | "deflate" => DeflateStream
+                        | _ => null
+                    };
+                using(str = zip_ctor(ms, CompressionMode.Compress)) {
                     str.Write(output, 0, output.Length);
                 }
                 output = ms.ToArray();
