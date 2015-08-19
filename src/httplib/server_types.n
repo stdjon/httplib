@@ -582,6 +582,7 @@ public class Response {
                     | 1229 => ();
                     | _ => Server.internalServerError(ex);
                 }
+            }
             | ex => Server.internalServerError(ex);
         }
         result;
