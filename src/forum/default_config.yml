@@ -67,10 +67,7 @@ Modules:
     Typename: forum.mod.Filter
     Data:
       Filters:
-        - { Search: "first post", Replace: "lame", Flags: "Boundary" }
-        - { Search: "frist post", Replace: "lamer", Flags: "IgnoreCase|Boundary" }
-        - { Search: "cock", Replace: "rooster", Flags: "IgnoreCase" }
-        - { Search: "string", Replace: "chord", Flags: "IgnoreCase" }
+#        - { Search: "filter", Replace: "retlif", Flags: "IgnoreCase" }
   Pbkdf2Auth:
     Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth
