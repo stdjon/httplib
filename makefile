@@ -181,7 +181,7 @@ all:
 # INCLUDE FRAGMENTS
 
 this_makefile=$(lastword $(MAKEFILE_LIST))
-this_dir=$(dir $(this_makefile))
+this_dir=$(patsubst %/,%,$(dir $(this_makefile)))
 
 # Look for makefile fragments with .mak extension under src/ and up to three
 # levels deeper. These will contain rules for how to build specific library and
