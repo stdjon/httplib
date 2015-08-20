@@ -102,6 +102,7 @@ public class ForumServer: Server {
         route(HTTP.POST, "/createpost", createPostResponse);
         route(HTTP.POST, "/update-post", updatePostResponse);
         route(HTTP.POST, "/get-post", getPostDataResponse);
+        route(HTTP.POST, "/update-title", updateTitleResponse);
 
         route([ (HTTP.POST, "/window"),
                 (HTTP.GET, "/window")], // for testing only?
@@ -387,6 +388,44 @@ public class ForumServer: Server {
                 json["tg"] = encodeTags(tags);
             }
             response.append(json.toString());
+            response.Status = (200, "OK");
+        } else {
+            internalServerErrorResponse(context, request, response);
+        }
+    }
+
+    public updateTitleResponse(
+        context: Context, request: Request, response: Response): void {
+
+        mutable ok = false;
+        def title = context.Vars["t"];
+        def thread_id = UInt32.Parse(context.Vars["th"]);
+        using(fdb = openForumDatabase()) {
+            def db = fdb.Database;
+            def user_id = fdb.getUserIdFromCookie(request, STOK.INSECURE);
+            when(user_id > 0) {
+                def command = db.createCommand(
+                    "SELECT UserId FROM Threads WHERE Id = @Id") <- [
+                        "@Id" = thread_id,
+                    ];
+                def thread_user_id = command.executeScalar() :> uint;
+                def authorized = fdb.userIsAdmin(user_id) ||
+                    (thread_user_id == user_id);
+
+                when(authorized) {
+                    def command2 = db.createCommand(
+                        "UPDATE Threads SET Title = @Title WHERE Id = @Id") <- [
+                            "@Title" = title,
+                            "@Id" = thread_id,
+                        ];
+
+                    def result2 = command2.executeNonQuery();
+                    ok = (result2 > 0);
+                }
+            }
+        }
+
+        if(ok) {
             response.Status = (200, "OK");
         } else {
             internalServerErrorResponse(context, request, response);

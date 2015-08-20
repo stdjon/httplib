@@ -14,7 +14,19 @@ Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
     <div class="jumbotron anchor">
-      <h1>{{#Title}}{{Title}}{{/Title}}{{^Title}}No such thread{{/Title}}</h1>
+      <h1>
+        {{#Title}}
+          <span id="title">{{Title}}</span>
+          {{#IsOwnThread}}
+            <div id="title-edit" style="display: none;" class="expanding-area expanding-h1-area">
+              <pre><span></span><br></pre>
+              <textarea id="title-text" maxlength="60" placeholder="[New Thread]" name="title"></textarea>
+            </div>
+            <span id="edit" title="Edit thread title" class="fa fa-edit ptr" onclick="editTitle()"></span>
+          {{/IsOwnThread}}
+        {{/Title}}
+        {{^Title}}No such thread{{/Title}}
+      </h1>
     </div>
   Body: |
     <style>
