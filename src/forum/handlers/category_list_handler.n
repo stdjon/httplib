@@ -53,7 +53,8 @@ public class CategoryListHandler: BasePageHandler {
                     "Name" = cat,
                     "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
                     "Colour" = colour,
-                    "ColourHsl" = CssHandler.bgFromColourId(colour),
+                    "ColourBgHsl" = CssHandler.bgFromColourId(colour),
+                    "ColourFgHsl" = CssHandler.fgFromColourId(colour),
                 ];
             }
         });
@@ -64,9 +65,11 @@ public class CategoryListHandler: BasePageHandler {
 
         for(mutable j = 0; j < categories.Length; j++) {
             def id = categories[j]["UserId"] :> uint;
+            def cid = categories[j]["Id"] :> uint;
             def name = ForumDatabase.getUserName(id);
             categories[j]["User"] = name;
             categories[j]["UserDisplay"] = userDisplayName(id);
+            categories[j]["ThreadCount"] = ForumDatabase.getThreadCount(cid);
         }
 
         def prf = Server.getDefaultPrefix(Request);
