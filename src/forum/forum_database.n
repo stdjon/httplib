@@ -213,6 +213,12 @@ public class ForumDatabase: IDisposable {
         command.executeScalar() :> string;
     }
 
+    public getCategoryColour(cat_id: uint): string {
+        def command = Database.createCommand(
+            "SELECT Colour FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];
+        command.executeScalar() :> string;
+    }
+
     public userIsAdmin(user_id: uint): bool {
         def command = Database.createCommand(
             "SELECT IsAdmin FROM Users WHERE Id=@Id") <- [

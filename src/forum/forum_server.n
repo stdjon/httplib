@@ -54,6 +54,7 @@ public class ForumServer: Server {
 
         route(HTTP.POST, "/prefs", updatePrefsResponse);
         route(HTTP.POST, "/categories", categoryListResponse);
+        route(HTTP.POST, "/col", categoryColourResponse);
 
         route(HTTP.POST, "/recover", RecoveryInitiateHandler.Factory());
         route(HTTP.GET, "/recover/{{token:.*}}",
@@ -552,6 +553,9 @@ public class ForumServer: Server {
         _context: Context, _request: Request, response: Response): void {
 
         using(db = openDatabase()) {
+            // TODO: this assumes categories are in a nice list from 1 -> count.
+            // We should probably be selecting Id, Name, and returning a mapping
+            // of ids to names to be more robust...
             def command = db.createCommand("SELECT Name FROM Categories");
             def cats = List();
             command.execute(reader => {
@@ -561,6 +565,23 @@ public class ForumServer: Server {
                 }
             });
             def json = JsonObject() <- [ "categories" = cats ];
+            response.append(json.toString());
+        }
+    }
+
+    public categoryColourResponse(
+        context: Context, _request: Request, response: Response): void {
+
+        using(fdb = openForumDatabase()) {
+            def category = context.Vars["c"];
+            def cat_id = fdb.getCategoryId(category);
+            def colour = (cat_id > 0) ?
+                fdb.getCategoryColour(cat_id) :
+                Configuration.DefaultColourClass;
+            def json = JsonObject() <- [
+                "id" = cat_id,
+                "colour" = colour,
+            ];
             response.append(json.toString());
         }
     }

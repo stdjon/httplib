@@ -91,7 +91,6 @@ function populateCategories(select, hl, cats) {
         }
         opt.appendTo(select);
     }
-    select.trigger('change');
 }
 
 
@@ -107,6 +106,28 @@ function getCategoryList(cb) {
     });
 }
 
+
+function updateCategory(cat) {
+    $.ajax({
+        type: 'POST',
+        dataType: 'json',
+        global: false,
+        url: '/col',
+        data: 'c=' + encodeURIComponent(cat),
+        success: function(data) {
+            _g.ColourClass = _g.ColourId = data.colour;
+            selectSwatch(_g.ColourClass);
+        }
+    });
+}
+
+
+getCategoryList(function(data) {
+    populateCategories('select#category', _g.Category, data);
+    updateCategory(_g.Category);
+});
+
+
 // install handler for (hacked) keypress events from select2 elements
 $(document).ready(function() {
     $('body').on("s2_keypress", function(_, e) {
@@ -116,8 +137,7 @@ $(document).ready(function() {
         var v = $(this).val();
         $('#tags').val(encodeTagString(v));
     });
-
-    getCategoryList(function(data) {
-        populateCategories('select#category', _g.Category, data);
+    $('select#category').on('select2:select', function(e) {
+        updateCategory(e.params.data.text);
     });
 });

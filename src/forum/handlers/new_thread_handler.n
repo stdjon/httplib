@@ -33,19 +33,25 @@ public class NewThreadHandler: BasePageHandler {
     public override initialize(): void {
         base.initialize();
 
-        using(db = Server.openDatabase()) {
+        using(fdb = Server.openForumDatabase()) {
 
+            PageData["IsAdmin"] = fdb.userIsAdmin(SignedInUserId);
+
+            def db = fdb.Database;
             def cat = Context.Vars["category"];
             when(!String.IsNullOrEmpty(cat)) {
                 def catid = UInt32.Parse(cat);
                 PageData["CategoryId"] = catid;
 
                 def command = db.createCommand(
-                    "SELECT Name FROM Categories WHERE Id = @Id") <- [
+                    "SELECT Name, Colour FROM Categories WHERE Id = @Id") <- [
                         "@Id" = catid,
                     ];
-                def catname = command.executeScalar() :> string;
-                PageData["Category"] = catname;
+                command.execute(reader => {
+                    PageData["Category"] = reader.getValue("Name");
+                    PageData["ColourId"] = reader.getValue("Colour");
+                    PageData["ColourClass"] = reader.getValue("Colour");
+                });
             }
 
             def command2 = db.createCommand(

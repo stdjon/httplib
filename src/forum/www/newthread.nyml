@@ -26,8 +26,10 @@ Partials:
       div.alignment { padding: 25px 50px; }
     </style>
     <div class="alignment">
-      {{>Swatches}}
-      <p></p>
+      {{#IsAdmin}}
+        {{>Swatches}}
+        <p></p>
+      {{/IsAdmin}}
       <p>
         <table style="width: 100%;"><tr><td>A new thread in the category:</td>
         <td style="width: 80%;"><select id="category" name="category" data-placeholder="[Category]"
