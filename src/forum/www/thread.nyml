@@ -59,50 +59,50 @@ Partials:
           [<a href="{{DefaultPrefix}}/p/{{PostId}}">#{{PostId}}</a>]
           {{CreateDate}}</small><br class="visible-xs"><!--TODO: visible-xs on portrait only?-->
           {{#SignedInUser}}
-          <span style="word-spacing: 15px;">
-          &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
-            onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
-          {{#IsOwnPost}}
-          <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
-            onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
-          {{/IsOwnPost}}
-          <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
-            style="color: #ccc" ></span>
-          {{#IsOwnPost}}
-          <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs" style="color: #ccc"></span><!--
-            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
-          {{/IsOwnPost}}
-          {{^IsOwnPost}}
-          {{#IsOwnThumb}}
-          <span class="ptr fa fa-fw fa-thumbs-up" title="Commend post"
-            onclick="thumbsup(this, {{PostId}})"
-            data-thumbed="true" data-old-color="#333"></span><!--
-            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
-          {{/IsOwnThumb}}
-          {{^IsOwnThumb}}
-          <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
-            onclick="thumbsup(this, {{PostId}})"></span><!--
-            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
-          {{/IsOwnThumb}}
-          {{/IsOwnPost}}
-          {{#IsOwnBookmark}}
-          <span class="ptr fa fa-fw fa-star" title="Bookmark post"
-            onclick="star(this, {{PostId}})"
-            data-starred="true" data-old-color="#333"></span><!--
-            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
-          {{/IsOwnBookmark}}
-          {{^IsOwnBookmark}}
-          <span class="ptr fa fa-fw fa-star-o" title="Bookmark post"
-            onclick="star(this, {{PostId}})"></span><!--
-            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
-          {{/IsOwnBookmark}}
-          </span>
+            <span style="word-spacing: 15px;">
+              &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
+                onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
+              {{#IsOwnPost}}
+                <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
+                  onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
+              {{/IsOwnPost}}
+                <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
+                  style="color: #ccc" ></span>
+              {{#IsOwnPost}}
+                <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs" style="color: #ccc"></span><!--
+                  --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+              {{/IsOwnPost}}
+              {{^IsOwnPost}}
+                {{#IsOwnThumb}}
+                  <span class="ptr fa fa-fw fa-thumbs-up" title="Commend post"
+                    onclick="thumbsup(this, {{PostId}})"
+                    data-thumbed="true" data-old-color="#333"></span><!--
+                    --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+                {{/IsOwnThumb}}
+                {{^IsOwnThumb}}
+                  <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
+                    onclick="thumbsup(this, {{PostId}})"></span><!--
+                    --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+                {{/IsOwnThumb}}
+              {{/IsOwnPost}}
+              {{#IsOwnBookmark}}
+                <span class="ptr fa fa-fw fa-star" title="Bookmark post"
+                  onclick="star(this, {{PostId}})"
+                  data-starred="true" data-old-color="#333"></span><!--
+                  --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+              {{/IsOwnBookmark}}
+              {{^IsOwnBookmark}}
+                <span class="ptr fa fa-fw fa-star-o" title="Bookmark post"
+                  onclick="star(this, {{PostId}})"></span><!--
+                  --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+              {{/IsOwnBookmark}}
+            </span>
           {{/SignedInUser}}
           {{^SignedInUser}}
-          <span class="fa fa-fw fa-thumbs-o-up" title="Commend post"></span><!--
-            --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
-          <span class="fa fa-fw fa-star-o" title="Bookmark post"></span><!--
-            --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+            <span class="fa fa-fw fa-thumbs-o-up" title="Commend post"></span><!--
+              --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+            <span class="fa fa-fw fa-star-o" title="Bookmark post"></span><!--
+              --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
           {{/SignedInUser}}
           </div>
           <div class="rhs"><small>
