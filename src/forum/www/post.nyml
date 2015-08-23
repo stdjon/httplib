@@ -1,8 +1,13 @@
 ---
 Template: template-1panel.nyml
+Stylesheets:
+  - /expanding-area.css
 Scripts:
+  - /select2-4.0.0/dist/js/select2.js
   - /swatches.js
+  - /expanding-area.js
   - /tags.js
+  - /postcontrol.js
   - /post.js
 Title: "{{#PostId}}Post #{{PostId}}{{/PostId}}{{^PostId}}No such post{{/PostId}}"
 Partials:
@@ -26,17 +31,74 @@ Partials:
           <a href="{{DefaultPrefix}}/u/{{User}}">
             <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{User}}" width="40" height="40"/>
           </a>
-          <span id="post-content">{{{Content}}}</span><br>
+          <span id="c-{{PostId}}" data-author="{{User}}">{{{Content}}}</span><br>
           <div>
             <small>
-              <div id="post-tags">
+              <div id="tg-{{PostId}}">
                 {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
               </div>
             </small>
           <div class="alignment1 rhs">
             &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> {{CreateDate}}
-            <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs"></span><small>({{Thumbs}})</small>
-            <span class="fa fa-fw fa-star-o" title="Stars"></span><small>({{Bookmarks}})</small>
+
+            {{#SignedInUser}}
+              <span style="word-spacing: 15px;">
+                &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
+                  onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
+                {{#IsOwnPost}}
+                  <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
+                    onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
+                {{/IsOwnPost}}
+                  <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
+                    style="color: #ccc" ></span>
+                {{#IsOwnPost}}
+                  <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs" style="color: #ccc"></span><!--
+                    --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+                {{/IsOwnPost}}
+                {{^IsOwnPost}}
+                  {{#IsOwnThumb}}
+                    <span class="ptr fa fa-fw fa-thumbs-up" title="Commend post"
+                      onclick="thumbsup(this, {{PostId}})"
+                      data-thumbed="true" data-old-color="#333"></span><!--
+                      --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+                  {{/IsOwnThumb}}
+                  {{^IsOwnThumb}}
+                    <span class="ptr fa fa-fw fa-thumbs-o-up" title="Commend post"
+                      onclick="thumbsup(this, {{PostId}})"></span><!--
+                      --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+                  {{/IsOwnThumb}}
+                {{/IsOwnPost}}
+                {{#IsOwnBookmark}}
+                  <span class="ptr fa fa-fw fa-star" title="Bookmark post"
+                    onclick="star(this, {{PostId}})"
+                    data-starred="true" data-old-color="#333"></span><!--
+                    --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+                {{/IsOwnBookmark}}
+                {{^IsOwnBookmark}}
+                  <span class="ptr fa fa-fw fa-star-o" title="Bookmark post"
+                    onclick="star(this, {{PostId}})"></span><!--
+                    --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+                {{/IsOwnBookmark}}
+              </span>
+            {{/SignedInUser}}
+            {{^SignedInUser}}
+              <span class="fa fa-fw fa-thumbs-o-up" title="Commend post"></span><!--
+                --><small>(<span id="tc-{{PostId}}">{{Thumbs}}</span>)</small>
+              <span class="fa fa-fw fa-star-o" title="Bookmark post"></span><!--
+                --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
+            {{/SignedInUser}}
+
+            <div class="rhs"><small>
+            {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
+            {{#ReplySep}} | {{/ReplySep}}
+            {{#HasReplies}}
+              {{ReplySummary}}:
+                {{#Replies}}
+                  [<a href="{{PostUrl}}">#{{PostId}}</a>]
+                {{/Replies}}
+              {{/HasReplies}}
+            </small></div>
+
           </div>
         </div>
       </div>
@@ -44,6 +106,6 @@ Partials:
     {{/PostId}}
     </div>
   ReloadableScript: |
-    initPostPage({{PostId}});
+    initPostPage({{PostId}}, {{ThreadId}}, "{{Transform}}");
 
 

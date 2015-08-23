@@ -25,7 +25,7 @@ public class PostHandler: BasePageHandler {
 
         def pid = UInt32.Parse(Context.Vars["num"]);
         def command = Database.createCommand(
-            "SELECT UserId, ThreadId, CreateDate, Points, OutputContent FROM "
+            "SELECT UserId, ThreadId, CreateDate, Points, OutputContent, ReplyTo FROM "
                 "Posts WHERE Id = @Id") <- [ "@Id" = pid ];
 
         mutable uid;
@@ -33,6 +33,7 @@ public class PostHandler: BasePageHandler {
         mutable date;
 //        mutable points;
         mutable content;
+        mutable reply_to;
         mutable ok = false;
 
         command.execute(reader => {
@@ -41,6 +42,7 @@ public class PostHandler: BasePageHandler {
             date = reader.getValue("CreateDate", 0L);
 //            points = reader.getValue("Points", 0);
             content = reader.getValue("OutputContent");
+            reply_to = reader.getValue("ReplyTo"): uint?;
             ok = true;
         });
 
@@ -65,6 +67,7 @@ public class PostHandler: BasePageHandler {
 
             _ = PageData <- [
                 "PostId" = pid,
+                "Number" = 1,
                 "PostUrl" = buildPostUrl(pid, thid),
                 "User" = name,
                 "UserDisplay" = userDisplayName(uid),
@@ -76,7 +79,15 @@ public class PostHandler: BasePageHandler {
                 "Bookmarks" = bookmarks,
                 "Content" = content,
                 "ColourId" = colour,
+                "IsOwnPost" = (uid == SignedInUserId),
+
             ];
+            when(reply_to != null) {
+                _ = PageData <- [
+                    "ReplyTo" = reply_to :> uint,
+                    "ReplyToUrl" = postUrl(reply_to :> uint),
+                ];
+            }
 
             // Tags
             def tags = ForumDatabase.getPostTags(pid);
@@ -95,6 +106,47 @@ public class PostHandler: BasePageHandler {
                     "HasTags" = true,
                 ];
             }
+
+            // Replies
+            def command = Database.createCommand(
+                "SELECT Count(Id) FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                    "@ReplyTo" = pid,
+                ];
+            def result = command.executeScalar() :> long?;
+            when(result != null) {
+                def reply_count = result :> int;
+                when(reply_count > 0) {
+                    def replies: PageDataArray = array(reply_count);
+
+                    def command2 = Database.createCommand(
+                        "SELECT PostId FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                            "@ReplyTo" = pid,
+                        ];
+                    _ = command2.execute((j, reader) => {
+                        def pid = reader.getValue("PostId", 0U);
+                        replies[j] = PageData() <- [
+                            "PostId" = pid,
+                            "PostUrl" = postUrl(pid),
+                        ];
+                    });
+
+                    PageData["HasReplies"] = true;
+                    def plural = reply_count > 1;
+                    PageData["ReplySummary"] =
+                        $<#$reply_count $(plural ? "replies" : "reply")#>; //TODO: l8n?
+                    PageData["Replies"] = replies;
+
+                    when(PageData.ContainsKey("ReplyTo")) {
+                        PageData["ReplySep"] = true;
+                    }
+                }
+                PageData["ReplyCount"] = reply_count;
+            }
+
+            // User pref (transform)
+            def command4 = Database.createCommand(
+                "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
+            PageData["Transform"] = command4.executeScalar() :> string;
         }
     }
 
@@ -119,6 +171,10 @@ public class PostHandler: BasePageHandler {
         } else {
             $"$prefix/th/$thread_id/$from-$to#$post_number"
         }
+    }
+
+    public postUrl(post_id: uint): string {
+        $"$(Server.getDefaultPrefix(Request))/p/$post_id"
     }
 
 }

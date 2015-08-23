@@ -18,8 +18,8 @@ function initEventSource() {
                     url: '/get-post',
                     data: 'p=' + _g.PostId,
                     success: function(data) {
-                        $('#post-content').html(data.o);
-                        $('#post-tags').html(tagsHtml(decodeTagString(data.tg)));
+                        $('#c-' + _g.PostId).html(data.o);
+                        $('#tg-' + _g.PostId).html(tagsHtml(decodeTagString(data.tg)));
                     }
                 });
             }
@@ -27,7 +27,16 @@ function initEventSource() {
     }
 }
 
-function initPostPage(post_id) {
+
+function initPostPage(post_id, thread_id, transform) {
     _g.PostId = post_id;
+    _g.ThreadId = thread_id;
+    _g.Transform = transform;
     initEventSource();
+    initTransform(transform);
 }
+
+
+$(document).ready(function() {
+    initPostControls();
+});
