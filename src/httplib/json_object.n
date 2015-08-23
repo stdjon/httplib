@@ -54,12 +54,20 @@ public class JsonObject {
     }
 
     public this(d: JsonDictionary) {
-        data = d;
+        data = JsonDictionary(d);
+    }
+
+    public this(j: JsonObject) {
+        data = JsonDictionary(j.data);
     }
 
     public this(json: string) {
         data = serializer.Deserialize.[JsonDictionary](
             JsonTextReader(StringReader(json)) );
+    }
+
+    public contains(k: string): bool {
+        data.ContainsKey(k);
     }
 
     // For use with Nemerle.Extensions <- operator...

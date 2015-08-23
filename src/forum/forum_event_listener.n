@@ -20,8 +20,9 @@ public class ForumEventListener: ServerEventListener {
         Id = 0;
     }
 
-    public override onEvent(json: JsonObject): void {
+    public override onEvent(j: JsonObject): void {
 
+        def json = JsonObject(j);
         json["time"] = Date.NowTicks.ToString();
 
         def ok = Response.withNetworkLoss(() => {

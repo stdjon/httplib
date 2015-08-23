@@ -143,6 +143,31 @@ public class PostHandler: BasePageHandler {
                 PageData["ReplyCount"] = reply_count;
             }
 
+            // Thumbs marker
+            def command3 = Database.createCommand(
+                "SELECT COUNT(Id) FROM Thumbs WHERE "
+                    "PostId = @PostId  AND UserId = @UserId") <- [
+                "@PostId" = pid,
+                "@UserId" = SignedInUserId,
+            ];
+            def result3 = command3.executeScalar() :> long;
+            when(result3 > 0) {
+                PageData["IsOwnThumb"] = true;
+            }
+
+            // Bookmarks markers
+            def command4 = Database.createCommand(
+                "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                    "PostId = @PostId  AND UserId = @UserId") <- [
+                "@PostId" = pid,
+                "@UserId" = SignedInUserId,
+            ];
+            def result4 = command4.executeScalar() :> long;
+            when(result4 > 0) {
+                PageData["IsOwnBookmark"] = true;
+            }
+
+
             // User pref (transform)
             def command4 = Database.createCommand(
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];

@@ -11,17 +11,33 @@ function initEventSource() {
             if( (d.type === 'post') &&
                 (d.post_id === _g.PostId) ) {
 
-                $.ajax({
-                    type: 'POST',
-                    dataType: 'json',
-                    global: false,
-                    url: '/get-post',
-                    data: 'p=' + _g.PostId,
-                    success: function(data) {
-                        $('#c-' + _g.PostId).html(data.o);
-                        $('#tg-' + _g.PostId).html(tagsHtml(decodeTagString(data.tg)));
+                switch(d.action) {
+
+                    case 'create':
+                    case 'update': {
+
+                        $.ajax({
+                            type: 'POST',
+                            dataType: 'json',
+                            global: false,
+                            url: '/get-post',
+                            data: 'p=' + _g.PostId,
+                            success: function(data) {
+                                $('#c-' + _g.PostId).html(data.o);
+                                $('#tg-' + _g.PostId).html(tagsHtml(decodeTagString(data.tg)));
+                            }
+                        });
+                        break;
                     }
-                });
+                    case 'thumb': {
+                        $('#tc-' + d.post_id).text(d.count);
+                        break;
+                    }
+                    case 'star': {
+                        $('#bc-' + d.post_id).text(d.count);
+                        break;
+                    }
+                }
             }
         });
     }

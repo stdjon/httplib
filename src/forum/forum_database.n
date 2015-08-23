@@ -529,6 +529,14 @@ public class ForumDatabase: IDisposable {
                 when(uid != user_id) {
                     addPointsToUser(uid, on ? 5 : -5);
                 }
+
+                sendUpdate(JsonObject() <- [
+                    "type" = "post",
+                    "action" = "thumb",
+                    "post_id" = post_id,
+                    "user_id" = user_id,
+                    "count" = getPostThumbs(post_id),
+                ]);
             }
         }, ex => {
             Server.internalServerError(ex);
@@ -615,6 +623,14 @@ public class ForumDatabase: IDisposable {
                     createNotification(post_user_id :> uint,
                         user_id, thread_id :> uint, post_id, NT.STAR);
                 }
+
+                sendUpdate(JsonObject() <- [
+                    "type" = "post",
+                    "action" = "star",
+                    "post_id" = post_id,
+                    "user_id" = user_id,
+                    "count" = getPostBoomarks(post_id),
+                ]);
             }
         }, ex => {
             Server.internalServerError(ex);

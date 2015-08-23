@@ -28,6 +28,16 @@ function initEventSource() {
                             $('#c-' + d.post_id).html(data.o);
                         }
                     });
+
+                } else if( (d.action === 'thumb') &&
+                    (_g.Posts.indexOf(d.post_id) >= 0) ) {
+
+                    $('#tc-' + d.post_id).text(d.count);
+
+                } else if( (d.action === 'star') &&
+                    (_g.Posts.indexOf(d.post_id) >= 0) ) {
+
+                    $('#bc-' + d.post_id).text(d.count);
                 }
             }
         });
