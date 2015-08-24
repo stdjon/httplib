@@ -68,7 +68,9 @@ Partials:
                 <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
                   onclick="edit(this, '#{{Number}}', {{PostId}})"></span>
               {{/IsOwnPost}}
-                <span id="q-{{PostId}}" class="fa fa-fw fa-quote-left" title="Quote post"
+                <span id="q-{{PostId}}" class="ptr fa fa-fw fa-quote-left" title="Quote post"
+                  onmouseover="replyHoverOver()" onmouseout="replyHoverOut()"
+                  onmousedown="quotePress({{PostId}})"
                   style="color: #ccc" ></span>
               {{#IsOwnPost}}
                 <span class="fa fa-fw fa-thumbs-o-up" title="Thumbs" style="color: #ccc"></span><!--

@@ -68,6 +68,7 @@ function showPreview(wnd_id) {
 
 function close(data, wnd_id) {
     var d = _d.windows[wnd_id];
+    delete _d.windows[wnd_id];
     $('#' + wnd_id).remove();
     $(d.num).data(data, false);
     $(d.btn_id).css('color', $(d.num).data('old-color'));
@@ -275,6 +276,15 @@ function quote(pid, on) {
 }
 
 
+function quoteOpenWindows(on) {
+    for(w in _d.windows) {
+        if(_d.windows.hasOwnProperty(w)) {
+           quote(_d.windows[w].pid, on);
+        }
+    }
+}
+
+
 var _stopCheckSelection = false;
 function checkSelection() {
 
@@ -322,7 +332,11 @@ function checkSelection() {
                     _copy.buffer = got;
                     _copy.id = node.id.replace('c-', '');
                     _copy.user = node.getAttribute('data-author');
-                    quote(_copy.id, true);
+                    if($.isEmptyObject(_d.windows)) {
+                        quote(_copy.id, true);
+                    } else {
+                        quoteOpenWindows(true);
+                    }
                 }
                 _copy.range = rng;
             }
@@ -330,11 +344,25 @@ function checkSelection() {
             if(_copy.id) {
                 quote(_copy.id, false);
             }
+            quoteOpenWindows(false);
             _copy.range = undefined;
             _copy.buffer = undefined;
             _copy.id = undefined;
             _copy.user = undefined;
         }
+    }
+}
+
+
+function quotePress(pid) {
+    var buf = getSelectionAsQuote();
+
+    if(buf) {
+        $('#te-e' + pid).val($('#te-e' + pid).val() + buf);
+        $('#te-e' + pid).trigger('input');
+        $('#te-r' + pid).val($('#te-r' + pid).val() + buf);
+        $('#te-r' + pid).trigger('input');
+
     }
 }
 
