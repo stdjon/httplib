@@ -158,7 +158,9 @@ var pwScore = 0;
 
 
 function updatePasswordBar(score) {
+
     $('#password_strength').css("width", pwWidth[score]);
+    if(!passwordOk) { score = 0; }
     $('#password_strength').removeClass("progress-bar-" + pwCols[pwScore]);
     $('#password_strength').addClass("progress-bar-" + pwCols[score]);
     pwScore = score;
