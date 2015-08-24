@@ -44,7 +44,8 @@ Partials:
             {{#SignedInUser}}
               <span style="word-spacing: 15px;">
                 &nbsp;<span id="btn-reply-{{Number}}" class="ptr fa fa-fw fa-reply" title="Reply to post"
-                  onclick="reply(this, '#{{Number}}', {{PostId}})"></span>
+                  onmouseover="replyHoverOver()" onmouseout="replyHoverOut()"
+                  onmousedown="reply(this, '#{{Number}}', {{PostId}})"></span>
                 {{#IsOwnPost}}
                   <span id="btn-edit-{{Number}}" class="ptr fa fa-fw fa-edit" title="Edit post"
                     onclick="edit(this, '#{{Number}}', {{PostId}})"></span>

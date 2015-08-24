@@ -74,6 +74,17 @@ function close(data, wnd_id) {
 }
 
 
+function replyHoverOver() {
+    checkSelection();
+    _stopCheckSelection = true;
+}
+
+
+function replyHoverOut() {
+    _stopCheckSelection = false;
+}
+
+
 function reply(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
     var wnd_id = 'r' + pid;
@@ -87,6 +98,7 @@ function reply(btn, num, pid) {
 
     } else {
         openWindow(num, wnd_id, 'reply', function() {
+            populateReplyData(pid);
             $('#rnd-' + wnd_id + ' label').removeClass('active');
             $('#rnd-' + wnd_id + '-' + _g.Transform).addClass('active');
             _d.windows[wnd_id] = {
@@ -105,6 +117,17 @@ function reply(btn, num, pid) {
 
 function closeReply(wnd_id) {
     close('reply-open', wnd_id);
+}
+
+
+function populateReplyData(pid) {
+    var wnd_id = 'r' + pid;
+    var buf = getSelectionAsQuote();
+
+    if(buf) {
+        $('#te-' + wnd_id).html(buf);
+        $('#te-' + wnd_id).trigger('input');
+    }
 }
 
 
@@ -252,7 +275,10 @@ function quote(pid, on) {
 }
 
 
+var _stopCheckSelection = false;
 function checkSelection() {
+
+    if(_stopCheckSelection) { return; }
 
     var sel = document.getSelection();
     if(sel && sel.rangeCount > 0) {
@@ -438,7 +464,21 @@ function keyHandler(wnd_id, suppress_open_close) {
         }
         if(e.keyCode === 27) {
             if(!suppress_open_close) {
-                $('#btn-' + wnd_id + '-cancel').click();
+                if($('#te-' + wnd_id).val()) {
+                    Dialog.confirm({
+                        size: BootstrapDialog.SIZE_LARGE,
+                        type: BootstrapDialog.TYPE_DANGER,
+                        title: 'Warning',
+                        message: 'Do you want to abandon your draft?',
+                        callback:  function(x) {
+                            if(x) {
+                                $('#btn-' + wnd_id + '-cancel').click();
+                            }
+                        }
+                    });
+                } else {
+                    $('#btn-' + wnd_id + '-cancel').click();
+                }
                 e.preventDefault();
             }
         }
@@ -459,6 +499,17 @@ function selectTags(select, tags) {
 
 
 
+function getSelectionAsQuote() {
+    var buf = '';
+
+    if(_copy.user && _copy.buffer) {
+        buf = '<q><cite>' + _copy.user + '</cite>' + _copy.buffer + '</q>';
+    }
+
+    return buf;
+}
+
+
 function initPostControls() {
     // install handler for (hacked) keypress events from select2 elements
     $('body').on("s2_keypress", function(_, e) {
@@ -471,8 +522,8 @@ function initPostControls() {
     document.addEventListener('copy', function(e) {
         checkSelection();
 
-        if(_copy.user && _copy.buffer) {
-            var buf = '<q><cite>' + _copy.user + '</cite>' + _copy.buffer + '</q>';
+        var buf = getSelectionAsQuote();
+        if(buf) {
             e.clipboardData.clearData('text/plain');
             e.clipboardData.setData('text/plain', buf);
             e.preventDefault();
