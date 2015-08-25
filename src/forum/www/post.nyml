@@ -91,6 +91,9 @@ Partials:
                 --><small>(<span id="bc-{{PostId}}">{{Bookmarks}}</span>)</small>
             {{/SignedInUser}}
 
+            <div class="rhs">
+              <small>[<a href="{{PostUrl}}">view in thread</a>]</small>
+            </div>
             <div class="rhs"><small>
             {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
             {{#ReplySep}} | {{/ReplySep}}
