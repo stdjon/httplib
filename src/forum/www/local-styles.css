@@ -1,3 +1,7 @@
+img {
+    max-width: 320px;
+    max-height: 240px;
+}
 body {
   background-image: url("bg-small-basic.png");
   background-attachment: fixed;
