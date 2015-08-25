@@ -332,10 +332,10 @@ function checkSelection() {
                     _copy.buffer = got;
                     _copy.id = node.id.replace('c-', '');
                     _copy.user = node.getAttribute('data-author');
-                    if($.isEmptyObject(_d.windows)) {
-                        quote(_copy.id, true);
-                    } else {
+                    if(windowsAreOpen()) {
                         quoteOpenWindows(true);
+                    } else {
+                        quote(_copy.id, true);
                     }
                 }
                 _copy.range = rng;
@@ -446,6 +446,11 @@ function star(btn, pid) {
             }
         });
     }
+}
+
+
+function windowsAreOpen() {
+    return !$.isEmptyObject(_d.windows);
 }
 
 

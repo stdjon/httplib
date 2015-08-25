@@ -13,7 +13,12 @@ function initEventSource() {
                 if( (d.action === 'create') &&
                     (d.thread_id === _g.ThreadId) ) {
 
-                    reloadPageContent();
+                    // TODO: load the post properly, so that we don't clobber
+                    // the whole page (and people editing/replying can see the
+                    // update too...)
+                    if(!windowsAreOpen()) {
+                        reloadPageContent();
+                    }
 
                 } else if( (d.action === 'update') &&
                     (_g.Posts.indexOf(d.post_id) >= 0) ) {
