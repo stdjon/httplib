@@ -21,7 +21,7 @@ public class CreateThreadHandler: BaseHandler {
             mutable thid = 0U;
         using(fdb = Server.openForumDatabase()) {
             def database = fdb.Database;
-            def title = Context.Vars["title"];
+            mutable title = Context.Vars["title"];
             def colour = Context.Vars["colour"];
             def fp = Context.Vars["fp"];
             def content = Context.Vars["content"];
@@ -32,6 +32,9 @@ public class CreateThreadHandler: BaseHandler {
             def utc_now = Date.NowTicks;
             def userid = fdb.getUserIdFromCookie(Request, STOK.INSECURE);
 
+            when(String.IsNullOrEmpty(title)) {
+                title = "Untitled Thread";
+            }
             when(String.IsNullOrEmpty(renderer)) {
                 def command = database.createCommand(
                     "SELECT Transform FROM Users WHERE Id=@Id") <- [ "@Id" = userid ];

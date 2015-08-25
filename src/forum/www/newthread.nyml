@@ -17,7 +17,7 @@ Partials:
     <div class="jumbotron fake-anchor">
       <div class="expanding-area expanding-h1-area">
         <pre><span></span><br></pre>
-        <textarea id="title" maxlength="80" placeholder="[New Thread]" name="title"></textarea>
+        <textarea id="title" maxlength="80" placeholder="[Thread title goes here]" name="title"></textarea>
       </div>
     </div>
   Body: |
@@ -73,8 +73,8 @@ Partials:
       <p>&nbsp;</p>
       <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
         formmethod="post" formtarget="_top">Create thread</button>
-      <button id="fp-cancel" type="submit" class="btn btn-danger" formaction="{{DefaultPrefix}}/c/{{CategoryId}}"
-        formmethod="get" formtarget="_top">Abandon thread</button>
+      <button id="fp-cancel" type="button" class="btn btn-danger"
+        onclick='document.location = "{{DefaultPrefix}}/c{{#CategoryId}}/{{CategoryId}}{{/CategoryId}}"'>Abandon thread</button>
       </form>
     </div>
   Guide: |
