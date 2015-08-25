@@ -464,13 +464,13 @@ public class ForumServer: Server {
         (ok, output);
     }
 
-    public validatePassword(pw: string): bool {
+    public validatePassword(pw: string, strength: uint): bool {
         def a = pw.Length >= 8;
         def b = pw.Length <= 60;
         def c = Regex("[a-z]").IsMatch(pw);
         def d = Regex("[A-Z]").IsMatch(pw);
         def e = Regex("[0-9]").IsMatch(pw);
-        def f = Regex(<#[ !"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]#>).IsMatch(pw);
+        def f = strength >= 3;
         def result = a && b && c && d && e && f;
         def p(x) { x ? "T" : "F" }
         Log.d("validatePassword(): l{0} L{1} a{2} A{3} 9{4} %{5} -> {6}",

@@ -2,6 +2,7 @@ var passwordValue = '';
 var confirmValue = '';
 var passwordOk = false;
 var passwordMatch = false;
+var passwordScore = 0;
 
 
 function passwordKeypress() {
@@ -10,19 +11,19 @@ function passwordKeypress() {
     checkPasswords();
 
     var r = zxcvbn(v);
+    passwordScore = r.score;
     var pwOkUpper = passwordValue.match(/[A-Z]/);
     var pwOkLower = passwordValue.match(/[a-z]/);
     var pwOkNumber = passwordValue.match(/[0-9]/);
-    var pwOkSymbol = passwordValue.match(/[ !"#$%&'()*+,-./:;<=>?@\[\\\]^_`{|}~]/); //"
+    var pwOkStrength = (passwordScore >= 3);
     var pwOkLength = passwordValue.length > 7;
     var pwOkLength2 = passwordValue.length <= 60;
-    passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkSymbol && pwOkLength && pwOkLength2;
+    passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkStrength && pwOkLength && pwOkLength2;
     var p = [];
 
     if(!pwOkUpper) { p.push('an uppercase letter'); }
     if(!pwOkLower) { p.push('a lowercase letter'); }
     if(!pwOkNumber) { p.push('a number'); }
-    if(!pwOkSymbol) { p.push('a symbol'); }
 
     var msg = '';
     if(p.length > 0) {
@@ -41,7 +42,7 @@ function passwordKeypress() {
     if(!pwOkLength2) {
         msg += ' Please use 60 characters or less.';
     }
-    if(r.score < 3) {
+    if(pwOkStrength < 3) {
         msg += ' Consider a stronger password.';
     }
 
@@ -51,7 +52,7 @@ function passwordKeypress() {
         r.crack_time_display + '</a>.)';
 
     $('#passwordfeedback').html('<em>' + msg + '</em>');
-    updatePasswordBar(r.score);
+    updatePasswordBar(passwordScore);
     checkSubmit();
 }
 
@@ -61,6 +62,7 @@ function confirmKeypress() {
 
     confirmValue = v;
     checkPasswords();
+    updatePasswordBar(passwordScore);
     checkSubmit();
 }
 
@@ -80,6 +82,7 @@ var pwScore = 0;
 
 function updatePasswordBar(score) {
     $('#password_strength').css("width", pwWidth[score]);
+    if(!passwordOk || !passwordMatch) { score = 0; }
     $('#password_strength').removeClass("progress-bar-" + pwCols[pwScore]);
     $('#password_strength').addClass("progress-bar-" + pwCols[score]);
     pwScore = score;
@@ -99,7 +102,7 @@ function submitRecoveryConfirm() {
     $.ajax({
         type: 'POST',
         url: _g.DefaultSecurePrefix + '/recover-submit',
-        data: 'pw=' + pw + '&cf=' + cf + '&t=' + tok,
+        data: 'pw=' + pw + '&cf=' + cf + '&t=' + tok + '&s=' + passwordScore,
         statusCode: {
             200: function() {
                 $('#result').html('<em>Password reset, signing you in!</em>');

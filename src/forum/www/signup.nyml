@@ -14,9 +14,8 @@ Partials:
   Body: |
     <style>
       div.input-group span.input-pre { width: 150; }
-      div.feedback { width: 100; }
+      .feedback { color: #f00; }
       div.progress { margin: 0; margin-top: 4px; }
-      em { color: #666; }
       tt { color: #000; background-color: #ffb; font-style: normal; }
     </style>
     <div class="anchor" id="1"><p>Please enter some details for your account:</p></div>
@@ -48,14 +47,14 @@ Partials:
         </div>
         <span class="input-pre">Email: </span>
         <span class="feedback" id="emailexists"></span>
-        <span class="feedback" id="emailfeedback"></span>
+        <span id="emailfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-envelope-o fa-fw"></span></span>
           <input name="email" id="email_id" type="email" placeholder="[Email]"
             class="form-control input-sm" onkeypress="emailKeypress()" onkeyup="emailKeypress()">
         </div>
         <span class="input-pre">Secret: </span>
-        <span class="feedback" id="secretfeedback"></span>
+        <span id="secretfeedback"></span>
         <div class="input-group">
           <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
           <input id="rc-secret" name="secret" type="text" placeholder="[Secret]"
@@ -64,6 +63,7 @@ Partials:
         <br>
         <button id="submit" type="submit" disabled="disabled" class="btn btn-success"
           formaction="{{DefaultSecurePrefix}}/signup-submit" formmethod="post" formtarget="_top">Sign up</button>
+        <input type="hidden" name="strength" id="strength" value="0">
         <input type="hidden" name="redirect" value="{{DefaultPrefix}}/">
       </form>
 

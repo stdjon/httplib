@@ -135,8 +135,9 @@ public class RecoverySubmitHandler: BaseHandler {
             def pw = Context.Vars["pw"];
             def cf = Context.Vars["cf"];
             def token = Context.Vars["t"];
+            def strength = UInt32.Parse(Context.Vars["s"]);
 
-            when(pw == cf && Server.validatePassword(pw)) {
+            when(pw == cf && Server.validatePassword(pw, strength)) {
                 using(fdb = Server.openForumDatabase()) {
                     def db = fdb.Database;
                     def user_id =

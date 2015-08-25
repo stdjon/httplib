@@ -64,6 +64,7 @@ public class SignupHandler: BasePageHandler {
             def confirm = Context.Vars["confirm"];
             def email = Context.Vars["email"];
             def secret = Context.Vars["secret"];
+            def strength = UInt32.Parse(Context.Vars["strength"]);
 
             mutable test1, test2;
 
@@ -81,7 +82,7 @@ public class SignupHandler: BasePageHandler {
             test2 = command2.executeScalar() :> string;
 
             if(test1 != null || test2 != null || password != confirm ||
-                !Server.validatePassword(password)) {
+                !Server.validatePassword(password, strength)) {
                 // error with user data.
                 // (need a more considered Response though...)
                 Response.append("<html><body><h1>Bad Request!</h1></body></html>");
