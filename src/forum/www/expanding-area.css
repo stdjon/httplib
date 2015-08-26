@@ -49,6 +49,19 @@
 .expanding-h1-area textarea {
     height: 100px;
 }
+/* <h4>-style */
+.expanding-h4-area textarea, .expanding-h4-area pre {
+    font-size: 18px;
+    font-weight: 900;
+    background: #ffe;
+    border: 1px dotted #ccc;
+}
+.expanding-h4-area textarea:focus, .expanding-h4-area pre:focus {
+    border: 1px dotted #fff;
+}
+.expanding-h4-area textarea {
+    height: 20px;
+}
 /* <p>-style */
 .expanding-p-area textarea, .expanding-p-area pre {
     font-size: 14px;

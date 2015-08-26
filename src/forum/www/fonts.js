@@ -43,7 +43,9 @@ function setMainFonts(h, c, mc) {
     $('.user-font h1, .user-font h2, .user-font h3, ' +
         '.user-font h4, .user-font h5, .user-font h6' +
         '.user-font .expanding-h1-area pre, ' +
-        '.user-font .expanding-h1-area textarea').css('font-family', h);
+        '.user-font .expanding-h1-area textarea' +
+        '.user-font .expanding-h4-area pre, ' +
+        '.user-font .expanding-h4-area textarea').css('font-family', h);
 
     postIframeMessage('font', c, mc);
 }

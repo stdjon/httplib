@@ -20,6 +20,9 @@ Content: |
   }
   div.user-font h1, div.user-font h2, div.user-font h3,
   div.user-font h4, div.user-font h5, div.user-font h6,
+  div.expanding-h1-area textarea, div.expanding-h1-area pre,
+  div.expanding-h4-area textarea, div.expanding-h4-area pre,
+  a#pagename,
   div.bootstrap-dialog-header,
   div.bootstrap-dialog-footer-buttons {
     font-family: "{{HeaderFontBold}}";
