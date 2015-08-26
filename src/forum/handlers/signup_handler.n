@@ -13,7 +13,7 @@ public class SignupHandler: BasePageHandler {
     IsSubmit: bool;
 
     public this(hd: HandlerData, submit: bool) {
-        base(hd, null);
+        base(hd, null, false);
 
         IsSubmit = submit;
         PageData["IsSignup"] = true;

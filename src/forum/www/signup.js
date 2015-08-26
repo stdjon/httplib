@@ -5,6 +5,28 @@ var passwordOk = false;
 var passwordMatch = false;
 var passwordScore = 0;
 var emailOk = false;
+var storeIds = ['user_id', 'password_id', 'email_id', 'secret_id'];
+
+
+function storeFields() {
+    for(var i = 0; i < storeIds.length; i++) {
+        var id = storeIds[i];
+        alert(id + ': ' + $('#' + id).val());
+        localStorage[id] = $('#' + id).val();
+    }
+}
+
+
+function recoverFields() {
+    for(var i = 0; i < storeIds.length; i++) {
+        var id = storeIds[i];
+        var v = $('#' + id).val();
+        if(!v) {
+            $('#' + id).val(localStorage[id]);
+        }
+    }
+    syncPage();
+}
 
 
 // keypresses
@@ -56,6 +78,11 @@ function passwordKeypress() {
     passwordValue = v;
     checkPasswords();
 
+    if(!window['zxcvbn']) {
+        setTimeout(passwordKeypress, 250);
+        return;
+    }
+
     var r = zxcvbn(v);
     passwordScore = r.score;
     $('#strength').val(passwordScore);
@@ -94,12 +121,19 @@ function passwordKeypress() {
         msg += ' Consider a stronger password.';
     }
 
-    msg += ' (Crack time estimated as ' +
+    $('#passwordfeedback').html('<em>' + msg + '</em>');
+
+    msg = ' <em>(Crack time estimated as ' +
         '<a href="https://blogs.dropbox.com/tech/2012/04/' +
         'zxcvbn-realistic-password-strength-estimation/">' +
-        r.crack_time_display + '</a>.)';
+        r.crack_time_display + '</a>.)</em>';
+    $('#passwordtime').html('<em>' + msg + '</em>');
+    if(pwOkStrength) {
+        $('#passwordtime').removeClass('feedback');
+    } else {
+        $('#passwordtime').addClass('feedback');
+    }
 
-    $('#passwordfeedback').html('<em>' + msg + '</em>');
     updatePasswordBar(passwordScore);
     checkSubmit();
 }
@@ -172,8 +206,52 @@ function updatePasswordBar(score) {
 
 
 function checkSubmit() {
+    $('#strength').val(passwordScore);
     var cansubmit = userOk && passwordOk && passwordMatch && emailOk;
+    var msg = '';
+    if(!cansubmit) {
+        var fld = [];
+        if(!userOk) { fld.push('Username'); }
+        if(!passwordOk) { fld.push('Password'); }
+        if(!emailOk) { fld.push('Email'); }
+        msg = '<em>Please ';
+        if(fld.length > 0) {
+            msg += 'check the ';
+            if(fld.length > 1) {
+                var last = fld.pop();
+                msg += fld.join(', ') + ' and ' + last + ' fields';
+            } else {
+                msg += fld[0] + ' field';
+            }
+            msg += ' before submitting';
+            if(!passwordMatch) { msg += ', and ';}
+        }
+        if(!passwordMatch) {
+            msg += 'make sure the password confirmation matches the password'
+        }
+        msg += '.</em>';
+    }
+    $('#submitfeedback').html(msg)
     $('#submit').attr('disabled', cansubmit ? null : 'disabled');
 }
+
+
+function syncPage() {
+    userKeypress();
+    passwordKeypress();
+    confirmKeypress();
+    emailKeypress();
+    secretKeypress();
+}
+
+
+onbeforeunload = function(event) {
+    storeFields();
+};
+
+
+$(document).ready(function() {
+    recoverFields();
+});
 
 
