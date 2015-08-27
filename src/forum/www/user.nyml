@@ -61,15 +61,18 @@ Partials:
           <td>{{>Swatches}}</td></tr>
           <tr><td>Motto:</td>
           <td><input id='motto' value="{{Motto}}" placeholder='[Motto]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 100%;"></input></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" onchange="onKeypress()" oninput="onKeypress()" maxlength="40" style="width: 100%;"></input></td></tr>
           <tr><td>Location:</td>
           <td><input id='_loc' value="{{Location}}" placeholder='[Location]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 100%;"></input></p></td></tr>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" onchange="onKeypress()" oninput="onKeypress()" maxlength="40" style="width: 100%;"></input></p></td></tr>
           <tr><td>Email:</td>
           <td><input id='email' value="{{Email}}" placeholder='[Email]'
-            onkeypress="onKeypress()" onkeyup="onKeypress()" maxlength="40" style="width: 80%;"></input>
+            onkeypress="onKeypress()" onkeyup="onKeypress()" onchange="onKeypress()" oninput="onKeypress()" maxlength="256" style="width: 80%;"></input>
             <button class="btn btn-success" onclick="testEmail()">Test Email</button><br>
             <span id="email-fb"></span></td></tr>
+          <tr><td>Secret:</td>
+          <td><input id='secret' value="{{Secret}}" placeholder='[Secret]'
+            onkeypress="onKeypress()" onkeyup="onKeypress()" onchange="onKeypress()" oninput="onKeypress()" maxlength="100" style="width: 100%;"></input></td></tr>
           <tr><td>User since:</td><td><em>{{JoinDate}}</em></td></tr>
           <tr><td>Points:</td><td><em>{{Points}}</em></td></tr>
           <tr><td>Level:</td><td><em>{{Level}}</em></td></tr>

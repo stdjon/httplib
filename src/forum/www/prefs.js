@@ -1,5 +1,6 @@
 var prf = {
     motto: '',
+    secret: '',
     _loc: '',
     email: '',
     col_id: '',
@@ -23,12 +24,14 @@ function setPrefs(m, l, c, t, f, mf) {
     if($('#email').length > 0) {
         $.ajax({
             type: 'POST',
-            dataType: 'text',
+            dataType: 'json',
             global: false,
             url: '/get-email',
-            success: function(e) {
-                _g.Email = prf.email = e;
-                $('#email').val(e);
+            success: function(data) {
+                _g.Email = prf.email = data.e;
+                _g.Secret = prf.secret = data.s;
+                $('#email').val(data.e);
+                $('#secret').val(data.s);
             },
             error: function() {
             }
@@ -39,19 +42,21 @@ function setPrefs(m, l, c, t, f, mf) {
 
 function onKeypress() {
     prf.motto = $('#motto').val();
+    prf.secret = $('#secret').val();
     prf._loc = $('#_loc').val();
     prf.email = $('#email').val();
     prf.trans = $('#transform label.active input').val();
     prf.font = $('#font label.active input').val();
     prf.monoFont = $('#mono label.active input').val();
     var ok1 = (prf.motto !== _g.Motto);
-    var ok2 = (prf._loc !== _g.Location);
-    var ok3 = (prf.email !== _g.Email);
-    var ok4 = (prf.col_id !== _g.ColourId);
-    var ok5 = (prf.trans !== _g.Transform);
-    var ok6 = (prf.font !== _g.FontClass);
-    var ok7 = (prf.monoFont !== _g.MonoFontClass);
-    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7;
+    var ok2 = (prf.secret !== _g.Secret);
+    var ok3 = (prf._loc !== _g.Location);
+    var ok4 = (prf.email !== _g.Email);
+    var ok5 = (prf.col_id !== _g.ColourId);
+    var ok6 = (prf.trans !== _g.Transform);
+    var ok7 = (prf.font !== _g.FontClass);
+    var ok8 = (prf.monoFont !== _g.MonoFontClass);
+    var canupdate = ok1 || ok2 || ok3 || ok4 || ok5 || ok6 || ok7 || ok8;
     $('#update').attr('disabled', canupdate ? null : 'disabled');
     $('#notify').html('');
 }
@@ -69,6 +74,7 @@ function onRadio(font) {
 
 
 function update() {
+    prf.secret = $('#secret').val(); //due to /get-email
     prf.email = $('#email').val(); //due to /get-email
     $.ajax({
         type: 'POST',
@@ -76,6 +82,7 @@ function update() {
         global: false,
         url: '/prefs',
         data: 'm=' + encodeURIComponent(prf.motto) +
+            '&s=' + encodeURIComponent(prf.secret) +
             '&l=' + encodeURIComponent(prf._loc) +
             '&e=' + encodeURIComponent(prf.email) +
             '&c=' + prf.col_id +
@@ -162,8 +169,11 @@ function enableAvatarDragDrop() {
             if(e.stopPropagation) { e.stopPropagation(); }
             this.className = "";
             var f = e.dataTransfer.files;
+            alert(JSON.stringify({e:e.dataTransfer}));
             if (f.length > 0) {
                 acceptFile(f[0]);
+            } else {
+                failed();
             }
         });
     }
@@ -172,6 +182,7 @@ function enableAvatarDragDrop() {
     setDragDrop(preview);
 
     function acceptFile(f) {
+        alert(JSON.stringify(f));
 
         document.querySelector('#avatar-work').innerHTML =
             'Working...<span class="fa fa-spinner fa-pulse"></span>';

@@ -166,18 +166,26 @@ public class ForumServer: Server {
     public getEmailResponse(
         _context: Context, request: Request, response: Response): void {
 
-        mutable email;
+        mutable ok = false;
         using(fdb = openForumDatabase()) {
             def db = fdb.Database;
             def uid = fdb.getUserIdFromCookie(request, STOK.INSECURE);
             def command = db.createCommand(
-                "SELECT Email From Auth WHERE UserId = @UserId") <- [
+                "SELECT Email, Secret From Auth WHERE UserId = @UserId") <- [
                     "@UserId" = uid,
                 ];
-            email = command.executeScalar() :> string;
-            response.append(email);
+            mutable json = JsonObject();
+            command.execute(reader => {
+                _ = json <- [
+                    "e" = reader.getValue("Email", ""),
+                    "s" = reader.getValue("Secret", ""),
+                ];
+                ok = true;
+            });
+
+            response.append(json.toString());
         }
-        response.Status = email ? (200, "OK") : (404, "Not Found");
+        response.Status = ok ? (200, "OK") : (404, "Not Found");
     }
 
     public testEmailResponse(
@@ -501,6 +509,7 @@ public class ForumServer: Server {
         context: Context, request: Request, response: Response): void {
 
         def m = context.Vars["m"];
+        def s = context.Vars["s"];
         def l = context.Vars["l"];
         def e = context.Vars["e"];
         def c = context.Vars["c"];
@@ -531,9 +540,10 @@ public class ForumServer: Server {
 
                 when(ok) {
                     def command2 = db.createCommand(
-                        "UPDATE Auth SET Email = @Email WHERE "
+                        "UPDATE Auth SET Email = @Email, Secret = @Secret WHERE "
                             "UserId = @UserId") <- [
                         "@Email" = e,
+                        "@Secret" = s,
                         "@UserId" = userid,
                     ];
                     def x = command2.executeNonQuery();
