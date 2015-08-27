@@ -11,8 +11,11 @@ var storeIds = ['user_id', 'password_id', 'email_id', 'secret_id'];
 function storeFields() {
     for(var i = 0; i < storeIds.length; i++) {
         var id = storeIds[i];
-        alert(id + ': ' + $('#' + id).val());
-        localStorage[id] = $('#' + id).val();
+        try {
+            localStorage[id] = $('#' + id).val();
+        } catch(e) {
+            // don't really care if it fails...
+        }
     }
 }
 
