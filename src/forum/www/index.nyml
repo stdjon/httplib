@@ -38,34 +38,6 @@ Partials:
         {{/SignedInUser}}
       </div>
     </div>
-    {{^SignedInUser}}
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4 class="panel-title">Account Recovery</h4>
-      </div>
-      <div class="panel-body">
-        <p>To initiate a password reset on your account, please enter your username
-          and your secret here. An email will be sent to you containing further
-          instructions. (If you have forgotten your secret, or you no longer have
-          access to the email account used in registration, you will need to contact
-          an administrator.)</p>
-        <form class="form-inline" role="form">
-          <div class="input-group">
-            <span class="input-group-addon"><span class="fa fa-user fa-fw"></span></span>
-            <input id="rc-user" name="user" type="text" placeholder="[Username]" class="form-control input"
-              onkeypress="recoveryKeypress()" onkeyup="recoveryKeypress()">
-          </div>
-          <div class="input-group">
-            <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
-            <input id="rc-secret" name="secret" type="text" placeholder="[Secret]" class="form-control input">
-          </div>
-          <input id="rc-submit" type="submit" class="btn btn-primary"
-            onclick="submitRecovery(); return false;" disabled="disabled" value="Send email">
-          <span id="rc-result"></span>
-        </form>
-      </div>
-    </div>
-    {{/SignedInUser}}
     <div class="panel panel-default">
       <div class="panel-heading">
         <h4 class="panel-title">Quick Launch</h4>
@@ -127,6 +99,34 @@ Partials:
       </ul>
       </div>
     </div>
+    {{^SignedInUser}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Account Recovery</h4>
+      </div>
+      <div class="panel-body">
+        <p>To initiate a password reset on your account, please enter your username
+          and your secret here. An email will be sent to you containing further
+          instructions. (If you have forgotten your secret, or you no longer have
+          access to the email account used in registration, you will need to contact
+          an administrator.)</p>
+        <form class="form-inline" role="form">
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-user fa-fw"></span></span>
+            <input id="rc-user" name="user" type="text" placeholder="[Username]" class="form-control input"
+              onkeypress="recoveryKeypress()" onkeyup="recoveryKeypress()">
+          </div>
+          <div class="input-group">
+            <span class="input-group-addon"><span class="fa fa-comment fa-fw"></span></span>
+            <input id="rc-secret" name="secret" type="text" placeholder="[Secret]" class="form-control input">
+          </div>
+          <input id="rc-submit" type="submit" class="btn btn-primary"
+            onclick="submitRecovery(); return false;" disabled="disabled" value="Send email">
+          <span id="rc-result"></span>
+        </form>
+      </div>
+    </div>
+    {{/SignedInUser}}
   PageScript: |
     {{#ChromeBrowser}}
     // This is a super-horrible way to apply drop-caps style once hyphenation
