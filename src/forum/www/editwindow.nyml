@@ -17,7 +17,7 @@ Content: |
         onclick="{{submit}}('{{id}}'); return false;">{{text}}</button>
       &nbsp;
       <button id="btn-{{id}}-cancel" class="btn btn-xs btn-danger" value="Cancel"
-        onclick="{{cancel}}('{{id}}'); return false;">Cancel</button>
+        onclick="{{cancel}}('{{id}}', true); return false;">Cancel</button>
       &nbsp;
       <div id="rnd-{{id}}" class="btn-group" data-toggle="buttons">
         <label id="rnd-{{id}}-bbcode" class="btn btn-xs btn-default btn-info">

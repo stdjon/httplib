@@ -66,9 +66,12 @@ function showPreview(wnd_id) {
 }
 
 
-function close(data, wnd_id) {
+function close(data, wnd_id, cancel) {
     var d = _d.windows[wnd_id];
     delete _d.windows[wnd_id];
+    if(cancel) {
+        eraseWindowText(wnd_id);
+    }
     $('#' + wnd_id).remove();
     $(d.num).data(data, false);
     $(d.btn_id).css('color', $(d.num).data('old-color'));
@@ -91,21 +94,23 @@ function reply(btn, num, pid) {
     var wnd_id = 'r' + pid;
 
     if($(num).data('edit-open')) {
-        closeEdit('e' + pid);
+        closeEdit('e' + pid, false);
     }
 
     if($(num).data('reply-open')) {
-        closeReply(wnd_id);
+        closeReply(wnd_id, false);
 
     } else {
         openWindow(num, wnd_id, 'reply', function() {
-            populateReplyData(pid);
             $('#rnd-' + wnd_id + ' label').removeClass('active');
             $('#rnd-' + wnd_id + '-' + _g.Transform).addClass('active');
             _d.windows[wnd_id] = {
                 btn_id: btn_id,
                 num: num,
                 pid: pid,
+            }
+            if(populateReplyData(pid)) {
+                showPreview(wnd_id);
             }
             delaySetFocus(wnd_id);
         });
@@ -116,19 +121,26 @@ function reply(btn, num, pid) {
 }
 
 
-function closeReply(wnd_id) {
-    close('reply-open', wnd_id);
+function closeReply(wnd_id, cancel) {
+    close('reply-open', wnd_id, cancel);
 }
 
 
 function populateReplyData(pid) {
     var wnd_id = 'r' + pid;
-    var buf = getSelectionAsQuote();
+    var result = false;
 
-    if(buf) {
-        $('#te-' + wnd_id).html(buf);
-        $('#te-' + wnd_id).trigger('input');
+    if(restoreWindowText(wnd_id)) {
+        result = true;
+    } else {
+        var buf = getSelectionAsQuote();
+
+        if(buf) {
+            $('#te-' + wnd_id).html(buf);
+            $('#te-' + wnd_id).trigger('input');
+        }
     }
+    return result;
 }
 
 
@@ -182,7 +194,9 @@ function edit(btn, num, pid) {
 
     } else {
         openWindow(num, wnd_id, 'edit', function() {
-            populateEditData(pid);
+            if(populateEditData(pid)) {
+                showPreview(wnd_id);
+            }
             $('#te-' + wnd_id).focus();
             _d.windows[wnd_id] = {
                 btn_id: btn_id,
@@ -199,30 +213,37 @@ function edit(btn, num, pid) {
 }
 
 
-function closeEdit(wnd_id) {
-    close('edit-open', wnd_id);
+function closeEdit(wnd_id, cancel) {
+    close('edit-open', wnd_id, cancel);
 }
 
 
 function populateEditData(pid) {
     var wnd_id = 'e' + pid;
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        global: false,
-        url: '/get-post',
-        data: 'p=' + pid + '&f=true',
+    var result = false;
 
-        success: function(data) {
-            $('#te-' + wnd_id).html(data.i);
-            $('#prv-' + wnd_id).html(data.o);
-            selectTags($('select#tags-' + wnd_id), decodeTagString(data.tg));
-            $('#te-' + wnd_id).trigger('input');
-            $('#rnd-' + wnd_id + ' label').removeClass('active');
-            var t = data.t || _g.Transform;
-            $('#rnd-' + wnd_id + '-' + t).addClass('active');
-        }
-    });
+    if(restoreWindowText(wnd_id)) {
+        result = true;
+    } else {
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            global: false,
+            url: '/get-post',
+            data: 'p=' + pid + '&f=true',
+
+            success: function(data) {
+                $('#te-' + wnd_id).html(data.i);
+                $('#prv-' + wnd_id).html(data.o);
+                selectTags($('select#tags-' + wnd_id), decodeTagString(data.tg));
+                $('#te-' + wnd_id).trigger('input');
+                $('#rnd-' + wnd_id + ' label').removeClass('active');
+                var t = data.t || _g.Transform;
+                $('#rnd-' + wnd_id + '-' + t).addClass('active');
+            }
+        });
+    }
+    return result;
 }
 
 
@@ -586,3 +607,54 @@ function initTransform(transform) {
         }
     }
 }
+
+
+function storeOpenWindowsText() {
+    for(w in _d.windows) {
+        if(_d.windows.hasOwnProperty(w)) {
+            try {
+                var txt = $('#te-' + w).val();
+                var rnd = $('#rnd-' + w + ' label.active input').val();
+                var tag = encodeTagString($('#tags-' + w).val());
+
+                localStorage['window.txt.' + w] = txt;
+                localStorage['window.rnd.' + w] = rnd;
+                localStorage['window.tag.' + w] = tag;
+            } catch(e) {}
+        }
+    }
+}
+
+
+function restoreWindowText(w) {
+    var txt = localStorage['window.txt.' + w];
+    var rnd = localStorage['window.rnd.' + w];
+    var tag = decodeTagString(localStorage['window.tag.' + w]);
+    var pid = w.replace(/^[er]/, '');
+    if(txt) {
+        $('#te-' + w).html(txt);
+        $('#rnd-' + w + ' label').removeClass('active');
+        $('#rnd-' + w + '-' + rnd).addClass('active');
+        selectTags($('select#tags-' + w), tag);
+        return true;
+    }
+    return false;
+}
+
+
+function eraseWindowText(w) {
+    try {
+        localStorage.removeItem('window.txt.' + w);
+        localStorage.removeItem('window.rnd.' + w);
+        localStorage.removeItem('window.tag.' + w);
+    } catch(e) {}
+}
+
+
+onbeforeunload = storeOpenWindowsText;
+
+$(document).ready(function() {
+
+    setInterval(storeOpenWindowsText, 15000);
+});
+
