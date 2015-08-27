@@ -88,8 +88,9 @@ public class CategoryHandler: BasePageHandler {
             limit = i;
 
             for(i = 0; i < limit; i++) {
-                threads[i]["UserName"] =
-                    ForumDatabase.getUserName(threads[i]["UserId"] :> uint);
+                def user_id = threads[i]["UserId"] :> uint;
+                threads[i]["UserName"] = ForumDatabase.getUserName(user_id);
+                threads[i]["UserDisplay"] = userDisplayName(user_id);
                 threads[i]["PostCount"] =
                     ForumDatabase.getPostCount(threads[i]["Id"] :> uint);
             }
