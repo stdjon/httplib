@@ -186,11 +186,11 @@ function edit(btn, num, pid) {
     var wnd_id = 'e' + pid;
 
     if($(num).data('reply-open')) {
-        closeReply('r' + pid);
+        closeReply('r' + pid, false);
     }
 
     if($(num).data('edit-open')) {
-        closeEdit(wnd_id);
+        closeEdit(wnd_id, false);
 
     } else {
         openWindow(num, wnd_id, 'edit', function() {
