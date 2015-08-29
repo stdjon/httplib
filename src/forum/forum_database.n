@@ -435,13 +435,6 @@ public class ForumDatabase: IDisposable {
         }
 
         if(ok) {
-            def command = Database.createCommand(
-                "SELECT UserId FROM Threads WHERE Id = @Id") <- [
-                    "@Id" = thread_id,
-                ];
-            def thread_user = command.executeScalar() :> uint;
-            createNotification(thread_user, user_id, thread_id, post_id, NT.POST);
-
             when(reply_to != null) {
                 def command2 = Database.createCommand(
                     "SELECT UserId From Posts WHERE Id = @Id") <- [
@@ -451,6 +444,13 @@ public class ForumDatabase: IDisposable {
                 createNotification(
                     replied_to, user_id, thread_id, post_id, NT.REPLY);
             }
+
+            def command = Database.createCommand(
+                "SELECT UserId FROM Threads WHERE Id = @Id") <- [
+                    "@Id" = thread_id,
+                ];
+            def thread_user = command.executeScalar() :> uint;
+            createNotification(thread_user, user_id, thread_id, post_id, NT.POST);
 
             foreach(m in mentions) {
                 createNotification(m, user_id, thread_id, post_id, NT.MENTION);
@@ -551,12 +551,11 @@ public class ForumDatabase: IDisposable {
             def command = Database.createCommand(
                 "SELECT COUNT(Id) FROM Notifications WHERE UserId = @UserId AND "
                     "FromUserId = @FromUserId AND ThreadId = @ThreadId AND "
-                    "PostId = @PostId AND NotifyType = @NotifyType") <- [
+                    "PostId = @PostId") <- [
                 "@UserId" = user_id,
                 "@FromUserId" = from_user_id,
                 "@ThreadId" = thread_id,
                 "@PostId" = post_id,
-                "@NotifyType" = type,
             ];
             def result = (command.executeScalar() :> long?) :> int;
 
