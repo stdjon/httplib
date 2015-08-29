@@ -38,12 +38,15 @@ public class Events {
         Assert.IsFalse(lst.Ok);
 
         src.sendEvent("test2", json);
+        lst.update();
         Assert.IsFalse(lst.Ok);
 
         src.sendEvent("test1", json);
+        lst.update();
         Assert.IsTrue(lst.Ok);
 
         src.sendEvent("test2", json);
+        lst.update();
         Assert.IsTrue(lst.Ok);
     }
 
@@ -60,14 +63,20 @@ public class Events {
         Assert.IsFalse(lst2.Ok);
 
         src.sendEvent("test2", json);
+        lst1.update();
+        lst2.update();
         Assert.IsFalse(lst1.Ok);
         Assert.IsTrue(lst2.Ok);
 
         src.sendEvent("test1", json);
+        lst1.update();
+        lst2.update();
         Assert.IsTrue(lst1.Ok);
         Assert.IsTrue(lst2.Ok);
 
         src.sendEvent("test2", json);
+        lst1.update();
+        lst2.update();
         Assert.IsTrue(lst1.Ok);
         Assert.IsTrue(lst2.Ok);
     }
@@ -85,14 +94,20 @@ public class Events {
         Assert.IsFalse(lst2.Ok);
 
         src.sendEvent("test2", json);
+        lst1.update();
+        lst2.update();
         Assert.IsFalse(lst1.Ok);
         Assert.IsFalse(lst2.Ok);
 
         src.sendEvent("test1", json);
+        lst1.update();
+        lst2.update();
         Assert.IsTrue(lst1.Ok);
         Assert.IsTrue(lst2.Ok);
 
         src.sendEvent("test2", json);
+        lst1.update();
+        lst2.update();
         Assert.IsTrue(lst1.Ok);
         Assert.IsTrue(lst2.Ok);
     }
