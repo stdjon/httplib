@@ -152,11 +152,14 @@ public class BasePageHandler: BaseHandler {
             next = $"$url/$nf-$nt";
         }
 
+        def prev_disabled = prev == null;
+        def next_disabled = next == null;
         _ = data <- [
             "Prev" = prev,
-            "PrevDisabled" = prev == null,
+            "PrevDisabled" = prev_disabled,
             "Next" = next,
-            "NextDisabled" = next == null,
+            "NextDisabled" = next_disabled,
+            "PaginationEnabled" = !(prev_disabled && next_disabled),
         ];
     }
 
