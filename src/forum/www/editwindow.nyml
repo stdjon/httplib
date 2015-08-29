@@ -2,7 +2,8 @@ Content: |
   <div id="{{id}}" class="reply post">
     <div class="expanding-area expanding-p-area">
       <pre><span></span><br></pre>
-      <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"></textarea>
+      <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"
+        onkeydown='postcontrolKeypress("{{id}}")' oninput='postcontrolKeypress("{{id}}")'></textarea>
     </div>
     <div class="tags">
       <small><table style="width: 100%;"><tr><td>

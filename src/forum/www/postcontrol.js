@@ -609,6 +609,11 @@ function initTransform(transform) {
 }
 
 
+function postcontrolKeypress(id) {
+    $('#te-' + id).css('background-color', '#eee');
+}
+
+
 function storeOpenWindowsText() {
     for(w in _d.windows) {
         if(_d.windows.hasOwnProperty(w)) {
@@ -620,6 +625,7 @@ function storeOpenWindowsText() {
                 localStorage['window.txt.' + w] = txt;
                 localStorage['window.rnd.' + w] = rnd;
                 localStorage['window.tag.' + w] = tag;
+                $('#te-' + w).css('background-color', '#ffe');
             } catch(e) {}
         }
     }
