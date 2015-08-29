@@ -421,10 +421,18 @@ public class ForumDatabase: IDisposable {
                         def ids = getTagIds(tags);
                         _ = insertPostTags(post_id, ids);
 
+                        mutable post_num = 0;
+                        forEachPostInThread(thread_id, (j, id) => {
+                            when(id == post_id) {
+                                post_num = j + 1;
+                            }
+                        });
+
                         sendUpdate(JsonObject() <- [
                             "type" = "post",
                             "action" = "create",
                             "post_id" = post_id,
+                            "post_num" = post_num,
                             "thread_id" = thread_id,
                         ]);
                     }

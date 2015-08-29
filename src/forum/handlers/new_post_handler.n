@@ -1,0 +1,147 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Web;
+
+using Nemerle.Extensions;
+using Nemerle.Utility;
+
+using httplib;
+
+
+namespace forum {
+
+[HasHandlerFactory]
+public class NewPostHandler: BasePageHandler {
+
+    public this(hd: HandlerData, path: string) {
+        base(hd, path);
+    }
+
+    public override initialize(): void {
+        base.initialize();
+
+        def post_id = UInt32.Parse(Context.Vars["pid"]);
+        def post_num = UInt32.Parse(Context.Vars["pn"]);
+
+        def command = Database.createCommand(
+            "SELECT CreateDate, OutputContent, ThreadId, UserId FROM Posts "
+                "WHERE Id = @Id") <- [
+            "@Id" = post_id
+        ];
+
+        mutable thread_id, user_id, content, create_date;
+        command.execute(reader => {
+            thread_id = reader.getValue("ThreadId", 0U);
+            user_id = reader.getValue("UserId", 0U);
+            content = reader.getValue("OutputContent");
+            create_date = reader.getValue("CreateDate", 0L);
+        });
+
+        _ = PageData <- [
+            "PostId" = post_id,
+            "Number" = post_num,
+            "ThreadId" = thread_id,
+            "UserId" = user_id,
+            "UserName" = ForumDatabase.getUserName(user_id),
+            "UserDisplay" = userDisplayName(user_id),
+            "IsOwnPost" = SignedInUserId == user_id,
+            "Content" = content,
+            "CreateDate" = create_date.ToString(),
+            "Thumbs" = 0,
+            "Bookmarks" = 0,
+        ];
+
+        // Tags
+        def tags = ForumDatabase.getPostTags(post_id);
+        when(tags != null) {
+            def prf = Server.getDefaultPrefix(Request);
+            mutable tagdata: PageDataArray = array(tags.Length);
+            for(mutable j = 0; j < tags.Length; j++) {
+                def url = Uri.EscapeDataString(tags[j]);
+                tagdata[j] = PageData() <- [
+                    "Name" = tags[j],
+                    "Url" = $"$prf/tg/$url",
+                ];
+            }
+            _ = PageData <- [
+                "Tags" = tagdata,
+                "HasTags" = true,
+            ];
+        }
+
+        // Replies
+        def command = Database.createCommand(
+            "SELECT Count(Id) FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                "@ReplyTo" = post_id,
+            ];
+        def result = command.executeScalar() :> long?;
+        when(result != null) {
+            def reply_count = result :> int;
+            when(reply_count > 0) {
+                def replies: PageDataArray = array(reply_count);
+
+                def command2 = Database.createCommand(
+                    "SELECT PostId FROM Replies WHERE ReplyTo=@ReplyTo") <- [
+                        "@ReplyTo" = post_id,
+                    ];
+                _ = command2.execute((j, reader) => {
+                    def post_id = reader.getValue("PostId", 0U);
+                    replies[j] = PageData() <- [
+                        "PostId" = post_id,
+                        "PostUrl" = $"$post_id",//postUrl(post_id),
+                    ];
+                });
+
+                PageData["HasReplies"] = true;
+                def plural = reply_count > 1;
+                PageData["ReplySummary"] =
+                    $<#$reply_count $(plural ? "replies" : "reply")#>; //TODO: l8n?
+                PageData["Replies"] = replies;
+
+                when(PageData.ContainsKey("ReplyTo")) {
+                    PageData["ReplySep"] = true;
+                }
+            }
+            PageData["ReplyCount"] = reply_count;
+        }
+
+        // Thumbs marker
+        def command3 = Database.createCommand(
+            "SELECT COUNT(Id) FROM Thumbs WHERE "
+                "PostId = @PostId  AND UserId = @UserId") <- [
+            "@PostId" = post_id,
+            "@UserId" = SignedInUserId,
+        ];
+        def result3 = command3.executeScalar() :> long;
+        when(result3 > 0) {
+            PageData["IsOwnThumb"] = true;
+        }
+
+        // Bookmarks markers
+        def command4 = Database.createCommand(
+            "SELECT COUNT(Id) FROM Bookmarks WHERE "
+                "PostId = @PostId  AND UserId = @UserId") <- [
+            "@PostId" = post_id,
+            "@UserId" = SignedInUserId,
+        ];
+        def result4 = command4.executeScalar() :> long;
+        when(result4 > 0) {
+            PageData["IsOwnBookmark"] = true;
+        }
+    }
+
+    // copied from FragmentHandler - this is not a page renderer.
+    // (But we need SignedInUserId et al from BasePageHandler...)
+    public override renderPage(
+        renderer: Renderer, path: string, fs: Stream): string {
+
+        def page = renderer.loadPage(path, fs);
+
+        page.renderContent(PageData);
+    }
+}
+
+
+} // forum
+

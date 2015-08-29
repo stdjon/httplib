@@ -105,8 +105,12 @@ public class ForumServer: Server {
         route(HTTP.POST, "/get-post", getPostDataResponse);
         route(HTTP.POST, "/update-title", updateTitleResponse);
 
+        route([ (HTTP.POST, "/newpost"),
+                (HTTP.GET, "/newpost") ], // for testing only?
+            NewPostHandler.Factory("newpost.nyml"));
+
         route([ (HTTP.POST, "/window"),
-                (HTTP.GET, "/window")], // for testing only?
+                (HTTP.GET, "/window") ], // for testing only?
             FragmentHandler.Factory("editwindow.nyml"));
 
         route(HTTP.GET, "/filter", filterTestResponse);

@@ -166,7 +166,7 @@ function submitReply(wnd_id) {
             '&p=' + pid + '&th=' + _g.ThreadId,
 
         success: function(data) {
-            reloadPageContent();
+            closeReply(wnd_id, true);
         },
         error: function() {
             $wnd.data('replying', false);
@@ -264,7 +264,7 @@ function submitEdit(wnd_id) {
         success: function(data) {
             var d = _d.windows[wnd_id];
 
-            closeEdit(wnd_id);
+            closeEdit(wnd_id, true);
             $('#c-' + pid).html(data.o);
             $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
         },

@@ -1,0 +1,33 @@
+Template: template.nyml
+Content: |
+  <div class="anchor" id="{{Number}}">
+    <div class="post {{OwnPostClass}}">
+      <a href="{{DefaultPrefix}}/u/{{UserName}}">
+        <img class="avatar" src="{{DefaultPrefix}}/avatar/120/{{UserName}}" width="40" height="40"/>
+      </a>
+      <div class="content" id="c-{{PostId}}" data-author="{{UserName}}">{{{Content}}}</div><br>
+      <div><small>
+        <span id="tg-{{PostId}}">
+          {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
+        </span>
+      </small></div>
+      <div class="rhs"><small>&mdash; <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
+        {{CreateDate}}</small><br class="visible-xs"><!--TODO: visible-xs on portrait only?-->
+        {{>PostControl}}
+      </div>
+      <div class="rhs">
+        <small>[<a href="{{DefaultPrefix}}/p/{{PostId}}">view single post</a>]</small>
+      </div>
+      <div class="rhs"><small>
+      {{#ReplyTo}} From [<a href="{{ReplyToUrl}}">#{{ReplyTo}}</a>]{{/ReplyTo}}
+      {{#ReplySep}} | {{/ReplySep}}
+      {{#HasReplies}}
+        {{ReplySummary}}:
+          {{#Replies}}
+            [<a href="{{PostUrl}}">#{{PostId}}</a>]
+          {{/Replies}}
+        {{/HasReplies}}
+      </small></div>
+    </div>
+  </div>
+

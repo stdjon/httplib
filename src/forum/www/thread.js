@@ -13,11 +13,15 @@ function initEventSource() {
                 if( (d.action === 'create') &&
                     (d.thread_id === _g.ThreadId) ) {
 
-                    // TODO: load the post properly, so that we don't clobber
-                    // the whole page (and people editing/replying can see the
-                    // update too...)
-                    if(!windowsAreOpen()) {
-                        reloadPageContent();
+                    if( (d.post_num >= _g.From) &&
+                        (d.post_num <= _g.To) ) {
+
+                        // Give time for closeReply()
+                        setTimeout(function() {
+                            fetchNewPost(d);
+                        }, 100);
+                    } else {
+                        // TODO...
                     }
 
                 } else if( (d.action === 'update') &&
@@ -47,6 +51,29 @@ function initEventSource() {
             }
         });
     }
+}
+
+
+function fetchNewPost(d) {
+    var previous = $('div#' + (d.post_num - 1));
+
+    var next = previous.next();
+    var id = next ? next.attr('id') : undefined;
+    if(id && id.match(/[er][0-9]+/)) {
+        previous = next;
+    }
+
+    $.ajax({
+        type: 'POST',
+        dataType: 'text',
+        global: false,
+        url: '/newpost',
+        data: 'pid=' + d.post_id + '&pn=' + d.post_num,
+
+        success: function(data) {
+            $(data).insertAfter(previous);
+        }
+    });
 }
 
 
