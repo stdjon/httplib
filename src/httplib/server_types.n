@@ -557,6 +557,7 @@ public class Response {
         ContentType = "text/event-stream";
         // This header is required to run SSE behind a proxy (e.g. nginx)
         this["X-Accel-Buffering"] = "no";
+        this["Connection"] = "keep-alive";
 
         // As the event source is a long-running task, make a new thread to run
         // it in. (HttpListener.BeginGetContext() will sometimes try to run tasks
