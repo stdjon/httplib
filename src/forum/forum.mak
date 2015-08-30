@@ -8,6 +8,7 @@ $(eval $(call emit_exe_rule, \
 	$(this_dir)/handlers, \
 	 \
 	forum.mod.filter.dll \
+	forum.mod.iconify.dll \
 	forum.mod.providers.dll \
 	httplib.dll \
 	httplib.macros.dll \

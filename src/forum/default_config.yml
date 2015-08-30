@@ -68,6 +68,14 @@ Modules:
     Data:
       Filters:
 #        - { Search: "filter", Replace: "retlif", Flags: "IgnoreCase" }
+  Iconify:
+    Assembly: forum.mod.iconify.dll
+    Typename: forum.mod.Iconify
+    Data:
+      Mappings:
+        - { Prefix: fa, Class: fa }
+        - { Prefix: gi, Class: glyphicon }
+        - { Prefix: glyphicon, Class: glyphicon }
   Pbkdf2Auth:
     Assembly: httplib.mod.auth.dll
     Typename: httplib.mod.Pbkdf2Auth

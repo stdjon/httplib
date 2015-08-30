@@ -448,14 +448,16 @@ public class ForumServer: Server {
     public renderPost(method: string, text: string,
         mentions: List[uint] = null): bool * string {
 
-        def flt = getModuleInterface.[ITextTransform]("Filter");
         def bbc = getModuleInterface.[ITextTransform]("BbCode");
         def txt = getModuleInterface.[ITextTransform]("Textile");
         def htm = getModuleInterface.[ITextTransform]("HtmlSanitizer");
+        def flt = getModuleInterface.[ITextTransform]("Filter");
+        def ico = getModuleInterface.[ITextTransform]("Iconify");
         def oem = getModuleInterface.[ITextTransform]("OEmbed");
         mutable ok = true;
         mutable output = "";
-        mutable pipeline = flt.transform >> htm.transform >> oem.transform;
+        mutable pipeline =
+            flt.transform >> htm.transform >> ico.transform >> oem.transform;
 
         match(method) {
             | "bbcode" => pipeline = bbc.transform >> pipeline;

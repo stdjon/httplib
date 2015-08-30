@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
+
+using httplib;
+
+
+namespace forum.mod {
+
+[Record]
+public class MappingAction {
+
+    public Search: Regex { get; set; }
+    public Replace: string { get; set; }
+}
+
+
+/** This module implements a simple word filter ('profanity filter'), which
+ *  allows a set of word transformations to be applied to input text. This can
+ *  be used to 'censor' swearing, to discourage use of particular terms, or
+ *  simply for the amusement value... */
+[HasLogging]
+public class Iconify: Module, ITextTransform {
+
+    public override InterfaceType: Type {
+        get { typeof(ITextTransform) }
+    }
+
+    public Mappings: List[MappingAction] { get; private set; }
+
+    public this(data: ModuleData = null) {
+        Log.i("Starting Iconify module... (data: {0})", data);
+
+        Mappings = List();
+
+        mutable mappings, probe;
+
+        when(data.TryGetValue("Mappings", out probe)) {
+            mappings = probe :> List[object];
+        }
+
+        when(mappings != null) {
+            foreach(t :> Dictionary[object, object] in mappings) {
+                def search = t["Prefix"] :> string;
+                def replace = t["Class"] :> string;
+                def regex = $":$search(-[a-zA-Z0-9-]+):";
+
+                Mappings.Add( MappingAction(
+                        Regex(regex, RegexOptions.IgnoreCase), replace) );
+            }
+        }
+    }
+
+    public transform(input: string): string {
+
+        mutable result = input;
+        foreach(f in Mappings) {
+            result = f.Search.Replace(result, m => {
+
+                def matched = m.Groups[1].ToString().ToLower();
+                def replace = f.Replace;
+
+                def r = replace + matched;
+                Log.f("matched='{0}' replace='{1}' r='{2}'", matched, replace, r);
+                $"<span class=\"$replace $r\" title=\"$r\"></span>";
+            });
+        }
+        result = Regex("title=\"([^\"]*)\"").Replace(result, m => {
+            $"title=\":$(m.Groups[1]):\"";
+        });
+        result;
+    }
+}
+
+
+} // namespace forum.mod
