@@ -20,19 +20,17 @@ Partials:
       </div>
       {{/IsAdmin}}
       {{>Pagination}}
-      <ul class="list-group">
       {{#Categories}}
-        <li class="list-group-item"><div id="{{Num}}" class="anchor">
-          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
+        <div id="{{Num}}" class="anchor">
+          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}}; margin: 4px;">
             <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
             created by <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> on {{Date}}
             <span style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};" class="badge">
               <big>{{ThreadCount}}</big>
             </span>
           </div>
-        </div></li>
+        </div>
       {{/Categories}}
-      </ul>
       {{>Pagination}}
     </div>
   Guide: |

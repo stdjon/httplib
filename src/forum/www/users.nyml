@@ -12,10 +12,9 @@ Partials:
   Body: |
     <div>
       {{>Pagination}}
-      <ul class="list-group">
       {{#Users}}
-        <li class="list-group-item"><div id="{{Num}}" class="anchor">
-          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
+        <div id="{{Num}}" class="anchor">
+          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}}; margin: 4px;">
             <a href="{{DefaultPrefix}}/u/{{Name}}">
             <img src="{{DefaultPrefix}}/avatar/120/{{Name}}" height="40" width="40"></img></a>
             <a href="{{DefaultPrefix}}/u/{{Name}}">{{{Display}}}</a>
@@ -23,9 +22,8 @@ Partials:
             <span class="badge" style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};">
               <big>{{Level}}</big><small> / {{Points}}</small></span>
           </div>
-        </div></li>
+        </div>
       {{/Users}}
-      </ul>
       {{>Pagination}}
     </div>
   Guide: |
