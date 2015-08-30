@@ -22,7 +22,7 @@ Partials:
       {{>Pagination}}
       {{#Categories}}
         <div id="{{Num}}" class="anchor">
-          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}}; margin: 4px;">
+          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
             <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
             created by <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> on {{Date}}
             <span style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};" class="badge">

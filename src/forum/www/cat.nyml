@@ -24,24 +24,20 @@ Partials:
       <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a> at {{CreateDate}}.</p>
     {{>Pagination}}
     {{/Name}}
-    <ol start="{{From}}" class='list-group'>
     {{#Threads}}
-      <li class="list-group-item"><div id="{{Number}}" class="anchor">
+      <div id="{{Number}}" class="anchor">
         <div class="inlist">
           <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
           by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
           at {{CreateDate}} <span class="badge"><big>{{PostCount}}</big></span>
         </div>
-      </div></li>
+      </div>
     {{/Threads}}
     {{^Threads}}
-      <li class="list-group-item">
-        <div class="inlist">
-          (empty category)
-        </div>
-      </li>
+      <div class="inlist">
+        (empty category)
+      </div>
     {{/Threads}}
-    </ol>
     {{^Name}}
       <p>Something seems to have gone awry here...</p>
     {{/Name}}

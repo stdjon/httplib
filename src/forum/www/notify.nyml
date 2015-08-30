@@ -18,23 +18,21 @@ Partials:
     <div>
       {{#UserSignedIn}}
       {{>Pagination}}
-      <ul class="list-group">
       {{#Notifications}}
-        <li class="list-group-item"><div id="{{Num}}" class="anchor">
+        <div id="{{Num}}" class="anchor">
           <div class="inlist">
             <a href="{{PostThreadUrl}}">{{{Symbol}}}</a>
             [<a href="{{PostUrl}}">#{{PostId}}</a>] {{Date}} {{{Message}}}
           </div>
-        </div></li>
+        </div>
       {{/Notifications}}
       {{^Notifications}}
-        <li class="list-group-item"><div class="fake-anchor">
+        <div class="fake-anchor">
           <div class="inlist">
             (You don't have any notifications yet...)
           </div>
-        </div></li>
+        </div>
       {{/Notifications}}
-      </ul>
       {{>Pagination}}
       {{/UserSignedIn}}
       {{^UserSignedIn}}

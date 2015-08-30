@@ -14,7 +14,7 @@ Partials:
       {{>Pagination}}
       {{#Users}}
         <div id="{{Num}}" class="anchor">
-          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}}; margin: 4px;">
+          <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
             <a href="{{DefaultPrefix}}/u/{{Name}}">
             <img src="{{DefaultPrefix}}/avatar/120/{{Name}}" height="40" width="40"></img></a>
             <a href="{{DefaultPrefix}}/u/{{Name}}">{{{Display}}}</a>

@@ -190,7 +190,7 @@ div.panel-heading, .panel-title {
   background-color: #ffb !important;
 }
 div.inlist {
-  margin: 0;
+  margin: 4px;
   padding: 5px 10px;
   border-left: 5px solid #ffc;
   background-color: #ffd;
