@@ -621,10 +621,9 @@ function storeOpenWindowsText() {
                 var txt = $('#te-' + w).val();
                 var rnd = $('#rnd-' + w + ' label.active input').val();
                 var tag = encodeTagString($('#tags-' + w).val());
+                var data = txt + '\0' + rnd + '\0' + tag;
 
-                localStorage['window.txt.' + w] = txt;
-                localStorage['window.rnd.' + w] = rnd;
-                localStorage['window.tag.' + w] = tag;
+                setLocalData(w, data);
                 $('#te-' + w).css('background-color', '#ffe');
             } catch(e) {}
         }
@@ -633,9 +632,10 @@ function storeOpenWindowsText() {
 
 
 function restoreWindowText(w) {
-    var txt = localStorage['window.txt.' + w];
-    var rnd = localStorage['window.rnd.' + w];
-    var tag = decodeTagString(localStorage['window.tag.' + w]);
+    var data = (getLocalData(w) || '\0\0').split('\0');
+    var txt = data[0];
+    var rnd = data[1];
+    var tag = decodeTagString(data[2]);
     var pid = w.replace(/^[er]/, '');
     if(txt) {
         $('#te-' + w).html(txt);
@@ -650,9 +650,7 @@ function restoreWindowText(w) {
 
 function eraseWindowText(w) {
     try {
-        localStorage.removeItem('window.txt.' + w);
-        localStorage.removeItem('window.rnd.' + w);
-        localStorage.removeItem('window.tag.' + w);
+        removeLocalData(w);
     } catch(e) {}
 }
 
@@ -663,4 +661,60 @@ $(document).ready(function() {
 
     setInterval(storeOpenWindowsText, 15000);
 });
+
+
+//------------------------------------------------------------------------------
+// localStorage management
+
+var LOCAL_DATA_SIZE = 50;
+var LOCAL_DATA_PREFIX = 'wnd';
+
+
+function getLocalData(k) {
+    return localStorage[LOCAL_DATA_PREFIX + '.val.' + k];
+}
+
+
+function setLocalData(k, v) {
+    try {
+        localStorage[LOCAL_DATA_PREFIX + '.val.' + k] = v;
+        var idx = getLocalIndex();
+        var index = idx.indexOf(k);
+        if(index <= -1) {
+            idx.push(k);
+        }
+        setLocalIndex(idx);
+        if(idx.length > LOCAL_DATA_SIZE) {
+            removeLocalData(idx.shift());
+        }
+    } catch(e) {}
+}
+
+
+function removeLocalData(k) {
+    var idx = getLocalIndex();
+    var index = idx.indexOf(k);
+    if(index > -1) {
+        idx.splice(index, 1);
+        setLocalIndex(idx);
+    }
+    localStorage.removeItem(LOCAL_DATA_PREFIX + '.val.' + k);
+}
+
+
+function getLocalIndex() {
+    var idx = localStorage[LOCAL_DATA_PREFIX + '.idx'];
+    if(idx) {
+        return JSON.parse(idx);
+    }
+    return [];
+}
+
+
+function setLocalIndex(idx) {
+    try {
+        localStorage[LOCAL_DATA_PREFIX + '.idx'] = JSON.stringify(idx);
+    } catch(e) {}
+}
+
 
