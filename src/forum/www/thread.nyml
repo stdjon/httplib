@@ -104,7 +104,7 @@ Partials:
     </div>
     {{/Title}}
   ReloadableScript: |
-    initThreadPage({{ThreadId}}, "{{Transform}}", {{From}}, {{To}},
+    initThreadPage({{ThreadId}}+0, "{{Transform}}", {{From}}+0, {{To}}+0,
       [{{#Posts}}{{PostId}}, {{/Posts}}] );
 
 

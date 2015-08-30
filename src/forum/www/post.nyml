@@ -63,6 +63,6 @@ Partials:
     {{/PostId}}
     </div>
   ReloadableScript: |
-    initPostPage({{PostId}}, {{ThreadId}}, "{{Transform}}");
+    initPostPage({{PostId}}+0, {{ThreadId}}+0, "{{Transform}}");
 
 
