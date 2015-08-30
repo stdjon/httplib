@@ -167,6 +167,7 @@ function submitReply(wnd_id) {
 
         success: function(data) {
             closeReply(wnd_id, true);
+            reloadPageContent(); //FIXME remove me when live updates work properly :(
         },
         error: function() {
             $wnd.data('replying', false);
