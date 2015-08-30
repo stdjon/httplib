@@ -72,6 +72,7 @@ function fetchNewPost(d) {
 
         success: function(data) {
             $(data).insertAfter(previous);
+            _g.Posts.push(d.post_id);
         }
     });
 }
