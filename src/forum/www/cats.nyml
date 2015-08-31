@@ -23,7 +23,7 @@ Partials:
       {{#Categories}}
         <div id="{{Num}}" class="anchor">
           <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
-            <a href="{{DefaultPrefix}}/c/{{Id}}">{{Name}}</a>
+            <a href="{{CategoryUrl}}">{{Name}}</a>
             created by <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> on {{Date}}
             <span style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};" class="badge">
               <big>{{ThreadCount}}</big>

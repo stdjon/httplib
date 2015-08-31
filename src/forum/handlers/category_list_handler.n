@@ -70,6 +70,7 @@ public class CategoryListHandler: BasePageHandler {
             categories[j]["User"] = name;
             categories[j]["UserDisplay"] = userDisplayName(id);
             categories[j]["ThreadCount"] = ForumDatabase.getThreadCount(cid);
+            categories[j]["CategoryUrl"] = ForumDatabase.getCategoryUrlPath(cid);
         }
 
         def prf = Server.getDefaultPrefix(Request);

@@ -107,10 +107,11 @@ public class CategoryHandler: BasePageHandler {
             ];
 
             def thread_count = ForumDatabase.getThreadCount(catid);
+            def path = ForumDatabase.getCategoryUrlPath(catid);
 
             addPagination(PageData,
                 thread_count, dist, ThreadsPerPage,
-                from, to, $"$prf/c/$catid");
+                from, to, $"$prf$path");
         }
     }
 }

@@ -218,6 +218,11 @@ public class ForumDatabase: IDisposable {
         command.executeScalar() :> string;
     }
 
+    public getCategoryUrlPath(cat_id: uint): string {
+        def name = Server.makeUrlFriendlyTitle(getCategoryName(cat_id));
+        $"/c/$cat_id/$name";
+    }
+
     public getCategoryColour(cat_id: uint): string {
         def command = Database.createCommand(
             "SELECT Colour FROM Categories WHERE Id = @Id") <- [ "@Id" = cat_id ];

@@ -40,7 +40,7 @@ Partials:
       }
     </style>
     {{#Title}}
-      <p>Thread started in <a href="{{DefaultPrefix}}/c/{{CategoryId}}">{{Category}}</a>
+      <p>Thread started in <a href="{{CategoryUrl}}">{{Category}}</a>
       by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a> at {{CreateDate}}.</p>
     {{>Pagination}}
     {{/Title}}

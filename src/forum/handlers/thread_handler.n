@@ -68,6 +68,7 @@ public class ThreadHandler: BasePageHandler {
         });
 
         PageData["Category"] = ForumDatabase.getCategoryName(catid);
+        PageData["CategoryUrl"] = ForumDatabase.getCategoryUrlPath(catid);
         PageData["UserName"] = ForumDatabase.getUserName(uid);
         PageData["UserDisplay"] = userDisplayName(uid);
 
