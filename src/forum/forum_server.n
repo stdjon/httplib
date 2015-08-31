@@ -460,15 +460,21 @@ public class ForumServer: Server {
         def flt = getModuleInterface.[ITextTransform]("Filter");
         def ico = getModuleInterface.[ITextTransform]("Iconify");
         def oem = getModuleInterface.[ITextTransform]("OEmbed");
+
+        // convert '\n' to <br> in BBCode/HTML, to maintain user's input.
+        def nl_to_br(text) {
+            Regex("\n").Replace(text, "<br>");
+        }
+
         mutable ok = true;
         mutable output = "";
         mutable pipeline =
             flt.transform >> htm.transform >> ico.transform >> oem.transform;
 
         match(method) {
-            | "bbcode" => pipeline = bbc.transform >> pipeline;
+            | "bbcode" => pipeline = bbc.transform >> nl_to_br >> pipeline;
             | "textile" => pipeline = txt.transform >> pipeline;
-            | "htmlsan" => ()
+            | "htmlsan" => pipeline >>= nl_to_br;
             | _ => ok = false;
         }
 
