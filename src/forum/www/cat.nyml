@@ -27,7 +27,7 @@ Partials:
     {{#Threads}}
       <div id="{{Number}}" class="anchor">
         <div class="inlist">
-          <a href="{{DefaultPrefix}}/th/{{Id}}">{{Title}}</a>
+          <a href="{{ThreadUrl}}">{{Title}}</a>
           by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
           at {{CreateDate}} <span class="badge"><big>{{PostCount}}</big></span>
         </div>

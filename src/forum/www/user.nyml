@@ -127,7 +127,7 @@ Partials:
         <ul class="list-group">
         {{#Threads}}
           <li class="list-group-item">
-            <a href="{{DefaultPrefix}}/th/{{Id}}">{{Id}}</a>: {{CreateDate}} &mdash;
+            <a href="{{ThreadUrl}}">{{Id}}</a>: {{CreateDate}} &mdash;
             <em>{{Title}}</em></li>
         {{/Threads}}
         </ul>

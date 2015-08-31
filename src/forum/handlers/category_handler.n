@@ -87,12 +87,16 @@ public class CategoryHandler: BasePageHandler {
             }
             limit = i;
 
+            def prf = Server.getDefaultPrefix(Request);
             for(i = 0; i < limit; i++) {
                 def user_id = threads[i]["UserId"] :> uint;
+                def thread_id = threads[i]["Id"] :> uint;
+                def path = ForumDatabase.getThreadUrlPath(thread_id);
                 threads[i]["UserName"] = ForumDatabase.getUserName(user_id);
                 threads[i]["UserDisplay"] = userDisplayName(user_id);
                 threads[i]["PostCount"] =
-                    ForumDatabase.getPostCount(threads[i]["Id"] :> uint);
+                    ForumDatabase.getPostCount(thread_id);
+                threads[i]["ThreadUrl"] = $"$prf$path";
             }
 
             _ = PageData <- [
@@ -102,7 +106,6 @@ public class CategoryHandler: BasePageHandler {
                 "Markers" = buildMarkerList(from, limit),
             ];
 
-            def prf = Server.getDefaultPrefix(Request);
             def thread_count = ForumDatabase.getThreadCount(catid);
 
             addPagination(PageData,

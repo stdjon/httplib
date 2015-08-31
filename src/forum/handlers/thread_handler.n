@@ -14,6 +14,7 @@ public class ThreadHandler: BasePageHandler {
     public PostsPerPage: int { get; }
 
     public ThreadId: uint { get; private set; }
+    public ThreadPath: string { get; private set; }
     public From: int { get; private set; }
     public To: int { get; private set; }
     public PostCount: int { get; private set; }
@@ -26,6 +27,7 @@ public class ThreadHandler: BasePageHandler {
         PostsPerPage = Server.Configuration.Limits.PostsPerPage;
 
         ThreadId = UInt32.Parse(Context.Vars["id"]);
+        ThreadPath = ForumDatabase.getThreadUrlPath(ThreadId);
 
         def fr_st = Context.Vars["from"];
         From = !String.IsNullOrEmpty(fr_st) ? Int32.Parse(fr_st) : 1;
@@ -227,10 +229,11 @@ public class ThreadHandler: BasePageHandler {
 
             def prf = Server.getDefaultPrefix(Request);
             def total_count = ForumDatabase.getPostCount(ThreadId);
+            def path = ForumDatabase.getThreadUrlPath(ThreadId);
 
             addPagination(PageData,
                 total_count, PostCount, PostsPerPage,
-                From, To, $"$prf/th/$ThreadId");
+                From, To, $"$prf$path");
 
             // User pref (transform)
             def command4 = Database.createCommand(
@@ -259,9 +262,9 @@ public class ThreadHandler: BasePageHandler {
 
             if(1 == from && PostsPerPage == to) {
                 // special-case URL for first page of the thread
-                $"$prefix/th/$ThreadId#$post_number"
+                $"$prefix$ThreadPath#$post_number"
             } else {
-                $"$prefix/th/$ThreadId/$from-$to#$post_number"
+                $"$prefix$ThreadPath/$from-$to#$post_number"
             }
         } else {
             $"$prefix/p/$post_id"

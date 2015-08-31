@@ -79,10 +79,11 @@ public class NotificationHandler: BasePageHandler {
 
                 def username = ForumDatabase.getUserName(n["UserId"] :> uint);
                 def title = ForumDatabase.getThreadTitle(n["ThreadId"] :> uint);
+                def path = ForumDatabase.getThreadUrlPath(n["ThreadId"] :> uint);
                 def nt = (n["NotifyType"] :> uint).toNotifyType();
                 def msg = String.Format(nt.format(),
                     $<#<a href="$prf/u/$username">$username</a>#>,
-                    $<#<a href="$prf/th/$thread_id">$title</a>#>);
+                    $<#<a href="$prf$path">$title</a>#>);
 
                 _ = n <- [
                     "UserName" = username,
@@ -135,12 +136,13 @@ public class NotificationHandler: BasePageHandler {
         def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
         def to = from + (PostsPerPage - 1);
         def prefix = Server.getDefaultPrefix(Request);
+        def path = ForumDatabase.getThreadUrlPath(thread_id);
 
         if(1 == from && PostsPerPage == to) {
             // special-case URL for first page of the thread
-            $"$prefix/th/$thread_id#$post_number"
+            $"$prefix$path#$post_number"
         } else {
-            $"$prefix/th/$thread_id/$from-$to#$post_number"
+            $"$prefix$path/$from-$to#$post_number"
         }
     }
 }

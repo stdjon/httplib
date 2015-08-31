@@ -70,7 +70,9 @@ public class ForumServer: Server {
         route(HTTP.POST, "/createthread", CreateThreadHandler.Factory());
 
         route([ (HTTP.GET, "/th/{{id:[0-9]+}}"),
-                (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
+                (HTTP.GET, "/th/{{id:[0-9]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}"),
+                (HTTP.GET, "/th/{{id:[0-9]+}}/{{title:[a-zA-Z0-9_-]+}}"),
+                (HTTP.GET, "/th/{{id:[0-9]+}}/{{title:[a-zA-Z0-9_-]+}}/{{from:[0-9]+}}-{{to:[0-9]+}}") ],
             ThreadHandler.Factory("thread.nyml"));
 
         route([ (HTTP.GET, "/tg"),
@@ -721,6 +723,15 @@ public class ForumServer: Server {
 
     public openForumDatabase(name = "default"): ForumDatabase {
         ForumDatabase(this, name);
+    }
+
+    public makeUrlFriendlyTitle(mutable title: string): string {
+        title = Regex(@"[^a-zA-Z0-9_]").Replace(title, "-");
+        title = Regex("-+").Replace(title, "-");
+        title = Regex("^-+").Replace(title, "");
+        title = Regex("-+$").Replace(title, "");
+        title = (title.Length > 1) ? title : "-";
+        title;
     }
 }
 

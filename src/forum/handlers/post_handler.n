@@ -189,12 +189,13 @@ public class PostHandler: BasePageHandler {
         def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
         def to = from + (PostsPerPage - 1);
         def prefix = Server.getDefaultPrefix(Request);
+        def path = ForumDatabase.getThreadUrlPath(thread_id);
 
         if(1 == from && PostsPerPage == to) {
             // special-case URL for first page of the thread
-            $"$prefix/th/$thread_id#$post_number"
+            $"$prefix$path#$post_number"
         } else {
-            $"$prefix/th/$thread_id/$from-$to#$post_number"
+            $"$prefix$path/$from-$to#$post_number"
         }
     }
 

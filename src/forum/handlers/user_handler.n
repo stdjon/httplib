@@ -110,6 +110,13 @@ public class UserHandler: BasePageHandler {
         });
         Array.Resize(ref threads, i);
 
+        def prefix = Server.getDefaultPrefix(Request);
+        for(mutable j = 0; j < threads.Length; j++) {
+            def thread_id = threads[j]["Id"] :> uint;
+            def path = ForumDatabase.getThreadUrlPath(thread_id);
+            threads[j]["ThreadUrl"] = $"$prefix$path";
+        }
+
         def command3 = Database.createCommand(
             "SELECT Id, OutputContent, CreateDate FROM Posts WHERE "
                 "UserId = @UserId ORDER BY CreateDate DESC LIMIT 0, 10") <- [

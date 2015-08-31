@@ -18,7 +18,8 @@ public class CreateThreadHandler: BaseHandler {
         base.initialize();
 
         mutable ok = false;
-            mutable thid = 0U;
+        mutable thid = 0U;
+        mutable path = "";
         using(fdb = Server.openForumDatabase()) {
             def database = fdb.Database;
             mutable title = Context.Vars["title"];
@@ -76,6 +77,7 @@ public class CreateThreadHandler: BaseHandler {
 
                     Log.d("createThreadResponse: thid={0}", thid);
                     when(thid > 0) {
+                        path = fdb.getThreadUrlPath(thid);
                         if(fp == "on") {
 
                             def (post_id, _, _) = fdb.createPost(
@@ -95,7 +97,7 @@ public class CreateThreadHandler: BaseHandler {
 
         if(ok) {
             // redirect to newly-created thread page...
-            Response["Location"] = $"$(Server.getDefaultPrefix(Request))/th/$thid";
+            Response["Location"] = $"$(Server.getDefaultPrefix(Request))$path";
             Response.Status = (303, "See Other");
         } else {
             // TODO: return to /createthread page?

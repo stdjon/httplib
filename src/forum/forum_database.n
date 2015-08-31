@@ -168,6 +168,11 @@ public class ForumDatabase: IDisposable {
         command.executeScalar() :> string;
     }
 
+    public getThreadUrlPath(thread_id: uint): string {
+        def title = Server.makeUrlFriendlyTitle(getThreadTitle(thread_id));
+        $"/th/$thread_id/$title";
+    }
+
     public forEachPostInThread(thread_id: uint, lambda: int * uint -> void): void {
         def command = Database.createCommand(
             "SELECT Id FROM Posts WHERE ThreadId = @ThreadId") <- [
