@@ -65,7 +65,7 @@ public class AdminHandler: AdminAuthHandler {
     public override initialize(): void {
         base.initialize();
 
-        def start_time = Date.FromTicks(Server.TimeStarted);
+        def start_time = Server.formatDateFromTicks(Server.TimeStarted);
         PageData["StartTime"] = start_time.ToString();
         PageData["Uptime"] = Uptime.ToString(@"d\:hh\:mm\:ss");
         PageData["LiveLog"] = Admin.tailLiveLog();

@@ -60,7 +60,7 @@ public class NotificationHandler: BasePageHandler {
                     "ThreadId" = thread_id,
                     "PostId" = reader.getValue("PostId", 0U),
                     "NotifyType" = reader.getValue("NotifyType", 0U),
-                    "Date" = Date.FromTicks(date),
+                    "Date" = Server.formatDateFromTicks(date),
                 ];
                 ok = true;
             });

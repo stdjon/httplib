@@ -59,7 +59,7 @@ public class ThreadHandler: BasePageHandler {
                 "Title" = reader.getValue("Title"),
                 "UserId" = uid,
                 "CategoryId" = catid,
-                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
                 "ColourId" = reader.getValue("Colour"),
                 "IsOwnThread" = is_own_thread,
                 "OwnThreadClass" = is_own_thread ? "own-thread" : "",
@@ -89,7 +89,7 @@ public class ThreadHandler: BasePageHandler {
                 def id = reader.getValue("Id", 0U);
                 uid = reader.getValue("UserId", 0U);
                 def points = reader.getValue("Points", 0);
-                def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                def date = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L));
                 def content = reader.getValue("OutputContent");
                 def reply_to = reader.getValue("ReplyTo"): uint?;
                 def is_own_post = (uid == SignedInUserId);

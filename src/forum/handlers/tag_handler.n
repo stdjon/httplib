@@ -96,7 +96,7 @@ public class TagHandler: BasePageHandler {
                             "Num" = from + i,
                             "Id" = pid,
                             "Content" = content,
-                            "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                            "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
                         ];
                         users[i] = reader.getValue("UserId", 0U);
                         i++;

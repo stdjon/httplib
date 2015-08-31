@@ -737,6 +737,14 @@ public class ForumServer: Server {
         title = (title.Length > 1) ? title : "-";
         title;
     }
+
+    public formatDateFromTicks(
+        ticks: long, format = @"HH:mm, ddd d MMM \'yy"): string {
+
+        (ticks > 0L) ?
+            Date.FromTicks(ticks).ToString(format) :
+            "never";
+    }
 }
 
 

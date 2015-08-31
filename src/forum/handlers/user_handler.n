@@ -73,7 +73,7 @@ public class UserHandler: BasePageHandler {
                 "User" = reader.getValue("Name", user),
                 "Motto" = reader.getValue("Motto", ""),
                 "Location" = reader.getValue("Location", ""),
-                "JoinDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                "JoinDate" = Server.formatDateFromTicks(date),
                 "Points" = reader.getValue("Points", 0),
                 "Level" = reader.getValue("Level", 0.0f).ToString("f2"),
                 "ColourId" = reader.getValue("Colour",
@@ -105,7 +105,7 @@ public class UserHandler: BasePageHandler {
             threads[j] = PageData() <- [
                 "Id" = reader.getValue("Id", 0U),
                 "Title" = reader.getValue("Title"),
-                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref threads, i);
@@ -128,7 +128,7 @@ public class UserHandler: BasePageHandler {
             posts[j] = PageData() <- [
                 "Id" = reader.getValue("Id", 0U),
                 "Content" = summarizePost(content),
-                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
             ];
         });
         Array.Resize(ref posts, i);
@@ -159,7 +159,7 @@ public class UserHandler: BasePageHandler {
                     "Id" = s[j],
                     "UserId" = reader.getValue("UserId", 0U),
                     "Content" = summarizePost(content),
-                    "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                    "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
                 ];
             });
 

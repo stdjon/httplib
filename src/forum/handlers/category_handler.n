@@ -46,7 +46,7 @@ public class CategoryHandler: BasePageHandler {
             _ = PageData <- [
                 "Name" = reader.getValue("Name"),
                 "UserId" = uid,
-                "CreateDate" = Date.FromTicks(reader.getValue("CreateDate", 0L)),
+                "CreateDate" = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L)),
                 "ColourId" = reader.getValue("Colour"),
             ];
             ok = true;
@@ -71,7 +71,7 @@ public class CategoryHandler: BasePageHandler {
             i = command2.execute((j, reader) => {
                 def id = reader.getValue("Id", 0U);
                 uid = reader.getValue("UserId", 0U);
-                def date = Date.FromTicks(reader.getValue("CreateDate", 0L));
+                def date = Server.formatDateFromTicks(reader.getValue("CreateDate", 0L));
                 def title = reader.getValue("Title");
 
                 threads[j] = PageData() <- [

@@ -47,7 +47,7 @@ public class NewPostHandler: BasePageHandler {
             "UserDisplay" = userDisplayName(user_id),
             "IsOwnPost" = SignedInUserId == user_id,
             "Content" = content,
-            "CreateDate" = Date.FromTicks(create_date).ToString(),
+            "CreateDate" = Server.formatDateFromTicks(create_date),
             "Thumbs" = 0,
             "Bookmarks" = 0,
         ];

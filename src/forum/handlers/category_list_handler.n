@@ -51,7 +51,7 @@ public class CategoryListHandler: BasePageHandler {
                     "UserId" = user_id,
                     "Num" = (from + j).ToString(),
                     "Name" = cat,
-                    "Date" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                    "Date" = Server.formatDateFromTicks(date),
                     "Colour" = colour,
                     "ColourBgHsl" = CssHandler.bgFromColourId(colour),
                     "ColourFgHsl" = CssHandler.fgFromColourId(colour),

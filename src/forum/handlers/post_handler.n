@@ -73,7 +73,7 @@ public class PostHandler: BasePageHandler {
                 "UserDisplay" = userDisplayName(uid),
                 "Thread" = title,
                 "ThreadId" = thid,
-                "CreateDate" = (date > 0) ? Date.FromTicks(date).ToString() : "never",
+                "CreateDate" = Server.formatDateFromTicks(date),
                 //"Points" = points,
                 "Thumbs" = thumbs,
                 "Bookmarks" = bookmarks,
