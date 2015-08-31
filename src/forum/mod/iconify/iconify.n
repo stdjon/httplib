@@ -62,7 +62,6 @@ public class Iconify: Module, ITextTransform {
                 def replace = f.Replace;
 
                 def r = replace + matched;
-                Log.f("matched='{0}' replace='{1}' r='{2}'", matched, replace, r);
                 $"<span class=\"$replace $r\" title=\"$r\"></span>";
             });
         }
