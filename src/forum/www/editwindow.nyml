@@ -15,7 +15,7 @@ Content: |
       <button id="btn-{{id}}-preview" class="btn btn-xs btn-warning" value="Preview"
         onclick="showPreview('{{id}}'); return false;">Preview</button>
       <button id="btn-{{id}}-submit" class="btn btn-xs btn-success" value="{{text}}"
-        onclick="{{submit}}('{{id}}'); return false;">{{text}}</button>
+        onclick="{{submit}}('{{id}}'); return false;">{{text}}<span id="{{id}}-submit-spin"></span></button>
       &nbsp;
       <button id="btn-{{id}}-cancel" class="btn btn-xs btn-danger" value="Cancel"
         onclick="{{cancel}}('{{id}}', true); return false;">Cancel</button>

@@ -89,6 +89,16 @@ function replyHoverOut() {
 }
 
 
+function startSpinner(wnd_id) {
+    $('#' + wnd_id + '-submit-spin').html(' <span class="fa fa-pulse fa-spinner"></span>');
+}
+
+
+function stopSpinner(wnd_id) {
+    $('#' + wnd_id + '-submit-spin').html('');
+}
+
+
 function reply(btn, num, pid) {
     var btn_id = '#' + $(btn).attr('id');
     var wnd_id = 'r' + pid;
@@ -157,6 +167,8 @@ function submitReply(wnd_id) {
     var txt = encodeURIComponent($('#' + wnd_id + ' textarea').val());
     var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
+
+    startSpinner(wnd_id);
     $.ajax({
         type: 'POST',
         dataType: 'json',
@@ -171,6 +183,7 @@ function submitReply(wnd_id) {
         },
         error: function() {
             $wnd.data('replying', false);
+            stopSpinner(wnd_id);
             Dialog.alert({
                 size: BootstrapDialog.SIZE_LARGE,
                 type: BootstrapDialog.TYPE_DANGER,
@@ -255,6 +268,7 @@ function submitEdit(wnd_id) {
     var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
 
+    startSpinner(wnd_id);
     $.ajax({
         type: 'POST',
         dataType: 'json',
@@ -270,6 +284,7 @@ function submitEdit(wnd_id) {
             $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
         },
         error: function() {
+            stopSpinner(wnd_id);
             Dialog.alert({
                 size: BootstrapDialog.SIZE_LARGE,
                 type: BootstrapDialog.TYPE_DANGER,
