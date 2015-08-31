@@ -76,6 +76,12 @@ div.body div.post {
   margin-right: 50px;
   text-align: justify;
 }
+@media (max-width: 767px) {
+  div.body div.post {
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
 div.body img.avatar {
   float: right;
   margin: 0px 12px;
