@@ -55,12 +55,14 @@ function initEventSource() {
 
 
 function fetchNewPost(d) {
-    var previous = $('div#' + (d.post_num - 1));
 
-    var next = previous.next();
-    var id = next ? next.attr('id') : undefined;
-    if(id && id.match(/[er][0-9]+/)) {
-        previous = next;
+    function checkOpenWindows(el) {
+        var next = el.next();
+        var id = next ? next.attr('id') : undefined;
+        if(id && id.match(/[er][0-9]+/)) {
+            el = next;
+        }
+        return el;
     }
 
     $.ajax({
@@ -71,8 +73,18 @@ function fetchNewPost(d) {
         data: 'pid=' + d.post_id + '&pn=' + d.post_num,
 
         success: function(data) {
-            $(data).insertAfter(previous);
-            _g.Posts.push(d.post_id);
+            var current = $('div#' + d.post_num);
+            current = checkOpenWindows(current);
+            if(current) {
+                current.html(data);
+            } else {
+                var previous = $('div#' + (d.post_num - 1));
+                previous = checkOpenWindows(previous);
+                if(previous) {
+                    $(data).insertAfter(previous);
+                    _g.Posts.push(d.post_id);
+                }
+            }
         }
     });
 }
