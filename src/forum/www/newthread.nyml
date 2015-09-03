@@ -13,7 +13,7 @@ Title: "New Thread"
 Partials:
   Nav: "{{>NavLogin}}"
   Banner: |
-    <form>
+    <form onsubmit="return validateNewThread()">
     <div class="jumbotron fake-anchor">
       <h1>New Thread</h1>
     </div>

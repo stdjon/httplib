@@ -122,6 +122,41 @@ function updateCategory(cat) {
 }
 
 
+function validateNewThread() {
+    var result = false;
+
+    var title = $('#title').val();
+    var content = $('#fp-text').val();
+    var isPost = $('#fp-cbx').val();
+    var message = 'Can\'t create thread.';
+
+    if(!title) {
+        message += '\nPlease set a title.';
+    }
+
+    if(isPost === "on") {
+        result = !!title && !!content;
+        if(!content) {
+            message += '\nPlease write something in the first post.';
+        }
+    } else {
+        result = !!title;
+
+    }
+
+    if(!result) {
+        Dialog.alert({
+            size: BootstrapDialog.SIZE_LARGE,
+            type: BootstrapDialog.TYPE_DANGER,
+            title: 'Warning',
+            message: message,
+        });
+    }
+
+    return result;
+}
+
+
 getCategoryList(function(data) {
     populateCategories('select#category', _g.Category, data);
     updateCategory(_g.Category);
