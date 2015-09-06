@@ -47,7 +47,7 @@ public class PostHandler: BasePageHandler {
         });
 
         when(ok) {
-            populatePostIds(thid);
+            PostIdMap = Server.ThreadPosts.getPostNums(thid);
 
             def thumbs = ForumDatabase.getPostThumbs(pid);
             def bookmarks = ForumDatabase.getPostBoomarks(pid);
@@ -173,14 +173,6 @@ public class PostHandler: BasePageHandler {
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
             PageData["Transform"] = command4.executeScalar() :> string;
         }
-    }
-
-    populatePostIds(thread_id: uint): void {
-        PostIdMap = Dictionary();
-
-        ForumDatabase.forEachPostInThread(thread_id, (j, pid) => {
-            PostIdMap[pid] = j + 1;
-        });
     }
 
     public buildPostUrl(post_id: uint, thread_id: uint): string {

@@ -1,0 +1,90 @@
+using System;
+using System.Collections.Generic;
+
+using Nemerle.Extensions;
+
+
+namespace forum {
+
+/** We don't currently store the order of posts in individual threads, so to
+ *  avoid hitting the database constantly for this info, we maintain a cache of
+ *  post ids per thread, so we can move from post id to post # in thread quickly.
+ *  If any posts are moved, we'd expect to invalidate() both threads involved.
+ */
+public class ThreadPosts {
+
+    type PostIdList = List[uint];
+    type PostNumMap = Dictionary[uint, int];
+
+    PostIdLists: Dictionary[uint, PostIdList] { get; set; }
+    PostNumMaps: Dictionary[uint, PostNumMap] { get; set; }
+
+    public Server: ForumServer { get; private set; }
+
+    public Item[thread_id: uint]: PostIdList {
+        get { getPostIds(thread_id); }
+    }
+
+    public this(server: ForumServer) {
+        Server = server;
+        invalidate();
+    }
+
+    public invalidate(): void {
+        PostIdLists = Dictionary();
+        PostNumMaps = Dictionary();
+    }
+
+    public invalidate(thread_id: uint): void {
+        _ = PostIdLists.Remove(thread_id);
+        _ = PostNumMaps.Remove(thread_id);
+    }
+
+    public initialize(thread_id: uint): void {
+        invalidate(thread_id);
+        def postList = List();
+        def postMap = Dictionary();
+        using(fdb = Server.openForumDatabase()) {
+            fdb.forEachPostInThread(thread_id, (j, post_id) => {
+                postList.Add(post_id);
+                postMap[post_id] = j + 1;
+            });
+        }
+        PostIdLists[thread_id] = postList;
+        PostNumMaps[thread_id] = postMap;
+    }
+
+    public getPostNum(thread_id: uint, post_id: uint): int {
+        getPostNums(thread_id)[post_id];
+    }
+
+    public getPostId(thread_id: uint, post_num: int): uint {
+        getPostIds(thread_id)[post_num - 1];
+    }
+
+    public getPostIds(thread_id: uint): PostIdList {
+        when(!PostIdLists.ContainsKey(thread_id)) {
+            initialize(thread_id);
+        }
+        PostIdLists[thread_id];
+    }
+
+    public getPostNums(thread_id: uint): PostNumMap {
+        when(!PostNumMaps.ContainsKey(thread_id)) {
+            initialize(thread_id);
+        }
+        PostNumMaps[thread_id];
+    }
+
+    public addPost(thread_id: uint, post_id: uint): int {
+        def list_ = getPostIds(thread_id);
+        def map = getPostNums(thread_id);
+        list_.Add(post_id);
+        def n = list_.Count;
+        map[post_id] = n;
+        n;
+    }
+};
+
+
+}

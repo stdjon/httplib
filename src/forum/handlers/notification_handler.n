@@ -15,7 +15,6 @@ public class NotificationHandler: BasePageHandler {
     public PostsPerPage: int { get; }
     public PostUrlMap: Dictionary[uint, string] { get; private set; }
     public PostThreadMap: Dictionary[uint, uint] { get; private set; }
-    public ThreadIdMap: Dictionary[uint, Dictionary[uint, int]] { get; private set; }
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
@@ -24,7 +23,6 @@ public class NotificationHandler: BasePageHandler {
         PostsPerPage = Server.Configuration.Limits.PostsPerPage;
         PostUrlMap = Dictionary();
         PostThreadMap = Dictionary();
-        ThreadIdMap = Dictionary();
     }
 
     public override initialize(): void {
@@ -75,7 +73,7 @@ public class NotificationHandler: BasePageHandler {
                 def thread_id = n["ThreadId"] :> uint;
                 def post_id = n["PostId"] :> uint;
 
-                populatePostIds(thread_id);
+                PostThreadMap[post_id] = thread_id;
 
                 def username = ForumDatabase.getUserName(n["UserId"] :> uint);
                 def title = ForumDatabase.getThreadTitle(n["ThreadId"] :> uint);
@@ -117,21 +115,10 @@ public class NotificationHandler: BasePageHandler {
         }
     }
 
-    public populatePostIds(thread_id: uint): void {
-        when(!ThreadIdMap.ContainsKey(thread_id)) {
-            def d = Dictionary();
-            ForumDatabase.forEachPostInThread(thread_id, (j, pid) => {
-                d[pid] = j + 1;
-                PostThreadMap[pid] = thread_id;
-            });
-            ThreadIdMap[thread_id] = d;
-        }
-    }
-
     public buildPostUrl(post_id: uint): string {
 
         def thread_id = PostThreadMap[post_id];
-        def d = ThreadIdMap[thread_id];
+        def d = Server.ThreadPosts.getPostNums(thread_id);
         def post_number = d[post_id];
         def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
         def to = from + (PostsPerPage - 1);

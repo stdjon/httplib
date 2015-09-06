@@ -18,8 +18,8 @@ public class ThreadHandler: BasePageHandler {
     public From: int { get; private set; }
     public To: int { get; private set; }
     public PostCount: int { get; private set; }
-    public PostIds: array[uint] { get; private set; }
-    public PostIdMap: Dictionary[uint, uint] { get; private set; }
+    public PostIds: List[uint] { get; private set; }
+    public PostIdMap: Dictionary[uint, int] { get; private set; }
 
     public this(hd: HandlerData, path: string) {
         base(hd, path);
@@ -38,7 +38,8 @@ public class ThreadHandler: BasePageHandler {
             (From + PostsPerPage - 1);
         PostCount = To + 1 - From;
 
-        populatePostIds();
+        PostIds = Server.ThreadPosts.getPostIds(ThreadId);
+        PostIdMap = Server.ThreadPosts.getPostNums(ThreadId);
     }
 
     public override initialize(): void {
@@ -243,21 +244,11 @@ public class ThreadHandler: BasePageHandler {
         }
     }
 
-    populatePostIds(): void {
-        PostIds = array(ForumDatabase.getPostCount(ThreadId));
-        PostIdMap = Dictionary();
-
-        ForumDatabase.forEachPostInThread(ThreadId, (j, pid) => {
-            PostIds[j] = pid;
-            PostIdMap[pid] = j :> uint + 1;
-        });
-    }
-
     postUrl(post_id: uint): string {
         def prefix = Server.getDefaultPrefix(Request);
 
         if(PostIdMap.ContainsKey(post_id)) {
-            def post_number = PostIdMap[post_id] :> int;
+            def post_number = PostIdMap[post_id];
             def from = (((post_number - 1) / PostCount) * PostCount) + 1;
             def to = from + (PostCount - 1);
 
