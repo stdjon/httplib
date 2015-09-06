@@ -62,12 +62,9 @@ public class Iconify: Module, ITextTransform {
                 def replace = f.Replace;
 
                 def r = replace + matched;
-                $"<span class=\"$replace $r\" title=\"$r\"></span>";
+                $"<span class=\"$replace $r\" title=\":$r:\"></span>";
             });
         }
-        result = Regex("title=\"([^\"]*)\"").Replace(result, m => {
-            $"title=\":$(m.Groups[1]):\"";
-        });
         result;
     }
 }

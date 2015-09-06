@@ -5,6 +5,7 @@ Template: template.nyml
 Partials:
   Layout: |
     <div class="banner user-font">
+      {{>NoScript}}
       <div id="banner">{{>Banner}}</div>
       <div class="col-xs-12 body">
         {{>Body}}

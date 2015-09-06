@@ -110,8 +110,11 @@ Modules:
         - { Tag: "*", Open: "<li>", Close: "", Flags: "NoClose" }
         - { Tag: "br", Open: "<br>", Close: "", Flags: "NoClose"  }
         - { Tag: "hr", Open: "<hr>", Close: "", Flags: "NoClose"  }
+        - { Tag: "spoiler", Open: "<spoiler>", Close: "</spoiler>" }
         - { Tag: "url", Open: "<a href='${href}'>", Close: "</a>",
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
+        - { Tag: "abbr", Open: "<abbr title='${title}'>", Close: "</abbr>",
+            Attrs: [ { Id: "title", Name: "" }, { Id: "title", Name: "title" } ] }
   HtmlSanitizer:
     Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer

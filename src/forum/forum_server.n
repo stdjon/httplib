@@ -463,18 +463,35 @@ public class ForumServer: Server {
 
         // convert '\n' to <br> in BBCode/HTML, to maintain user's input.
         def nl_to_br(text) {
-            Regex("\n").Replace(text, "<br>");
+            text.Replace("\n", "<br>");
+        }
+
+        // convert <spoiler> to non-tag format (pre HTML sanitizer)
+        def spoiler_tags_pre(text) {
+            text.
+                Replace("<spoiler>", " {[{SPOILER}]} ").
+                Replace("</spoiler>", " {[{/SPOILER}]} ");
+        }
+
+        // convert spoiler non-tags to <span class='spoiler'>
+        def spoiler_tags_post(text) {
+            text.
+                Replace(" {[{SPOILER}]} ", "<span class='spoiler'><span>").
+                Replace(" {[{/SPOILER}]} ", "</span></span>");
         }
 
         mutable ok = true;
         mutable output = "";
         mutable pipeline =
-            flt.transform >> htm.transform >> ico.transform >> oem.transform;
+            flt.transform >> htm.transform >>
+            ico.transform >> oem.transform >> spoiler_tags_post;
 
         match(method) {
-            | "bbcode" => pipeline = bbc.transform >> nl_to_br >> pipeline;
-            | "textile" => pipeline = txt.transform >> pipeline;
-            | "htmlsan" => pipeline >>= nl_to_br;
+            | "bbcode" => pipeline =
+                bbc.transform >> spoiler_tags_pre >> nl_to_br >> pipeline;
+            | "textile" => pipeline =
+                txt.transform >> spoiler_tags_pre >> pipeline;
+            | "htmlsan" => pipeline = spoiler_tags_pre >> nl_to_br >> pipeline;
             | _ => ok = false;
         }
 

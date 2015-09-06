@@ -53,6 +53,7 @@ Partials:
     </script>
   Layout: |
     <div class="banner user-font">
+      {{>NoScript}}
       <div id="banner">{{>Banner}}</div>
       <div class="col-xs-12 col-sm-10 body">
         {{>Body}}
@@ -112,6 +113,8 @@ Partials:
     <iframe id='navbar-frame' src="{{DefaultSecurePrefix}}/nav-login?r={{CurrentUrl}}"
       width='100%' height='50px' frameborder='0' allowtransparency='true'
       style='position: fixed; z-index: 100;'></iframe>
+  NoScript: |
+    <noscript><h3 class='fake-anchor noscript-warning'>t3k4 works best with JavaScript enabled.</h3></noscript>
   Swatches: |
     <div class="swatches btn-group btn-group-sm" data-toggle="buttons" style="width: 100%">
       <label class="btn btn-default swatch" id="x360" onclick="selectSwatch('x360')"><input type="radio"/>&nbsp;</label>
