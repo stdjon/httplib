@@ -143,17 +143,24 @@ public class NotificationHandler: BasePageHandler {
 
         def thread_id = PostThreadMap[post_id];
         def d = Server.ThreadPosts.getPostNums(thread_id);
-        def post_number = d[post_id];
-        def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
-        def to = from + (PostsPerPage - 1);
-        def prefix = Server.getDefaultPrefix(Request);
-        def path = ForumDatabase.getThreadUrlPath(thread_id);
+	try {
+            def post_number = d[post_id];
+            def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
+            def to = from + (PostsPerPage - 1);
+            def prefix = Server.getDefaultPrefix(Request);
+            def path = ForumDatabase.getThreadUrlPath(thread_id);
 
-        if(1 == from && PostsPerPage == to) {
-            // special-case URL for first page of the thread
-            $"$prefix$path#$post_number"
-        } else {
-            $"$prefix$path/$from-$to#$post_number"
+            if(1 == from && PostsPerPage == to) {
+                // special-case URL for first page of the thread
+                $"$prefix$path#$post_number"
+            } else {
+                $"$prefix$path/$from-$to#$post_number"
+            }
+        } catch {
+            | _ => {
+                def prefix = Server.getDefaultPrefix(Request);
+                $"$prefix/p/$post_id" //FIXME
+            }
         }
     }
 }
