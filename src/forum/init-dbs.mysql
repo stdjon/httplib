@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS Users(
     Level FLOAT,
     Points INT,
     JoinDate BIGINT,
+    NotifyDate BIGINT,
     Motto VARCHAR(40),
     Location VARCHAR(40),
     Colour VARCHAR(30),

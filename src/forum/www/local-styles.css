@@ -318,6 +318,12 @@ abbr, acronym {
   cursor: default !important;
   border-bottom: 1px dotted #888 !important;
 }
+.nav-alert {
+  color: #ff0 !important;
+}
+.nav-alert:hover {
+  color: #fff !important;
+}
 /* select/select2 */
 .select2-container, .select2-dropdown {
     border-radius: 0 !important;

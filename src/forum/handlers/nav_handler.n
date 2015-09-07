@@ -73,6 +73,7 @@ public class NavHandler: BasePageHandler {
                 // IsAdmin from BasePageHandler is determined from _isession; we
                 // need to make sure that it is set from _session for the nav...
                 PageData["IsAdmin"] = ForumDatabase.userIsAdmin(id);
+                checkNotifications();
 
                 Response.append(Server.renderPage("nav-ok.nyml", PageData));
                 Response.Status = (200, "OK");
@@ -186,6 +187,31 @@ public class NavHandler: BasePageHandler {
         } else {
             Response.append("<html><body><h1>Forbidden!</h1></body></html>");
             Response.Status = (403, "Forbidden");
+        }
+    }
+
+    checkNotifications(): void {
+        def command = Database.createCommand(
+            "SELECT NotifyDate FROM Users WHERE Id = @Id") <- [
+                "@Id" = SignedInUserId
+            ];
+        def result = command.executeScalar() :> long?;
+
+        def user_date = result ? (result :> long) : 0L;
+
+        def commmand2 = Database.createCommand(
+            "SELECT CreateDate FROM Notifications WHERE UserId = @UserId "
+                "ORDER BY CreateDate DESC LIMIT 0, 1") <- [
+            "@UserId" = SignedInUserId
+        ];
+        def result2 = commmand2.executeScalar() :> long?;
+        def notify_date = result2 ? (result2 :> long) : 0L;
+
+        // allow a 30-second window for notifications to remain 'active'...
+        def delta = TimeSpan(0, 0, 30).Ticks;
+
+        when(user_date < (notify_date + delta)) {
+            PageData["NewNotifications"] = "nav-alert";
         }
     }
 }

@@ -23,7 +23,7 @@ Partials:
         title="User page" target="_top">[{{User}}]</a>
       <a class="navbar-brand navbar-2ry visible-xs" href="{{DefaultPrefix}}/u/{{User}}"
         title="User page" target="_top">[<span class="fa fa-user"></span>]</a>
-      <a class="navbar-brand navbar-2ry" href="{{DefaultPrefix}}/n"
+      <a class="navbar-brand navbar-2ry {{NewNotifications}}" href="{{DefaultPrefix}}/n"
         title="Notifications" target="_top">[<span class="fa fa-comments-o"></span>]</a>
       {{#IsAdmin}}
       <a class="navbar-brand navbar-2ry" href="{{DefaultSecurePrefix}}/admin"

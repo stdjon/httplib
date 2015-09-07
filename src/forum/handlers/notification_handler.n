@@ -115,6 +115,15 @@ public class NotificationHandler: BasePageHandler {
         }
     }
 
+    public override finish(): void {
+        def command3 = Database.createCommand(
+            "UPDATE Users SET NotifyDate = @NotifyDate WHERE Id = @Id") <- [
+                "@NotifyDate" = Date.NowTicks,
+                "@Id" = SignedInUserId,
+            ];
+        _ = command3.executeNonQuery();
+    }
+
     public buildPostUrl(post_id: uint): string {
 
         def thread_id = PostThreadMap[post_id];
