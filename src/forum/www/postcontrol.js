@@ -68,13 +68,13 @@ function showPreview(wnd_id) {
 
 function close(data, wnd_id, cancel) {
     var d = _d.windows[wnd_id];
-    delete _d.windows[wnd_id];
     if(cancel) {
         eraseWindowText(wnd_id);
     }
     $('#' + wnd_id).remove();
     $(d.num).data(data, false);
     $(d.btn_id).css('color', $(d.num).data('old-color'));
+    delete _d.windows[wnd_id];
 }
 
 
@@ -161,37 +161,56 @@ function submitReply(wnd_id) {
     if($wnd.data('replying')) {
         return;
     }
-    $wnd.data('replying', true);
 
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
     var txt = encodeURIComponent($('#' + wnd_id + ' textarea').val());
     var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
 
-    startSpinner(wnd_id);
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        global: false,
-        url: '/createpost',
-        data: 'r=' + sel + '&t=' + txt + '&tg=' + tags +
-            '&p=' + pid + '&th=' + _g.ThreadId,
+    function doSubmit() {
+        $wnd.data('replying', true);
+        startSpinner(wnd_id);
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            global: false,
+            url: '/createpost',
+            data: 'r=' + sel + '&t=' + txt + '&tg=' + tags +
+                '&p=' + pid + '&th=' + _g.ThreadId,
 
-        success: function(data) {
-            closeReply(wnd_id, true);
-            reloadPageContent(); //FIXME remove me when live updates work properly :(
-        },
-        error: function() {
-            $wnd.data('replying', false);
-            stopSpinner(wnd_id);
-            Dialog.alert({
-                size: BootstrapDialog.SIZE_LARGE,
-                type: BootstrapDialog.TYPE_DANGER,
-                title: 'Warning',
-                message: 'Could not post (server error).',
-            });
-        }
-    });
+            success: function(data) {
+                $wnd.data('replying', false);
+                closeReply(wnd_id, true);
+                reloadPageContent(); //FIXME remove me when live updates work properly :(
+            },
+            error: function() {
+                $wnd.data('replying', false);
+                stopSpinner(wnd_id);
+                Dialog.alert({
+                    size: BootstrapDialog.SIZE_LARGE,
+                    type: BootstrapDialog.TYPE_DANGER,
+                    title: 'Warning',
+                    message: 'Could not post (server error).',
+                });
+            }
+        });
+    }
+
+    if(txt) {
+        doSubmit();
+    } else {
+        Dialog.confirm({
+            size: BootstrapDialog.SIZE_LARGE,
+            type: BootstrapDialog.TYPE_WARNING,
+            title: 'Warning',
+            message: 'Are you sure you want to make a completely empty post?',
+            callback:  function(x) {
+                if(x) {
+                    doSubmit();
+                }
+            }
+        });
+    }
 }
 
 
@@ -268,31 +287,49 @@ function submitEdit(wnd_id) {
     var tags = encodeTagString($('#tags-' + wnd_id).val());
     var pid = _d.windows[wnd_id].pid;
 
-    startSpinner(wnd_id);
-    $.ajax({
-        type: 'POST',
-        dataType: 'json',
-        global: false,
-        url: '/update-post',
-        data: 'p=' + pid + '&r=' + sel + '&t=' + txt + '&tg=' + tags,
+    function doSubmit() {
+        startSpinner(wnd_id);
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            global: false,
+            url: '/update-post',
+            data: 'p=' + pid + '&r=' + sel + '&t=' + txt + '&tg=' + tags,
 
-        success: function(data) {
-            var d = _d.windows[wnd_id];
+            success: function(data) {
+                var d = _d.windows[wnd_id];
 
-            closeEdit(wnd_id, true);
-            $('#c-' + pid).html(data.o);
-            $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
-        },
-        error: function() {
-            stopSpinner(wnd_id);
-            Dialog.alert({
-                size: BootstrapDialog.SIZE_LARGE,
-                type: BootstrapDialog.TYPE_DANGER,
-                title: 'Warning',
-                message: 'Could not edit (server error).',
-            });
-        }
-    });
+                closeEdit(wnd_id, true);
+                $('#c-' + pid).html(data.o);
+                $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
+            },
+            error: function() {
+                stopSpinner(wnd_id);
+                Dialog.alert({
+                    size: BootstrapDialog.SIZE_LARGE,
+                    type: BootstrapDialog.TYPE_DANGER,
+                    title: 'Warning',
+                    message: 'Could not edit (server error).',
+                });
+            }
+        });
+    }
+
+    if(txt) {
+        doSubmit();
+    } else {
+        Dialog.confirm({
+            size: BootstrapDialog.SIZE_LARGE,
+            type: BootstrapDialog.TYPE_WARNING,
+            title: 'Warning',
+            message: 'Are you sure you want to make a completely empty post?',
+            callback:  function(x) {
+                if(x) {
+                    doSubmit();
+                }
+            }
+        });
+    }
 }
 
 
