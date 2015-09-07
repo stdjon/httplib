@@ -28,8 +28,8 @@ Partials:
       {{#Notifications}}
         <div id="{{Num}}" class="anchor">
           <div class="inlist {{NewNotifyClass}}">
-            <a href="{{PostThreadUrl}}">{{{Symbol}}}</a>
-            [<a href="{{PostUrl}}">#{{PostId}}</a>] {{Date}} {{{Message}}}
+            <a href="{{PostThreadUrl}}">{{{Symbol}}}</a> {{Date}} {{{Message}}}
+            [<a href="{{PostUrl}}">view single post</a>] 
           </div>
         </div>
       {{/Notifications}}

@@ -89,11 +89,11 @@ public class NotificationHandler: BasePageHandler {
 
                 def username = ForumDatabase.getUserName(n["UserId"] :> uint);
                 def title = ForumDatabase.getThreadTitle(n["ThreadId"] :> uint);
-                def path = ForumDatabase.getThreadUrlPath(n["ThreadId"] :> uint);
+                def post_thread_url = buildPostUrl(post_id);
                 def nt = (n["NotifyType"] :> uint).toNotifyType();
                 def msg = String.Format(nt.format(),
                     $<#<a href="$prf/u/$username">$username</a>#>,
-                    $<#<a href="$prf$path">$title</a>#>);
+                    $<#<a href="$post_thread_url">$title</a>#>);
 
                 def notify_date = n["CreateDate"] :> long;
 
@@ -103,7 +103,7 @@ public class NotificationHandler: BasePageHandler {
                     "Symbol" = nt.symbol(),
                     "Message" = msg,
                     "PostUrl" = $"$prf/p/$post_id",
-                    "PostThreadUrl" = buildPostUrl(post_id),
+                    "PostThreadUrl" = post_thread_url,
                 ];
 
                 // allow a 60-second window for notifications to remain 'active'...

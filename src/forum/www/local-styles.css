@@ -318,11 +318,11 @@ abbr, acronym {
   cursor: default !important;
   border-bottom: 1px dotted #888 !important;
 }
-.nav-alert {
-  color: #ff0 !important;
+.navbar-2ry.nav-alert {
+  color: #ff0;
 }
-.nav-alert:hover {
-  color: #fff !important;
+.navbar-2ry.nav-alert:hover {
+  color: #fff;
 }
 /* select/select2 */
 .select2-container, .select2-dropdown {
