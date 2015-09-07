@@ -78,28 +78,21 @@ public class ThreadPosts {
     }
 
     public getPostIds(thread_id: uint): PostIdList {
-        lock(GeneralLock) {
-            when(!ThreadLocks.ContainsKey(thread_id)) {
-                initialize(thread_id);
-            }
-        }
+        ensureDataExists(thread_id);
         lock(ThreadLocks[thread_id]) {
             PostIdLists[thread_id];
         }
     }
 
     public getPostNums(thread_id: uint): PostNumMap {
-        lock(GeneralLock) {
-            when(!ThreadLocks.ContainsKey(thread_id)) {
-                initialize(thread_id);
-            }
-        }
+        ensureDataExists(thread_id);
         lock(ThreadLocks[thread_id]) {
             PostNumMaps[thread_id];
         }
     }
 
     public addPost(thread_id: uint, post_id: uint): int {
+        ensureDataExists(thread_id);
         lock(ThreadLocks[thread_id]) {
             def list_ = getPostIds(thread_id);
             def map = getPostNums(thread_id);
@@ -107,6 +100,14 @@ public class ThreadPosts {
             def n = list_.Count;
             map[post_id] = n;
             n;
+        }
+    }
+
+    ensureDataExists(thread_id: uint): void {
+        lock(GeneralLock) {
+            when(!ThreadLocks.ContainsKey(thread_id)) {
+                initialize(thread_id);
+            }
         }
     }
 }
