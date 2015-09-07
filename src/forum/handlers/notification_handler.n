@@ -50,7 +50,7 @@ public class NotificationHandler: BasePageHandler {
             ];
 
             def i = command.execute((j, reader) => {
-                def date = reader.getValue("CreateDate", 0L);
+                def notify_date = reader.getValue("CreateDate", 0L);
                 def thread_id = reader.getValue("ThreadId", 0U);
                 notifies[j] = PageData() <- [
                     "Num" = j + from,
@@ -58,7 +58,8 @@ public class NotificationHandler: BasePageHandler {
                     "ThreadId" = thread_id,
                     "PostId" = reader.getValue("PostId", 0U),
                     "NotifyType" = reader.getValue("NotifyType", 0U),
-                    "Date" = Server.formatDateFromTicks(date),
+                    "Date" = Server.formatDateFromTicks(notify_date),
+                    "CreateDate" = notify_date,
                 ];
                 ok = true;
             });
@@ -66,6 +67,17 @@ public class NotificationHandler: BasePageHandler {
             when(i < notifies.Length) {
                 Array.Resize(ref notifies, i);
             }
+
+
+            def command2 = Database.createCommand(
+                "SELECT Colour, NotifyDate FROM Users WHERE Id = @Id") <- [
+                    "@Id" = SignedInUserId
+                ];
+            mutable colour_id, user_date;
+            command2.execute(reader => {
+                colour_id = reader.getValue("Colour");
+                user_date = reader.getValue("NotifyDate", 0L);
+            });
 
             for(mutable j = 0; j < i; j++) {
                 def n = notifies[j];
@@ -83,6 +95,8 @@ public class NotificationHandler: BasePageHandler {
                     $<#<a href="$prf/u/$username">$username</a>#>,
                     $<#<a href="$prf$path">$title</a>#>);
 
+                def notify_date = n["CreateDate"] :> long;
+
                 _ = n <- [
                     "UserName" = username,
                     "ThreadTitle" = title,
@@ -91,6 +105,12 @@ public class NotificationHandler: BasePageHandler {
                     "PostUrl" = $"$prf/p/$post_id",
                     "PostThreadUrl" = buildPostUrl(post_id),
                 ];
+
+                // allow a 60-second window for notifications to remain 'active'...
+                def delta = TimeSpan(0, 0, 60).Ticks;
+                when(user_date < notify_date + delta) {
+                    n["NewNotifyClass"] = "new-notify";
+                }
             }
 
             def notify_count = ForumDatabase.getNotificationCount(SignedInUserId);
@@ -99,18 +119,13 @@ public class NotificationHandler: BasePageHandler {
                 notify_count, dist, NotificationsPerPage,
                 from, to, $"$prf/n");
 
-            def command2 = Database.createCommand(
-                "SELECT Colour FROM Users WHERE Id = @Id") <- [
-                    "@Id" = SignedInUserId
-                ];
-            def colour_id = command2.executeScalar() :> string;
-
             _ = PageData <- [
                 "UserSignedIn" = true,
                 "User" = ForumDatabase.getUserName(SignedInUserId),
                 "Notifications" = notifies,
                 "Markers" = buildMarkerList(from, i),
                 "ColourId" = colour_id,
+                "ColourBgHsl" = CssHandler.bgFromColourId(colour_id),
             ];
         }
     }
