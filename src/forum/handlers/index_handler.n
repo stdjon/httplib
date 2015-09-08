@@ -39,8 +39,18 @@ public class IndexHandler: BasePageHandler {
         def prefix = Server.getDefaultPrefix(Request);
         for(mutable j = 0; j < threads.Length; j++) {
             def thread_id = threads[j]["Id"] :> uint;
-            def path = ForumDatabase.getThreadUrlPath(thread_id);
+            def path =
+                if(SignedInUserId > 0) {
+                    ForumDatabase.getFirstUnreadPostPath(
+                        thread_id, SignedInUserId);
+                } else {
+                    ForumDatabase.getThreadUrlPath(thread_id);
+                }
             threads[j]["ThreadUrl"] = $"$prefix$path";
+            threads[j]["PostCount"] =
+                ForumDatabase.getPostCount(thread_id);
+            threads[j]["ReadPostCount"] =
+                ForumDatabase.getReadPostCount(thread_id, SignedInUserId);
         }
 
         def command2 = Database.createCommand(

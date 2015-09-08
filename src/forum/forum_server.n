@@ -109,6 +109,7 @@ public class ForumServer: Server {
         route(HTTP.POST, "/createpost", createPostResponse);
         route(HTTP.POST, "/update-post", updatePostResponse);
         route(HTTP.POST, "/get-post", getPostDataResponse);
+        route(HTTP.POST, "/read-post", readPostResponse);
         route(HTTP.POST, "/update-title", updateTitleResponse);
 
         route([ (HTTP.POST, "/newpost"),
@@ -413,6 +414,25 @@ public class ForumServer: Server {
         } else {
             internalServerErrorResponse(context, request, response);
         }
+    }
+
+    public readPostResponse(
+        context: Context, request: Request, response: Response): void {
+
+        when( (context.Vars["th"] != null) &&
+            (context.Vars["n"] != null) ) {
+            def th = UInt32.Parse(context.Vars["th"]);
+            def n = Int32.Parse(context.Vars["n"]);
+            def pid = ThreadPosts.getPostId(th, n);
+
+            using(fdb = openForumDatabase()) {
+                def user_id = fdb.getUserIdFromCookie(request, STOK.INSECURE);
+                when(user_id > 0) {
+                    fdb.readPost(pid, user_id);
+                }
+            }
+        }
+        response.Status = (200, "OK");
     }
 
     public updateTitleResponse(

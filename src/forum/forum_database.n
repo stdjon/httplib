@@ -133,6 +133,57 @@ public class ForumDatabase: IDisposable {
         unchecked ex :> int;
     }
 
+    public getReadPostCount(thread_id: uint, user_id: uint): int {
+        mutable count = 0;
+        def ids = Server.ThreadPosts.getPostIds(thread_id);
+        for(mutable i = 0; i < ids.Count; i++) {
+            when(isPostRead(ids[i], user_id)) {
+                count++;
+            }
+        }
+        count;
+    }
+
+    public getFirstUnreadPost(user_id: uint, thread_id: uint): int {
+
+        def ids = Server.ThreadPosts.getPostIds(thread_id);
+        mutable lowest_unread = 0;
+        mutable read_one = false;
+        mutable read_all = true;
+        exit: {
+            for(mutable i = 0; i < ids.Count; i++) {
+                if(isPostRead(ids[i], user_id)) {
+                    read_one = true;
+                } else {
+                    when(0 == lowest_unread) {
+                        lowest_unread = i + 1;
+                    }
+                    read_all = false;
+                }
+            }
+            when((lowest_unread > 0) && read_one && !read_all) {
+                exit();
+            }
+        }
+        match(read_one, read_all) {
+            | (false, false) => 0
+            | (true, false) => lowest_unread
+            | (_, true) => ids.Count
+        }
+    }
+
+    public getFirstUnreadPostPath(
+        thread_id: uint, user_id: uint): string {
+
+        def num = getFirstUnreadPost(user_id, thread_id);
+        def path = getThreadUrlPath(thread_id);
+        def lower = ((num / 50) * 50) + 1;
+        def upper = ((num / 50) + 1) * 50;
+        def page = ((1 != lower || 50 != upper)) ? $"/$lower-$upper" : "";
+        def anchor = (num > 0) ? $"#$num" : "";
+        $"$path$page$anchor";
+    }
+
     public getPostThumbs(post_id: uint): int {
         def command = Database.createCommand(
             "SELECT COUNT(Id) FROM Thumbs WHERE "
@@ -660,6 +711,30 @@ public class ForumDatabase: IDisposable {
         ];
         result = command.executeScalar() :> long;
         result > 0;
+    }
+
+    public isPostRead(post_id: uint, user_id: uint): bool {
+        def command = Database.createCommand(
+            "SELECT Id FROM PostsRead WHERE "
+                "UserId = @UserId AND PostId = @PostId") <- [
+            "@UserId" = user_id,
+            "@PostId" = post_id,
+        ];
+        def result = command.executeScalar() :> uint?;
+        result ? (result :> uint > 0) : false;
+    }
+
+    public readPost(post_id: uint, user_id: uint): void {
+        when( (user_id > 0) &&
+            !isPostRead(post_id, user_id)) {
+            def command = Database.createCommand(
+                "INSERT INTO PostsRead(UserId, PostId) "
+                    "VALUES(@UserId, @PostId)") <- [
+                "@UserId" = user_id,
+                "@PostId" = post_id,
+            ];
+            _ = command.executeNonQuery();
+        }
     }
 
     public addPointsToUser(user_id: uint, points: int): void {

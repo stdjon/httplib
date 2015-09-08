@@ -91,11 +91,19 @@ public class CategoryHandler: BasePageHandler {
             for(i = 0; i < limit; i++) {
                 def user_id = threads[i]["UserId"] :> uint;
                 def thread_id = threads[i]["Id"] :> uint;
-                def path = ForumDatabase.getThreadUrlPath(thread_id);
+                def path =
+                    if(SignedInUserId > 0) {
+                        ForumDatabase.getFirstUnreadPostPath(
+                            thread_id, SignedInUserId);
+                    } else {
+                        ForumDatabase.getThreadUrlPath(thread_id);
+                    }
                 threads[i]["UserName"] = ForumDatabase.getUserName(user_id);
                 threads[i]["UserDisplay"] = userDisplayName(user_id);
                 threads[i]["PostCount"] =
                     ForumDatabase.getPostCount(thread_id);
+                threads[i]["ReadPostCount"] =
+                    ForumDatabase.getReadPostCount(thread_id, SignedInUserId);
                 threads[i]["ThreadUrl"] = $"$prf$path";
             }
 

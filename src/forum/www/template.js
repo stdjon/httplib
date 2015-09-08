@@ -18,6 +18,10 @@ $(document).bind('scroll',function(e) {
                         location.hash = id;
                         $(this).attr('id', id_);
                     }
+
+                    if(window['onAnchorScroll']) {
+                        onAnchorScroll(id_);
+                    }
                 }
             }
         });
@@ -135,7 +139,6 @@ function reloadPageContent() {
                 f();
             });
         }
-
     });
 }
 

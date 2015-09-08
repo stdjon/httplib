@@ -191,6 +191,26 @@ function titleKeyHandler(e) {
 }
 
 
+function onAnchorScroll(id) {
+    markPostRead(id);
+}
+
+
+function markPostRead(id) {
+    if(parseInt(id) > 0) {
+        $.ajax({
+            type: 'POST',
+            dataType: 'text',
+            url: '/read-post',
+            data: 'th=' + _g.ThreadId + '&n=' + id,
+        });
+    }
+}
+
 $(document).ready(function() {
     initPostControls();
+    var hash = document.location.hash;
+    if(hash) {
+        markPostRead(hash.replace(/^#/, ''));
+    }
 });

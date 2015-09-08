@@ -172,6 +172,8 @@ public class PostHandler: BasePageHandler {
             def command4 = Database.createCommand(
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
             PageData["Transform"] = command4.executeScalar() :> string;
+
+            ForumDatabase.readPost(pid, SignedInUserId);
         }
     }
 

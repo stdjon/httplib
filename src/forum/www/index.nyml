@@ -65,7 +65,14 @@ Partials:
         <ul class="list-group">
         {{#Threads}}
           <li class="list-group-item">
-            <a href="{{ThreadUrl}}"><em>{{Title}}</em></a>: started at {{CreateDate}}</li>
+            <a href="{{ThreadUrl}}"><em>{{Title}}</em></a>: started at {{CreateDate}}
+            {{#SignedInUser}}
+              <span class="badge"><big>{{ReadPostCount}} / {{PostCount}}</big></span>
+            {{/SignedInUser}}
+            {{^SignedInUser}}
+              <span class="badge"><big>{{PostCount}}</big></span>
+            {{/SignedInUser}}
+          <//li>
         {{/Threads}}
         </ul>
       </div>

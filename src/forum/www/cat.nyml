@@ -29,7 +29,13 @@ Partials:
         <div class="inlist">
           <a href="{{ThreadUrl}}">{{Title}}</a>
           by <a href="{{DefaultPrefix}}/u/{{UserName}}">{{{UserDisplay}}}</a>
-          at {{CreateDate}} <span class="badge"><big>{{PostCount}}</big></span>
+          at {{CreateDate}}
+          {{#SignedInUser}}
+            <span class="badge"><big>{{ReadPostCount}} / {{PostCount}}</big></span>
+          {{/SignedInUser}}
+          {{^SignedInUser}}
+            <span class="badge"><big>{{PostCount}}</big></span>
+          {{/SignedInUser}}
         </div>
       </div>
     {{/Threads}}
