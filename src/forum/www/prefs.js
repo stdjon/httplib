@@ -169,7 +169,7 @@ function enableAvatarDragDrop() {
             if(e.stopPropagation) { e.stopPropagation(); }
             this.className = "";
             var f = e.dataTransfer.files;
-            alert(JSON.stringify({e:e.dataTransfer}));
+            //alert(JSON.stringify({e:e.dataTransfer}));
             if (f.length > 0) {
                 acceptFile(f[0]);
             } else {
@@ -182,7 +182,7 @@ function enableAvatarDragDrop() {
     setDragDrop(preview);
 
     function acceptFile(f) {
-        alert(JSON.stringify(f));
+        //alert(JSON.stringify(f));
 
         document.querySelector('#avatar-work').innerHTML =
             'Working...<span class="fa fa-spinner fa-pulse"></span>';
