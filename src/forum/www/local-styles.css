@@ -318,6 +318,14 @@ abbr, acronym {
   cursor: default !important;
   border-bottom: 1px dotted #888 !important;
 }
+@media (max-width: 767px) {
+  abbr::after, acronym::after {
+    content: "[" attr(title) "]";
+    font-size: 85%;
+    font-style: italic;
+    padding: .25em;
+  }
+}
 .navbar-2ry.nav-alert {
   color: #ff0;
 }
