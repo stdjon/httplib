@@ -41,7 +41,7 @@ public class NotificationHandler: BasePageHandler {
             def prf = Server.getDefaultPrefix(Request);
 
             def command = Database.createCommand(
-                "SELECT FromUserId, ThreadId, PostId, NotifyType, CreateDate "
+                "SELECT FromUserId, PostId, NotifyType, CreateDate "
                     "FROM Notifications WHERE @UserId = UserId "
                     "ORDER BY CreateDate DESC LIMIT @From, @Count") <- [
                 "@UserId" = SignedInUserId,
@@ -51,11 +51,9 @@ public class NotificationHandler: BasePageHandler {
 
             def i = command.execute((j, reader) => {
                 def notify_date = reader.getValue("CreateDate", 0L);
-                def thread_id = reader.getValue("ThreadId", 0U);
                 notifies[j] = PageData() <- [
                     "Num" = j + from,
                     "UserId" = reader.getValue("FromUserId", 0U),
-                    "ThreadId" = thread_id,
                     "PostId" = reader.getValue("PostId", 0U),
                     "NotifyType" = reader.getValue("NotifyType", 0U),
                     "Date" = Server.formatDateFromTicks(notify_date),
@@ -82,8 +80,9 @@ public class NotificationHandler: BasePageHandler {
             for(mutable j = 0; j < i; j++) {
                 def n = notifies[j];
 
-                def thread_id = n["ThreadId"] :> uint;
                 def post_id = n["PostId"] :> uint;
+                def thread_id = ForumDatabase.getPostThread(post_id);
+                n["ThreadId"] = thread_id;
 
                 PostThreadMap[post_id] = thread_id;
 
@@ -143,7 +142,7 @@ public class NotificationHandler: BasePageHandler {
 
         def thread_id = PostThreadMap[post_id];
         def d = Server.ThreadPosts.getPostNums(thread_id);
-	try {
+        try {
             def post_number = d[post_id];
             def from = (((post_number - 1) / PostsPerPage) * PostsPerPage) + 1;
             def to = from + (PostsPerPage - 1);

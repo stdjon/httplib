@@ -257,17 +257,16 @@ public class TestData {
         using(fdb = server.openForumDatabase()) {
             if(!fdb.isStarPost(pid, uid)) {
 
-                mutable thid, puid;
+                mutable puid;
                 def command = fdb.Database.createCommand(
-                    "SELECT ThreadId, UserId FROM Posts WHERE Id = @Id") <- [
+                    "SELECT UserId FROM Posts WHERE Id = @Id") <- [
                         "@Id" = pid,
                     ];
                 command.execute(reader => {
-                    thid = reader.getValue("ThreadId", 0U);
                     puid = reader.getValue("UserId", 0U);
                 });
 
-                fdb.starPost(pid, uid, true, puid, thid);
+                fdb.starPost(pid, uid, true, puid);
                 Log.d("User {0} starred post {1}", uid, pid);
             } else {
                 Log.w("(User {0} already starred post {1}, ignoring)", uid, pid);

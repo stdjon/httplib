@@ -688,7 +688,7 @@ public class ForumServer: Server {
                 });
             }
 
-            fdb.starPost(pid, uid, on, puid, thid);
+            fdb.starPost(pid, uid, on, puid);
         }
         response.Status = (200, "OK");
     }

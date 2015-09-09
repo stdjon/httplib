@@ -144,6 +144,15 @@ public class ForumDatabase: IDisposable {
         count;
     }
 
+    public getPostThread(post_id: uint): uint {
+        def command = Database.createCommand(
+            "SELECT ThreadId FROM Posts WHERE Id = @Id") <- [
+                "@Id" = post_id,
+            ];
+        def ex = command.executeScalar() :> uint?;
+        ex ? (ex :> uint) : 0U;
+    }
+
     public getFirstUnreadPost(user_id: uint, thread_id: uint): int {
 
         def ids = Server.ThreadPosts.getPostIds(thread_id);
@@ -507,7 +516,7 @@ public class ForumDatabase: IDisposable {
                     ];
                 def replied_to = command2.executeScalar() :> uint;
                 createNotification(
-                    replied_to, user_id, thread_id, post_id, NT.REPLY);
+                    replied_to, user_id, post_id, NT.REPLY);
             }
 
             def command = Database.createCommand(
@@ -515,10 +524,10 @@ public class ForumDatabase: IDisposable {
                     "@Id" = thread_id,
                 ];
             def thread_user = command.executeScalar() :> uint;
-            createNotification(thread_user, user_id, thread_id, post_id, NT.POST);
+            createNotification(thread_user, user_id, post_id, NT.POST);
 
             foreach(m in mentions) {
-                createNotification(m, user_id, thread_id, post_id, NT.MENTION);
+                createNotification(m, user_id, post_id, NT.MENTION);
             }
 
             (post_id, output, utc_now);
@@ -567,6 +576,37 @@ public class ForumDatabase: IDisposable {
         (ok, output);
     }
 
+    public createNotification(
+        user_id: uint, from_user_id: uint, post_id: uint, type: NotifyType): void {
+
+        when(user_id != from_user_id) {
+
+            def command = Database.createCommand(
+                "SELECT COUNT(Id) FROM Notifications WHERE UserId = @UserId AND "
+                    "FromUserId = @FromUserId AND PostId = @PostId") <- [
+                "@UserId" = user_id,
+                "@FromUserId" = from_user_id,
+                "@PostId" = post_id,
+            ];
+            def result = (command.executeScalar() :> long?) :> int;
+
+            when(result < 1) {
+                def command2 = Database.createCommand(
+                    "INSERT INTO Notifications(UserId, FromUserId, "
+                        "PostId, NotifyType, CreateDate) VALUES("
+                        "@UserId, @FromUserId, "
+                        "@PostId, @NotifyType, @CreateDate)") <- [
+                    "@UserId" = user_id,
+                    "@FromUserId" = from_user_id,
+                    "@PostId" = post_id,
+                    "@NotifyType" = type,
+                    "@CreateDate" = Date.NowTicks,
+                ];
+                _ = command2.executeNonQuery();
+            }
+        }
+    }
+
     public thumbPost(post_id: uint, user_id: uint, on: bool): void {
 
         Log.d("thumbPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
@@ -608,41 +648,6 @@ public class ForumDatabase: IDisposable {
         });
     }
 
-    public createNotification(user_id: uint, from_user_id: uint,
-        thread_id: uint, post_id: uint, type: NotifyType): void {
-
-        when(user_id != from_user_id) {
-
-            def command = Database.createCommand(
-                "SELECT COUNT(Id) FROM Notifications WHERE UserId = @UserId AND "
-                    "FromUserId = @FromUserId AND ThreadId = @ThreadId AND "
-                    "PostId = @PostId") <- [
-                "@UserId" = user_id,
-                "@FromUserId" = from_user_id,
-                "@ThreadId" = thread_id,
-                "@PostId" = post_id,
-            ];
-            def result = (command.executeScalar() :> long?) :> int;
-
-            when(result < 1) {
-                def command2 = Database.createCommand(
-                    "INSERT INTO Notifications("
-                        "UserId, FromUserId, "
-                        "ThreadId, PostId, NotifyType, CreateDate) VALUES("
-                        "@UserId, @FromUserId, "
-                        "@ThreadId, @PostId, @NotifyType, @CreateDate)") <- [
-                    "@UserId" = user_id,
-                    "@FromUserId" = from_user_id,
-                    "@ThreadId" = thread_id,
-                    "@PostId" = post_id,
-                    "@NotifyType" = type,
-                    "@CreateDate" = Date.NowTicks,
-                ];
-                _ = command2.executeNonQuery();
-            }
-        }
-    }
-
     public isThumbPost(post_id: uint, user_id: uint): bool {
         mutable result;
         def command = Database.createCommand(
@@ -655,8 +660,8 @@ public class ForumDatabase: IDisposable {
         result > 0;
     }
 
-    public starPost(post_id: uint, user_id: uint, on: bool,
-        post_user_id: uint?, thread_id: uint?): void {
+    public starPost(
+        post_id: uint, user_id: uint, on: bool, post_user_id: uint?): void {
 
         Log.d("starPost(p:{0}, u:{1}, {2})", post_id, user_id, on);
         Database.withTransaction(db => {
@@ -684,8 +689,8 @@ public class ForumDatabase: IDisposable {
                     addPointsToUser(uid, on ? 2 : -2);
                 }
                 when(on) {
-                    createNotification(post_user_id :> uint,
-                        user_id, thread_id :> uint, post_id, NT.STAR);
+                    createNotification(
+                        post_user_id :> uint, user_id, post_id, NT.STAR);
                 }
 
                 sendUpdate(JsonObject() <- [
