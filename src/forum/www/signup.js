@@ -90,30 +90,12 @@ function passwordKeypress() {
     passwordScore = r.score;
     $('#strength').val(passwordScore);
 
-    var pwOkUpper = passwordValue.match(/[A-Z]/);
-    var pwOkLower = passwordValue.match(/[a-z]/);
-    var pwOkNumber = passwordValue.match(/[0-9]/);
-    var pwOkStrength = (passwordScore >= 3);
+    var pwOkStrength = (passwordScore >= 2);
     var pwOkLength = passwordValue.length > 7;
     var pwOkLength2 = passwordValue.length <= 60;
-    passwordOk = pwOkUpper && pwOkLower && pwOkNumber && pwOkStrength && pwOkLength && pwOkLength2;
-    var p = [];
-
-    if(!pwOkUpper) { p.push('an uppercase letter'); }
-    if(!pwOkLower) { p.push('a lowercase letter'); }
-    if(!pwOkNumber) { p.push('a number'); }
+    passwordOk = pwOkStrength && pwOkLength && pwOkLength2;
 
     var msg = '';
-    if(p.length > 0) {
-        var adds;
-        if(p.length > 1) {
-            var last = p.pop();
-            adds = p.join(', ') + ' and ' + last;
-        } else {
-            adds = p[0];
-        }
-            msg += 'Please add ' + adds + '.';
-    }
     if(!pwOkLength) {
         msg += ' Please use at least 8 characters.';
     }
