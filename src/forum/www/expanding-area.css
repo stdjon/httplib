@@ -40,11 +40,11 @@
 .expanding-h1-area textarea, .expanding-h1-area pre {
     font-size: 70px;
     font-weight: 900;
-    background: #666;
-    border: 1px dotted #707070;
+    background: #333;
+    border: 1px dotted #777;
 }
 .expanding-h1-area textarea:focus, .expanding-h1-area pre:focus {
-    border: 1px dotted #fff;
+    border: 1px dotted #333;
 }
 .expanding-h1-area textarea {
     height: 100px;
@@ -54,10 +54,10 @@
     font-size: 18px;
     font-weight: 900;
     background: #ffe;
-    border: 1px dotted #ccc;
+    border: 1px dotted #777;
 }
 .expanding-h4-area textarea:focus, .expanding-h4-area pre:focus {
-    border: 1px dotted #fff;
+    border: 1px dotted #333;
 }
 .expanding-h4-area textarea {
     height: 20px;
@@ -66,10 +66,10 @@
 .expanding-p-area textarea, .expanding-p-area pre {
     font-size: 14px;
     background: #ffe;
-    border: 1px dotted #ccc;
+    border: 1px dotted #777;
 }
 .expanding-p-area textarea:focus, .expanding-p-area pre:focus {
-    border: 1px dotted #888;
+    border: 1px dotted #333;
 }
 .expanding-p-area textarea {
     height: 25px;

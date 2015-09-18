@@ -336,7 +336,7 @@ abbr, acronym {
 .select2-container, .select2-dropdown {
     border-radius: 0 !important;
     background-color: #ffe !important;
-    border: 1px dotted #ccc !important;
+    border: 1px dotted #777 !important;
 }
 select, .select2-search, .select2-search__field, .select2-search--inline,
     .select2-selection, .select2-selection__rendered {
@@ -347,7 +347,7 @@ select, .select2-search, .select2-search__field, .select2-search--inline,
 .select2-selection__choice {
     border-radius: 0 !important;
     background-color: #ffc !important;
-    border: 1px dotted #ccc !important;
+    border: 1px dotted #777 !important;
 }
 .select2-results {
     border-radius: 0 !important;
