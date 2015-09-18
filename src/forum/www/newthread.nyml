@@ -75,10 +75,13 @@ Partials:
       <input id="colour" name="colour" type="hidden" value="x360"/>
       <input id="tags" name="tags" type="hidden" value=""/>
       <p>&nbsp;</p>
-      <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
-        formmethod="post" formtarget="_top">Create thread</button>
-      <button id="fp-cancel" type="button" class="btn btn-danger"
-        onclick='document.location = "{{DefaultPrefix}}/c{{#CategoryId}}/{{CategoryId}}{{/CategoryId}}"'>Abandon thread</button>
+      <div>
+        <button id="fp-submit" type="submit" class="btn btn-success" formaction="{{DefaultPrefix}}/createthread"
+          formmethod="post" formtarget="_top">Create thread</button>
+        &nbsp;
+        <a style='color: #f00; top: 0.2em;'
+          href="{{DefaultPrefix}}/c{{#CategoryId}}/{{CategoryId}}{{/CategoryId}}">Abandon thread</a>
+      </div>
       </form>
     </div>
   Guide: |
