@@ -43,7 +43,7 @@ Partials:
           Author the first post in the thread.</label>
       </div>
       <div id="fp-controls">
-        <div id="fp-area" class="expanding-area expanding-p-area">
+        <div id="fp-area" class="expanding-area expanding-p-area" data-size="8">
           <pre><span></span><br></pre>
           <textarea id="fp-text" placeholder="[First post]" name="content"></textarea>
         </div>

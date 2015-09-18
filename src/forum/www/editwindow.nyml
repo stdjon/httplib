@@ -1,6 +1,6 @@
 Content: |
   <div id="{{id}}" class="reply post">
-    <div class="expanding-area expanding-p-area">
+    <div class="expanding-area expanding-p-area" data-size="3">
       <pre><span></span><br></pre>
       <textarea id="te-{{id}}" placeholder="[{{text}}]" name="content"
         onkeydown='postcontrolKeypress("{{id}}")' oninput='postcontrolKeypress("{{id}}")'></textarea>
