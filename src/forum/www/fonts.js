@@ -5,7 +5,7 @@ function setFonts(c, mc, is_nav) {
     var mf = _font_map[mc];
     var h = _font_data[f.h].bold;
 
-    setCommonFonts(f.p, mf.p)
+    setCommonFonts(f.p, mf.p, h)
 
     if(is_nav) {
         var p = _font_data[f.p].regular;
@@ -16,7 +16,7 @@ function setFonts(c, mc, is_nav) {
 }
 
 
-function setCommonFonts(p, m) {
+function setCommonFonts(p, m, h) {
     var pr = _font_data[p].regular;
     var pb = _font_data[p].bold;
     var pi = _font_data[p].italic;
@@ -28,7 +28,9 @@ function setCommonFonts(p, m) {
     $('div.user-font i, div.user-font em').css('font-family', pi);
     $('div.user-font b i, div.user-font b i, ' +
         'div.user-font strong em, div.user-font em strong').css('font-family', pbi);
-    $('div.user-font .expanding-area pre, div.user-font .expanding-area textarea').css('font-family', pr);
+    $('div.user-font .expanding-area.expanding-p-area pre, div.user-font .expanding-area-p-area textarea').css('font-family', pr);
+    $('div.user-font .expanding-area.expanding-h1-area pre, div.user-font .expanding-area.expanding-h1-area textarea').css('font-family', h);
+    $('div.user-font .expanding-area.expanding-h4-area pre, div.user-font .expanding-area.expanding-h4-area textarea').css('font-family', h);
     $('div.user-font code, div.user-font pre, div.user-font tt').css('font-family', mr);
 }
 
