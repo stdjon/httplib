@@ -795,6 +795,87 @@ public class ForumDatabase: IDisposable {
 
         });
     }
+
+    public isSigninRateLimited(user_id: uint): bool {
+        expireRateLimits();
+        def command = Database.createCommand(
+            "SELECT UserId FROM AuthRateLimit WHERE UserId = @UserId") <- [
+                "@UserId" = user_id,
+            ];
+        def result = command.executeScalar() :> uint?;
+        def banned = result ? (result :> uint) : 0U;
+        banned > 0U;
+    }
+
+    public imposeSigninRateLimit(user_id: uint): void {
+        def conf = Server.Configuration.AuthRateLimit;
+        expireRateLimits();
+        def now = Date.NowTicks;
+        Database.withTransaction(db => {
+            def command = db.createCommand(
+                "SELECT Id, Duration, ExpiryTime FROM AuthRateLimit "
+                    "WHERE UserId = @UserId") <- [
+                "@UserId" = user_id,
+            ];
+            mutable id = 0U, expiry_time = 0L, duration = 0;
+            command.execute(reader => {
+                id = reader.getValue("Id", 0U);
+                expiry_time = reader.getValue("ExpiryTime", 0L);
+                duration = reader.getValue("Duration", 0);
+            });
+            if(id > 0U) {
+                duration = (duration * conf.GrowthRate) :> int;
+                def duration_ticks = TimeSpan(0, 0, 0, 0, duration).Ticks;
+                expiry_time = now + duration_ticks;
+
+                def command2 = db.createCommand(
+                    "UPDATE AuthRateLimit SET ExpiryTime = @ExpiryTime, "
+                        "Duration = @Duration WHERE Id = @Id") <- [
+                    "@ExpiryTime" = expiry_time,
+                    "@Duration" = duration,
+                    "@Id" = id,
+                ];
+                def result = command2.executeNonQuery();
+                if(result > 0) {
+                    Log.i("Rate Limit {0} adjusted to {1}ms, expires {2}",
+                        user_id, duration, Server.formatDateFromTicks(expiry_time));
+                } else {
+                    Log.w("Unable to increase rate limit for {0}", user_id);
+                }
+            } else {
+                duration = conf.Initial;
+                def duration_ticks = TimeSpan(0, 0, 0, 0, duration).Ticks;
+                expiry_time = now + duration_ticks;
+
+                def command = db.createCommand(
+                    "INSERT INTO AuthRateLimit(UserId, ExpiryTime, Duration) VALUES"
+                        "(@UserId, @ExpiryTime, @Duration)") <- [
+                    "@UserId" = user_id,
+                    "@ExpiryTime" = expiry_time,
+                    "@Duration" = duration,
+                ];
+                def result = command.executeNonQuery();
+                if(result > 0) {
+                    Log.i("Rate Limit {0} set to {1}ms, expires {2}",
+                        user_id, duration, Server.formatDateFromTicks(expiry_time));
+                } else {
+                    Log.w("Unable to set rate limit for {0}", user_id);
+                }
+            }
+        }, ex => {
+            Server.internalServerError(ex);
+        });
+    }
+
+    expireRateLimits(): void {
+        def now = Date.NowTicks;
+        def command = Database.createCommand(
+            "DELETE FROM AuthRateLimit WHERE (ExpiryTime < @Now)") <- [
+                "@Now" = now,
+            ];
+        def rows = command.executeNonQuery();
+        Log.i("Deleted {0} expired rate limits...", rows);
+    }
 }
 
 

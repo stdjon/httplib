@@ -14,7 +14,8 @@
 
 DROP TABLE IF EXISTS
     Uploads, Bookmarks, Thumbs, PostsRead, Drafts, Replies, PostTags, Tags,
-    Notifications, Posts, Threads, Categories, Sessions, Avatars, Auth, Users;
+    Notifications, Posts, Threads, Categories, Sessions, Avatars, AuthRateLimit,
+    Auth, Users;
 
 
 /*----------------------------------------------------------------------------*/
@@ -45,6 +46,17 @@ CREATE TABLE IF NOT EXISTS Auth(
     PwRecord VARCHAR(256),
     Email VARCHAR(256),
     Secret VARCHAR(100),
+    FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
+)
+    ENGINE=INNODB
+    CHARACTER SET utf8;
+
+
+CREATE TABLE IF NOT EXISTS AuthRateLimit(
+    Id INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    UserId INT UNSIGNED,
+    ExpiryTime BIGINT,
+    Duration INT,
     FOREIGN KEY(UserId) REFERENCES Users(Id) ON DELETE CASCADE
 )
     ENGINE=INNODB

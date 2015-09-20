@@ -82,6 +82,10 @@ $('#do-signin').click(function(e) {
             403: function() {
                 postMainWindowMessage(
                     'warn', 'info', '', 'Invalid username or password.');
+            },
+            404: function() {
+                postMainWindowMessage(
+                    'warn', 'info', '', 'Rate limited. Try again later.');
             }
         },
     });

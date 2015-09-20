@@ -26,12 +26,20 @@ public class Limits {
 
 
 [YamlRecord]
+public class AuthRateLimit {
+    public Initial: int { get; set; }
+    public GrowthRate: float { get; set; }
+};
+
+
+[YamlRecord]
 public class ForumServerConfiguration: ServerConfiguration {
 
     public SiteName: string { get; set; }
     public DefaultAvatarImage: string { get; set; }
     public AccountRecovery: AccountRecovery { get; set; }
     public Limits: Limits { get; set; }
+    public AuthRateLimit: AuthRateLimit { get; set; }
     public AdminDisplay: string { get; set; }
     public DefaultEmailSender: string { get; set; }
     public DefaultFontClass: string { get; set; }

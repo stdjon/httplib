@@ -101,6 +101,7 @@ public class NavHandler: BasePageHandler {
 
     public navSigninResponse(): void {
         mutable ok = false;
+        mutable rate_limited = false;
 
         when(Request.IsSecure) {
             def user = Context.Vars["user"];
@@ -112,18 +113,23 @@ public class NavHandler: BasePageHandler {
             def id = command1.executeScalar() :> uint?;
             mutable record;
 
+
             when(id != null) {
-                def command2 = Database.createCommand(
-                    "SELECT PwRecord FROM Auth WHERE "
-                        "UserId = @UserId") <- [ "@UserId" = id ];
-                record = command2.executeScalar() :> string;
+                rate_limited = ForumDatabase.isSigninRateLimited(id :> uint);
+
+                when(!rate_limited) {
+                    def command2 = Database.createCommand(
+                        "SELECT PwRecord FROM Auth WHERE "
+                            "UserId = @UserId") <- [ "@UserId" = id ];
+                    record = command2.executeScalar() :> string;
+                }
             }
 
-            ok = !String.IsNullOrEmpty(record) &&
+            ok = !rate_limited && !String.IsNullOrEmpty(record) &&
                 auth.validatePassword(password, record);
             Log.i("Login attempt as {0}: {1}", user, ok);
 
-            when(ok) {
+            if(ok) {
                 def (_ok2, token, expiry) =
                     ForumDatabase.registerSessionToken(STOK.SECURE, id :> uint);
 
@@ -131,11 +137,15 @@ public class NavHandler: BasePageHandler {
                     COOKIE.HTTP_ONLY : COOKIE.SECURE_HTTP_ONLY;
                 Response.Cookies.add(
                     "_session", token, expiry, cookie_flags);
+            } else {
+                ForumDatabase.imposeSigninRateLimit(id :> uint);
             }
         }
 
         if(ok) {
             Response.Status = (200, "OK");
+        } else if(rate_limited) {
+            Response.Status = (404, "Not Found");
         } else {
             Response.Status = (403, "Forbidden");
         }
