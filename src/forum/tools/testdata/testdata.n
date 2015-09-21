@@ -166,9 +166,11 @@ public class TestData {
         def uid = Random.Next(UserCount) + 1;
         def cid = Random.Next(CategoryCount) + 1;
         def create_date = Date.NowTicks;
-        def colour = generateColour();
 
         using(db = server.openDatabase()) {
+            def colour = (db.createCommand("SELECT Colour FROM Categories "
+                    "WHERE Id = @Id") <- [ "@Id" = cid ]).executeScalar() :> string;
+
             def command2 = db.createCommand(
                 "INSERT INTO Threads(Title, UserId, CategoryId, CreateDate, Colour) VALUES "
                     "(@Title, @UserId, @CategoryId, @CreateDate, @Colour)") <- [
