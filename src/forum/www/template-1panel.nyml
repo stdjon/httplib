@@ -10,4 +10,7 @@ Partials:
       <div class="col-xs-12 body">
         {{>Body}}
       </div>
+      <div class="col-xs-12 foot foot-1panel">
+        {{>Foot}}
+      </div>
     </div>

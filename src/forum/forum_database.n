@@ -228,6 +228,26 @@ public class ForumDatabase: IDisposable {
         command.executeScalar() :> string;
     }
 
+    public getThreadColour(thread_id: uint): string {
+        def command = Database.createCommand(
+            "SELECT Colour FROM Threads WHERE Id = @Id") <- [ "@Id" = thread_id ];
+        command.executeScalar() :> string;
+    }
+
+    public getThreadCategory(thread_id: uint): uint {
+        def command = Database.createCommand(
+            "SELECT CategoryId FROM Threads WHERE Id = @Id") <- [ "@Id" = thread_id ];
+        def ex = command.executeScalar() :> uint?;
+        ex ? (ex :> uint) : 0L;
+    }
+
+    public getThreadCreateDate(thread_id: uint): long {
+        def command = Database.createCommand(
+            "SELECT CreateDate FROM Threads WHERE Id = @Id") <- [ "@Id" = thread_id ];
+        def ex = command.executeScalar() :> long?;
+        ex ? (ex :> long) : 0U;
+    }
+
     public getThreadUrlPath(thread_id: uint): string {
         def title = Server.makeUrlFriendlyTitle(getThreadTitle(thread_id));
         $"/th/$thread_id/$title";

@@ -72,7 +72,7 @@ Partials:
             {{^SignedInUser}}
               <span class="badge"><big>{{PostCount}}</big></span>
             {{/SignedInUser}}
-          <//li>
+          </li>
         {{/Threads}}
         </ul>
       </div>

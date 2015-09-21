@@ -66,9 +66,19 @@ a, button, input {
 }
 div.body {
   padding-top: 10px;
-  padding-bottom: 64px;
   background-color: #ffe;
   border-left: 5px solid #ffb;
+}
+div.foot {
+  padding-bottom: 64px;
+  background-color: #ffe;
+}
+div.foot.foot-1panel {
+  border-left: 5px solid #ffb;
+}
+div.foot.foot-2panel {
+  border-left: 5px solid #ffb;
+  padding-top: 20px;
 }
 div.body div.post {
   background-color: #ffe;

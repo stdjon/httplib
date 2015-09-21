@@ -111,6 +111,8 @@ public class IndexHandler: BasePageHandler {
             "Posts" = posts,
             "Stars" = stars,
         ];
+
+        addFoot();
     }
 }
 

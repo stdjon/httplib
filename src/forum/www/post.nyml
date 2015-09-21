@@ -38,6 +38,7 @@ Partials:
                 {{#HasTags}}Filed under: {{#Tags}}[<a href="{{Url}}">{{Name}}</a>] {{/Tags}}{{/HasTags}}
               </div>
             </small>
+          </div>
           <div class="alignment1 rhs">
             &mdash; <a href="{{DefaultPrefix}}/u/{{User}}">{{{UserDisplay}}}</a> {{CreateDate}}
 

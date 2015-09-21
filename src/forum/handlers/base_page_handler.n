@@ -185,6 +185,85 @@ public class BasePageHandler: BaseHandler {
         result;
     }
 
+    public addFoot(cat_id: uint = 0U, not_thread_id = 0U): void {
+        PageData["HasFoot"] = true;
+        def prefix = Server.getDefaultPrefix(Request);
+        def ids = getFoodThreadIdArray(cat_id, not_thread_id);
+        mutable arr = array(ids.Length);
+
+        for(mutable i = 0; i < 10; i++) {
+            def thid = ids[i];
+            def path =
+                if(SignedInUserId > 0) {
+                    ForumDatabase.getFirstUnreadPostPath(
+                        thid, SignedInUserId);
+                } else {
+                    ForumDatabase.getThreadUrlPath(thid);
+                }
+            def colour = ForumDatabase.getThreadColour(thid);
+            arr[i] = PageData() <- [
+                "ThreadUrl" = $"$prefix$path",
+                "Title" = ForumDatabase.getThreadTitle(thid),
+                "CreateDate" =
+                    Server.formatDateFromTicks(ForumDatabase.getThreadCreateDate(thid)),
+                "PostCount" =
+                    ForumDatabase.getPostCount(thid),
+                "ReadPostCount" =
+                    ForumDatabase.getReadPostCount(thid, SignedInUserId),
+                "ColourBgHsl" = CssHandler.bgFromColourId(colour),
+                "ColourFgHsl" = CssHandler.fgFromColourId(colour),
+            ];
+        }
+        PageData["FootItems"] = arr;
+    }
+
+    getFoodThreadIdArray(cat_id: uint, not_thread_id: uint): array[uint] {
+        def count = 10;
+        def thcount = 5 + (unchecked Date.NowTicks :> uint) % 6;
+        mutable result = array(count);
+        mutable i = 0;
+
+        when(cat_id > 0U) {
+
+            def command = Database.createCommand(
+                "SELECT Id FROM Threads WHERE CategoryId = @CategoryId AND "
+                    "Id != @Id ORDER BY rand() LIMIT @Count;") <- [
+                "@CategoryId" = cat_id,
+                "@Id" = not_thread_id,
+                "@Count" = thcount,
+            ];
+
+            i = command.execute((j, reader) => {
+                result[j] = reader.getValue("Id", 0U);
+            });
+        }
+
+        mutable tries = 0;
+        while(i < count && tries < 4) {
+            def remain = count - i;
+            def command2 = Database.createCommand(
+                "SELECT Id FROM Threads WHERE Id != @Id "
+                    "ORDER BY rand() LIMIT @Count;") <- [
+                "@Id" = not_thread_id,
+                "@Count" = remain,
+            ];
+            command2.execute(reader => {
+                def id = reader.getValue("Id", 0U);
+                when(!Array.Exists(result, x => { x == id })) {
+                    result[i] = id;
+                    i++;
+                }
+            });
+            tries++;
+        }
+
+        when(i < count) {
+            Array.Resize(ref result, i);
+        }
+
+        result;
+    }
+
     parseUrl(): string {
         def url = Request.Url;
         def coll = HttpUtility.ParseQueryString(url.Query);

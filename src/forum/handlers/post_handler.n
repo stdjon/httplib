@@ -175,6 +175,9 @@ public class PostHandler: BasePageHandler {
 
             ForumDatabase.readPost(pid, SignedInUserId);
         }
+
+        def cat_id = ForumDatabase.getThreadCategory(thid);
+        addFoot(cat_id);
     }
 
     public buildPostUrl(post_id: uint, thread_id: uint): string {

@@ -242,6 +242,8 @@ public class ThreadHandler: BasePageHandler {
                 "SELECT Transform FROM Users WHERE Id = @Id") <- [ "@Id" = SignedInUserId ];
             PageData["Transform"] = command4.executeScalar() :> string;
         }
+
+        addFoot(catid, ThreadId);
     }
 
     postUrl(post_id: uint): string {

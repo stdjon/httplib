@@ -122,6 +122,8 @@ public class TagHandler: BasePageHandler {
                     from, to, $"$prf/tg/$Tag");
             }
         }
+
+        addFoot();
     }
 }
 

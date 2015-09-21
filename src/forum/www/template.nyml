@@ -61,6 +61,9 @@ Partials:
       <div class="col-xs-2 hidden-xs guide">
         {{>Guide}}
       </div>
+      <div class="col-xs-12 col-sm-10 foot foot-2panel">
+        {{>Foot}}
+      </div>
     </div>
   MainSpace: |
       {{>Layout}}
@@ -82,6 +85,27 @@ Partials:
       }
       </script>
       {{>ReloadableContent}}
+  Foot: |
+    {{#HasFoot}}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4 class="panel-title">Meanwhile...</h4>
+      </div>
+      <div class="panel-body">
+        {{#FootItems}}
+        <div class="inlist" style="border-left: 5px solid {{ColourBgHsl}};">
+          <a href="{{ThreadUrl}}"><em>{{Title}}</em></a>: started at {{CreateDate}}
+          {{#SignedInUser}}
+            <span style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};" class="badge"><big>{{ReadPostCount}} / {{PostCount}}</big></span>
+          {{/SignedInUser}}
+          {{^SignedInUser}}
+            <span style="color: {{ColourFgHsl}}; background-color: {{ColourBgHsl}};" class="badge"><big>{{PostCount}}</big></span>
+          {{/SignedInUser}}
+        </div>
+        {{/FootItems}}
+      </div>
+    </div>
+    {{/HasFoot}}
   CommonScript: |
     {{_TrackingScript}}
     _g = {};
