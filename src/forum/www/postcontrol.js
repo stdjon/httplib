@@ -146,7 +146,7 @@ function populateReplyData(pid) {
         var buf = getSelectionAsQuote();
 
         if(buf) {
-            $('#te-' + wnd_id).html(buf);
+            $('#te-' + wnd_id).text(buf);
             $('#te-' + wnd_id).trigger('input');
         }
     }
@@ -266,7 +266,7 @@ function populateEditData(pid) {
             data: 'p=' + pid + '&f=true',
 
             success: function(data) {
-                $('#te-' + wnd_id).html(data.i);
+                $('#te-' + wnd_id).text(data.i);
                 $('#prv-' + wnd_id).html(data.o);
                 selectTags($('select#tags-' + wnd_id), decodeTagString(data.tg));
                 $('#te-' + wnd_id).trigger('input');
@@ -691,7 +691,7 @@ function restoreWindowText(w) {
     var tag = decodeTagString(data[2]);
     var pid = w.replace(/^[er]/, '');
     if(txt) {
-        $('#te-' + w).html(txt);
+        $('#te-' + w).text(txt);
         $('#rnd-' + w + ' label').removeClass('active');
         $('#rnd-' + w + '-' + rnd).addClass('active');
         selectTags($('select#tags-' + w), tag);
