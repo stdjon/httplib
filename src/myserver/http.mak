@@ -15,6 +15,7 @@ $(eval $(call emit_exe_rule, \
 	httplib.mod.bbcode.dll \
 	httplib.mod.htmlsanitize.dll \
 	httplib.mod.imageprocessor.dll \
+	httplib.mod.smtp.dll \
 	httplib.mod.textile.dll \
 	))
 

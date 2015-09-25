@@ -20,6 +20,7 @@ $(eval $(call emit_exe_rule, \
 	httplib.mod.htmlsanitize.dll \
 	httplib.mod.imageprocessor.dll \
 	httplib.mod.oembed.dll \
+	httplib.mod.smtp.dll \
 	httplib.mod.textile.dll))
 
 
