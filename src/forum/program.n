@@ -63,52 +63,62 @@ module Program {
 
     runServer(arguments: Arguments): void {
 
-        when(!String.IsNullOrEmpty(arguments.Root)) {
-            Server.CanonicalRoot = arguments.Root;
-        }
+        try {
 
-        mutable restarting = false;
-        def config_path = Server.canonicalPath(arguments.Config);
-        mutable mod_time = File.GetLastWriteTime(config_path);
-
-        using(mutable server = ForumServer(arguments.Config)) {
-
-            Server.Log.i("Canonical path to config file: {0}", config_path);
-
-            def checkConfigWriteTime() {
-                def t = File.GetLastWriteTime(config_path);
-                when(t != mod_time) {
-                    mod_time = t;
-                    restarting = true;
-                    Server.Log.i("Configuration changed - restarting...");
-                    server.stop();
-                }
+            when(!String.IsNullOrEmpty(arguments.Root)) {
+                Server.CanonicalRoot = arguments.Root;
             }
 
-            def handleRestart() {
-                when(restarting && !server.Running) {
-                    server = ForumServer(config_path);
-                    server.start();
-                    restarting = false;
-                }
-            }
+            mutable restarting = false;
+            def config_path = Server.canonicalPath(arguments.Config);
+            mutable mod_time = File.GetLastWriteTime(config_path);
 
-            server.start();
-            while(server.Running) {
-                try {
-                    checkConfigWriteTime();
+            using(mutable server = ForumServer(arguments.Config)) {
 
-                    server.update();
-                    Thread.Sleep(500);
+                Server.Log.i("Canonical path to config file: {0}", config_path);
 
-                    handleRestart();
-
-                } catch {
-                    | ex => {
-                        Server.Log.e(
-                            "ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+                def checkConfigWriteTime() {
+                    def t = File.GetLastWriteTime(config_path);
+                    when(t != mod_time) {
+                        mod_time = t;
+                        restarting = true;
+                        Server.Log.i("Configuration changed - restarting...");
+                        server.stop();
                     }
                 }
+
+                def handleRestart() {
+                    when(restarting && !server.Running) {
+                        server = ForumServer(config_path);
+                        server.start();
+                        restarting = false;
+                    }
+                }
+
+                server.start();
+                while(server.Running) {
+                    try {
+                        checkConfigWriteTime();
+
+                        server.update();
+                        Thread.Sleep(500);
+
+                        handleRestart();
+
+                    } catch {
+                        | ex => {
+                            Server.Log.e(
+                                "ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+                        }
+                    }
+                }
+            }
+        } catch {
+            | ex => {
+                Server.Log.e(
+                    "FATAL ERROR!\n{0}\n{1}", ex.Message, ex.StackTrace);
+                Server.Log.e(
+                    "SERVER IS DOWN!");
             }
         }
     }
