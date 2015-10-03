@@ -1,0 +1,78 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+
+using Nemerle.Utility;
+
+using CsQuery;
+
+using YamlDeserializer = YamlDotNet.Serialization.Deserializer;
+
+using httplib;
+
+
+namespace forum.mod {
+
+[HasLogging]
+public class SyntaxHighlighter: Module, ITextTransform {
+
+    public override InterfaceType: Type {
+        get { typeof(ITextTransform) }
+    }
+
+    [Accessor]
+    static deserializer: YamlDeserializer = YamlDeserializer();
+
+    public Aliases: string { get; private set; }
+
+    public AliasData: Dictionary[string, string] { get; private set; }
+
+    public this(data: ModuleData = null) {
+        Log.i("Starting SyntaxHighlighter module... (data: {0})", data);
+
+        Aliases = data["Aliases"] :> string;
+    }
+
+    public transform(input: string): string {
+
+        loadAliasData();
+
+        def cq_create = CQ.Create: string -> CQ;
+        def cq = cq_create(input);
+        def selection = cq.Select("pre[lang]");
+
+        foreach(s in selection) {
+            def lang = s.Attributes["lang"];
+
+            mutable probe;
+            when(AliasData.TryGetValue(lang, out probe)) {
+
+                s.Attributes["lang"] = null;
+                s.Attributes["class"] = $"brush: $lang";
+            }
+        }
+
+        cq.Render();
+    }
+
+    loadAliasData(): void {
+        when(AliasData == null) {
+            AliasData = Dictionary();
+            def data_file = Server.openLocalFile(Aliases);
+
+            using(reader = StreamReader(data_file)) {
+                def data = Deserializer.Deserialize.[
+                    Dictionary[string, Dictionary[string, object]] ](reader);
+
+                foreach(d in data["SyntaxAliases"]) {
+                    AliasData[d.Key] = d.Value :> string;
+                }
+            }
+        }
+
+    }
+}
+
+
+} // namespace mod.forum

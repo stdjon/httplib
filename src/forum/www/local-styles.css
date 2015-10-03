@@ -386,6 +386,17 @@ select, .select2-search, .select2-search__field, .select2-search--inline,
 .bootstrap-dialog-footer-buttons .btn-warning {
   color: #ffe;
 }
+/* syntaxhighlighter */
+.syntaxhighlighter {
+  border: 1px solid 888 !important;
+  overflow-y: hidden !important;
+  width: initial !important;
+  border-radius: 4px !important;
+  padding: 6px !important;
+}
+.syntaxhighlighter * {
+  border: 1px solid 888 !important;
+}
 /* Colour swatches */
 /*.swatches {
   text-align: center;

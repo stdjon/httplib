@@ -65,6 +65,11 @@ Renderers:
     Assembly: httplib.page.nustache.dll
     Typename: httplib.page.NustacheRenderer
 Modules:
+  SyntaxHighlighter:
+    Assembly: forum.mod.syntaxhighlight.dll
+    Typename: forum.mod.SyntaxHighlighter
+    Data:
+      Aliases: syntax_aliases.yml
   Filter:
     Assembly: forum.mod.filter.dll
     Typename: forum.mod.Filter
@@ -101,7 +106,7 @@ Modules:
         - { Tag: "h4", Open: "<h4>", Close: "</h4>" }
         - { Tag: "h5", Open: "<h5>", Close: "</h5>" }
         - { Tag: "h6", Open: "<h6>", Close: "</h6>" }
-        - { Tag: "code", Open: "<pre>", Close: "</pre>" }
+        #- { Tag: "code", Open: "<pre>", Close: "</pre>" }
         - { Tag: "img", Open: "<img src='${content}'/>", Close: "", Flags: "NoAutoRender" }
         - { Tag: "quote", Open: "<blockquote>", Close: "</blockquote>" }
         - { Tag: "q", Open: "<q>", Close: "</q>" }
@@ -118,6 +123,8 @@ Modules:
             Attrs: [ { Id: "href", Name: "" }, { Id: "href", Name: "href" } ] }
         - { Tag: "abbr", Open: "<abbr title='${title}'>", Close: "</abbr>",
             Attrs: [ { Id: "title", Name: "" }, { Id: "title", Name: "title" } ] }
+        - { Tag: "code", Open: "<pre lang='${lang}'>", Close: "</pre>",
+            Attrs: [ { Id: "lang", Name: "" }, { Id: "lang", Name: "lang" } ] }
   HtmlSanitizer:
     Assembly: httplib.mod.htmlsanitize.dll
     Typename: httplib.mod.HtmlSanitizer

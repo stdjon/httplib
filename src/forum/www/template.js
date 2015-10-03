@@ -225,4 +225,14 @@ function reloadCustomStylesheet() {
 }
 
 
+function syntaxHighlighter() {
+    SyntaxHighlighter.defaults.gutter = false;
+    SyntaxHighlighter.defaults.toolbar = false;
+    SyntaxHighlighter.all();
+}
+
+
 _reinitHooks.push(reloadCustomStylesheet);
+_reinitHooks.push(syntaxHighlighter);
+
+syntaxHighlighter();

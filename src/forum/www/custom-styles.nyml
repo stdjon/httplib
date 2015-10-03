@@ -36,6 +36,10 @@ Content: |
   div.user-font code, div.user-font pre, div.user-font tt {
     font-family: "{{CodeFontRegular}}";
   }
+  div.user-font div.syntaxhighlighter * {
+    font-family: "{{CodeFontRegular}}" !important;
+    font-size: 13px  !important;
+  }
   div.jumbotron {
     color: {{HighlightColour}};
     background-color: {{BackgroundColour}};

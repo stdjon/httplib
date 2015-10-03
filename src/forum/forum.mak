@@ -10,6 +10,7 @@ $(eval $(call emit_exe_rule, \
 	forum.mod.filter.dll \
 	forum.mod.iconify.dll \
 	forum.mod.providers.dll \
+	forum.mod.syntaxhighlight.dll \
 	httplib.dll \
 	httplib.macros.dll \
 	httplib.db.mysql.dll \

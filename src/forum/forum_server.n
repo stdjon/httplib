@@ -6,6 +6,8 @@ using System.Threading;
 
 using Nemerle.Extensions;
 
+using CsQuery;
+
 using httplib;
 
 
@@ -482,10 +484,23 @@ public class ForumServer: Server {
         def flt = getModuleInterface.[ITextTransform]("Filter");
         def ico = getModuleInterface.[ITextTransform]("Iconify");
         def oem = getModuleInterface.[ITextTransform]("OEmbed");
+        def shi = getModuleInterface.[ITextTransform]("SyntaxHighlighter");
 
         // convert '\n' to <br> in BBCode/HTML, to maintain user's input.
         def nl_to_br(text) {
             text.Replace("\n", "<br>");
+        }
+
+        // ...but convert <br> back to \n inside <pre> sections...
+        def br_to_nl(text) {
+            def cq_create = CQ.Create: string -> CQ;
+            def cq = cq_create(text);
+            def selection = cq.Select("pre");
+
+            foreach(s in selection) {
+                s.InnerHTML = s.InnerHTML.Replace("<br>", "\n");
+            }
+            cq.Render();
         }
 
         // convert <spoiler> to non-tag format (pre HTML sanitizer)
@@ -504,9 +519,9 @@ public class ForumServer: Server {
 
         mutable ok = true;
         mutable output = "";
-        mutable pipeline =
-            flt.transform >> htm.transform >>
-            ico.transform >> oem.transform >> spoiler_tags_post;
+        mutable pipeline = br_to_nl >>
+            flt.transform >> htm.transform >> ico.transform >>
+            oem.transform >> spoiler_tags_post >> shi.transform;
 
         match(method) {
             | "bbcode" => pipeline =

@@ -53,6 +53,7 @@ function showPreview(wnd_id) {
 
         success: function(data) {
             $('#prv-' + wnd_id).html(data);
+            runSyntaxHighlighter();
         },
         error: function() {
             Dialog.alert({
@@ -182,6 +183,7 @@ function submitReply(wnd_id) {
                 $wnd.data('replying', false);
                 closeReply(wnd_id, true);
                 reloadPageContent(); //FIXME remove me when live updates work properly :(
+                runSyntaxHighlighter();
             },
             error: function() {
                 $wnd.data('replying', false);
@@ -302,6 +304,7 @@ function submitEdit(wnd_id) {
                 closeEdit(wnd_id, true);
                 $('#c-' + pid).html(data.o);
                 $('#tg-' + pid).html(tagsHtml(decodeTagString(data.tg)));
+                runSyntaxHighlighter();
             },
             error: function() {
                 stopSpinner(wnd_id);
@@ -771,3 +774,11 @@ function setLocalIndex(idx) {
 }
 
 
+
+function runSyntaxHighlighter() {
+    if(window['SyntaxHighlighter']) {
+        SyntaxHighlighter.highlight();
+        setTimeout(function() {
+            SyntaxHighlighter.highlight(); }, 1500); // FIXME: so gross...
+    }
+}
