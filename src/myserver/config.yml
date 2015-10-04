@@ -32,6 +32,7 @@ FileServing:
   /upload: { Cache-Control: "no-cache" }
   /sse: { Cache-Control: "no-cache" }
   /time: { Cache-Control: "no-cache" }
+  /notify: { Cache-Control: "no-cache" }
 Renderers:
   yml:
     Assembly: httplib.dll

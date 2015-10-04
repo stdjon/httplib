@@ -1,0 +1,42 @@
+---
+# The following 3 meta tags *must* come first in the head; any other head content
+# must come *after* these tags
+Metas:
+  - charset="utf-8"
+  - http-equiv="X-UA-Compatible" content="IE=edge"
+  - name="viewport" content="width=device-width, initial-scale=1"
+Stylesheets:
+  - /bootstrap-3.3.4-dist/css/bootstrap.css
+  - /animate.css-3.4.0/animate.min.css
+  - /font-awesome-4.3.0/css/font-awesome.css
+Title: Notify
+Content: >
+  <div class="container">
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <h1>Notify</h1>
+      </div>
+    </div>
+
+    <!-- Example row of columns -->
+    <div class="row">
+      <div class="col-md-4">
+        <p><a class="btn btn-primary" href="#" role="button" onclick="notify('info')">View Notify 1 &raquo;</a></p>
+        <p><a class="btn btn-danger" href="#" role="button" onclick="notify('danger')">View Notify 2 &raquo;</a></p>
+        <p><a class="btn btn-warning" href="#" role="button" onclick="notify('warning')">View Notify 3 &raquo;</a></p>
+        <p><a class="btn btn-success" href="#" role="button" onclick="notify('success')">View Notify 4 &raquo;</a></p>
+      </div>
+    </div>
+  </div> <!-- /container -->
+
+
+  <!-- Bootstrap core JavaScript
+  ================================================== -->
+  <!-- Placed at the end of the document so the pages load faster -->
+  <script src="/jquery-1.11.2/jquery-1.11.2.min.js"></script>
+  <script src="/bootstrap-3.3.4-dist/js/bootstrap.min.js"></script>
+  <script src="/bootstrap-notify-3.1.3/dist/bootstrap-notify.min.js"></script>
+  <script src="/notify.js"></script>
+
