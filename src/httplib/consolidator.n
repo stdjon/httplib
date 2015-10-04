@@ -52,6 +52,9 @@ public class Consolidator {
     static cache_lock: Object = Object();
     static cache: Dictionary[string, List[string]] = Dictionary();
 
+    static mutable code_settings = CodeSettings();
+    static mutable css_settings = CssSettings();
+
     public Server: Server { get; private set; }
     public Output: string { get; private set; }
     public OutputFile: string { get; private set; }
@@ -62,7 +65,8 @@ public class Consolidator {
 
     public Minifier: Minifier { get; private set; }
 
-    public static prepareCache(path: string): void {
+    public static initialize(path: string): void {
+        // initialize cache
         def p = Server.canonicalPath(path);
         Log.i("Consolidator cache path: '{0}'", p);
         if(Directory.Exists(p)) {
@@ -75,6 +79,10 @@ public class Consolidator {
             Log.d("Createing '{0}'...", p);
             _ = Directory.CreateDirectory(p);
         }
+
+        // establish minification settings
+        code_settings.PreserveImportantComments = false;
+        css_settings.CommentMode = CssComment.None;
     }
 
     public this(
@@ -146,10 +154,10 @@ public class Consolidator {
                     def outstring: string =
                         match(FileType) {
                             | FILE.CSS => {
-                                Minifier.MinifyStyleSheet(instring);
+                                Minifier.MinifyStyleSheet(instring, css_settings);
                             }
                             | FILE.JS => {
-                                Minifier.MinifyJavaScript(instring);
+                                Minifier.MinifyJavaScript(instring, code_settings);
                             }
                         };
 

@@ -240,7 +240,7 @@ public class Server: IDisposable {
 
         when(Configuration.Consolidation != null) {
             // make sure cache path exists and is empty at server start time...
-            Consolidator.prepareCache(Configuration.Consolidation.CachePath);
+            Consolidator.initialize(Configuration.Consolidation.CachePath);
         }
     }
 
