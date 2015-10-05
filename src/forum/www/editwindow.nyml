@@ -13,7 +13,7 @@ Content: |
     </div>
     <div>
       <button id="btn-{{id}}-preview" class="btn btn-xs btn-warning" value="Preview"
-        onclick="showPreview('{{id}}'); return false;">Preview</button>
+        onclick="showPreview('{{id}}'); return false;">Preview<span id="{{id}}-preview-spin"></span></button>
       <button id="btn-{{id}}-submit" class="btn btn-xs btn-success" value="{{text}}"
         onclick="{{submit}}('{{id}}'); return false;">{{text}}<span id="{{id}}-submit-spin"></span></button>
       &nbsp;

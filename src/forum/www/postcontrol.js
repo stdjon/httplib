@@ -44,6 +44,7 @@ function openWindow(num, wnd_id, text, next) {
 function showPreview(wnd_id) {
     var txt = $('#' + wnd_id + ' textarea').val();
     var sel = $('#rnd-' + wnd_id + ' label.active input').val();
+    startSpinner(wnd_id, 'preview');
     $.ajax({
         type: 'POST',
         dataType: 'text',
@@ -54,6 +55,7 @@ function showPreview(wnd_id) {
         success: function(data) {
             $('#prv-' + wnd_id).html(data);
             runSyntaxHighlighter();
+            stopSpinner(wnd_id, 'preview');
         },
         error: function() {
             Dialog.alert({
@@ -62,6 +64,7 @@ function showPreview(wnd_id) {
                 title: 'Warning',
                 message: 'Could not preview (server error).',
             });
+            stopSpinner(wnd_id, 'preview');
         }
     });
 }
@@ -90,13 +93,13 @@ function replyHoverOut() {
 }
 
 
-function startSpinner(wnd_id) {
-    $('#' + wnd_id + '-submit-spin').html(' <span class="fa fa-pulse fa-spinner"></span>');
+function startSpinner(wnd_id, name) {
+    $('#' + wnd_id + '-' + name + '-spin').html(' <span class="fa fa-pulse fa-spinner"></span>');
 }
 
 
-function stopSpinner(wnd_id) {
-    $('#' + wnd_id + '-submit-spin').html('');
+function stopSpinner(wnd_id, name) {
+    $('#' + wnd_id + '-' + name + '-spin').html('');
 }
 
 
@@ -170,7 +173,7 @@ function submitReply(wnd_id) {
 
     function doSubmit() {
         $wnd.data('replying', true);
-        startSpinner(wnd_id);
+        startSpinner(wnd_id, 'submit');
         $.ajax({
             type: 'POST',
             dataType: 'json',
@@ -187,7 +190,7 @@ function submitReply(wnd_id) {
             },
             error: function() {
                 $wnd.data('replying', false);
-                stopSpinner(wnd_id);
+                stopSpinner(wnd_id, 'submit');
                 Dialog.alert({
                     size: BootstrapDialog.SIZE_LARGE,
                     type: BootstrapDialog.TYPE_DANGER,
@@ -290,7 +293,7 @@ function submitEdit(wnd_id) {
     var pid = _d.windows[wnd_id].pid;
 
     function doSubmit() {
-        startSpinner(wnd_id);
+        startSpinner(wnd_id, 'submit');
         $.ajax({
             type: 'POST',
             dataType: 'json',
@@ -307,7 +310,7 @@ function submitEdit(wnd_id) {
                 runSyntaxHighlighter();
             },
             error: function() {
-                stopSpinner(wnd_id);
+                stopSpinner(wnd_id, 'submit');
                 Dialog.alert({
                     size: BootstrapDialog.SIZE_LARGE,
                     type: BootstrapDialog.TYPE_DANGER,
